@@ -249,7 +249,7 @@ export default function WCACRM() {
   const convRate = Math.round((LEADS.filter(l => l.stage === "convertido").length / LEADS.length) * 100);
 
   return (
-    <div style={{ display:"flex", height:680, background:"#1f2933", borderRadius:16, overflow:"hidden", border:"1px solid #d1dde3", fontFamily:"'DM Sans','Outfit','Segoe UI',sans-serif" }}>
+    <div style={{ display:"flex", minHeight: "100vh", background:"#1f2933", overflow:"hidden", border:"1px solid #d1dde3", fontFamily:"'DM Sans','Outfit','Segoe UI',sans-serif" }}>
 
       {/* ── SIDEBAR ── */}
       <div style={{ width:200, background:"#1f2933", display:"flex", flexDirection:"column", padding:"18px 0", flexShrink:0 }}>

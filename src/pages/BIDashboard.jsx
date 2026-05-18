@@ -182,7 +182,7 @@ export default function BIDashboard() {
   const annualRun    = currentMRR * 12;
 
   return (
-    <div style={{ display:"flex", height:720, background:B.bg, borderRadius:16, overflow:"hidden", border:`1px solid ${B.border}`, fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+    <div style={{ display:"flex", minHeight: "100vh", height: "100vh", background:B.bg,  overflow:"hidden",  fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
 
       {/* SIDEBAR */}
       <aside style={{ width:184, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0 }}>

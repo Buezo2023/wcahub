@@ -91,7 +91,7 @@ export default function WCAPortal() {
     : 0;
 
   return (
-    <div style={{ display: "flex", minHeight: "680px", background: "#f5f7fa", borderRadius: 16, overflow: "hidden", border: "0.5px solid #d1dde3", fontFamily: "'DM Sans','Outfit','Segoe UI',sans-serif" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f7fa",  overflow: "hidden",  fontFamily: "'DM Sans','Outfit','Segoe UI',sans-serif" }}>
 
       {/* Sidebar */}
       <aside style={{ width: 200, background: "#155266", display: "flex", flexDirection: "column", padding: "20px 0", flexShrink: 0 }}>
@@ -136,7 +136,7 @@ export default function WCAPortal() {
           </div>
         </div>
 
-        <div style={{ padding: 24, flex: 1 }}>
+        <div style={{ padding: 24, flex: 1, overflowY: "auto" }}>
 
           {/* ── HOME ── */}
           {view === "home" && (

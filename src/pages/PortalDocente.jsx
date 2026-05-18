@@ -133,7 +133,7 @@ export default function TeacherPortal(){
   const group=GROUPS.find(g=>g.id===selGroup);
 
   return(
-    <div style={{display:"flex",height:720,background:C.bg,borderRadius:16,overflow:"hidden",border:`1px solid ${C.border}`,fontFamily:"'DM Sans','Outfit','Segoe UI',sans-serif",position:"relative"}}>
+    <div style={{display:"flex",minHeight: "100vh", height: "100vh",background:C.bg,overflow:"hidden",border:`1px solid ${C.border}`,fontFamily:"'DM Sans','Outfit','Segoe UI',sans-serif",position:"relative"}}>
 
       {/* SIDEBAR */}
       <aside style={{width:190,background:C.surface,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",padding:"18px 0",flexShrink:0}}>
