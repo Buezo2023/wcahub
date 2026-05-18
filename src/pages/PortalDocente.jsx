@@ -1,0 +1,505 @@
+import { useState } from "react";
+
+const C = {
+  bg:"#f5f7fa",surface:"#ffffff",surfaceHigh:"#e8f3f6",border:"#d1dde3",
+  accent:"#155266",accentDim:"#e8f3f6",green:"#059669",greenDim:"#d1fae5",
+  amber:"#ffbb23",amberDim:"#fff4d2",red:"#dc2626",redDim:"#fee2e2",
+  purple:"#155266",purpleDim:"#e8f3f6",textPri:"#1f2933",textSec:"#6b7280",textTer:"#9ca3af",
+};
+
+const GROUPS = [
+  { id:1, level:"A1", schedule:"6:00–7:00 PM", days:"L·M·V", students:22, activeUnit:9, color:C.accent },
+  { id:2, level:"A1", schedule:"8:00–9:00 PM", days:"L·M·V", students:18, activeUnit:9, color:"#1a7a9a" },
+];
+
+const STUDENTS = [
+  { id:1, name:"María López",    group:1, attendance:92, avgScore:84, currentUnit:9, attempts:[null,null,null], flags:[] },
+  { id:2, name:"Carlos Torres",  group:1, attendance:78, avgScore:71, currentUnit:9, attempts:[58,64,null],     flags:["at-risk"] },
+  { id:3, name:"Ana Mejía",      group:1, attendance:96, avgScore:91, currentUnit:9, attempts:[null,null,null], flags:[] },
+  { id:4, name:"Luis Morales",   group:1, attendance:45, avgScore:62, currentUnit:8, attempts:[52,60,61],       flags:["at-risk","blocked"] },
+  { id:5, name:"Sofía Ramos",    group:1, attendance:88, avgScore:79, currentUnit:9, attempts:[null,null,null], flags:[] },
+  { id:6, name:"Pedro Jiménez",  group:1, attendance:67, avgScore:68, currentUnit:9, attempts:[65,null,null],   flags:[] },
+  { id:7, name:"Valentina Cruz", group:2, attendance:91, avgScore:88, currentUnit:9, attempts:[null,null,null], flags:[] },
+  { id:8, name:"Diego Fuentes",  group:2, attendance:55, avgScore:59, currentUnit:7, attempts:[48,51,55],       flags:["at-risk","blocked"] },
+];
+
+const UNITS = [
+  {n:1,title:"Self",stream:"https://stream.microsoft.com/...",pdf:"",status:"published"},
+  {n:2,title:"Things",stream:"https://stream.microsoft.com/...",pdf:"https://...",status:"published"},
+  {n:3,title:"Places",stream:"https://stream.microsoft.com/...",pdf:"",status:"published"},
+  {n:4,title:"Life",stream:"https://stream.microsoft.com/...",pdf:"https://...",status:"published"},
+  {n:5,title:"Travel",stream:"https://stream.microsoft.com/...",pdf:"",status:"published"},
+  {n:6,title:"Skills",stream:"https://stream.microsoft.com/...",pdf:"",status:"published"},
+  {n:7,title:"Reasons",stream:"https://stream.microsoft.com/...",pdf:"https://...",status:"published"},
+  {n:8,title:"History",stream:"https://stream.microsoft.com/...",pdf:"",status:"published"},
+  {n:9,title:"Comforts",stream:"",pdf:"",status:"draft"},
+  {n:10,title:"Adventure",stream:"",pdf:"",status:"empty"},
+  {n:11,title:"Learning",stream:"",pdf:"",status:"empty"},
+  {n:12,title:"Activities",stream:"",pdf:"",status:"empty"},
+];
+
+const BANK = [
+  {id:1,type:"Grammar",skill:"Gap fill",title:"Simple Present — Daily routines",unit:4},
+  {id:2,type:"Vocabulary",skill:"Matching",title:"Places in a town",unit:3},
+  {id:3,type:"Reading",skill:"True/False",title:"Spotlight: International Students",unit:1},
+  {id:4,type:"Pronunciation",skill:"Listen & repeat",title:"Sounds of the alphabet",unit:1},
+  {id:5,type:"Grammar",skill:"Multiple choice",title:"There is / There are",unit:3},
+  {id:6,type:"Vocabulary",skill:"Flashcards",title:"Family members",unit:4},
+];
+
+const SESSIONS = [
+  {date:"Lun 16 Jun",unit:9,title:"Comforts",attended:20,total:22,recorded:false},
+  {date:"Vie 13 Jun",unit:8,title:"History",attended:21,total:22,recorded:true},
+  {date:"Mié 11 Jun",unit:8,title:"History",attended:18,total:22,recorded:true},
+  {date:"Lun 9 Jun", unit:7,title:"Reasons",attended:22,total:22,recorded:true},
+];
+
+const TYPE_C = {
+  Grammar:["#fff4d2","#92400e"], Vocabulary:["#e8f3f6","#155266"],
+  Reading:["#d1fae5","#065f46"], Pronunciation:["#e8f3f6","#0f3d4d"],
+  Listening:["#fee2e2","#dc2626"], Speaking:["#e8f3f6","#9d174d"],
+};
+
+const ScoreCol = s => s>=80?C.green:s>=70?C.amber:C.red;
+const ScoreBg  = s => s>=80?C.greenDim:s>=70?C.amberDim:C.redDim;
+const pct = (a,b) => Math.round(a/b*100);
+
+function Stat({label,value,sub,color}){
+  return(
+    <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px"}}>
+      <div style={{fontSize:10,color:C.textSec,marginBottom:6}}>{label}</div>
+      <div style={{fontSize:22,fontWeight:800,color:color||C.textPri,lineHeight:1}}>{value}</div>
+      {sub&&<div style={{fontSize:10,color:C.textTer,marginTop:4}}>{sub}</div>}
+    </div>
+  );
+}
+
+function Chip({text,color,bg}){
+  return <span style={{fontSize:9,padding:"2px 8px",borderRadius:20,background:bg,color,fontWeight:600}}>{text}</span>;
+}
+
+function AttemptDots({attempts}){
+  return(
+    <div style={{display:"flex",gap:4}}>
+      {attempts.map((a,i)=>(
+        <div key={i} style={{
+          width:20,height:20,borderRadius:"50%",display:"flex",alignItems:"center",
+          justifyContent:"center",fontSize:9,fontWeight:700,
+          background:a===null?C.surfaceHigh:a>=70?C.greenDim:C.redDim,
+          color:a===null?C.textTer:a>=70?C.green:C.red,
+          border:`1px solid ${a===null?C.border:a>=70?C.green:C.red}`
+        }}>{a===null?i+1:a>=70?"✓":"✗"}</div>
+      ))}
+    </div>
+  );
+}
+
+const NAV=[
+  {id:"home",icon:"⊞",label:"Inicio"},
+  {id:"grupos",icon:"⊙",label:"Mis grupos"},
+  {id:"asistencia",icon:"✓",label:"Asistencia"},
+  {id:"examenes",icon:"✎",label:"Exámenes"},
+  {id:"contenido",icon:"⊟",label:"Contenido"},
+  {id:"banco",icon:"◈",label:"Banco actividades"},
+];
+
+function AttendanceRow({student}){
+  const [present,setPresent]=useState(true);
+  return(
+    <div style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",background:C.surfaceHigh,borderRadius:8,marginBottom:6}}>
+      <div style={{flex:1,fontSize:11,color:C.textPri,fontWeight:500}}>{student.name}</div>
+      <div style={{display:"flex",gap:5}}>
+        <button onClick={()=>setPresent(true)} style={{fontSize:9,padding:"3px 10px",background:present?C.greenDim:C.surfaceHigh,color:present?C.green:C.textTer,border:`1px solid ${present?C.green:C.border}`,borderRadius:5,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>✓</button>
+        <button onClick={()=>setPresent(false)} style={{fontSize:9,padding:"3px 10px",background:!present?C.redDim:C.surfaceHigh,color:!present?C.red:C.textTer,border:`1px solid ${!present?C.red:C.border}`,borderRadius:5,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>✗</button>
+      </div>
+    </div>
+  );
+}
+
+export default function TeacherPortal(){
+  const [view,setView]=useState("home");
+  const [selGroup,setSelGroup]=useState(1);
+  const [selUnit,setSelUnit]=useState(null);
+  const [extraModal,setExtraModal]=useState(null);
+  const [recLinks,setRecLinks]=useState({});
+  const [streamLinks,setStreamLinks]=useState(Object.fromEntries(UNITS.map(u=>[u.n,u.stream])));
+  const [pdfLinks,setPdfLinks]=useState(Object.fromEntries(UNITS.map(u=>[u.n,u.pdf])));
+  const [backupLinks,setBackupLinks]=useState(Object.fromEntries(UNITS.map(u=>[u.n,""])));
+
+  const grpStudents=STUDENTS.filter(s=>s.group===selGroup);
+  const allStudents=STUDENTS.filter(s=>s.group<=2);
+  const atRisk=allStudents.filter(s=>s.flags.includes("at-risk"));
+  const blocked=allStudents.filter(s=>s.flags.includes("blocked"));
+  const group=GROUPS.find(g=>g.id===selGroup);
+
+  return(
+    <div style={{display:"flex",height:720,background:C.bg,borderRadius:16,overflow:"hidden",border:`1px solid ${C.border}`,fontFamily:"'DM Sans','Outfit','Segoe UI',sans-serif",position:"relative"}}>
+
+      {/* SIDEBAR */}
+      <aside style={{width:190,background:C.surface,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",padding:"18px 0",flexShrink:0}}>
+        <div style={{padding:"0 18px 16px",borderBottom:`1px solid ${C.border}`,marginBottom:10}}>
+          <div style={{fontSize:16,fontWeight:800,color:C.textPri,letterSpacing:-0.5}}>WCA<span style={{color:C.accent}}> Hub</span></div>
+          <div style={{fontSize:9,color:C.textTer,marginTop:2,letterSpacing:1,textTransform:"uppercase"}}>Portal Docente</div>
+        </div>
+        {NAV.map(item=>(
+          <button key={item.id} onClick={()=>setView(item.id)} style={{
+            display:"flex",alignItems:"center",gap:9,padding:"9px 18px",border:"none",
+            background:view===item.id?`${C.accent}18`:"transparent",
+            color:view===item.id?C.accent:C.textSec,fontSize:12,cursor:"pointer",
+            textAlign:"left",borderLeft:`2px solid ${view===item.id?C.accent:"transparent"}`,
+            transition:"all .15s",fontFamily:"inherit",fontWeight:view===item.id?600:400
+          }}>
+            <span style={{fontSize:15,width:18,textAlign:"center"}}>{item.icon}</span>
+            {item.label}
+            {item.id==="examenes"&&blocked.length>0&&(
+              <span style={{marginLeft:"auto",fontSize:9,background:C.red,color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>{blocked.length}</span>
+            )}
+          </button>
+        ))}
+        <div style={{marginTop:"auto",padding:"14px 18px",borderTop:`1px solid ${C.border}`}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <div style={{width:30,height:30,borderRadius:"50%",background:C.accentDim,display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,color:C.accent}}>JO</div>
+            <div>
+              <div style={{fontSize:11,color:C.textPri,fontWeight:600}}>José Rodríguez</div>
+              <div style={{fontSize:9,color:C.textTer}}>Docente · A1</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* MAIN */}
+      <main style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
+        <div style={{height:52,background:C.surface,borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 22px",flexShrink:0}}>
+          <div style={{fontSize:13,fontWeight:700,color:C.textPri}}>
+            {{home:"Inicio · Hoy",grupos:"Mis grupos",asistencia:"Asistencia",examenes:"Exámenes y desbloqueos",contenido:"Contenido A1",banco:"Banco de actividades"}[view]}
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            {atRisk.length>0&&<div style={{fontSize:10,background:C.amberDim,color:C.amber,padding:"3px 10px",borderRadius:20,fontWeight:600}}>⚠ {atRisk.length} en riesgo</div>}
+            <div style={{fontSize:10,background:C.accentDim,color:C.accent,padding:"3px 10px",borderRadius:20,fontWeight:600}}>A1 · U9 activa</div>
+          </div>
+        </div>
+
+        <div style={{flex:1,overflow:"auto",padding:20}}>
+
+          {/* HOME */}
+          {view==="home"&&(
+            <div>
+              {blocked.length>0&&(
+                <div style={{background:C.redDim,border:`1px solid ${C.red}40`,borderRadius:12,padding:"11px 16px",marginBottom:16,display:"flex",gap:12,alignItems:"center"}}>
+                  <span style={{fontSize:16}}>🚨</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:12,fontWeight:600,color:C.red}}>{blocked.length} estudiante{blocked.length>1?"s":""} bloqueado{blocked.length>1?"s":""} — requieren tu acción</div>
+                    <div style={{fontSize:10,color:"#fca5a5",marginTop:2}}>{blocked.map(s=>s.name).join(", ")} — agotaron 3 intentos</div>
+                  </div>
+                  <button onClick={()=>setView("examenes")} style={{fontSize:10,padding:"6px 14px",background:C.red,color:"#fff",border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit",whiteSpace:"nowrap"}}>Ver ahora →</button>
+                </div>
+              )}
+              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
+                <Stat label="Mis grupos" value={GROUPS.length} sub="Nivel A1" color={C.accent}/>
+                <Stat label="Estudiantes" value={allStudents.length} sub="Ambos horarios"/>
+                <Stat label="En riesgo" value={atRisk.length} sub="Necesitan apoyo" color={atRisk.length>0?C.amber:C.green}/>
+                <Stat label="Asistencia avg" value="82%" sub="Esta semana" color={C.green}/>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
+                  <div style={{fontSize:12,fontWeight:700,color:C.textPri,marginBottom:12}}>Clases hoy — Lun 16 Jun</div>
+                  {GROUPS.map(g=>(
+                    <div key={g.id} style={{display:"flex",gap:12,alignItems:"center",padding:"10px 12px",background:C.surfaceHigh,borderRadius:10,marginBottom:8}}>
+                      <div style={{width:8,height:8,borderRadius:"50%",background:g.color,flexShrink:0}}/>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:12,fontWeight:600,color:C.textPri}}>{g.level} · {g.schedule}</div>
+                        <div style={{fontSize:10,color:C.textSec,marginTop:2}}>U9: Comforts · {g.students} alumnos</div>
+                      </div>
+                      <button style={{fontSize:10,padding:"5px 12px",background:C.accent,color:"#fff",border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>▷ Teams</button>
+                    </div>
+                  ))}
+                </div>
+                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
+                  <div style={{fontSize:12,fontWeight:700,color:C.textPri,marginBottom:12}}>Grabaciones pendientes</div>
+                  {SESSIONS.slice(0,3).map((s,i)=>(
+                    <div key={i} style={{display:"flex",gap:10,alignItems:"center",padding:"8px 0",borderTop:i>0?`1px solid ${C.border}`:"none"}}>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:11,color:C.textPri,fontWeight:500}}>{s.date} · U{s.unit}: {s.title}</div>
+                        <div style={{fontSize:10,color:C.textTer,marginTop:1}}>{s.attended}/{s.total} asistentes</div>
+                      </div>
+                      {s.recorded
+                        ?<span style={{fontSize:9,background:C.greenDim,color:C.green,padding:"2px 8px",borderRadius:20,fontWeight:600}}>✓ Lista</span>
+                        :<button onClick={()=>setView("asistencia")} style={{fontSize:9,padding:"3px 10px",background:C.amberDim,color:C.amber,border:`1px solid ${C.amber}40`,borderRadius:6,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>Subir link</button>
+                      }
+                    </div>
+                  ))}
+                </div>
+                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
+                  <div style={{fontSize:12,fontWeight:700,color:C.textPri,marginBottom:12}}>Estudiantes que necesitan apoyo</div>
+                  {atRisk.length===0&&<div style={{fontSize:11,color:C.textTer,textAlign:"center",padding:"16px 0"}}>✓ Todos al día</div>}
+                  {atRisk.map(s=>(
+                    <div key={s.id} style={{display:"flex",gap:10,alignItems:"center",padding:"9px 10px",background:C.surfaceHigh,borderRadius:10,marginBottom:7}}>
+                      <div style={{width:28,height:28,borderRadius:"50%",background:C.redDim,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:C.red,flexShrink:0}}>
+                        {s.name.split(" ").map(n=>n[0]).join("").slice(0,2)}
+                      </div>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:11,fontWeight:600,color:C.textPri}}>{s.name}</div>
+                        <div style={{fontSize:10,color:C.textSec,marginTop:1}}>
+                          {s.flags.includes("blocked")?`⛔ Bloqueado U${s.currentUnit}`:`⚠ ${s.attempts.filter(a=>a!==null).length}/3 fallidos`} · {s.attendance}% asistencia
+                        </div>
+                      </div>
+                      <AttemptDots attempts={s.attempts}/>
+                    </div>
+                  ))}
+                </div>
+                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
+                  <div style={{fontSize:12,fontWeight:700,color:C.textPri,marginBottom:12}}>Rendimiento · A1 6PM · U9</div>
+                  {grpStudents.slice(0,5).map(s=>(
+                    <div key={s.id} style={{display:"flex",gap:10,alignItems:"center",marginBottom:9}}>
+                      <div style={{fontSize:10,color:C.textSec,width:80,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.name.split(" ")[0]}</div>
+                      <div style={{flex:1,height:4,background:C.surfaceHigh,borderRadius:2,overflow:"hidden"}}>
+                        <div style={{height:"100%",width:`${s.avgScore}%`,background:ScoreCol(s.avgScore),borderRadius:2}}/>
+                      </div>
+                      <div style={{fontSize:10,fontWeight:700,color:ScoreCol(s.avgScore),width:28,textAlign:"right"}}>{s.avgScore}%</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* GRUPOS */}
+          {view==="grupos"&&(
+            <div>
+              <div style={{display:"flex",gap:8,marginBottom:14}}>
+                {GROUPS.map(g=>(
+                  <button key={g.id} onClick={()=>setSelGroup(g.id)} style={{padding:"8px 16px",border:`1px solid ${selGroup===g.id?g.color:C.border}`,borderRadius:10,background:selGroup===g.id?`${g.color}15`:C.surface,color:selGroup===g.id?g.color:C.textSec,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{g.level} · {g.schedule}</button>
+                ))}
+              </div>
+              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:"14px 16px",marginBottom:14}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div>
+                    <div style={{fontSize:16,fontWeight:800,color:C.textPri,marginBottom:3}}>Nivel {group.level} · <span style={{color:C.accent}}>{group.schedule}</span></div>
+                    <div style={{fontSize:11,color:C.textSec}}>{group.days} · {group.students} estudiantes · U{group.activeUnit} activa</div>
+                  </div>
+                  <button style={{fontSize:11,padding:"7px 16px",background:C.accent,color:"#fff",border:"none",borderRadius:9,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>▷ Abrir Teams</button>
+                </div>
+              </div>
+              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
+                  <thead>
+                    <tr style={{background:C.surfaceHigh}}>
+                      {["Estudiante","Asistencia","Promedio","Intentos U9","Estado",""].map(h=>(
+                        <th key={h} style={{padding:"8px 12px",textAlign:"left",fontSize:9,fontWeight:600,color:C.textTer,letterSpacing:0.5,textTransform:"uppercase"}}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {grpStudents.map((s,i)=>(
+                      <tr key={s.id} style={{borderTop:`1px solid ${C.border}`}}>
+                        <td style={{padding:"10px 12px"}}>
+                          <div style={{fontWeight:600,color:C.textPri}}>{s.name}</div>
+                        </td>
+                        <td style={{padding:"10px 12px"}}><span style={{color:s.attendance>=80?C.green:s.attendance>=60?C.amber:C.red,fontWeight:600}}>{s.attendance}%</span></td>
+                        <td style={{padding:"10px 12px"}}><span style={{color:ScoreCol(s.avgScore),fontWeight:600}}>{s.avgScore}%</span></td>
+                        <td style={{padding:"10px 12px"}}><AttemptDots attempts={s.attempts}/></td>
+                        <td style={{padding:"10px 12px"}}>
+                          {s.flags.includes("blocked")?<Chip text="⛔ Bloqueado" color={C.red} bg={C.redDim}/>
+                          :s.flags.includes("at-risk")?<Chip text="⚠ En riesgo" color={C.amber} bg={C.amberDim}/>
+                          :<Chip text="✓ Al día" color={C.green} bg={C.greenDim}/>}
+                        </td>
+                        <td style={{padding:"10px 12px"}}>
+                          {s.flags.includes("blocked")&&(
+                            <button onClick={()=>setExtraModal(s)} style={{fontSize:9,padding:"4px 10px",background:C.purpleDim,color:C.purple,border:`1px solid ${C.purple}40`,borderRadius:6,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>+ Intento</button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* ASISTENCIA */}
+          {view==="asistencia"&&(
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
+              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.textPri,marginBottom:14}}>Sesiones recientes</div>
+                {SESSIONS.map((s,i)=>(
+                  <div key={i} style={{padding:"10px 12px",background:C.surfaceHigh,borderRadius:10,marginBottom:8}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
+                      <div>
+                        <div style={{fontSize:11,fontWeight:600,color:C.textPri}}>{s.date} · U{s.unit}: {s.title}</div>
+                        <div style={{fontSize:10,color:C.textSec,marginTop:2}}>{s.attended}/{s.total} asistieron · {pct(s.attended,s.total)}%</div>
+                      </div>
+                    </div>
+                    {!s.recorded?(
+                      <div style={{display:"flex",gap:6}}>
+                        <input value={recLinks[i]||""} onChange={e=>setRecLinks(r=>({...r,[i]:e.target.value}))} placeholder="Link de Stream (grabación)..." style={{flex:1,padding:"5px 8px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:6,fontSize:10,color:C.textPri,fontFamily:"inherit"}}/>
+                        <button style={{fontSize:10,padding:"5px 10px",background:C.accent,color:"#fff",border:"none",borderRadius:6,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>Subir</button>
+                      </div>
+                    ):(
+                      <div style={{fontSize:10,color:C.green}}>✓ Grabación disponible 7 días</div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
+                <div style={{fontSize:12,fontWeight:700,color:C.textPri,marginBottom:4}}>Tomar asistencia — Hoy</div>
+                <div style={{fontSize:10,color:C.textSec,marginBottom:14}}>A1 · 6:00 PM · U9: Comforts</div>
+                {grpStudents.map(s=><AttendanceRow key={s.id} student={s}/>)}
+                <button style={{marginTop:8,width:"100%",padding:"9px",background:C.accent,color:"#fff",border:"none",borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Guardar asistencia</button>
+              </div>
+            </div>
+          )}
+
+          {/* EXÁMENES */}
+          {view==="examenes"&&(
+            <div>
+              {blocked.length>0&&(
+                <div style={{background:C.redDim,border:`1px solid ${C.red}40`,borderRadius:12,padding:"12px 16px",marginBottom:16}}>
+                  <div style={{fontSize:12,fontWeight:700,color:C.red,marginBottom:3}}>🚨 {blocked.length} estudiante{blocked.length>1?"s":""} — acción requerida</div>
+                  <div style={{fontSize:10,color:"#fca5a5"}}>Agotaron los 3 intentos del examen. Decide si habilitas uno extra.</div>
+                </div>
+              )}
+              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
+                <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,fontSize:12,fontWeight:700,color:C.textPri}}>Estado de exámenes — Unidad 9 · Todos mis grupos</div>
+                {allStudents.map((s,i)=>(
+                  <div key={s.id} style={{display:"flex",gap:12,alignItems:"center",padding:"11px 16px",borderTop:i>0?`1px solid ${C.border}`:"none",background:s.flags.includes("blocked")?`${C.red}08`:"transparent"}}>
+                    <div style={{width:30,height:30,borderRadius:"50%",background:s.flags.includes("blocked")?C.redDim:C.accentDim,display:"flex",alignItems:"center",justifyContent:"center",fontSize:10,fontWeight:700,color:s.flags.includes("blocked")?C.red:C.accent,flexShrink:0}}>
+                      {s.name.split(" ").map(n=>n[0]).join("").slice(0,2)}
+                    </div>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:12,fontWeight:600,color:C.textPri}}>{s.name}</div>
+                      <div style={{fontSize:10,color:C.textSec,marginTop:1}}>Asistencia: {s.attendance}% · Promedio: {s.avgScore}%</div>
+                    </div>
+                    <AttemptDots attempts={s.attempts}/>
+                    <div style={{width:130,textAlign:"right"}}>
+                      {s.flags.includes("blocked")
+                        ?<button onClick={()=>setExtraModal(s)} style={{fontSize:10,padding:"5px 12px",background:C.purple,color:"#fff",border:"none",borderRadius:7,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>+ Intento extra</button>
+                        :s.attempts.some(a=>a!==null&&a>=70)
+                          ?<Chip text="✓ Aprobado" color={C.green} bg={C.greenDim}/>
+                          :<Chip text="En progreso" color={C.textSec} bg={C.surfaceHigh}/>
+                      }
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* CONTENIDO */}
+          {view==="contenido"&&(
+            <div style={{display:"grid",gridTemplateColumns:"210px 1fr",gap:14}}>
+              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:10,alignSelf:"start"}}>
+                <div style={{fontSize:9,fontWeight:600,color:C.textTer,textTransform:"uppercase",letterSpacing:.5,marginBottom:8,padding:"0 6px"}}>Unidades A1 — Wide Angle 1</div>
+                {UNITS.map(u=>(
+                  <button key={u.n} onClick={()=>setSelUnit(u)} style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"7px 8px",background:selUnit?.n===u.n?C.accentDim:"transparent",border:"none",borderRadius:7,cursor:"pointer",textAlign:"left",marginBottom:2,fontFamily:"inherit"}}>
+                    <div style={{width:6,height:6,borderRadius:"50%",flexShrink:0,background:u.status==="published"?C.green:u.status==="draft"?C.amber:C.border}}/>
+                    <div style={{flex:1,fontSize:11,color:selUnit?.n===u.n?C.accent:C.textSec}}>U{u.n} — {u.title}</div>
+                    {u.n===9&&<span style={{fontSize:8,background:C.accent,color:"#fff",padding:"1px 5px",borderRadius:4,fontWeight:700}}>HOY</span>}
+                  </button>
+                ))}
+              </div>
+              {selUnit?(
+                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:18}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+                    <div>
+                      <div style={{fontSize:15,fontWeight:800,color:C.textPri}}>U{selUnit.n} — {selUnit.title}</div>
+                      <div style={{fontSize:10,color:C.textSec,marginTop:2}}>Nivel A1 · Wide Angle 1</div>
+                    </div>
+                    <span style={{fontSize:10,padding:"3px 10px",borderRadius:20,fontWeight:600,background:selUnit.status==="published"?C.greenDim:selUnit.status==="draft"?C.amberDim:C.surfaceHigh,color:selUnit.status==="published"?C.green:selUnit.status==="draft"?C.amber:C.textTer}}>
+                      {selUnit.status==="published"?"✓ Publicado":selUnit.status==="draft"?"Borrador":"Sin contenido"}
+                    </span>
+                  </div>
+                  {[
+                    {label:"🎥 Video principal — Microsoft Stream",val:streamLinks[selUnit.n],set:v=>setStreamLinks(s=>({...s,[selUnit.n]:v})),ph:"https://microsoftstream.com/video/..."},
+                    {label:"🔗 Video de respaldo — Bunny.net / Vimeo (Plan B)",val:backupLinks[selUnit.n],set:v=>setBackupLinks(s=>({...s,[selUnit.n]:v})),ph:"https://iframe.mediadelivery.net/..."},
+                    {label:"📄 Material PDF",val:pdfLinks[selUnit.n],set:v=>setPdfLinks(s=>({...s,[selUnit.n]:v})),ph:"URL del PDF..."},
+                  ].map((f,i)=>(
+                    <div key={i} style={{marginBottom:12}}>
+                      <div style={{fontSize:10,color:C.textSec,fontWeight:600,marginBottom:5}}>{f.label}</div>
+                      <div style={{display:"flex",gap:8}}>
+                        <input value={f.val} onChange={e=>f.set(e.target.value)} placeholder={f.ph}
+                          style={{flex:1,padding:"8px 12px",background:C.bg,border:`1px solid ${f.val?C.accent:C.border}`,borderRadius:8,fontSize:11,color:C.textPri,fontFamily:"inherit"}}/>
+                        {f.val&&<span style={{fontSize:14,alignSelf:"center",color:C.green}}>✓</span>}
+                      </div>
+                    </div>
+                  ))}
+                  <div style={{borderTop:`1px solid ${C.border}`,paddingTop:12,marginTop:4}}>
+                    <div style={{fontSize:10,fontWeight:600,color:C.textSec,marginBottom:8}}>📝 Actividades de esta unidad</div>
+                    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+                      {BANK.filter(a=>a.unit===selUnit.n).map(act=>{
+                        const[c,tc]=TYPE_C[act.type]||["#1f2933","#374151"];
+                        return(<div key={act.id} style={{fontSize:10,padding:"3px 10px",background:c+"44",color:tc,borderRadius:20,border:`1px solid ${c}`}}>{act.type}: {act.title}</div>);
+                      })}
+                      <button onClick={()=>setView("banco")} style={{fontSize:10,padding:"3px 12px",background:C.accentDim,color:C.accent,border:`1px solid ${C.accent}40`,borderRadius:20,cursor:"pointer",fontFamily:"inherit"}}>+ Agregar</button>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",gap:8,marginTop:8}}>
+                    <button style={{flex:1,padding:"9px",background:C.accent,color:"#fff",border:"none",borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Guardar cambios</button>
+                    <button style={{padding:"9px 16px",background:C.greenDim,color:C.green,border:`1px solid ${C.green}40`,borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Publicar</button>
+                  </div>
+                </div>
+              ):(
+                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",color:C.textTer,fontSize:12,minHeight:300}}>
+                  ← Selecciona una unidad
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* BANCO */}
+          {view==="banco"&&(
+            <div>
+              <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
+                {Object.entries(TYPE_C).map(([type,[c,tc]])=>(
+                  <button key={type} style={{fontSize:10,padding:"5px 14px",background:`${c}44`,color:tc,border:`1px solid ${c}`,borderRadius:20,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>{type}</button>
+                ))}
+                <button style={{marginLeft:"auto",fontSize:10,padding:"6px 14px",background:C.accent,color:"#fff",border:"none",borderRadius:20,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>+ Nueva actividad</button>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
+                {BANK.map(act=>{
+                  const[c,tc]=TYPE_C[act.type]||["#1f2933","#374151"];
+                  return(
+                    <div key={act.id} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px"}}>
+                      <div style={{display:"flex",gap:6,marginBottom:8}}>
+                        <span style={{fontSize:9,padding:"2px 8px",borderRadius:20,background:`${c}44`,color:tc,fontWeight:600}}>{act.type}</span>
+                        <span style={{fontSize:9,color:C.textTer,padding:"2px 7px",background:C.surfaceHigh,borderRadius:20}}>{act.skill}</span>
+                      </div>
+                      <div style={{fontSize:12,fontWeight:600,color:C.textPri,marginBottom:4}}>{act.title}</div>
+                      <div style={{fontSize:10,color:C.textTer,marginBottom:10}}>A1 · U{act.unit}</div>
+                      <div style={{display:"flex",gap:6}}>
+                        <button style={{flex:1,fontSize:10,padding:"5px",background:C.accentDim,color:C.accent,border:"none",borderRadius:7,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>Asignar a unidad</button>
+                        <button style={{fontSize:10,padding:"5px 10px",background:C.surfaceHigh,color:C.textSec,border:`1px solid ${C.border}`,borderRadius:7,cursor:"pointer",fontFamily:"inherit"}}>Editar</button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+        </div>
+      </main>
+
+      {/* MODAL Intento extra */}
+      {extraModal&&(
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:50,borderRadius:16}}>
+          <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:16,padding:24,width:360}}>
+            <div style={{fontSize:14,fontWeight:700,color:C.textPri,marginBottom:4}}>Habilitar intento extra</div>
+            <div style={{fontSize:11,color:C.textSec,marginBottom:14}}>{extraModal.name} — U{extraModal.currentUnit} · 3/3 intentos agotados</div>
+            <div style={{fontSize:10,color:C.textTer,marginBottom:8}}>Motivo (queda en el log de auditoría):</div>
+            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+              {["Problema técnico durante el examen","Se explicó el contenido de nuevo","Caso especial justificado"].map(r=>(
+                <button key={r} style={{fontSize:10,padding:"7px 10px",background:C.surfaceHigh,color:C.textSec,border:`1px solid ${C.border}`,borderRadius:8,cursor:"pointer",fontFamily:"inherit",textAlign:"left"}}>{r}</button>
+              ))}
+            </div>
+            <input placeholder="Nota adicional (opcional)..." style={{width:"100%",padding:"8px 12px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,fontSize:11,color:C.textPri,fontFamily:"inherit",marginBottom:14}}/>
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={()=>setExtraModal(null)} style={{flex:1,padding:"9px",background:"transparent",color:C.textSec,border:`1px solid ${C.border}`,borderRadius:10,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>Cancelar</button>
+              <button onClick={()=>setExtraModal(null)} style={{flex:1,padding:"9px",background:C.purple,color:"#fff",border:"none",borderRadius:10,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✓ Habilitar intento</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+    </div>
+  );
+}
