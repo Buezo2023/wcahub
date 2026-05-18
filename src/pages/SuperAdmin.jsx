@@ -1,12 +1,12 @@
 import { useState } from "react";
 
 const B = {
-  primary:"#155266", primaryHov:"#0f3d4d", primaryDim:"#e8f3f6",
-  secondary:"#ffbb23", secondaryDim:"#fff4d2", accent:"#fab82c",
-  dark:"#0f3d4d", bg:"#f5f7fa", white:"#ffffff",
-  text:"#1f2933", textSec:"#6b7280", border:"#d1dde3", borderLight:"#e8f3f6",
-  green:"#059669", greenDim:"#d1fae5", red:"#dc2626", redDim:"#fee2e2",
-  amber:"#ffbb23", amberDim:"#fff4d2",
+  primary:"#155266", primaryHov:"#0f3d4d", primaryDim:"var(--wca-primary-dim)",
+  secondary:"#ffbb23", secondaryDim:"var(--amber-dim)", accent:"#fab82c",
+  dark:"#0f3d4d", bg:"var(--bg-page)", white:"var(--bg-surface)",
+  text:"var(--text-primary)", textSec:"var(--text-secondary)", border:"var(--border)", borderLight:"var(--wca-primary-dim)",
+  green:"#059669", greenDim:"var(--green-dim)", red:"#dc2626", redDim:"var(--red-dim)",
+  amber:"#ffbb23", amberDim:"var(--amber-dim)",
 };
 
 const NAV = [
@@ -146,7 +146,7 @@ export default function SuperAdmin() {
       <aside style={{ width:196, background:B.dark, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0 }}>
         <div style={{ padding:"18px 16px 16px", borderBottom:"1px solid rgba(255,255,255,.08)", marginBottom:8 }}>
           <div style={{ fontSize:12, color:B.secondary, fontWeight:700, letterSpacing:2, textTransform:"uppercase", marginBottom:6 }}>World Connect Academy</div>
-          <div style={{ fontSize:16, fontWeight:800, color:"#fff" }}>Super Admin</div>
+          <div style={{ fontSize:16, fontWeight:800, color:"var(--bg-surface)" }}>Super Admin</div>
           <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", marginTop:2 }}>Control total del sistema</div>
         </div>
         {NAV.map(item => (
@@ -166,7 +166,7 @@ export default function SuperAdmin() {
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <div style={{ width:30, height:30, borderRadius:"50%", background:B.secondary, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:B.dark }}>SA</div>
             <div>
-              <div style={{ fontSize:13, color:"#fff", fontWeight:600 }}>Super Admin</div>
+              <div style={{ fontSize:13, color:"var(--bg-surface)", fontWeight:600 }}>Super Admin</div>
               <div style={{ fontSize:11, color:"rgba(255,255,255,.3)" }}>wcahub.com</div>
             </div>
           </div>
@@ -263,7 +263,7 @@ export default function SuperAdmin() {
                       <div style={{ display:"flex", gap:6, alignItems:"center" }}>
                         <span style={{ fontSize:14, color:B.textSec }}>$</span>
                         <input autoFocus value={tempPrice} onChange={e=>setTempPrice(e.target.value)} onKeyDown={e=>e.key==="Enter"&&savePrice(key)} style={{ width:72, padding:"6px 8px", border:`2px solid ${B.primary}`, borderRadius:7, fontSize:15, fontWeight:700, color:B.primary, textAlign:"center", fontFamily:"inherit" }} />
-                        <button onClick={() => savePrice(key)} style={{ padding:"6px 12px", background:B.primary, color:"#fff", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓</button>
+                        <button onClick={() => savePrice(key)} style={{ padding:"6px 12px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:7, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓</button>
                         <button onClick={() => setEditing(null)} style={{ padding:"6px 10px", background:B.bg, border:`1px solid ${B.border}`, borderRadius:7, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>✕</button>
                       </div>
                     ) : (
@@ -302,7 +302,7 @@ export default function SuperAdmin() {
               <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, overflow:"hidden" }}>
                 <div style={{ padding:"12px 16px", borderBottom:`1px solid ${B.border}`, display:"flex", justifyContent:"space-between" }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text }}>Roles del sistema ({ROLES_LIST.length})</div>
-                  <button style={{ fontSize:12, padding:"4px 12px", background:B.primary, color:"#fff", border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>+ Nuevo rol</button>
+                  <button style={{ fontSize:12, padding:"4px 12px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>+ Nuevo rol</button>
                 </div>
                 {ROLES_LIST.map((r,i) => (
                   <div key={i} style={{ display:"flex", alignItems:"flex-start", gap:12, padding:"12px 16px", borderBottom:`1px solid ${B.borderLight}` }}>
@@ -407,7 +407,7 @@ export default function SuperAdmin() {
                   </label>
                   <div style={{ fontSize:12, color:B.textSec, marginTop:4 }}>Si está activo, el reloj del ciclo no avanzará ese lunes.</div>
                 </div>
-                <button onClick={() => { if(newHoliday.date&&newHoliday.name){setHolidays(h=>[...h,{...newHoliday}]);setNewHoliday({date:"",name:"",affects:true})} }} style={{ width:"100%", padding:"9px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Agregar festivo</button>
+                <button onClick={() => { if(newHoliday.date&&newHoliday.name){setHolidays(h=>[...h,{...newHoliday}]);setNewHoliday({date:"",name:"",affects:true})} }} style={{ width:"100%", padding:"9px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Agregar festivo</button>
               </div>
             </div>
           )}
@@ -427,7 +427,7 @@ export default function SuperAdmin() {
                       </div>
                     </div>
                   ))}
-                  <button style={{ marginTop:10, width:"100%", padding:"8px", background:B.primary, color:"#fff", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Guardar cambios</button>
+                  <button style={{ marginTop:10, width:"100%", padding:"8px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Guardar cambios</button>
                 </div>
                 <div>
                   <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16, marginBottom:12 }}>
@@ -437,7 +437,7 @@ export default function SuperAdmin() {
                         <span style={{ fontSize:18 }}>{r.icon}</span>
                         <div style={{ flex:1, fontSize:13, fontWeight:600, color:r.color }}>{r.rank}</div>
                         <div style={{ display:"flex", alignItems:"center", gap:4 }}>
-                          <input type="number" defaultValue={r.minXp} style={{ width:64, padding:"4px 6px", border:`1px solid ${B.border}`, borderRadius:6, fontSize:13, fontWeight:700, color:r.color, textAlign:"center", background:"#fff", fontFamily:"inherit" }} />
+                          <input type="number" defaultValue={r.minXp} style={{ width:64, padding:"4px 6px", border:`1px solid ${B.border}`, borderRadius:6, fontSize:13, fontWeight:700, color:r.color, textAlign:"center", background:"var(--bg-surface)", fontFamily:"inherit" }} />
                           <span style={{ fontSize:12, color:B.textSec }}>XP</span>
                         </div>
                       </div>
@@ -451,7 +451,7 @@ export default function SuperAdmin() {
                       <div style={{ fontSize:20, fontWeight:800, color:B.secondary, minWidth:44, textAlign:"right" }}>{leaderReward}%</div>
                     </div>
                     <div style={{ fontSize:12, color:B.textSec, marginTop:6 }}>Descuento aplicado automáticamente el 1° del mes siguiente.</div>
-                    <button style={{ marginTop:12, width:"100%", padding:"8px", background:B.primary, color:"#fff", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Guardar configuración</button>
+                    <button style={{ marginTop:12, width:"100%", padding:"8px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Guardar configuración</button>
                   </div>
                 </div>
               </div>
@@ -582,7 +582,7 @@ export default function SuperAdmin() {
                     <option>Corriente</option><option>Ahorro</option>
                   </select>
                 </div>
-                <button style={{ width:"100%", padding:"9px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Agregar banco</button>
+                <button style={{ width:"100%", padding:"9px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Agregar banco</button>
               </div>
             </div>
           )}

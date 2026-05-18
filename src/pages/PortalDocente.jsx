@@ -1,10 +1,10 @@
 import { useState } from "react";
 
 const C = {
-  bg:"#f5f7fa",surface:"#ffffff",surfaceHigh:"#e8f3f6",border:"#d1dde3",
-  accent:"#155266",accentDim:"#e8f3f6",green:"#059669",greenDim:"#d1fae5",
-  amber:"#ffbb23",amberDim:"#fff4d2",red:"#dc2626",redDim:"#fee2e2",
-  purple:"#155266",purpleDim:"#e8f3f6",textPri:"#1f2933",textSec:"#6b7280",textTer:"#9ca3af",
+  bg:"var(--bg-page)",surface:"var(--bg-surface)",surfaceHigh:"var(--wca-primary-dim)",border:"var(--border)",
+  accent:"#155266",accentDim:"var(--wca-primary-dim)",green:"#059669",greenDim:"var(--green-dim)",
+  amber:"#ffbb23",amberDim:"var(--amber-dim)",red:"#dc2626",redDim:"var(--red-dim)",
+  purple:"#155266",purpleDim:"var(--wca-primary-dim)",textPri:"var(--text-primary)",textSec:"var(--text-secondary)",textTer:"var(--text-tertiary)",
 };
 
 const GROUPS = [
@@ -55,9 +55,9 @@ const SESSIONS = [
 ];
 
 const TYPE_C = {
-  Grammar:["#fff4d2","#92400e"], Vocabulary:["#e8f3f6","#155266"],
-  Reading:["#d1fae5","#065f46"], Pronunciation:["#e8f3f6","#0f3d4d"],
-  Listening:["#fee2e2","#dc2626"], Speaking:["#e8f3f6","#9d174d"],
+  Grammar:["var(--amber-dim)","#92400e"], Vocabulary:["var(--wca-primary-dim)","#155266"],
+  Reading:["var(--green-dim)","#065f46"], Pronunciation:["var(--wca-primary-dim)","#0f3d4d"],
+  Listening:["var(--red-dim)","#dc2626"], Speaking:["var(--wca-primary-dim)","#9d174d"],
 };
 
 const ScoreCol = s => s>=80?C.green:s>=70?C.amber:C.red;
@@ -152,7 +152,7 @@ export default function TeacherPortal(){
             <span style={{fontSize:16,width:18,textAlign:"center"}}>{item.icon}</span>
             {item.label}
             {item.id==="examenes"&&blocked.length>0&&(
-              <span style={{marginLeft:"auto",fontSize:11,background:C.red,color:"#fff",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>{blocked.length}</span>
+              <span style={{marginLeft:"auto",fontSize:11,background:C.red,color:"var(--bg-surface)",borderRadius:"50%",width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700}}>{blocked.length}</span>
             )}
           </button>
         ))}
@@ -191,7 +191,7 @@ export default function TeacherPortal(){
                     <div style={{fontSize:13,fontWeight:600,color:C.red}}>{blocked.length} estudiante{blocked.length>1?"s":""} bloqueado{blocked.length>1?"s":""} — requieren tu acción</div>
                     <div style={{fontSize:12,color:"#fca5a5",marginTop:2}}>{blocked.map(s=>s.name).join(", ")} — agotaron 3 intentos</div>
                   </div>
-                  <button onClick={()=>setView("examenes")} style={{fontSize:12,padding:"6px 14px",background:C.red,color:"#fff",border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit",whiteSpace:"nowrap"}}>Ver ahora →</button>
+                  <button onClick={()=>setView("examenes")} style={{fontSize:12,padding:"6px 14px",background:C.red,color:"var(--bg-surface)",border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit",whiteSpace:"nowrap"}}>Ver ahora →</button>
                 </div>
               )}
               <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
@@ -210,7 +210,7 @@ export default function TeacherPortal(){
                         <div style={{fontSize:13,fontWeight:600,color:C.textPri}}>{g.level} · {g.schedule}</div>
                         <div style={{fontSize:12,color:C.textSec,marginTop:2}}>U9: Comforts · {g.students} alumnos</div>
                       </div>
-                      <button style={{fontSize:12,padding:"5px 12px",background:C.accent,color:"#fff",border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>▷ Teams</button>
+                      <button style={{fontSize:12,padding:"5px 12px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>▷ Teams</button>
                     </div>
                   ))}
                 </div>
@@ -277,7 +277,7 @@ export default function TeacherPortal(){
                     <div style={{fontSize:16,fontWeight:800,color:C.textPri,marginBottom:3}}>Nivel {group.level} · <span style={{color:C.accent}}>{group.schedule}</span></div>
                     <div style={{fontSize:13,color:C.textSec}}>{group.days} · {group.students} estudiantes · U{group.activeUnit} activa</div>
                   </div>
-                  <button style={{fontSize:13,padding:"7px 16px",background:C.accent,color:"#fff",border:"none",borderRadius:9,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>▷ Abrir Teams</button>
+                  <button style={{fontSize:13,padding:"7px 16px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:9,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>▷ Abrir Teams</button>
                 </div>
               </div>
               <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
@@ -332,7 +332,7 @@ export default function TeacherPortal(){
                     {!s.recorded?(
                       <div style={{display:"flex",gap:6}}>
                         <input value={recLinks[i]||""} onChange={e=>setRecLinks(r=>({...r,[i]:e.target.value}))} placeholder="Link de Stream (grabación)..." style={{flex:1,padding:"5px 8px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:6,fontSize:12,color:C.textPri,fontFamily:"inherit"}}/>
-                        <button style={{fontSize:12,padding:"5px 10px",background:C.accent,color:"#fff",border:"none",borderRadius:6,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>Subir</button>
+                        <button style={{fontSize:12,padding:"5px 10px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:6,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>Subir</button>
                       </div>
                     ):(
                       <div style={{fontSize:12,color:C.green}}>✓ Grabación disponible 7 días</div>
@@ -344,7 +344,7 @@ export default function TeacherPortal(){
                 <div style={{fontSize:13,fontWeight:700,color:C.textPri,marginBottom:4}}>Tomar asistencia — Hoy</div>
                 <div style={{fontSize:12,color:C.textSec,marginBottom:14}}>A1 · 6:00 PM · U9: Comforts</div>
                 {grpStudents.map(s=><AttendanceRow key={s.id} student={s}/>)}
-                <button style={{marginTop:8,width:"100%",padding:"9px",background:C.accent,color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Guardar asistencia</button>
+                <button style={{marginTop:8,width:"100%",padding:"9px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Guardar asistencia</button>
               </div>
             </div>
           )}
@@ -372,7 +372,7 @@ export default function TeacherPortal(){
                     <AttemptDots attempts={s.attempts}/>
                     <div style={{width:130,textAlign:"right"}}>
                       {s.flags.includes("blocked")
-                        ?<button onClick={()=>setExtraModal(s)} style={{fontSize:12,padding:"5px 12px",background:C.purple,color:"#fff",border:"none",borderRadius:7,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>+ Intento extra</button>
+                        ?<button onClick={()=>setExtraModal(s)} style={{fontSize:12,padding:"5px 12px",background:C.purple,color:"var(--bg-surface)",border:"none",borderRadius:7,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>+ Intento extra</button>
                         :s.attempts.some(a=>a!==null&&a>=70)
                           ?<Chip text="✓ Aprobado" color={C.green} bg={C.greenDim}/>
                           :<Chip text="En progreso" color={C.textSec} bg={C.surfaceHigh}/>
@@ -393,7 +393,7 @@ export default function TeacherPortal(){
                   <button key={u.n} onClick={()=>setSelUnit(u)} style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"7px 8px",background:selUnit?.n===u.n?C.accentDim:"transparent",border:"none",borderRadius:7,cursor:"pointer",textAlign:"left",marginBottom:2,fontFamily:"inherit"}}>
                     <div style={{width:6,height:6,borderRadius:"50%",flexShrink:0,background:u.status==="published"?C.green:u.status==="draft"?C.amber:C.border}}/>
                     <div style={{flex:1,fontSize:13,color:selUnit?.n===u.n?C.accent:C.textSec}}>U{u.n} — {u.title}</div>
-                    {u.n===9&&<span style={{fontSize:8,background:C.accent,color:"#fff",padding:"1px 5px",borderRadius:4,fontWeight:700}}>HOY</span>}
+                    {u.n===9&&<span style={{fontSize:8,background:C.accent,color:"var(--bg-surface)",padding:"1px 5px",borderRadius:4,fontWeight:700}}>HOY</span>}
                   </button>
                 ))}
               </div>
@@ -426,14 +426,14 @@ export default function TeacherPortal(){
                     <div style={{fontSize:12,fontWeight:600,color:C.textSec,marginBottom:8}}>📝 Actividades de esta unidad</div>
                     <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
                       {BANK.filter(a=>a.unit===selUnit.n).map(act=>{
-                        const[c,tc]=TYPE_C[act.type]||["#1f2933","#374151"];
+                        const[c,tc]=TYPE_C[act.type]||["var(--text-primary)","#374151"];
                         return(<div key={act.id} style={{fontSize:12,padding:"3px 10px",background:c+"44",color:tc,borderRadius:20,border:`1px solid ${c}`}}>{act.type}: {act.title}</div>);
                       })}
                       <button onClick={()=>setView("banco")} style={{fontSize:12,padding:"3px 12px",background:C.accentDim,color:C.accent,border:`1px solid ${C.accent}40`,borderRadius:20,cursor:"pointer",fontFamily:"inherit"}}>+ Agregar</button>
                     </div>
                   </div>
                   <div style={{display:"flex",gap:8,marginTop:8}}>
-                    <button style={{flex:1,padding:"9px",background:C.accent,color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Guardar cambios</button>
+                    <button style={{flex:1,padding:"9px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Guardar cambios</button>
                     <button style={{padding:"11px 18px",background:C.greenDim,color:C.green,border:`1px solid ${C.green}40`,borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Publicar</button>
                   </div>
                 </div>
@@ -452,11 +452,11 @@ export default function TeacherPortal(){
                 {Object.entries(TYPE_C).map(([type,[c,tc]])=>(
                   <button key={type} style={{fontSize:12,padding:"5px 14px",background:`${c}44`,color:tc,border:`1px solid ${c}`,borderRadius:20,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>{type}</button>
                 ))}
-                <button style={{marginLeft:"auto",fontSize:12,padding:"6px 14px",background:C.accent,color:"#fff",border:"none",borderRadius:20,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>+ Nueva actividad</button>
+                <button style={{marginLeft:"auto",fontSize:12,padding:"6px 14px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:20,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>+ Nueva actividad</button>
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                 {BANK.map(act=>{
-                  const[c,tc]=TYPE_C[act.type]||["#1f2933","#374151"];
+                  const[c,tc]=TYPE_C[act.type]||["var(--text-primary)","#374151"];
                   return(
                     <div key={act.id} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px"}}>
                       <div style={{display:"flex",gap:6,marginBottom:8}}>
@@ -494,7 +494,7 @@ export default function TeacherPortal(){
             <input placeholder="Nota adicional (opcional)..." style={{width:"100%",padding:"8px 12px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,fontSize:13,color:C.textPri,fontFamily:"inherit",marginBottom:14}}/>
             <div style={{display:"flex",gap:8}}>
               <button onClick={()=>setExtraModal(null)} style={{flex:1,padding:"9px",background:"transparent",color:C.textSec,border:`1px solid ${C.border}`,borderRadius:10,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Cancelar</button>
-              <button onClick={()=>setExtraModal(null)} style={{flex:1,padding:"9px",background:C.purple,color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✓ Habilitar intento</button>
+              <button onClick={()=>setExtraModal(null)} style={{flex:1,padding:"9px",background:C.purple,color:"var(--bg-surface)",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✓ Habilitar intento</button>
             </div>
           </div>
         </div>

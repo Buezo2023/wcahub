@@ -2,16 +2,16 @@ import { useState, useMemo } from "react";
 
 // ─── BRAND ───────────────────────────────────────────────────────────────────
 const B = {
-  primary:   "#155266", primaryHov: "#0f3d4d", primaryDim: "#e8f3f6",
-  secondary: "#ffbb23", secondaryDim: "#fff4d2",
+  primary:   "#155266", primaryHov: "#0f3d4d", primaryDim: "var(--wca-primary-dim)",
+  secondary: "#ffbb23", secondaryDim: "var(--amber-dim)",
   accent:    "#fab82c",
   dark:      "#0f3d4d",
-  bg:        "#f5f7fa", white: "#ffffff",
-  text:      "#1f2933", textSec: "#6b7280",
-  border:    "#d1dde3", borderLight: "#e8f3f6",
-  green: "#059669", greenDim: "#d1fae5",
-  red:   "#dc2626", redDim: "#fee2e2",
-  amber: "#ffbb23", amberDim: "#fff4d2",
+  bg:        "var(--bg-page)", white: "var(--bg-surface)",
+  text:      "var(--text-primary)", textSec: "var(--text-secondary)",
+  border:    "var(--border)", borderLight: "var(--wca-primary-dim)",
+  green: "#059669", greenDim: "var(--green-dim)",
+  red:   "#dc2626", redDim: "var(--red-dim)",
+  amber: "#ffbb23", amberDim: "var(--amber-dim)",
 };
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
@@ -120,7 +120,7 @@ export default function AdminDashboard() {
       {/* ── SIDEBAR ── */}
       <aside style={{ width:200, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 16px", flexShrink:0 }}>
         <div style={{ padding:"20px 18px 18px", borderBottom:"1px solid rgba(255,255,255,.1)", marginBottom:10 }}>
-          <div style={{ fontSize:17, fontWeight:800, color:"#fff", letterSpacing:-0.5 }}>
+          <div style={{ fontSize:17, fontWeight:800, color:"var(--bg-surface)", letterSpacing:-0.5 }}>
             WCA <span style={{ color:B.secondary }}>Hub</span>
           </div>
           <div style={{ fontSize:11, color:"rgba(255,255,255,.4)", marginTop:2, letterSpacing:1, textTransform:"uppercase" }}>Panel Admin</div>
@@ -130,7 +130,7 @@ export default function AdminDashboard() {
           <button key={item.id} onClick={() => { setView(item.id); setSelStudent(null); }} style={{
             display:"flex", alignItems:"center", gap:10, padding:"11px 20px",
             border:"none", background: view===item.id ? "rgba(255,255,255,.12)" : "transparent",
-            color: view===item.id ? "#fff" : "rgba(255,255,255,.5)",
+            color: view===item.id ? "var(--bg-surface)" : "rgba(255,255,255,.5)",
             fontSize:13, cursor:"pointer", textAlign:"left",
             borderLeft:`2px solid ${view===item.id ? B.secondary : "transparent"}`,
             transition:"all .15s", fontFamily:"inherit", fontWeight: view===item.id ? 600 : 400,
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
           <div style={{ display:"flex", alignItems:"center", gap:9 }}>
             <div style={{ width:32, height:32, borderRadius:"50%", background:"rgba(255,255,255,.15)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:B.secondary }}>AD</div>
             <div>
-              <div style={{ fontSize:13, color:"#fff", fontWeight:600 }}>Admin WCA</div>
+              <div style={{ fontSize:13, color:"var(--bg-surface)", fontWeight:600 }}>Admin WCA</div>
               <div style={{ fontSize:11, color:"rgba(255,255,255,.4)" }}>Administrador</div>
             </div>
           </div>
@@ -166,7 +166,7 @@ export default function AdminDashboard() {
             {suspended.length > 0 && <div style={{ fontSize:12, background:B.redDim, color:B.red, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>⚠ {suspended.length} suspendidos</div>}
             <div style={{ fontSize:12, background:B.primaryDim, color:B.primary, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>{active.length} activos hoy</div>
             {view === "students" && (
-              <button onClick={() => setEnrollModal(true)} style={{ padding:"6px 14px", background:B.primary, color:"#fff", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:5 }}>
+              <button onClick={() => setEnrollModal(true)} style={{ padding:"6px 14px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:5 }}>
                 <i className="ti ti-user-plus" style={{ fontSize:14 }} aria-hidden="true" /> Nuevo estudiante
               </button>
             )}
@@ -253,7 +253,7 @@ export default function AdminDashboard() {
                         <div style={{ fontSize:13, fontWeight:600, color:B.text }}>{p.student}</div>
                         <div style={{ fontSize:12, color:B.textSec, marginTop:1 }}>{p.amount} · Código: {p.code} · {p.date}</div>
                       </div>
-                      <button onClick={() => setView("payments")} style={{ fontSize:12, padding:"4px 10px", background:B.primary, color:"#fff", border:"none", borderRadius:6, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Confirmar</button>
+                      <button onClick={() => setView("payments")} style={{ fontSize:12, padding:"4px 10px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:6, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Confirmar</button>
                     </div>
                   ))}
                 </div>
@@ -380,7 +380,7 @@ export default function AdminDashboard() {
                   </div>
                   <div style={{ display:"flex", flexDirection:"column", gap:6, marginTop:12 }}>
                     {selStudent.state === "suspended" && (
-                      <button style={{ padding:"8px", background:B.green, color:"#fff", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Reactivar cuenta</button>
+                      <button style={{ padding:"8px", background:B.green, color:"var(--bg-surface)", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Reactivar cuenta</button>
                     )}
                     <button style={{ padding:"8px", background:B.primaryDim, color:B.primary, border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Cambiar grupo/horario</button>
                     {selStudent.type === "scholarship" && (
@@ -423,7 +423,7 @@ export default function AdminDashboard() {
                       <span>U{g.unit} activa</span>
                     </div>
                     {!g.teamsSet && (
-                      <button onClick={() => setTeamsModal(g)} style={{ width:"100%", padding:"7px", background:B.primary, color:"#fff", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Configurar link Teams</button>
+                      <button onClick={() => setTeamsModal(g)} style={{ width:"100%", padding:"7px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Configurar link Teams</button>
                     )}
                     {g.teamsSet && (
                       <button style={{ width:"100%", padding:"7px", background:B.primaryDim, color:B.primary, border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Ver estudiantes del grupo</button>
@@ -451,7 +451,7 @@ export default function AdminDashboard() {
                       <div style={{ fontSize:12, color:B.textSec, marginTop:2 }}>Código: <strong>{p.code}</strong> · {p.amount} · {p.date}</div>
                     </div>
                     <button style={{ fontSize:12, padding:"5px 12px", background:B.white, color:B.primary, border:`1px solid ${B.border}`, borderRadius:6, cursor:"pointer", fontWeight:500, fontFamily:"inherit" }}>Ver comprobante</button>
-                    <button style={{ fontSize:12, padding:"5px 12px", background:B.green, color:"#fff", border:"none", borderRadius:6, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>✓ Confirmar</button>
+                    <button style={{ fontSize:12, padding:"5px 12px", background:B.green, color:"var(--bg-surface)", border:"none", borderRadius:6, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>✓ Confirmar</button>
                   </div>
                 ))}
               </div>
@@ -570,7 +570,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               ))}
-              <button style={{ width:"100%", padding:"11px", background:B.primary, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", marginTop:4 }}>+ Crear cuenta empresa</button>
+              <button style={{ width:"100%", padding:"11px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", marginTop:4 }}>+ Crear cuenta empresa</button>
             </div>
           )}
 
@@ -620,7 +620,7 @@ export default function AdminDashboard() {
                   <i className="ti ti-info-circle" style={{ fontSize:14, flexShrink:0, marginTop:1 }} aria-hidden="true" />
                   El sistema asignará automáticamente la unidad activa del ciclo para el nivel seleccionado.
                 </div>
-                <button style={{ width:"100%", padding:"11px", background:B.primary, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Crear matrícula</button>
+                <button style={{ width:"100%", padding:"11px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Crear matrícula</button>
               </div>
             </div>
           )}
@@ -642,7 +642,7 @@ export default function AdminDashboard() {
             </div>
             <div style={{ display:"flex", gap:8 }}>
               <button onClick={() => setTeamsModal(null)} style={{ flex:1, padding:"9px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
-              <button onClick={() => setTeamsModal(null)} style={{ flex:1, padding:"9px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Guardar link</button>
+              <button onClick={() => setTeamsModal(null)} style={{ flex:1, padding:"9px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Guardar link</button>
             </div>
           </div>
         </div>

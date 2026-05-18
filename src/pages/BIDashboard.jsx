@@ -2,13 +2,13 @@ import { useState, useEffect, useRef } from "react";
 
 // ─── BRAND ────────────────────────────────────────────────────────
 const B = {
-  primary:"#155266", dark:"#0f3d4d", primaryDim:"#e8f3f6",
-  secondary:"#ffbb23", secondaryDim:"#fff4d2", accent:"#fab82c",
-  bg:"#f5f7fa", white:"#ffffff", text:"#1f2933", textSec:"#6b7280",
-  border:"#d1dde3", borderLight:"#e8f3f6",
-  green:"#059669", greenDim:"#d1fae5",
-  red:"#dc2626", redDim:"#fee2e2",
-  amber:"#ffbb23", amberDim:"#fff4d2",
+  primary:"#155266", dark:"#0f3d4d", primaryDim:"var(--wca-primary-dim)",
+  secondary:"#ffbb23", secondaryDim:"var(--amber-dim)", accent:"#fab82c",
+  bg:"var(--bg-page)", white:"var(--bg-surface)", text:"var(--text-primary)", textSec:"var(--text-secondary)",
+  border:"var(--border)", borderLight:"var(--wca-primary-dim)",
+  green:"#059669", greenDim:"var(--green-dim)",
+  red:"#dc2626", redDim:"var(--red-dim)",
+  amber:"#ffbb23", amberDim:"var(--amber-dim)",
   purple:"#7c3aed", purpleDim:"#ede9fe",
 };
 
@@ -143,7 +143,7 @@ function MiniBar({ value, max, color, height=6 }) {
 
 // ─── COHORT COLOR ────────────────────────────────────────────────
 function cohortBg(val) {
-  if (val === null) return "#f5f7fa";
+  if (val === null) return "var(--bg-page)";
   if (val >= 90) return "#0f3d4d";
   if (val >= 80) return "#155266";
   if (val >= 70) return "#1a6a82";
@@ -152,7 +152,7 @@ function cohortBg(val) {
 }
 function cohortText(val) {
   if (val === null) return B.border;
-  return val >= 70 ? "#fff" : B.text;
+  return val >= 70 ? "var(--bg-surface)" : B.text;
 }
 
 // ─── MAIN ─────────────────────────────────────────────────────────
@@ -188,13 +188,13 @@ export default function BIDashboard() {
       <aside style={{ width:184, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0 }}>
         <div style={{ padding:"18px 16px 16px", borderBottom:"1px solid rgba(255,255,255,.1)", marginBottom:8 }}>
           <div style={{ fontSize:11, color:B.secondary, fontWeight:700, letterSpacing:2, textTransform:"uppercase", marginBottom:4 }}>WCA Academy</div>
-          <div style={{ fontSize:16, fontWeight:800, color:"#fff" }}>Business<br />Intelligence</div>
+          <div style={{ fontSize:16, fontWeight:800, color:"var(--bg-surface)" }}>Business<br />Intelligence</div>
         </div>
         {VIEWS.map(v => (
           <button key={v.id} onClick={() => setView(v.id)} style={{
             display:"flex", alignItems:"center", gap:9, padding:"11px 18px", border:"none",
             background: view===v.id ? "rgba(255,255,255,.12)" : "transparent",
-            color: view===v.id ? "#fff" : "rgba(255,255,255,.45)",
+            color: view===v.id ? "var(--bg-surface)" : "rgba(255,255,255,.45)",
             fontSize:13, cursor:"pointer", textAlign:"left",
             borderLeft:`2px solid ${view===v.id ? B.secondary : "transparent"}`,
             transition:"all .15s", fontFamily:"inherit", fontWeight: view===v.id ? 600 : 400,
@@ -209,7 +209,7 @@ export default function BIDashboard() {
           <div style={{ fontSize:11, color:"rgba(255,255,255,.35)", letterSpacing:1, textTransform:"uppercase", marginBottom:6 }}>Período</div>
           <div style={{ display:"flex", gap:4 }}>
             {["3m","6m","12m"].map(p => (
-              <button key={p} onClick={() => setPeriod(p)} style={{ flex:1, padding:"5px 0", fontSize:12, border:`1px solid ${period===p?"rgba(255,255,255,.4)":"rgba(255,255,255,.1)"}`, borderRadius:6, background: period===p?"rgba(255,255,255,.15)":"transparent", color: period===p?"#fff":"rgba(255,255,255,.35)", cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>{p}</button>
+              <button key={p} onClick={() => setPeriod(p)} style={{ flex:1, padding:"5px 0", fontSize:12, border:`1px solid ${period===p?"rgba(255,255,255,.4)":"rgba(255,255,255,.1)"}`, borderRadius:6, background: period===p?"rgba(255,255,255,.15)":"transparent", color: period===p?"var(--bg-surface)":"rgba(255,255,255,.35)", cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>{p}</button>
             ))}
           </div>
         </div>
@@ -322,7 +322,7 @@ export default function BIDashboard() {
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:14 }}>Distribución por nivel</div>
                   {LEVEL_DIST.map(l => (
                     <div key={l.level} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:9 }}>
-                      <div style={{ width:28, height:20, borderRadius:4, background:l.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"#fff", flexShrink:0 }}>{l.level}</div>
+                      <div style={{ width:28, height:20, borderRadius:4, background:l.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"var(--bg-surface)", flexShrink:0 }}>{l.level}</div>
                       <MiniBar value={l.pct} max={100} color={l.color} height={7} />
                       <div style={{ fontSize:12, color:B.textSec, width:50, textAlign:"right", flexShrink:0 }}>{l.students} ({l.pct}%)</div>
                     </div>
@@ -376,7 +376,7 @@ export default function BIDashboard() {
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Top estudiantes XP</div>
                   {TOP_STUDENTS.map((s,i) => (
                     <div key={i} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:7 }}>
-                      <div style={{ fontSize:13, fontWeight:800, color: i===0?B.secondary:i===1?"#94a3b8":"#cd7f32", width:14 }}>{i+1}</div>
+                      <div style={{ fontSize:13, fontWeight:800, color: i===0?B.secondary:i===1?"var(--text-tertiary)":"#cd7f32", width:14 }}>{i+1}</div>
                       <span style={{ fontSize:14 }}>{s.country}</span>
                       <div style={{ fontSize:13, color:B.text, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.name.split(" ")[0]}</div>
                       <div style={{ fontSize:12, fontWeight:600, color:B.primary }}>{s.xp.toLocaleString()}</div>
@@ -730,7 +730,7 @@ export default function BIDashboard() {
 }
 
 function levelBg(l) {
-  return { A1:"#e8f3f6", A2:"#dde6e9", B1:"#d1fae5", B2:"#ede9fe", C1:"#d1fae5" }[l] || "#e8f3f6";
+  return { A1:"var(--wca-primary-dim)", A2:"#dde6e9", B1:"var(--green-dim)", B2:"#ede9fe", C1:"var(--green-dim)" }[l] || "var(--wca-primary-dim)";
 }
 function levelCol(l) {
   return { A1:"#155266", A2:"#0f3d4d", B1:"#065f46", B2:"#4c1d95", C1:"#065f46" }[l] || "#155266";

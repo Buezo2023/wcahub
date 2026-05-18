@@ -1,13 +1,13 @@
 import { useState, useMemo } from "react";
 
 const B = {
-  primary:"#155266", dark:"#0f3d4d", primaryDim:"#e8f3f6",
-  secondary:"#ffbb23", secondaryDim:"#fff4d2", accent:"#fab82c",
-  bg:"#f5f7fa", white:"#ffffff", text:"#1f2933", textSec:"#6b7280",
-  border:"#d1dde3", borderLight:"#e8f3f6",
-  green:"#059669", greenDim:"#d1fae5",
-  red:"#dc2626", redDim:"#fee2e2",
-  amber:"#ffbb23", amberDim:"#fff4d2",
+  primary:"#155266", dark:"#0f3d4d", primaryDim:"var(--wca-primary-dim)",
+  secondary:"#ffbb23", secondaryDim:"var(--amber-dim)", accent:"#fab82c",
+  bg:"var(--bg-page)", white:"var(--bg-surface)", text:"var(--text-primary)", textSec:"var(--text-secondary)",
+  border:"var(--border)", borderLight:"var(--wca-primary-dim)",
+  green:"#059669", greenDim:"var(--green-dim)",
+  red:"#dc2626", redDim:"var(--red-dim)",
+  amber:"#ffbb23", amberDim:"var(--amber-dim)",
 };
 
 // ─── DATA ─────────────────────────────────────────────────────────
@@ -98,14 +98,14 @@ export default function GestorCobros() {
       {/* SIDEBAR */}
       <aside style={{ width:196, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0 }}>
         <div style={{ padding:"18px 16px 16px", borderBottom:"1px solid rgba(255,255,255,.1)", marginBottom:8 }}>
-          <div style={{ fontSize:16, fontWeight:800, color:"#fff" }}>WCA <span style={{ color:B.secondary }}>Hub</span></div>
+          <div style={{ fontSize:16, fontWeight:800, color:"var(--bg-surface)" }}>WCA <span style={{ color:B.secondary }}>Hub</span></div>
           <div style={{ fontSize:11, color:"rgba(255,255,255,.4)", marginTop:2, letterSpacing:1, textTransform:"uppercase" }}>Gestor de Cobros</div>
         </div>
         {NAV.map(item => (
           <button key={item.id} onClick={() => { setView(item.id); setSelTransfer(null); }} style={{
             display:"flex", alignItems:"center", gap:9, padding:"11px 18px", border:"none",
             background: view===item.id ? "rgba(255,255,255,.12)" : "transparent",
-            color: view===item.id ? "#fff" : "rgba(255,255,255,.5)",
+            color: view===item.id ? "var(--bg-surface)" : "rgba(255,255,255,.5)",
             fontSize:13, cursor:"pointer", textAlign:"left",
             borderLeft:`2px solid ${view===item.id ? B.secondary : "transparent"}`,
             transition:"all .15s", fontFamily:"inherit", fontWeight: view===item.id ? 600 : 400,
@@ -116,14 +116,14 @@ export default function GestorCobros() {
               <span style={{ marginLeft:"auto", fontSize:11, background:B.secondary, color:B.dark, borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>{pending.length}</span>
             )}
             {item.id==="overdue" && OVERDUE.length > 0 && (
-              <span style={{ marginLeft:"auto", fontSize:11, background:B.red, color:"#fff", borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>{OVERDUE.length}</span>
+              <span style={{ marginLeft:"auto", fontSize:11, background:B.red, color:"var(--bg-surface)", borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>{OVERDUE.length}</span>
             )}
           </button>
         ))}
         <div style={{ marginTop:"auto", padding:"12px 16px 0", borderTop:"1px solid rgba(255,255,255,.08)" }}>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
             <div style={{ width:28, height:28, borderRadius:"50%", background:"rgba(255,255,255,.15)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:B.secondary }}>GC</div>
-            <div><div style={{ fontSize:12, color:"#fff", fontWeight:600 }}>Gestor WCA</div><div style={{ fontSize:11, color:"rgba(255,255,255,.4)" }}>Cobros</div></div>
+            <div><div style={{ fontSize:12, color:"var(--bg-surface)", fontWeight:600 }}>Gestor WCA</div><div style={{ fontSize:11, color:"rgba(255,255,255,.4)" }}>Cobros</div></div>
           </div>
         </div>
       </aside>
@@ -166,7 +166,7 @@ export default function GestorCobros() {
                       </div>
                       <div style={{ display:"flex", gap:5 }}>
                         {t.proof && <button onClick={() => setProofModal(t)} style={{ fontSize:11, padding:"4px 8px", background:B.white, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver</button>}
-                        <button onClick={() => confirmTransfer(t.id)} style={{ fontSize:11, padding:"4px 9px", background:B.green, color:"#fff", border:"none", borderRadius:5, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>✓ OK</button>
+                        <button onClick={() => confirmTransfer(t.id)} style={{ fontSize:11, padding:"4px 9px", background:B.green, color:"var(--bg-surface)", border:"none", borderRadius:5, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>✓ OK</button>
                       </div>
                     </div>
                   ))}
@@ -219,7 +219,7 @@ export default function GestorCobros() {
                     <div style={{ display:"flex", gap:7 }}>
                       {t.proof && <button onClick={e=>{e.stopPropagation();setProofModal(t);}} style={{ flex:1, fontSize:12, padding:"7px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:8, cursor:"pointer", fontFamily:"inherit" }}>Ver comprobante</button>}
                       <button onClick={e=>{e.stopPropagation();setRejectModal(t);}} style={{ flex:1, fontSize:12, padding:"7px", background:B.redDim, color:B.red, border:`1px solid ${B.red}40`, borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>✗ Rechazar</button>
-                      <button onClick={e=>{e.stopPropagation();confirmTransfer(t.id);}} style={{ flex:2, fontSize:12, padding:"7px", background:B.green, color:"#fff", border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>✓ Confirmar pago</button>
+                      <button onClick={e=>{e.stopPropagation();confirmTransfer(t.id);}} style={{ flex:2, fontSize:12, padding:"7px", background:B.green, color:"var(--bg-surface)", border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>✓ Confirmar pago</button>
                     </div>
                   </div>
                 ))}
@@ -235,7 +235,7 @@ export default function GestorCobros() {
                   <div style={{ fontSize:40, marginBottom:12 }}>✅</div>
                   <div style={{ fontSize:16, fontWeight:700, color:B.text, marginBottom:6 }}>Pago registrado</div>
                   <div style={{ fontSize:13, color:B.textSec, marginBottom:20 }}>El acceso del estudiante ha sido activado y el recibo fue generado automáticamente.</div>
-                  <button onClick={() => { setRegSuccess(false); setRegForm({ student:"", amount:"", method:"Efectivo", bank:"", note:"", code:"" }); }} style={{ padding:"9px 20px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Registrar otro pago</button>
+                  <button onClick={() => { setRegSuccess(false); setRegForm({ student:"", amount:"", method:"Efectivo", bank:"", note:"", code:"" }); }} style={{ padding:"9px 20px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Registrar otro pago</button>
                 </div>
               ) : (
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:20 }}>
@@ -273,7 +273,7 @@ export default function GestorCobros() {
                     <i className="ti ti-info-circle" style={{ fontSize:13, flexShrink:0 }} aria-hidden="true" />
                     Al confirmar se activará el acceso del estudiante y se generará el recibo automáticamente.
                   </div>
-                  <button onClick={() => registerForm.student && registerForm.amount && setRegSuccess(true)} style={{ width:"100%", padding:"11px", background: registerForm.student&&registerForm.amount?B.primary:B.border, color: registerForm.student&&registerForm.amount?"#fff":B.textSec, border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor: registerForm.student&&registerForm.amount?"pointer":"not-allowed", fontFamily:"inherit" }}>
+                  <button onClick={() => registerForm.student && registerForm.amount && setRegSuccess(true)} style={{ width:"100%", padding:"11px", background: registerForm.student&&registerForm.amount?B.primary:B.border, color: registerForm.student&&registerForm.amount?"var(--bg-surface)":B.textSec, border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor: registerForm.student&&registerForm.amount?"pointer":"not-allowed", fontFamily:"inherit" }}>
                     Registrar y activar cuenta
                   </button>
                 </div>
@@ -353,7 +353,7 @@ export default function GestorCobros() {
                       <i className="ti ti-brand-whatsapp" style={{ fontSize:13, verticalAlign:-1, marginRight:4 }} aria-hidden="true" />
                       WhatsApp: {o.contact}
                     </button>
-                    <button onClick={() => setView("register")} style={{ flex:1, fontSize:12, padding:"8px", background:B.primary, color:"#fff", border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>
+                    <button onClick={() => setView("register")} style={{ flex:1, fontSize:12, padding:"8px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>
                       Registrar pago
                     </button>
                   </div>
@@ -424,7 +424,7 @@ export default function GestorCobros() {
             </div>
             <div style={{ display:"flex", gap:8 }}>
               <button onClick={() => setProofModal(null)} style={{ flex:1, padding:"9px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cerrar</button>
-              <button onClick={() => { confirmTransfer(proofModal.id); setProofModal(null); }} style={{ flex:2, padding:"9px", background:B.green, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Confirmar pago</button>
+              <button onClick={() => { confirmTransfer(proofModal.id); setProofModal(null); }} style={{ flex:2, padding:"9px", background:B.green, color:"var(--bg-surface)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Confirmar pago</button>
             </div>
           </div>
         </div>
@@ -440,7 +440,7 @@ export default function GestorCobros() {
             <input value={anulaNote} onChange={e=>setAnulaNote(e.target.value)} placeholder="Ej: Error en el monto, reembolso solicitado..." style={{ width:"100%", padding:"9px 12px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit", marginBottom:14 }} />
             <div style={{ display:"flex", gap:8 }}>
               <button onClick={() => { setAnulaModal(null); setAnulaNote(""); }} style={{ flex:1, padding:"9px", background:B.bg, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit", color:B.textSec }}>Cancelar</button>
-              <button onClick={() => { setAnulaModal(null); setAnulaNote(""); }} style={{ flex:1, padding:"9px", background:anulaNote?B.red:B.border, color:anulaNote?"#fff":B.textSec, border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:anulaNote?"pointer":"not-allowed", fontFamily:"inherit" }}>Anular pago</button>
+              <button onClick={() => { setAnulaModal(null); setAnulaNote(""); }} style={{ flex:1, padding:"9px", background:anulaNote?B.red:B.border, color:anulaNote?"var(--bg-surface)":B.textSec, border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:anulaNote?"pointer":"not-allowed", fontFamily:"inherit" }}>Anular pago</button>
             </div>
           </div>
         </div>

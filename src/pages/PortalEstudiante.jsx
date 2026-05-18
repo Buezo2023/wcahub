@@ -91,19 +91,19 @@ export default function WCAPortal() {
     : 0;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#f5f7fa",  overflow: "hidden",  fontFamily: "'DM Sans','Outfit','Segoe UI',sans-serif" }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-page)",  overflow: "hidden",  fontFamily: "'DM Sans','Outfit','Segoe UI',sans-serif" }}>
 
       {/* Sidebar */}
       <aside style={{ width: 200, background: "#155266", display: "flex", flexDirection: "column", padding: "20px 0", flexShrink: 0 }}>
         <div style={{ padding: "0 20px 20px", borderBottom: "0.5px solid rgba(255,255,255,0.08)", marginBottom: 11 }}>
-          <div style={{ fontSize: 20, fontWeight: 700, color: "#fff", letterSpacing: -0.5 }}>WCA</div>
+          <div style={{ fontSize: 20, fontWeight: 700, color: "var(--bg-surface)", letterSpacing: -0.5 }}>WCA</div>
           <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 2, letterSpacing: 1, textTransform: "uppercase" }}>Portal del estudiante</div>
         </div>
 
         {navItems.map(item => (
           <button key={item.id} onClick={() => setView(item.id)} style={{
             display: "flex", alignItems: "center", gap: 12, padding: "9px 20px", border: "none", background: view === item.id ? "rgba(255,255,255,0.1)" : "transparent",
-            color: view === item.id ? "#fff" : "rgba(255,255,255,0.45)", cursor: "pointer", fontSize: 13, textAlign: "left",
+            color: view === item.id ? "var(--bg-surface)" : "rgba(255,255,255,0.45)", cursor: "pointer", fontSize: 13, textAlign: "left",
             borderLeft: view === item.id ? "2px solid #ffbb23" : "2px solid transparent", transition: "all 0.15s"
           }}>
             <span style={{ fontSize: 16, width: 18, textAlign: "center", opacity: view === item.id ? 1 : 0.7 }}>{item.icon}</span>
@@ -113,9 +113,9 @@ export default function WCAPortal() {
 
         <div style={{ marginTop: "auto", padding: "16px 20px", borderTop: "0.5px solid rgba(255,255,255,0.08)" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#e8f3f6", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 600, color: "#ffbb23" }}>MR</div>
+            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--wca-primary-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 600, color: "#ffbb23" }}>MR</div>
             <div>
-              <div style={{ fontSize: 13, color: "#fff", fontWeight: 500 }}>María Rodríguez</div>
+              <div style={{ fontSize: 13, color: "var(--bg-surface)", fontWeight: 500 }}>María Rodríguez</div>
               <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 1 }}>Inglés B1</div>
             </div>
           </div>
@@ -126,13 +126,13 @@ export default function WCAPortal() {
       <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
 
         {/* Topbar */}
-        <div style={{ background: "#fff", borderBottom: "0.5px solid #d1dde3", padding: "0 24px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: "#1f2933" }}>
+        <div style={{ background: "var(--bg-surface)", borderBottom: "0.5px solid var(--border)", padding: "0 24px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+          <div style={{ fontSize: 14, fontWeight: 500, color: "var(--text-primary)" }}>
             { {home:"Inicio",program:"Mi programa",classes:"Clases en vivo",practice:"Práctica 24/7",exam:"Examen de unidad",progress:"Mi progreso",payments:"Estado de cuenta"}[view] }
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ fontSize: 12, background: "#fff4d2", color: "#92400e", padding: "7px 14px", borderRadius: 20, fontWeight: 500 }}>Unidad 9 activa</div>
-            <div style={{ fontSize: 12, background: "#d1fae5", color: "#065f46", padding: "7px 14px", borderRadius: 20, fontWeight: 500 }}>Próxima clase: Lunes</div>
+            <div style={{ fontSize: 12, background: "var(--amber-dim)", color: "#92400e", padding: "7px 14px", borderRadius: 20, fontWeight: 500 }}>Unidad 9 activa</div>
+            <div style={{ fontSize: 12, background: "var(--green-dim)", color: "#065f46", padding: "7px 14px", borderRadius: 20, fontWeight: 500 }}>Próxima clase: Lunes</div>
           </div>
         </div>
 
@@ -145,7 +145,7 @@ export default function WCAPortal() {
               <div style={{ background: "#155266", borderRadius: 14, padding: "20px 24px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div>
                   <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", marginBottom: 4, letterSpacing: 0.5 }}>BIENVENIDA DE VUELTA</div>
-                  <div style={{ fontSize: 19, fontWeight: 600, color: "#fff", marginBottom: 9 }}>¡Hola, María! 👋</div>
+                  <div style={{ fontSize: 19, fontWeight: 600, color: "var(--bg-surface)", marginBottom: 9 }}>¡Hola, María! 👋</div>
                   <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.85 }}>Tu próxima clase en vivo es el <span style={{ color: "#ffbb23" }}>lunes a las 6:00 PM</span> con José.<br />Tienes la Unidad 9 activa y lista para practicar.</div>
                 </div>
                 <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 16 }}>
@@ -160,43 +160,43 @@ export default function WCAPortal() {
               {/* Metric cards */}
               <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 16 }}>
                 {[
-                  { label: "Unidades completadas", val: `${doneCount}/12`, sub: "este ciclo", color: "#065f46", bg: "#d1fae5" },
-                  { label: "Promedio de exámenes", val: `${avgScore}%`, sub: "últimas 8 unidades", color: "#0f3d4d", bg: "#e8f3f6" },
-                  { label: "Racha actual", val: "8 sem", sub: "sin faltar", color: "#92400e", bg: "#fff4d2" },
-                  { label: "Próximo nivel", val: "B2", sub: "al aprobar U12", color: "#0f3d4d", bg: "#e8f3f6" },
+                  { label: "Unidades completadas", val: `${doneCount}/12`, sub: "este ciclo", color: "#065f46", bg: "var(--green-dim)" },
+                  { label: "Promedio de exámenes", val: `${avgScore}%`, sub: "últimas 8 unidades", color: "#0f3d4d", bg: "var(--wca-primary-dim)" },
+                  { label: "Racha actual", val: "8 sem", sub: "sin faltar", color: "#92400e", bg: "var(--amber-dim)" },
+                  { label: "Próximo nivel", val: "B2", sub: "al aprobar U12", color: "#0f3d4d", bg: "var(--wca-primary-dim)" },
                 ].map((m, i) => (
-                  <div key={i} style={{ background: "#fff", border: "0.5px solid #d1dde3", borderRadius: 12, padding: "12px 14px" }}>
-                    <div style={{ fontSize: 12, color: "#9ca3af", marginBottom: 9 }}>{m.label}</div>
-                    <div style={{ fontSize: 22, fontWeight: 600, color: "#1f2933", lineHeight: 1 }}>{m.val}</div>
-                    <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 4 }}>{m.sub}</div>
+                  <div key={i} style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: "12px 14px" }}>
+                    <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 9 }}>{m.label}</div>
+                    <div style={{ fontSize: 22, fontWeight: 600, color: "var(--text-primary)", lineHeight: 1 }}>{m.val}</div>
+                    <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 4 }}>{m.sub}</div>
                   </div>
                 ))}
               </div>
 
               {/* Today + unit */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                <div style={{ background: "#fff", border: "0.5px solid #d1dde3", borderRadius: 12, padding: 20 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "#1f2933" }}>Unidad activa — U9</div>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: "#1f2933", marginBottom: 11 }}>Expresión escrita</div>
-                  <div style={{ fontSize: 13, color: "#6b7280", lineHeight: 1.85, marginBottom: 14 }}>Aprende a estructurar textos formales e informales, correos y párrafos argumentativos en inglés.</div>
+                <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 20 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "var(--text-primary)" }}>Unidad activa — U9</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)", marginBottom: 11 }}>Expresión escrita</div>
+                  <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.85, marginBottom: 14 }}>Aprende a estructurar textos formales e informales, correos y párrafos argumentativos en inglés.</div>
                   <div style={{ display: "flex", gap: 11 }}>
-                    <button onClick={() => setView("practice")} style={{ flex: 1, padding: "8px", background: "#155266", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>Ir a practicar</button>
+                    <button onClick={() => setView("practice")} style={{ flex: 1, padding: "8px", background: "#155266", color: "var(--bg-surface)", border: "none", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>Ir a practicar</button>
                     <button onClick={() => setView("exam")} style={{ flex: 1, padding: "8px", background: "transparent", color: "#155266", border: "0.5px solid #ccc", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>Ir al examen</button>
                   </div>
                 </div>
-                <div style={{ background: "#fff", border: "0.5px solid #d1dde3", borderRadius: 12, padding: 20 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "#1f2933" }}>Próximas clases en vivo</div>
+                <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 20 }}>
+                  <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "var(--text-primary)" }}>Próximas clases en vivo</div>
                   {SCHEDULE.slice(0, 3).map((s, i) => (
                     <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: i > 0 ? "0.5px solid #e8f3f6" : "none" }}>
-                      <div style={{ width: 34, height: 34, borderRadius: 8, background: s.status === "next" ? "#155266" : "#e8f3f6", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <div style={{ width: 34, height: 34, borderRadius: 8, background: s.status === "next" ? "#155266" : "var(--wca-primary-dim)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <div style={{ fontSize: 8, color: s.status === "next" ? "rgba(255,255,255,0.6)" : "#999", textTransform: "uppercase" }}>{s.day}</div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: s.status === "next" ? "#fff" : "#6b7280" }}>{s.date.split(" ")[0]}</div>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: s.status === "next" ? "var(--bg-surface)" : "var(--text-secondary)" }}>{s.date.split(" ")[0]}</div>
                       </div>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, color: "#1f2933", fontWeight: 500 }}>{s.time}</div>
-                        <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 1 }}>{s.unit}</div>
+                        <div style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500 }}>{s.time}</div>
+                        <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 1 }}>{s.unit}</div>
                       </div>
-                      {s.status === "next" && <div style={{ fontSize: 12, background: "#d1fae5", color: "#065f46", padding: "6px 12px", borderRadius: 20, flexShrink: 0 }}>Próxima</div>}
+                      {s.status === "next" && <div style={{ fontSize: 12, background: "var(--green-dim)", color: "#065f46", padding: "6px 12px", borderRadius: 20, flexShrink: 0 }}>Próxima</div>}
                     </div>
                   ))}
                 </div>
@@ -207,18 +207,18 @@ export default function WCAPortal() {
           {/* ── PROGRAM ── */}
           {view === "program" && (
             <div>
-              <div style={{ background: "#fff", border: "0.5px solid #d1dde3", borderRadius: 12, padding: 20, marginBottom: 16 }}>
+              <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 20, marginBottom: 16 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
                   <div>
-                    <div style={{ fontSize: 16, fontWeight: 600, color: "#1f2933" }}>Inglés B1 — Ciclo actual</div>
-                    <div style={{ fontSize: 13, color: "#9ca3af", marginTop: 2 }}>12 unidades · Lunes inicia nueva unidad</div>
+                    <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)" }}>Inglés B1 — Ciclo actual</div>
+                    <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 2 }}>12 unidades · Lunes inicia nueva unidad</div>
                   </div>
                   <div style={{ textAlign: "right" }}>
                     <div style={{ fontSize: 22, fontWeight: 700, color: "#155266" }}>{doneCount}/12</div>
-                    <div style={{ fontSize: 12, color: "#9ca3af" }}>completadas</div>
+                    <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>completadas</div>
                   </div>
                 </div>
-                <div style={{ height: 6, background: "#e8f3f6", borderRadius: 3, overflow: "hidden" }}>
+                <div style={{ height: 6, background: "var(--wca-primary-dim)", borderRadius: 3, overflow: "hidden" }}>
                   <div style={{ height: "100%", width: `${Math.round(doneCount / 12 * 100)}%`, background: "#155266", borderRadius: 3 }} />
                 </div>
               </div>
@@ -226,36 +226,36 @@ export default function WCAPortal() {
                 {UNITS.map((u, i) => (
                   <div key={i} style={{
                     display: "flex", alignItems: "center", gap: 12, padding: "11px 14px",
-                    background: u.status === "current" ? "#155266" : "#fff",
+                    background: u.status === "current" ? "#155266" : "var(--bg-surface)",
                     border: u.status === "current" ? "none" : "0.5px solid #d1dde3",
                     borderRadius: 10, opacity: u.status === "locked" ? 0.5 : 1,
                     cursor: u.status !== "locked" ? "pointer" : "default"
                   }}>
                     <div style={{
                       width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-                      background: u.status === "done" ? "#d1fae5" : u.status === "current" ? "rgba(255,255,255,0.15)" : "#e8f3f6",
+                      background: u.status === "done" ? "var(--green-dim)" : u.status === "current" ? "rgba(255,255,255,0.15)" : "var(--wca-primary-dim)",
                       display: "flex", alignItems: "center", justifyContent: "center",
                       fontSize: u.status === "done" ? 14 : 11,
-                      color: u.status === "done" ? "#065f46" : u.status === "current" ? "#fff" : "#9ca3af",
+                      color: u.status === "done" ? "#065f46" : u.status === "current" ? "var(--bg-surface)" : "var(--text-tertiary)",
                       fontWeight: 600
                     }}>
                       {u.status === "done" ? "✓" : u.status === "locked" ? "🔒" : u.n}
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: u.status === "current" ? "#fff" : "#1f2933" }}>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: u.status === "current" ? "var(--bg-surface)" : "var(--text-primary)" }}>
                         U{u.n} — {u.title}
                       </div>
                       {u.status === "done" && <div style={{ fontSize: 12, color: "#059669", marginTop: 1 }}>Aprobada con {u.score}%</div>}
                       {u.status === "current" && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 1 }}>En curso esta semana</div>}
-                      {u.status === "locked" && <div style={{ fontSize: 12, color: "#c5d5db", marginTop: 1 }}>Bloqueada — aprueba el examen anterior</div>}
+                      {u.status === "locked" && <div style={{ fontSize: 12, color: "var(--border-strong)", marginTop: 1 }}>Bloqueada — aprueba el examen anterior</div>}
                     </div>
                     {u.status === "done" && (
-                      <div style={{ height: 4, width: 50, background: "#d1fae5", borderRadius: 2, overflow: "hidden" }}>
+                      <div style={{ height: 4, width: 50, background: "var(--green-dim)", borderRadius: 2, overflow: "hidden" }}>
                         <div style={{ height: "100%", width: `${u.score}%`, background: "#059669", borderRadius: 2 }} />
                       </div>
                     )}
                     {u.status === "current" && (
-                      <div style={{ fontSize: 12, background: "#ffbb23", color: "#fff", padding: "7px 14px", borderRadius: 20, flexShrink: 0 }}>Activa</div>
+                      <div style={{ fontSize: 12, background: "#ffbb23", color: "var(--bg-surface)", padding: "7px 14px", borderRadius: 20, flexShrink: 0 }}>Activa</div>
                     )}
                   </div>
                 ))}
@@ -268,29 +268,29 @@ export default function WCAPortal() {
             <div>
               <div style={{ background: "#155266", borderRadius: 14, padding: "18px 20px", marginBottom: 14 }}>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginBottom: 4, letterSpacing: 0.5 }}>PRÓXIMA CLASE EN VIVO</div>
-                <div style={{ fontSize: 17, fontWeight: 600, color: "#fff", marginBottom: 9 }}>Lunes 16 Jun — 6:00 PM</div>
+                <div style={{ fontSize: 17, fontWeight: 600, color: "var(--bg-surface)", marginBottom: 9 }}>Lunes 16 Jun — 6:00 PM</div>
                 <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 14 }}>U9: Expresión escrita · con José</div>
-                <button style={{ padding: "9px 20px", background: "#ffbb23", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                <button style={{ padding: "9px 20px", background: "#ffbb23", color: "var(--bg-surface)", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                   ▷ Unirse a la clase
                 </button>
               </div>
-              <div style={{ background: "#fff", border: "0.5px solid #d1dde3", borderRadius: 12, padding: 20 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "#1f2933" }}>Calendario de clases</div>
+              <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 20 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "var(--text-primary)" }}>Calendario de clases</div>
                 {SCHEDULE.map((s, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: i > 0 ? "0.5px solid #e8f3f6" : "none" }}>
-                    <div style={{ width: 42, height: 42, borderRadius: 10, background: s.status === "next" ? "#155266" : "#f5f7fa", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "0.5px solid #d1dde3" }}>
-                      <div style={{ fontSize: 8, color: s.status === "next" ? "rgba(255,255,255,0.5)" : "#9ca3af", textTransform: "uppercase" }}>{s.day}</div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: s.status === "next" ? "#fff" : "#1f2933" }}>{s.date.split(" ")[0]}</div>
-                      <div style={{ fontSize: 8, color: s.status === "next" ? "rgba(255,255,255,0.4)" : "#c5d5db" }}>{s.date.split(" ")[1]}</div>
+                    <div style={{ width: 42, height: 42, borderRadius: 10, background: s.status === "next" ? "#155266" : "var(--bg-page)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "0.5px solid var(--border)" }}>
+                      <div style={{ fontSize: 8, color: s.status === "next" ? "rgba(255,255,255,0.5)" : "var(--text-tertiary)", textTransform: "uppercase" }}>{s.day}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: s.status === "next" ? "var(--bg-surface)" : "var(--text-primary)" }}>{s.date.split(" ")[0]}</div>
+                      <div style={{ fontSize: 8, color: s.status === "next" ? "rgba(255,255,255,0.4)" : "var(--border-strong)" }}>{s.date.split(" ")[1]}</div>
                     </div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: "#1f2933" }}>{s.time}</div>
-                      <div style={{ fontSize: 13, color: "#6b7280", marginTop: 2 }}>{s.unit}</div>
-                      <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 1 }}>Docente: {s.teacher}</div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)" }}>{s.time}</div>
+                      <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 2 }}>{s.unit}</div>
+                      <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 1 }}>Docente: {s.teacher}</div>
                     </div>
                     {s.status === "next"
-                      ? <button style={{ fontSize: 12, background: "#ffbb23", color: "#fff", border: "none", padding: "7px 14px", borderRadius: 20, cursor: "pointer", fontFamily: "inherit" }}>Unirse</button>
-                      : <div style={{ fontSize: 12, color: "#9ca3af" }}>Próximamente</div>}
+                      ? <button style={{ fontSize: 12, background: "#ffbb23", color: "var(--bg-surface)", border: "none", padding: "7px 14px", borderRadius: 20, cursor: "pointer", fontFamily: "inherit" }}>Unirse</button>
+                      : <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>Próximamente</div>}
                   </div>
                 ))}
               </div>
@@ -302,24 +302,24 @@ export default function WCAPortal() {
             <div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
                 {[
-                  { title: "Videos de la lección", desc: "3 videos · ~45 min", icon: "▶", color: "#e8f3f6", tc: "#0f3d4d" },
-                  { title: "Ejercicios escritos", desc: "12 ejercicios · Auto-corrección", icon: "✎", color: "#d1fae5", tc: "#065f46" },
-                  { title: "Flashcards vocabulario", desc: "24 tarjetas · Spaced repetition", icon: "⧉", color: "#fff4d2", tc: "#92400e" },
-                  { title: "Diálogos de práctica", desc: "5 situaciones reales", icon: "◎", color: "#e8f3f6", tc: "#0f3d4d" },
+                  { title: "Videos de la lección", desc: "3 videos · ~45 min", icon: "▶", color: "var(--wca-primary-dim)", tc: "#0f3d4d" },
+                  { title: "Ejercicios escritos", desc: "12 ejercicios · Auto-corrección", icon: "✎", color: "var(--green-dim)", tc: "#065f46" },
+                  { title: "Flashcards vocabulario", desc: "24 tarjetas · Spaced repetition", icon: "⧉", color: "var(--amber-dim)", tc: "#92400e" },
+                  { title: "Diálogos de práctica", desc: "5 situaciones reales", icon: "◎", color: "var(--wca-primary-dim)", tc: "#0f3d4d" },
                   { title: "Lectura complementaria", desc: "2 textos con preguntas", icon: "☰", color: "#fce4ec", tc: "#155266" },
-                  { title: "Material de clase (PDF)", desc: "Notas del docente · U9", icon: "↓", color: "#e8f3f6", tc: "#6b7280" },
+                  { title: "Material de clase (PDF)", desc: "Notas del docente · U9", icon: "↓", color: "var(--wca-primary-dim)", tc: "var(--text-secondary)" },
                 ].map((item, i) => (
-                  <div key={i} style={{ background: "#fff", border: "0.5px solid #d1dde3", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", gap: 12, alignItems: "flex-start" }}>
+                  <div key={i} style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", gap: 12, alignItems: "flex-start" }}>
                     <div style={{ width: 36, height: 42, borderRadius: 10, background: item.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: item.tc, flexShrink: 0 }}>{item.icon}</div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: "#1f2933" }}>{item.title}</div>
-                      <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 3 }}>{item.desc}</div>
+                      <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)" }}>{item.title}</div>
+                      <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 3 }}>{item.desc}</div>
                     </div>
                   </div>
                 ))}
               </div>
-              <div style={{ background: "#f5f7fa", border: "0.5px solid #d1dde3", borderRadius: 12, padding: 24 }}>
-                <div style={{ fontSize: 13, color: "#9ca3af", display: "flex", alignItems: "center", gap: 12 }}>
+              <div style={{ background: "var(--bg-page)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 24 }}>
+                <div style={{ fontSize: 13, color: "var(--text-tertiary)", display: "flex", alignItems: "center", gap: 12 }}>
                   <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#059669", display: "inline-block" }}></span>
                   Plataforma disponible 24/7 — accede cuando quieras, desde cualquier dispositivo.
                 </div>
@@ -332,30 +332,30 @@ export default function WCAPortal() {
             <div>
               {!examStarted && (
                 <div>
-                  <div style={{ background: "#fff", border: "0.5px solid #d1dde3", borderRadius: 12, padding: 24, marginBottom: 16, textAlign: "center" }}>
+                  <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 24, marginBottom: 16, textAlign: "center" }}>
                     <div style={{ fontSize: 32, marginBottom: 11 }}>✎</div>
-                    <div style={{ fontSize: 16, fontWeight: 600, color: "#1f2933", marginBottom: 4 }}>Examen final — Unidad 9</div>
-                    <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 16, lineHeight: 1.8 }}>Expresión escrita · 20 preguntas · ~20 minutos<br />Necesitas <strong>70% o más</strong> para desbloquear la Unidad 10.</div>
+                    <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>Examen final — Unidad 9</div>
+                    <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 16, lineHeight: 1.8 }}>Expresión escrita · 20 preguntas · ~20 minutos<br />Necesitas <strong>70% o más</strong> para desbloquear la Unidad 10.</div>
                     <div style={{ display: "flex", justifyContent: "center", gap: 11, marginBottom: 20 }}>
                       {ATTEMPTS.map((a, i) => (
                         <div key={i} style={{ textAlign: "center" }}>
                           <div style={{
                             width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 600, margin: "0 auto 4px",
-                            background: a.status === "fail" ? "#fee2e2" : a.status === "available" ? "#d1fae5" : "#e8f3f6",
-                            color: a.status === "fail" ? "#dc2626" : a.status === "available" ? "#059669" : "#9ca3af",
+                            background: a.status === "fail" ? "var(--red-dim)" : a.status === "available" ? "var(--green-dim)" : "var(--wca-primary-dim)",
+                            color: a.status === "fail" ? "#dc2626" : a.status === "available" ? "#059669" : "var(--text-tertiary)",
                             border: `1.5px solid ${a.status === "fail" ? "#fca5a5" : a.status === "available" ? "#a5d6a7" : "#e0e0e0"}`
                           }}>
                             {a.status === "fail" ? "✗" : a.status === "available" ? "→" : "○"}
                           </div>
-                          <div style={{ fontSize: 11, color: "#9ca3af" }}>{a.label}</div>
+                          <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{a.label}</div>
                           {a.score && <div style={{ fontSize: 11, color: "#dc2626", fontWeight: 600 }}>{a.score}%</div>}
                         </div>
                       ))}
                     </div>
-                    <div style={{ background: "#fff4d2", borderRadius: 8, padding: "8px 14px", fontSize: 13, color: "#92400e", marginBottom: 16, display: "inline-block" }}>
+                    <div style={{ background: "var(--amber-dim)", borderRadius: 8, padding: "8px 14px", fontSize: 13, color: "#92400e", marginBottom: 16, display: "inline-block" }}>
                       Intento 3 de 3 disponible — ¡prepárate bien!
                     </div>
-                    <button onClick={() => setExamStarted(true)} style={{ display: "block", width: "100%", padding: 20, background: "#155266", color: "#fff", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                    <button onClick={() => setExamStarted(true)} style={{ display: "block", width: "100%", padding: 20, background: "#155266", color: "var(--bg-surface)", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                       Comenzar examen →
                     </button>
                   </div>
@@ -363,24 +363,24 @@ export default function WCAPortal() {
               )}
 
               {examStarted && !examDone && (
-                <div style={{ background: "#fff", border: "0.5px solid #d1dde3", borderRadius: 12, padding: 24 }}>
+                <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 24 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                    <div style={{ fontSize: 13, color: "#9ca3af" }}>Pregunta {examQ + 1} de {examQuestions.length}</div>
-                    <div style={{ fontSize: 12, background: "#e8f3f6", padding: "7px 14px", borderRadius: 20, color: "#6b7280" }}>U9 · Expresión escrita</div>
+                    <div style={{ fontSize: 13, color: "var(--text-tertiary)" }}>Pregunta {examQ + 1} de {examQuestions.length}</div>
+                    <div style={{ fontSize: 12, background: "var(--wca-primary-dim)", padding: "7px 14px", borderRadius: 20, color: "var(--text-secondary)" }}>U9 · Expresión escrita</div>
                   </div>
-                  <div style={{ height: 4, background: "#e8f3f6", borderRadius: 2, marginBottom: 18, overflow: "hidden" }}>
+                  <div style={{ height: 4, background: "var(--wca-primary-dim)", borderRadius: 2, marginBottom: 18, overflow: "hidden" }}>
                     <div style={{ height: "100%", width: `${((examQ) / examQuestions.length) * 100}%`, background: "#155266", borderRadius: 2, transition: "width 0.4s" }} />
                   </div>
-                  <div style={{ fontSize: 15, fontWeight: 500, color: "#1f2933", marginBottom: 16, lineHeight: 1.85 }}>{examQuestions[examQ].q}</div>
+                  <div style={{ fontSize: 15, fontWeight: 500, color: "var(--text-primary)", marginBottom: 16, lineHeight: 1.85 }}>{examQuestions[examQ].q}</div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
                     {examQuestions[examQ].opts.map((opt, i) => {
                       const isSelected = selected === i;
                       const isCorrect = i === examQuestions[examQ].ans;
                       const showResult = selected !== null;
-                      let bg = "#fff", border = "0.5px solid #d1dde3", color = "#1f2933";
-                      if (showResult && isCorrect) { bg = "#d1fae5"; border = "1.5px solid #34d399"; color = "#065f46"; }
-                      else if (showResult && isSelected && !isCorrect) { bg = "#fee2e2"; border = "1.5px solid #fca5a5"; color = "#dc2626"; }
-                      else if (isSelected) { bg = "#e8f3f6"; border = "1.5px solid #ffbb23"; color = "#0f3d4d"; }
+                      let bg = "var(--bg-surface)", border = "0.5px solid #d1dde3", color = "var(--text-primary)";
+                      if (showResult && isCorrect) { bg = "var(--green-dim)"; border = "1.5px solid #34d399"; color = "#065f46"; }
+                      else if (showResult && isSelected && !isCorrect) { bg = "var(--red-dim)"; border = "1.5px solid #fca5a5"; color = "#dc2626"; }
+                      else if (isSelected) { bg = "var(--wca-primary-dim)"; border = "1.5px solid #ffbb23"; color = "#0f3d4d"; }
                       return (
                         <button key={i} onClick={() => submitAnswer(i)} style={{ padding: "11px 14px", border, borderRadius: 8, background: bg, color, fontSize: 13, textAlign: "left", cursor: selected === null ? "pointer" : "default", fontFamily: "inherit", transition: "all 0.15s" }}>
                           {opt}
@@ -392,23 +392,23 @@ export default function WCAPortal() {
               )}
 
               {examDone && (
-                <div style={{ background: "#fff", border: "0.5px solid #d1dde3", borderRadius: 12, padding: 24, textAlign: "center" }}>
+                <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 24, textAlign: "center" }}>
                   <div style={{ fontSize: 42, fontWeight: 700, color: examScore >= 70 ? "#059669" : "#dc2626", marginBottom: 4 }}>{examScore}%</div>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: "#1f2933", marginBottom: 9 }}>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)", marginBottom: 9 }}>
                     {examScore >= 70 ? "¡Aprobado! 🎉" : "No aprobado — consulta a tu docente"}
                   </div>
-                  <div style={{ fontSize: 13, color: "#6b7280", marginBottom: 18, lineHeight: 1.8 }}>
+                  <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 18, lineHeight: 1.8 }}>
                     {examScore >= 70
                       ? "Excelente trabajo. La Unidad 10 se ha desbloqueado automáticamente."
                       : "Agotaste tus 3 intentos. Tu docente José puede habilitarte un intento adicional."}
                   </div>
                   {examScore >= 70 && (
-                    <div style={{ background: "#d1fae5", borderRadius: 10, padding: "12px 16px", marginBottom: 16, textAlign: "left" }}>
+                    <div style={{ background: "var(--green-dim)", borderRadius: 10, padding: "12px 16px", marginBottom: 16, textAlign: "left" }}>
                       <div style={{ fontSize: 13, color: "#065f46", fontWeight: 600 }}>🔓 Unidad 10 desbloqueada — Pronunciación avanzada</div>
                       <div style={{ fontSize: 12, color: "#059669", marginTop: 3 }}>Disponible el próximo lunes con la clase en vivo de U10.</div>
                     </div>
                   )}
-                  <button onClick={() => { setExamStarted(false); setExamDone(false); setExamQ(0); setExamAnswers([]); setSelected(null); }} style={{ padding: "9px 24px", background: "#155266", color: "#fff", border: "none", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
+                  <button onClick={() => { setExamStarted(false); setExamDone(false); setExamQ(0); setExamAnswers([]); setSelected(null); }} style={{ padding: "9px 24px", background: "#155266", color: "var(--bg-surface)", border: "none", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
                     Volver al examen
                   </button>
                 </div>
@@ -419,39 +419,39 @@ export default function WCAPortal() {
           {/* ── PROGRESS ── */}
           {view === "progress" && (
             <div>
-              <div style={{ display: "flex", gap: 0, marginBottom: 16, overflow: "hidden", borderRadius: 10, border: "0.5px solid #d1dde3" }}>
+              <div style={{ display: "flex", gap: 0, marginBottom: 16, overflow: "hidden", borderRadius: 10, border: "0.5px solid var(--border)" }}>
                 {LEVEL_PATH.map((lv, i) => (
                   <div key={i} style={{
                     flex: 1, padding: "12px 8px", textAlign: "center",
-                    background: lv.status === "done" ? "#d1fae5" : lv.status === "current" ? "#155266" : "#f5f7fa",
+                    background: lv.status === "done" ? "var(--green-dim)" : lv.status === "current" ? "#155266" : "var(--bg-page)",
                     borderRight: i < LEVEL_PATH.length - 1 ? "0.5px solid #d1dde3" : "none"
                   }}>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: lv.status === "done" ? "#065f46" : lv.status === "current" ? "#fff" : "#d1dde3" }}>{lv.code}</div>
-                    <div style={{ fontSize: 11, color: lv.status === "done" ? "#059669" : lv.status === "current" ? "rgba(255,255,255,0.5)" : "#c5d5db", marginTop: 3 }}>{lv.name}</div>
-                    <div style={{ fontSize: 12, marginTop: 6, color: lv.status === "done" ? "#059669" : lv.status === "current" ? "#ffbb23" : "#d1dde3" }}>
+                    <div style={{ fontSize: 16, fontWeight: 700, color: lv.status === "done" ? "#065f46" : lv.status === "current" ? "var(--bg-surface)" : "var(--border)" }}>{lv.code}</div>
+                    <div style={{ fontSize: 11, color: lv.status === "done" ? "#059669" : lv.status === "current" ? "rgba(255,255,255,0.5)" : "var(--border-strong)", marginTop: 3 }}>{lv.name}</div>
+                    <div style={{ fontSize: 12, marginTop: 6, color: lv.status === "done" ? "#059669" : lv.status === "current" ? "#ffbb23" : "var(--border)" }}>
                       {lv.status === "done" ? "✓" : lv.status === "current" ? "●" : "○"}
                     </div>
                   </div>
                 ))}
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-                <div style={{ background: "#d1fae5", borderRadius: 12, padding: 20 }}>
+                <div style={{ background: "var(--green-dim)", borderRadius: 12, padding: 20 }}>
                   <div style={{ fontSize: 13, color: "#059669", marginBottom: 9, fontWeight: 600 }}>✓ Nivel A1 completado</div>
                   <div style={{ fontSize: 12, color: "#059669", lineHeight: 1.85 }}>Certificado disponible en tu perfil.<br />Aprobado en febrero 2025.</div>
-                  <div style={{ marginTop: 10, padding: "6px 12px", background: "#fff", borderRadius: 6, fontSize: 13, color: "#065f46", fontWeight: 500, display: "inline-block", cursor: "pointer" }}>↓ Descargar certificado A1</div>
+                  <div style={{ marginTop: 10, padding: "6px 12px", background: "var(--bg-surface)", borderRadius: 6, fontSize: 13, color: "#065f46", fontWeight: 500, display: "inline-block", cursor: "pointer" }}>↓ Descargar certificado A1</div>
                 </div>
-                <div style={{ background: "#d1fae5", borderRadius: 12, padding: 20 }}>
+                <div style={{ background: "var(--green-dim)", borderRadius: 12, padding: 20 }}>
                   <div style={{ fontSize: 13, color: "#059669", marginBottom: 9, fontWeight: 600 }}>✓ Nivel A2 completado</div>
                   <div style={{ fontSize: 12, color: "#059669", lineHeight: 1.85 }}>Certificado disponible en tu perfil.<br />Aprobado en abril 2025.</div>
-                  <div style={{ marginTop: 10, padding: "6px 12px", background: "#fff", borderRadius: 6, fontSize: 13, color: "#065f46", fontWeight: 500, display: "inline-block", cursor: "pointer" }}>↓ Descargar certificado A2</div>
+                  <div style={{ marginTop: 10, padding: "6px 12px", background: "var(--bg-surface)", borderRadius: 6, fontSize: 13, color: "#065f46", fontWeight: 500, display: "inline-block", cursor: "pointer" }}>↓ Descargar certificado A2</div>
                 </div>
               </div>
-              <div style={{ background: "#fff", border: "0.5px solid #d1dde3", borderRadius: 12, padding: 20 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "#1f2933" }}>Rendimiento por unidad — B1</div>
+              <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 20 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "var(--text-primary)" }}>Rendimiento por unidad — B1</div>
                 {UNITS.filter(u => u.score).map((u, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-                    <div style={{ fontSize: 12, color: "#9ca3af", width: 24 }}>U{u.n}</div>
-                    <div style={{ flex: 1, height: 5, background: "#e8f3f6", borderRadius: 3, overflow: "hidden" }}>
+                    <div style={{ fontSize: 12, color: "var(--text-tertiary)", width: 24 }}>U{u.n}</div>
+                    <div style={{ flex: 1, height: 5, background: "var(--wca-primary-dim)", borderRadius: 3, overflow: "hidden" }}>
                       <div style={{ height: "100%", width: `${u.score}%`, background: u.score >= 80 ? "#059669" : u.score >= 70 ? "#ffc107" : "#ef5350", borderRadius: 3 }} />
                     </div>
                     <div style={{ fontSize: 12, fontWeight: 600, color: u.score >= 80 ? "#059669" : u.score >= 70 ? "#92400e" : "#dc2626", width: 32, textAlign: "right" }}>{u.score}%</div>
@@ -466,28 +466,28 @@ export default function WCAPortal() {
             <div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 14 }}>
                 {[
-                  { label: "Estado actual", val: "Al día", color: "#065f46", bg: "#d1fae5" },
-                  { label: "Próximo pago", val: "1 Jul", color: "#0f3d4d", bg: "#e8f3f6" },
-                  { label: "Total pagado", val: "$405", color: "#1f2933", bg: "#f5f7fa" },
+                  { label: "Estado actual", val: "Al día", color: "#065f46", bg: "var(--green-dim)" },
+                  { label: "Próximo pago", val: "1 Jul", color: "#0f3d4d", bg: "var(--wca-primary-dim)" },
+                  { label: "Total pagado", val: "$405", color: "var(--text-primary)", bg: "var(--bg-page)" },
                 ].map((m, i) => (
-                  <div key={i} style={{ background: m.bg, borderRadius: 10, padding: "12px 14px", border: "0.5px solid #d1dde3" }}>
+                  <div key={i} style={{ background: m.bg, borderRadius: 10, padding: "12px 14px", border: "0.5px solid var(--border)" }}>
                     <div style={{ fontSize: 12, color: m.color, opacity: 0.7, marginBottom: 4 }}>{m.label}</div>
                     <div style={{ fontSize: 20, fontWeight: 700, color: m.color }}>{m.val}</div>
                   </div>
                 ))}
               </div>
-              <div style={{ background: "#fff", border: "0.5px solid #d1dde3", borderRadius: 12, padding: 20 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "#1f2933" }}>Historial de pagos</div>
+              <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 20 }}>
+                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "var(--text-primary)" }}>Historial de pagos</div>
                 {PAYMENTS.map((p, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: i > 0 ? "0.5px solid #e8f3f6" : "none" }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 8, background: "#d1fae5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>✓</div>
+                    <div style={{ width: 34, height: 34, borderRadius: 8, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>✓</div>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, color: "#1f2933", fontWeight: 500 }}>{p.desc}</div>
-                      <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 1 }}>{p.date}</div>
+                      <div style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500 }}>{p.desc}</div>
+                      <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 1 }}>{p.date}</div>
                     </div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "#1f2933" }}>{p.amount}</div>
-                    <div style={{ fontSize: 12, background: "#d1fae5", color: "#065f46", padding: "6px 12px", borderRadius: 20 }}>Pagado</div>
-                    <button style={{ fontSize: 12, background: "transparent", border: "0.5px solid #ddd", borderRadius: 6, padding: "6px 12px", cursor: "pointer", color: "#6b7280", fontFamily: "inherit" }}>↓ Recibo</button>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{p.amount}</div>
+                    <div style={{ fontSize: 12, background: "var(--green-dim)", color: "#065f46", padding: "6px 12px", borderRadius: 20 }}>Pagado</div>
+                    <button style={{ fontSize: 12, background: "transparent", border: "0.5px solid #ddd", borderRadius: 6, padding: "6px 12px", cursor: "pointer", color: "var(--text-secondary)", fontFamily: "inherit" }}>↓ Recibo</button>
                   </div>
                 ))}
               </div>
