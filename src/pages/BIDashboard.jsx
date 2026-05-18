@@ -187,29 +187,29 @@ export default function BIDashboard() {
       {/* SIDEBAR */}
       <aside style={{ width:184, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0 }}>
         <div style={{ padding:"18px 16px 16px", borderBottom:"1px solid rgba(255,255,255,.1)", marginBottom:8 }}>
-          <div style={{ fontSize:9, color:B.secondary, fontWeight:700, letterSpacing:2, textTransform:"uppercase", marginBottom:4 }}>WCA Academy</div>
-          <div style={{ fontSize:15, fontWeight:800, color:"#fff" }}>Business<br />Intelligence</div>
+          <div style={{ fontSize:11, color:B.secondary, fontWeight:700, letterSpacing:2, textTransform:"uppercase", marginBottom:4 }}>WCA Academy</div>
+          <div style={{ fontSize:16, fontWeight:800, color:"#fff" }}>Business<br />Intelligence</div>
         </div>
         {VIEWS.map(v => (
           <button key={v.id} onClick={() => setView(v.id)} style={{
-            display:"flex", alignItems:"center", gap:9, padding:"9px 16px", border:"none",
+            display:"flex", alignItems:"center", gap:9, padding:"11px 18px", border:"none",
             background: view===v.id ? "rgba(255,255,255,.12)" : "transparent",
             color: view===v.id ? "#fff" : "rgba(255,255,255,.45)",
-            fontSize:11, cursor:"pointer", textAlign:"left",
+            fontSize:13, cursor:"pointer", textAlign:"left",
             borderLeft:`2px solid ${view===v.id ? B.secondary : "transparent"}`,
             transition:"all .15s", fontFamily:"inherit", fontWeight: view===v.id ? 600 : 400,
           }}>
-            <i className={`ti ${v.icon}`} style={{ fontSize:14, width:16 }} aria-hidden="true" />
+            <i className={`ti ${v.icon}`} style={{ fontSize:15, width:16 }} aria-hidden="true" />
             {v.label}
           </button>
         ))}
 
         {/* Period selector */}
         <div style={{ margin:"auto 16px 0", padding:"14px 0 0", borderTop:"1px solid rgba(255,255,255,.08)" }}>
-          <div style={{ fontSize:9, color:"rgba(255,255,255,.35)", letterSpacing:1, textTransform:"uppercase", marginBottom:6 }}>Período</div>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,.35)", letterSpacing:1, textTransform:"uppercase", marginBottom:6 }}>Período</div>
           <div style={{ display:"flex", gap:4 }}>
             {["3m","6m","12m"].map(p => (
-              <button key={p} onClick={() => setPeriod(p)} style={{ flex:1, padding:"5px 0", fontSize:10, border:`1px solid ${period===p?"rgba(255,255,255,.4)":"rgba(255,255,255,.1)"}`, borderRadius:6, background: period===p?"rgba(255,255,255,.15)":"transparent", color: period===p?"#fff":"rgba(255,255,255,.35)", cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>{p}</button>
+              <button key={p} onClick={() => setPeriod(p)} style={{ flex:1, padding:"5px 0", fontSize:12, border:`1px solid ${period===p?"rgba(255,255,255,.4)":"rgba(255,255,255,.1)"}`, borderRadius:6, background: period===p?"rgba(255,255,255,.15)":"transparent", color: period===p?"#fff":"rgba(255,255,255,.35)", cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>{p}</button>
             ))}
           </div>
         </div>
@@ -221,17 +221,17 @@ export default function BIDashboard() {
         {/* Topbar */}
         <div style={{ height:52, background:B.white, borderBottom:`1px solid ${B.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 20px", flexShrink:0 }}>
           <div>
-            <div style={{ fontSize:13, fontWeight:700, color:B.text }}>
+            <div style={{ fontSize:14, fontWeight:700, color:B.text }}>
               {{ overview:"Resumen ejecutivo", revenue:"Revenue & financiero", retention:"Retención & churn", channels:"Canales de adquisición", academic:"Rendimiento académico" }[view]}
             </div>
-            <div style={{ fontSize:10, color:B.textSec }}>Datos en tiempo real · wcahub.com</div>
+            <div style={{ fontSize:12, color:B.textSec }}>Datos en tiempo real · wcahub.com</div>
           </div>
           <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-            <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:10, color:B.green }}>
+            <div style={{ display:"flex", alignItems:"center", gap:5, fontSize:12, color:B.green }}>
               <div style={{ width:6, height:6, borderRadius:"50%", background:B.green, animation:"pulse 2s infinite" }} />
               Live data
             </div>
-            <div style={{ fontSize:10, background:B.primaryDim, color:B.primary, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>
+            <div style={{ fontSize:12, background:B.primaryDim, color:B.primary, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>
               Dic 2025
             </div>
           </div>
@@ -258,14 +258,14 @@ export default function BIDashboard() {
                 ].map((k,i) => (
                   <div key={i} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:"14px 15px", borderTop:`3px solid ${k.color}` }}>
                     <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-                      <div style={{ fontSize:10, color:B.textSec }}>{k.label}</div>
-                      <i className={`ti ${k.icon}`} style={{ fontSize:14, color:k.color }} aria-hidden="true" />
+                      <div style={{ fontSize:12, color:B.textSec }}>{k.label}</div>
+                      <i className={`ti ${k.icon}`} style={{ fontSize:15, color:k.color }} aria-hidden="true" />
                     </div>
                     <div style={{ fontSize:22, fontWeight:800, color:B.text, lineHeight:1, marginBottom:4 }}>
                       {animate && <AnimNum value={k.value} prefix={k.prefix} suffix={k.suffix} decimals={k.label==="Churn rate"?1:0} />}
                     </div>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                      <div style={{ fontSize:10, color:k.up?B.green:B.red, fontWeight:600 }}>
+                      <div style={{ fontSize:12, color:k.up?B.green:B.red, fontWeight:600 }}>
                         {k.up?"↑":"↓"} {k.trend}
                       </div>
                       <Sparkline data={k.sparkData} color={k.color} />
@@ -279,8 +279,8 @@ export default function BIDashboard() {
                 {/* MRR Chart */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
-                    <div style={{ fontSize:12, fontWeight:700, color:B.text }}>MRR — 12 meses</div>
-                    <div style={{ fontSize:10, color:B.green, fontWeight:600 }}>↑ 119% YoY</div>
+                    <div style={{ fontSize:13, fontWeight:700, color:B.text }}>MRR — 12 meses</div>
+                    <div style={{ fontSize:12, color:B.green, fontWeight:600 }}>↑ 119% YoY</div>
                   </div>
                   <svg width="100%" height={110} viewBox="0 0 400 110" preserveAspectRatio="none">
                     <defs>
@@ -319,15 +319,15 @@ export default function BIDashboard() {
 
                 {/* Level distribution */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:14 }}>Distribución por nivel</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:14 }}>Distribución por nivel</div>
                   {LEVEL_DIST.map(l => (
                     <div key={l.level} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:9 }}>
-                      <div style={{ width:28, height:20, borderRadius:4, background:l.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, color:"#fff", flexShrink:0 }}>{l.level}</div>
+                      <div style={{ width:28, height:20, borderRadius:4, background:l.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"#fff", flexShrink:0 }}>{l.level}</div>
                       <MiniBar value={l.pct} max={100} color={l.color} height={7} />
-                      <div style={{ fontSize:10, color:B.textSec, width:50, textAlign:"right", flexShrink:0 }}>{l.students} ({l.pct}%)</div>
+                      <div style={{ fontSize:12, color:B.textSec, width:50, textAlign:"right", flexShrink:0 }}>{l.students} ({l.pct}%)</div>
                     </div>
                   ))}
-                  <div style={{ marginTop:10, padding:"8px 10px", background:B.bg, borderRadius:8, display:"flex", justifyContent:"space-between", fontSize:10 }}>
+                  <div style={{ marginTop:10, padding:"8px 10px", background:B.bg, borderRadius:8, display:"flex", justifyContent:"space-between", fontSize:12 }}>
                     <span style={{ color:B.textSec }}>ARPU</span>
                     <span style={{ fontWeight:700, color:B.primary }}>${arpu}/mes</span>
                   </div>
@@ -338,20 +338,20 @@ export default function BIDashboard() {
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12 }}>
                 {/* Countries */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:12 }}>Estudiantes por país</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Estudiantes por país</div>
                   {COUNTRIES.map(c => (
                     <div key={c.name} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:7 }}>
-                      <span style={{ fontSize:14 }}>{c.flag}</span>
-                      <div style={{ fontSize:11, color:B.text, width:70, flexShrink:0 }}>{c.name}</div>
+                      <span style={{ fontSize:15 }}>{c.flag}</span>
+                      <div style={{ fontSize:13, color:B.text, width:70, flexShrink:0 }}>{c.name}</div>
                       <MiniBar value={c.pct} max={100} color={B.primary} height={5} />
-                      <div style={{ fontSize:10, color:B.textSec, width:22, textAlign:"right", flexShrink:0 }}>{c.students}</div>
+                      <div style={{ fontSize:12, color:B.textSec, width:22, textAlign:"right", flexShrink:0 }}>{c.students}</div>
                     </div>
                   ))}
                 </div>
 
                 {/* New vs Churned */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:12 }}>Altas vs Bajas (6m)</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Altas vs Bajas (6m)</div>
                   <svg width="100%" height={110} viewBox="0 0 200 110" preserveAspectRatio="none">
                     {MRR_DATA.slice(-6).map((m,i) => {
                       const bw = 24, gap = 8, x0 = i*(bw*2+gap)+4;
@@ -373,13 +373,13 @@ export default function BIDashboard() {
 
                 {/* Top students */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:12 }}>Top estudiantes XP</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Top estudiantes XP</div>
                   {TOP_STUDENTS.map((s,i) => (
                     <div key={i} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:7 }}>
-                      <div style={{ fontSize:11, fontWeight:800, color: i===0?B.secondary:i===1?"#94a3b8":"#cd7f32", width:14 }}>{i+1}</div>
-                      <span style={{ fontSize:13 }}>{s.country}</span>
-                      <div style={{ fontSize:11, color:B.text, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.name.split(" ")[0]}</div>
-                      <div style={{ fontSize:10, fontWeight:600, color:B.primary }}>{s.xp.toLocaleString()}</div>
+                      <div style={{ fontSize:13, fontWeight:800, color: i===0?B.secondary:i===1?"#94a3b8":"#cd7f32", width:14 }}>{i+1}</div>
+                      <span style={{ fontSize:14 }}>{s.country}</span>
+                      <div style={{ fontSize:13, color:B.text, flex:1, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{s.name.split(" ")[0]}</div>
+                      <div style={{ fontSize:12, fontWeight:600, color:B.primary }}>{s.xp.toLocaleString()}</div>
                     </div>
                   ))}
                 </div>
@@ -398,9 +398,9 @@ export default function BIDashboard() {
                   { label:"LTV estimado",  value:`$${ltv}`, sub:`Churn ${churnRate}%/mes`,   color:B.purple },
                 ].map((k,i) => (
                   <div key={i} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:"14px 15px", borderTop:`3px solid ${k.color}` }}>
-                    <div style={{ fontSize:10, color:B.textSec, marginBottom:6 }}>{k.label}</div>
+                    <div style={{ fontSize:12, color:B.textSec, marginBottom:6 }}>{k.label}</div>
                     <div style={{ fontSize:22, fontWeight:800, color:B.text, lineHeight:1, marginBottom:4 }}>{k.value}</div>
-                    <div style={{ fontSize:10, color:B.textSec }}>{k.sub}</div>
+                    <div style={{ fontSize:12, color:B.textSec }}>{k.sub}</div>
                   </div>
                 ))}
               </div>
@@ -408,8 +408,8 @@ export default function BIDashboard() {
               {/* Full MRR chart */}
               <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16, marginBottom:12 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:B.text }}>Evolución MRR mensual</div>
-                  <div style={{ display:"flex", gap:12, fontSize:10, color:B.textSec }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text }}>Evolución MRR mensual</div>
+                  <div style={{ display:"flex", gap:12, fontSize:12, color:B.textSec }}>
                     <span>Mín: $8,400 (Ene)</span>
                     <span>Máx: $18,800 (Nov)</span>
                     <span style={{ color:B.green, fontWeight:600 }}>+119% YoY</span>
@@ -455,7 +455,7 @@ export default function BIDashboard() {
               {/* Revenue breakdown */}
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:12 }}>Ingresos por programa</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Ingresos por programa</div>
                   {[
                     { name:"Inglés completo", rev:9595, pct:52, color:B.primary },
                     { name:"Inglés + VA",     rev:5950, pct:32, color:B.dark   },
@@ -464,14 +464,14 @@ export default function BIDashboard() {
                   ].map(p => (
                     <div key={p.name} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:9 }}>
                       <div style={{ width:8, height:8, borderRadius:"50%", background:p.color, flexShrink:0 }} />
-                      <div style={{ fontSize:11, color:B.text, flex:1 }}>{p.name}</div>
+                      <div style={{ fontSize:13, color:B.text, flex:1 }}>{p.name}</div>
                       <MiniBar value={p.pct} max={100} color={p.color} height={6} />
-                      <div style={{ fontSize:10, fontWeight:600, color:B.text, width:50, textAlign:"right" }}>${p.rev.toLocaleString()}</div>
+                      <div style={{ fontSize:12, fontWeight:600, color:B.text, width:50, textAlign:"right" }}>${p.rev.toLocaleString()}</div>
                     </div>
                   ))}
                 </div>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:12 }}>Métodos de pago</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Métodos de pago</div>
                   {[
                     { name:"Stripe (tarjeta)", pct:58, students:114, color:B.primary },
                     { name:"Transferencia",    pct:30, students:59,  color:B.amber  },
@@ -480,9 +480,9 @@ export default function BIDashboard() {
                   ].map(m => (
                     <div key={m.name} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:9 }}>
                       <div style={{ width:8, height:8, borderRadius:"50%", background:m.color, flexShrink:0 }} />
-                      <div style={{ fontSize:11, color:B.text, flex:1 }}>{m.name}</div>
+                      <div style={{ fontSize:13, color:B.text, flex:1 }}>{m.name}</div>
                       <MiniBar value={m.pct} max={100} color={m.color} height={6} />
-                      <div style={{ fontSize:10, color:B.textSec, width:50, textAlign:"right" }}>{m.pct}%</div>
+                      <div style={{ fontSize:12, color:B.textSec, width:50, textAlign:"right" }}>{m.pct}%</div>
                     </div>
                   ))}
                 </div>
@@ -500,34 +500,34 @@ export default function BIDashboard() {
                   { label:"Retención M6",  value:"67%",  sub:"Cohorte promedio",  color:B.amber },
                 ].map((k,i) => (
                   <div key={i} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:"14px 15px", borderTop:`3px solid ${k.color}` }}>
-                    <div style={{ fontSize:10, color:B.textSec, marginBottom:6 }}>{k.label}</div>
+                    <div style={{ fontSize:12, color:B.textSec, marginBottom:6 }}>{k.label}</div>
                     <div style={{ fontSize:26, fontWeight:800, color:k.color, lineHeight:1, marginBottom:4 }}>{k.value}</div>
-                    <div style={{ fontSize:10, color:B.textSec }}>{k.sub}</div>
+                    <div style={{ fontSize:12, color:B.textSec }}>{k.sub}</div>
                   </div>
                 ))}
               </div>
 
               {/* Cohort table */}
               <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16, marginBottom:12 }}>
-                <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:14 }}>Análisis de cohortes — Retención mensual</div>
-                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:11 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:14 }}>Análisis de cohortes — Retención mensual</div>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
                   <thead>
                     <tr>
-                      <th style={{ padding:"8px 10px", textAlign:"left", fontSize:9, fontWeight:600, color:B.textSec, textTransform:"uppercase", letterSpacing:.5 }}>Cohorte</th>
-                      <th style={{ padding:"8px 10px", textAlign:"center", fontSize:9, fontWeight:600, color:B.textSec }}>Alumnos</th>
+                      <th style={{ padding:"8px 10px", textAlign:"left", fontSize:11, fontWeight:600, color:B.textSec, textTransform:"uppercase", letterSpacing:.5 }}>Cohorte</th>
+                      <th style={{ padding:"8px 10px", textAlign:"center", fontSize:11, fontWeight:600, color:B.textSec }}>Alumnos</th>
                       {["Mes 1","Mes 2","Mes 3","Mes 4","Mes 5","Mes 6"].map(m => (
-                        <th key={m} style={{ padding:"8px 10px", textAlign:"center", fontSize:9, fontWeight:600, color:B.textSec }}>{m}</th>
+                        <th key={m} style={{ padding:"8px 10px", textAlign:"center", fontSize:11, fontWeight:600, color:B.textSec }}>{m}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {COHORTS.map((c,i) => (
                       <tr key={i}>
-                        <td style={{ padding:"6px 10px", fontWeight:600, color:B.text, fontSize:11 }}>{c.cohort}</td>
-                        <td style={{ padding:"6px 10px", textAlign:"center", fontSize:11, color:B.textSec }}>{c.students}</td>
+                        <td style={{ padding:"6px 10px", fontWeight:600, color:B.text, fontSize:13 }}>{c.cohort}</td>
+                        <td style={{ padding:"6px 10px", textAlign:"center", fontSize:13, color:B.textSec }}>{c.students}</td>
                         {[c.m1,c.m2,c.m3,c.m4,c.m5,c.m6].map((v,j) => (
                           <td key={j} style={{ padding:"4px 6px", textAlign:"center" }}>
-                            <div style={{ background:cohortBg(v), color:cohortText(v), borderRadius:6, padding:"5px 2px", fontSize:10, fontWeight:600, minWidth:36 }}>
+                            <div style={{ background:cohortBg(v), color:cohortText(v), borderRadius:6, padding:"5px 2px", fontSize:12, fontWeight:600, minWidth:36 }}>
                               {v !== null ? `${v}%` : "—"}
                             </div>
                           </td>
@@ -536,7 +536,7 @@ export default function BIDashboard() {
                     ))}
                   </tbody>
                 </table>
-                <div style={{ display:"flex", gap:8, marginTop:10, fontSize:9, color:B.textSec }}>
+                <div style={{ display:"flex", gap:8, marginTop:10, fontSize:11, color:B.textSec }}>
                   {[[B.dark,"≥90%"],[B.primary,"80–90%"],["#1a6a82","70–80%"],["#5a9fb5","60–70%"],["#a8ccd8","<60%"]].map(([c,l]) => (
                     <div key={l} style={{ display:"flex", alignItems:"center", gap:3 }}>
                       <div style={{ width:12, height:12, borderRadius:3, background:c }} />
@@ -548,7 +548,7 @@ export default function BIDashboard() {
 
               {/* Churn reasons */}
               <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
-                <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:12 }}>Motivos de baja estimados (últimos 3m)</div>
+                <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Motivos de baja estimados (últimos 3m)</div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
                   {[
                     { reason:"Problemas económicos", pct:38, color:B.red },
@@ -559,7 +559,7 @@ export default function BIDashboard() {
                   ].map((r,i) => (
                     <div key={i} style={{ background:B.bg, borderRadius:9, padding:"10px 12px" }}>
                       <div style={{ fontSize:18, fontWeight:800, color:r.color }}>{r.pct}%</div>
-                      <div style={{ fontSize:10, color:B.textSec, lineHeight:1.4 }}>{r.reason}</div>
+                      <div style={{ fontSize:12, color:B.textSec, lineHeight:1.4 }}>{r.reason}</div>
                     </div>
                   ))}
                 </div>
@@ -572,29 +572,29 @@ export default function BIDashboard() {
             <div>
               <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:14 }}>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:"14px 15px", borderTop:`3px solid ${B.primary}` }}>
-                  <div style={{ fontSize:10, color:B.textSec, marginBottom:6 }}>Total leads (año)</div>
+                  <div style={{ fontSize:12, color:B.textSec, marginBottom:6 }}>Total leads (año)</div>
                   <div style={{ fontSize:24, fontWeight:800, color:B.text }}>407</div>
-                  <div style={{ fontSize:10, color:B.textSec }}>6 canales activos</div>
+                  <div style={{ fontSize:12, color:B.textSec }}>6 canales activos</div>
                 </div>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:"14px 15px", borderTop:`3px solid ${B.green}` }}>
-                  <div style={{ fontSize:10, color:B.textSec, marginBottom:6 }}>Tasa de conversión avg</div>
+                  <div style={{ fontSize:12, color:B.textSec, marginBottom:6 }}>Tasa de conversión avg</div>
                   <div style={{ fontSize:24, fontWeight:800, color:B.green }}>33%</div>
-                  <div style={{ fontSize:10, color:B.textSec }}>Referidos: 42% (mejor)</div>
+                  <div style={{ fontSize:12, color:B.textSec }}>Referidos: 42% (mejor)</div>
                 </div>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:"14px 15px", borderTop:`3px solid ${B.amber}` }}>
-                  <div style={{ fontSize:10, color:B.textSec, marginBottom:6 }}>CAC promedio</div>
+                  <div style={{ fontSize:12, color:B.textSec, marginBottom:6 }}>CAC promedio</div>
                   <div style={{ fontSize:24, fontWeight:800, color:B.amber }}>$47</div>
-                  <div style={{ fontSize:10, color:B.textSec }}>LTV/CAC ratio: {Math.round(ltv/47)}x</div>
+                  <div style={{ fontSize:12, color:B.textSec }}>LTV/CAC ratio: {Math.round(ltv/47)}x</div>
                 </div>
               </div>
 
               <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, overflow:"hidden", marginBottom:12 }}>
-                <div style={{ padding:"12px 16px", borderBottom:`1px solid ${B.border}`, fontSize:12, fontWeight:700, color:B.text }}>Rendimiento por canal</div>
-                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:11 }}>
+                <div style={{ padding:"12px 16px", borderBottom:`1px solid ${B.border}`, fontSize:13, fontWeight:700, color:B.text }}>Rendimiento por canal</div>
+                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
                   <thead>
                     <tr style={{ background:B.bg }}>
                       {["Canal","Leads","Convertidos","Tasa conv.","Revenue","Eficiencia"].map(h => (
-                        <th key={h} style={{ padding:"8px 12px", textAlign:"left", fontSize:9, fontWeight:600, color:B.textSec, letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>
+                        <th key={h} style={{ padding:"8px 12px", textAlign:"left", fontSize:11, fontWeight:600, color:B.textSec, letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -612,12 +612,12 @@ export default function BIDashboard() {
                         <td style={{ padding:"11px 12px" }}>
                           <div style={{ display:"flex", alignItems:"center", gap:6 }}>
                             <MiniBar value={c.rate} max={50} color={c.rate>=40?B.green:c.rate>=30?B.amber:B.red} height={5} />
-                            <span style={{ fontSize:10, fontWeight:700, color:c.rate>=40?B.green:c.rate>=30?B.amber:B.red }}>{c.rate}%</span>
+                            <span style={{ fontSize:12, fontWeight:700, color:c.rate>=40?B.green:c.rate>=30?B.amber:B.red }}>{c.rate}%</span>
                           </div>
                         </td>
                         <td style={{ padding:"11px 12px", fontWeight:600, color:B.text }}>${c.rev.toLocaleString()}</td>
                         <td style={{ padding:"11px 12px" }}>
-                          <span style={{ fontSize:9, padding:"2px 8px", borderRadius:20, background:c.rate>=40?B.greenDim:c.rate>=30?B.amberDim:B.redDim, color:c.rate>=40?"#065f46":c.rate>=30?"#92400e":B.red, fontWeight:600 }}>
+                          <span style={{ fontSize:11, padding:"2px 8px", borderRadius:20, background:c.rate>=40?B.greenDim:c.rate>=30?B.amberDim:B.redDim, color:c.rate>=40?"#065f46":c.rate>=30?"#92400e":B.red, fontWeight:600 }}>
                             {c.rate>=40?"⭐ Excelente":c.rate>=30?"✓ Bueno":"↓ Mejorar"}
                           </span>
                         </td>
@@ -627,8 +627,8 @@ export default function BIDashboard() {
                 </table>
               </div>
 
-              <div style={{ background:B.secondaryDim, border:`1px solid ${B.amber}40`, borderRadius:12, padding:"11px 14px", fontSize:11, color:"#92400e", display:"flex", gap:8 }}>
-                <i className="ti ti-bulb" style={{ fontSize:13, flexShrink:0, marginTop:1 }} aria-hidden="true" />
+              <div style={{ background:B.secondaryDim, border:`1px solid ${B.amber}40`, borderRadius:12, padding:"11px 14px", fontSize:13, color:"#92400e", display:"flex", gap:8 }}>
+                <i className="ti ti-bulb" style={{ fontSize:14, flexShrink:0, marginTop:1 }} aria-hidden="true" />
                 <div><strong>Insight:</strong> Los referidos tienen la tasa de conversión más alta (42%) y el CAC más bajo (~$0). Cada estudiante satisfecho es tu mejor canal de adquisición. Un programa de referidos con incentivo de descuento puede duplicar este canal.</div>
               </div>
             </div>
@@ -645,9 +645,9 @@ export default function BIDashboard() {
                   { label:"Próximos a graduar", value:"3", sub:"En unidad 10–12 de C1", color:B.amber },
                 ].map((k,i) => (
                   <div key={i} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:"13px 15px", borderTop:`3px solid ${k.color}` }}>
-                    <div style={{ fontSize:10, color:B.textSec, marginBottom:6 }}>{k.label}</div>
+                    <div style={{ fontSize:12, color:B.textSec, marginBottom:6 }}>{k.label}</div>
                     <div style={{ fontSize:22, fontWeight:800, color:k.color, lineHeight:1 }}>{k.value}</div>
-                    <div style={{ fontSize:10, color:B.textSec, marginTop:4 }}>{k.sub}</div>
+                    <div style={{ fontSize:12, color:B.textSec, marginTop:4 }}>{k.sub}</div>
                   </div>
                 ))}
               </div>
@@ -655,7 +655,7 @@ export default function BIDashboard() {
               <div style={{ display:"grid", gridTemplateColumns:"1.2fr 1fr", gap:12, marginBottom:12 }}>
                 {/* Weekly activity */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:14 }}>Actividad semanal típica</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:14 }}>Actividad semanal típica</div>
                   <svg width="100%" height={100} viewBox="0 0 280 100" preserveAspectRatio="none">
                     {WEEKLY.map((d,i) => {
                       const x = i * 40 + 10;
@@ -671,12 +671,12 @@ export default function BIDashboard() {
                       );
                     })}
                   </svg>
-                  <div style={{ fontSize:10, color:B.textSec, marginTop:4 }}>Clases en vivo: L, M, V — Práctica libre: M, J, S, D</div>
+                  <div style={{ fontSize:12, color:B.textSec, marginTop:4 }}>Clases en vivo: L, M, V — Práctica libre: M, J, S, D</div>
                 </div>
 
                 {/* Exam pass rates by level */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:12 }}>Tasa de aprobación por nivel</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Tasa de aprobación por nivel</div>
                   {[
                     { level:"A1", rate:82, attempts:1.4 },
                     { level:"A2", rate:79, attempts:1.6 },
@@ -685,10 +685,10 @@ export default function BIDashboard() {
                     { level:"C1", rate:68, attempts:2.2 },
                   ].map(l => (
                     <div key={l.level} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:9 }}>
-                      <div style={{ width:24, height:18, borderRadius:4, background:levelBg(l.level), display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, color:levelCol(l.level) }}>{l.level}</div>
+                      <div style={{ width:24, height:18, borderRadius:4, background:levelBg(l.level), display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:levelCol(l.level) }}>{l.level}</div>
                       <MiniBar value={l.rate} max={100} color={l.rate>=80?B.green:l.rate>=70?B.amber:B.red} height={6} />
-                      <span style={{ fontSize:10, fontWeight:700, color:l.rate>=80?B.green:l.rate>=70?B.amber:B.red, width:28 }}>{l.rate}%</span>
-                      <span style={{ fontSize:9, color:B.textSec }}>{l.attempts} int. avg</span>
+                      <span style={{ fontSize:12, fontWeight:700, color:l.rate>=80?B.green:l.rate>=70?B.amber:B.red, width:28 }}>{l.rate}%</span>
+                      <span style={{ fontSize:11, color:B.textSec }}>{l.attempts} int. avg</span>
                     </div>
                   ))}
                 </div>
@@ -696,7 +696,7 @@ export default function BIDashboard() {
 
               {/* Teacher performance */}
               <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
-                <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:12 }}>Rendimiento de docentes</div>
+                <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Rendimiento de docentes</div>
                 <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }}>
                   {[
                     { name:"Sofía Estrada",  level:"C1", att:100, rating:4.9, students:6  },
@@ -708,13 +708,13 @@ export default function BIDashboard() {
                   ].map((t,i) => (
                     <div key={i} style={{ background:B.bg, borderRadius:9, padding:"10px 12px" }}>
                       <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
-                        <div style={{ fontSize:11, fontWeight:600, color:B.text }}>{t.name}</div>
-                        <span style={{ fontSize:9, background:B.secondaryDim, color:"#92400e", padding:"1px 6px", borderRadius:10, fontWeight:600 }}>★ {t.rating}</span>
+                        <div style={{ fontSize:13, fontWeight:600, color:B.text }}>{t.name}</div>
+                        <span style={{ fontSize:11, background:B.secondaryDim, color:"#92400e", padding:"1px 6px", borderRadius:10, fontWeight:600 }}>★ {t.rating}</span>
                       </div>
-                      <div style={{ fontSize:9, color:B.textSec, marginBottom:6 }}>{t.level} · {t.students} estudiantes</div>
+                      <div style={{ fontSize:11, color:B.textSec, marginBottom:6 }}>{t.level} · {t.students} estudiantes</div>
                       <div style={{ display:"flex", alignItems:"center", gap:5 }}>
                         <MiniBar value={t.att} max={100} color={t.att>=95?B.green:B.amber} height={4} />
-                        <span style={{ fontSize:9, color:B.textSec }}>{t.att}%</span>
+                        <span style={{ fontSize:11, color:B.textSec }}>{t.att}%</span>
                       </div>
                     </div>
                   ))}

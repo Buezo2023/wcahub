@@ -70,17 +70,17 @@ const scoreCol   = s => s>=80?B.green:s>=70?B.amber:B.red;
 const attCol     = a => a>=80?B.green:a>=60?B.amber:B.red;
 
 function Badge({ text, bg, color }) {
-  return <span style={{ fontSize:9, padding:"2px 8px", borderRadius:20, background:bg, color, fontWeight:600, whiteSpace:"nowrap" }}>{text}</span>;
+  return <span style={{ fontSize:11, padding:"2px 8px", borderRadius:20, background:bg, color, fontWeight:600, whiteSpace:"nowrap" }}>{text}</span>;
 }
 function Stat({ label, value, sub, color, icon }) {
   return (
     <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:"13px 15px", borderTop:`3px solid ${color}` }}>
       <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-        <div style={{ fontSize:10, color:B.textSec }}>{label}</div>
-        <i className={`ti ${icon}`} style={{ fontSize:15, color }} aria-hidden="true" />
+        <div style={{ fontSize:12, color:B.textSec }}>{label}</div>
+        <i className={`ti ${icon}`} style={{ fontSize:16, color }} aria-hidden="true" />
       </div>
       <div style={{ fontSize:22, fontWeight:700, color:B.text, lineHeight:1 }}>{value}</div>
-      {sub && <div style={{ fontSize:10, color:B.textSec, marginTop:4 }}>{sub}</div>}
+      {sub && <div style={{ fontSize:12, color:B.textSec, marginTop:4 }}>{sub}</div>}
     </div>
   );
 }
@@ -117,31 +117,31 @@ export default function CoordAcademica() {
       <aside style={{ width:196, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0 }}>
         <div style={{ padding:"18px 16px 16px", borderBottom:"1px solid rgba(255,255,255,.1)", marginBottom:8 }}>
           <div style={{ fontSize:16, fontWeight:800, color:"#fff" }}>WCA <span style={{ color:B.secondary }}>Hub</span></div>
-          <div style={{ fontSize:9, color:"rgba(255,255,255,.4)", marginTop:2, letterSpacing:1, textTransform:"uppercase" }}>Coordinación Académica</div>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,.4)", marginTop:2, letterSpacing:1, textTransform:"uppercase" }}>Coordinación Académica</div>
         </div>
         {NAV.map(item => (
           <button key={item.id} onClick={() => { setView(item.id); setSelGroup(null); setSelTeacher(null); setSelStudent(null); }} style={{
-            display:"flex", alignItems:"center", gap:9, padding:"9px 16px", border:"none",
+            display:"flex", alignItems:"center", gap:9, padding:"11px 18px", border:"none",
             background: view===item.id ? "rgba(255,255,255,.12)" : "transparent",
             color: view===item.id ? "#fff" : "rgba(255,255,255,.5)",
-            fontSize:11, cursor:"pointer", textAlign:"left",
+            fontSize:13, cursor:"pointer", textAlign:"left",
             borderLeft:`2px solid ${view===item.id ? B.secondary : "transparent"}`,
             transition:"all .15s", fontFamily:"inherit", fontWeight: view===item.id ? 600 : 400,
           }}>
-            <i className={`ti ${item.icon}`} style={{ fontSize:14, width:16 }} aria-hidden="true" />
+            <i className={`ti ${item.icon}`} style={{ fontSize:15, width:16 }} aria-hidden="true" />
             {item.label}
             {item.id==="atRisk" && AT_RISK.length>0 && (
-              <span style={{ marginLeft:"auto", fontSize:9, background:B.red, color:"#fff", borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>{AT_RISK.length}</span>
+              <span style={{ marginLeft:"auto", fontSize:11, background:B.red, color:"#fff", borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>{AT_RISK.length}</span>
             )}
             {item.id==="scholarships" && SCHOLARSHIPS.some(s=>s.eligible) && (
-              <span style={{ marginLeft:"auto", fontSize:9, background:B.secondary, color:B.dark, borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>!</span>
+              <span style={{ marginLeft:"auto", fontSize:11, background:B.secondary, color:B.dark, borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>!</span>
             )}
           </button>
         ))}
         <div style={{ marginTop:"auto", padding:"12px 16px 0", borderTop:"1px solid rgba(255,255,255,.08)" }}>
           <div style={{ display:"flex", alignItems:"center", gap:8 }}>
-            <div style={{ width:28, height:28, borderRadius:"50%", background:"rgba(255,255,255,.15)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:B.secondary }}>CA</div>
-            <div><div style={{ fontSize:10, color:"#fff", fontWeight:600 }}>Coordinadora WCA</div><div style={{ fontSize:9, color:"rgba(255,255,255,.4)" }}>Académica</div></div>
+            <div style={{ width:28, height:28, borderRadius:"50%", background:"rgba(255,255,255,.15)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:B.secondary }}>CA</div>
+            <div><div style={{ fontSize:12, color:"#fff", fontWeight:600 }}>Coordinadora WCA</div><div style={{ fontSize:11, color:"rgba(255,255,255,.4)" }}>Académica</div></div>
           </div>
         </div>
       </aside>
@@ -149,12 +149,12 @@ export default function CoordAcademica() {
       {/* MAIN */}
       <main style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
         <div style={{ height:52, background:B.white, borderBottom:`1px solid ${B.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 20px", flexShrink:0 }}>
-          <div style={{ fontSize:13, fontWeight:700, color:B.text }}>
+          <div style={{ fontSize:14, fontWeight:700, color:B.text }}>
             {{ home:"Vista general académica", groups:"Grupos y horarios", teachers:"Docentes", students:"Estudiantes", atRisk:"Estudiantes en riesgo", schedule:"Crear nuevo horario", scholarships:"Programa de becas", reports:"Reportes académicos" }[view]}
           </div>
           <div style={{ display:"flex", gap:8 }}>
-            {AT_RISK.length>0 && <div style={{ fontSize:10, background:B.redDim, color:B.red, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>⚠ {AT_RISK.length} en riesgo</div>}
-            <div style={{ fontSize:10, background:B.primaryDim, color:B.primary, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>{GROUPS.length} grupos activos</div>
+            {AT_RISK.length>0 && <div style={{ fontSize:12, background:B.redDim, color:B.red, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>⚠ {AT_RISK.length} en riesgo</div>}
+            <div style={{ fontSize:12, background:B.primaryDim, color:B.primary, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>{GROUPS.length} grupos activos</div>
           </div>
         </div>
 
@@ -173,36 +173,36 @@ export default function CoordAcademica() {
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                 {/* Group overview */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:12, display:"flex", justifyContent:"space-between" }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12, display:"flex", justifyContent:"space-between" }}>
                     Ocupación por grupo
-                    <button onClick={()=>setView("groups")} style={{ fontSize:9, padding:"3px 8px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver todos</button>
+                    <button onClick={()=>setView("groups")} style={{ fontSize:11, padding:"3px 8px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver todos</button>
                   </div>
                   {GROUPS.map(g => (
                     <div key={g.id} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
-                      <div style={{ width:32, height:20, borderRadius:4, background:levelBg(g.level), display:"flex", alignItems:"center", justifyContent:"center", fontSize:9, fontWeight:700, color:levelColor(g.level), flexShrink:0 }}>{g.level}</div>
-                      <div style={{ fontSize:10, color:B.textSec, width:50, flexShrink:0 }}>{g.time}</div>
+                      <div style={{ width:32, height:20, borderRadius:4, background:levelBg(g.level), display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:levelColor(g.level), flexShrink:0 }}>{g.level}</div>
+                      <div style={{ fontSize:12, color:B.textSec, width:50, flexShrink:0 }}>{g.time}</div>
                       <div style={{ flex:1, height:5, background:B.bg, borderRadius:3, overflow:"hidden" }}>
                         <div style={{ height:"100%", width:`${(g.students/g.cap)*100}%`, background: g.students/g.cap>0.9?B.red:g.students/g.cap>0.7?B.amber:B.green, borderRadius:3 }} />
                       </div>
-                      <div style={{ fontSize:10, color:B.textSec, width:32, textAlign:"right" }}>{g.students}/{g.cap}</div>
+                      <div style={{ fontSize:12, color:B.textSec, width:32, textAlign:"right" }}>{g.students}/{g.cap}</div>
                     </div>
                   ))}
                 </div>
 
                 {/* At-risk students */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:12, display:"flex", justifyContent:"space-between" }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12, display:"flex", justifyContent:"space-between" }}>
                     Requieren atención inmediata
-                    <button onClick={()=>setView("atRisk")} style={{ fontSize:9, padding:"3px 8px", background:B.redDim, color:B.red, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver todos</button>
+                    <button onClick={()=>setView("atRisk")} style={{ fontSize:11, padding:"3px 8px", background:B.redDim, color:B.red, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver todos</button>
                   </div>
                   {AT_RISK.slice(0,4).map(s => (
                     <div key={s.id} style={{ display:"flex", gap:10, alignItems:"center", padding:"8px 10px", background:B.redDim, borderRadius:9, marginBottom:7, border:`1px solid ${B.red}30` }}>
-                      <div style={{ width:28, height:28, borderRadius:"50%", background:B.redDim, border:`1.5px solid ${B.red}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:B.red, flexShrink:0 }}>
+                      <div style={{ width:28, height:28, borderRadius:"50%", background:B.redDim, border:`1.5px solid ${B.red}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:B.red, flexShrink:0 }}>
                         {s.name.split(" ").map(n=>n[0]).join("").slice(0,2)}
                       </div>
                       <div style={{ flex:1 }}>
-                        <div style={{ fontSize:11, fontWeight:600, color:B.text }}>{s.name}</div>
-                        <div style={{ fontSize:9, color:B.textSec }}>
+                        <div style={{ fontSize:13, fontWeight:600, color:B.text }}>{s.name}</div>
+                        <div style={{ fontSize:11, color:B.textSec }}>
                           {s.attendance<70?`Asistencia: ${s.attendance}%`:""}{s.attendance<70&&s.score<65?" · ":""}{s.score<65?`Promedio: ${s.score}%`:""}
                         </div>
                       </div>
@@ -213,15 +213,15 @@ export default function CoordAcademica() {
 
                 {/* Docentes */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:12 }}>Docentes esta semana</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Docentes esta semana</div>
                   {TEACHERS.map(t => (
                     <div key={t.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"7px 0", borderBottom:`1px solid ${B.borderLight}` }}>
-                      <div style={{ width:30, height:30, borderRadius:"50%", background:B.primaryDim, display:"flex", alignItems:"center", justifyContent:"center", fontSize:10, fontWeight:700, color:B.primary, flexShrink:0 }}>
+                      <div style={{ width:30, height:30, borderRadius:"50%", background:B.primaryDim, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:B.primary, flexShrink:0 }}>
                         {t.name.split(" ").map(n=>n[0]).join("").slice(0,2)}
                       </div>
                       <div style={{ flex:1 }}>
-                        <div style={{ fontSize:11, fontWeight:600, color:B.text }}>{t.name}</div>
-                        <div style={{ fontSize:9, color:B.textSec }}>{t.groups.join(" · ")}</div>
+                        <div style={{ fontSize:13, fontWeight:600, color:B.text }}>{t.name}</div>
+                        <div style={{ fontSize:11, color:B.textSec }}>{t.groups.join(" · ")}</div>
                       </div>
                       <div style={{ display:"flex", gap:5 }}>
                         <Badge text={`${t.attendance}% asist.`} bg={attCol(t.attendance)===B.green?B.greenDim:B.amberDim} color={attCol(t.attendance)===B.green?"#065f46":"#92400e"} />
@@ -233,17 +233,17 @@ export default function CoordAcademica() {
 
                 {/* Becas upgrade */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
-                  <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:12 }}>Becados que pueden hacer upgrade</div>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Becados que pueden hacer upgrade</div>
                   {SCHOLARSHIPS.filter(s=>s.eligible).map(s => (
                     <div key={s.id} style={{ background:B.secondaryDim, border:`1px solid ${B.amber}40`, borderRadius:10, padding:"12px 14px", marginBottom:8 }}>
-                      <div style={{ fontSize:12, fontWeight:700, color:B.text, marginBottom:3 }}>{s.name}</div>
-                      <div style={{ fontSize:10, color:B.textSec, marginBottom:8 }}>{s.level} · {s.progress} · Asistencia: {s.attendance}%</div>
-                      <button onClick={() => setUpgradeModal(s)} style={{ width:"100%", padding:"7px", background:B.primary, color:"#fff", border:"none", borderRadius:8, fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
+                      <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:3 }}>{s.name}</div>
+                      <div style={{ fontSize:12, color:B.textSec, marginBottom:8 }}>{s.level} · {s.progress} · Asistencia: {s.attendance}%</div>
+                      <button onClick={() => setUpgradeModal(s)} style={{ width:"100%", padding:"7px", background:B.primary, color:"#fff", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
                         Hacer upgrade → Plan completo
                       </button>
                     </div>
                   ))}
-                  {!SCHOLARSHIPS.some(s=>s.eligible) && <div style={{ fontSize:11, color:B.textSec, textAlign:"center", padding:"16px 0" }}>No hay becados elegibles este mes</div>}
+                  {!SCHOLARSHIPS.some(s=>s.eligible) && <div style={{ fontSize:13, color:B.textSec, textAlign:"center", padding:"16px 0" }}>No hay becados elegibles este mes</div>}
                 </div>
               </div>
             </div>
@@ -261,12 +261,12 @@ export default function CoordAcademica() {
                       <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
                         <div>
                           <div style={{ fontSize:16, fontWeight:800, color:levelColor(g.level) }}>{g.level}</div>
-                          <div style={{ fontSize:12, fontWeight:500, color:B.text }}>{g.time}</div>
-                          <div style={{ fontSize:10, color:B.textSec }}>L·M·V · {teacher?.name}</div>
+                          <div style={{ fontSize:13, fontWeight:500, color:B.text }}>{g.time}</div>
+                          <div style={{ fontSize:12, color:B.textSec }}>L·M·V · {teacher?.name}</div>
                         </div>
                         <div style={{ textAlign:"right" }}>
-                          <div style={{ fontSize:11, color:pct>90?B.red:pct>70?B.amber:B.green, fontWeight:700 }}>{g.students}/{g.cap}</div>
-                          <div style={{ fontSize:9, color:B.textSec }}>cupos</div>
+                          <div style={{ fontSize:13, color:pct>90?B.red:pct>70?B.amber:B.green, fontWeight:700 }}>{g.students}/{g.cap}</div>
+                          <div style={{ fontSize:11, color:B.textSec }}>cupos</div>
                         </div>
                       </div>
                       <div style={{ height:5, background:B.bg, borderRadius:3, overflow:"hidden", marginBottom:8 }}>
@@ -278,9 +278,9 @@ export default function CoordAcademica() {
                       </div>
                       {selGroup?.id===g.id && (
                         <div style={{ marginTop:12, borderTop:`1px solid ${B.borderLight}`, paddingTop:10, display:"flex", gap:6 }}>
-                          <button onClick={e=>{e.stopPropagation();setTransferModal(g);}} style={{ flex:1, fontSize:10, padding:"7px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:7, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Mover estudiante</button>
-                          <button style={{ flex:1, fontSize:10, padding:"7px", background:B.secondaryDim, color:"#92400e", border:`1px solid ${B.amber}30`, borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Ver lista</button>
-                          <button style={{ flex:1, fontSize:10, padding:"7px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Cambiar docente</button>
+                          <button onClick={e=>{e.stopPropagation();setTransferModal(g);}} style={{ flex:1, fontSize:12, padding:"7px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:7, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Mover estudiante</button>
+                          <button style={{ flex:1, fontSize:12, padding:"7px", background:B.secondaryDim, color:"#92400e", border:`1px solid ${B.amber}30`, borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Ver lista</button>
+                          <button style={{ flex:1, fontSize:12, padding:"7px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Cambiar docente</button>
                         </div>
                       )}
                     </div>
@@ -289,7 +289,7 @@ export default function CoordAcademica() {
                 {/* Add group card */}
                 <button onClick={() => setView("schedule")} style={{ background:"transparent", border:`2px dashed ${B.border}`, borderRadius:12, padding:14, cursor:"pointer", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", gap:8, minHeight:130, fontFamily:"inherit" }}>
                   <i className="ti ti-plus" style={{ fontSize:24, color:B.textSec }} aria-hidden="true" />
-                  <span style={{ fontSize:12, color:B.textSec, fontWeight:500 }}>Nuevo grupo</span>
+                  <span style={{ fontSize:13, color:B.textSec, fontWeight:500 }}>Nuevo grupo</span>
                 </button>
               </div>
             </div>
@@ -300,8 +300,8 @@ export default function CoordAcademica() {
             <div>
               {selTeacher ? (
                 <div>
-                  <button onClick={()=>setSelTeacher(null)} style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, color:B.primary, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit", marginBottom:14 }}>
-                    <i className="ti ti-arrow-left" style={{ fontSize:13 }} aria-hidden="true" /> Volver a docentes
+                  <button onClick={()=>setSelTeacher(null)} style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, color:B.primary, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit", marginBottom:14 }}>
+                    <i className="ti ti-arrow-left" style={{ fontSize:14 }} aria-hidden="true" /> Volver a docentes
                   </button>
                   <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:20, marginBottom:12 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:16 }}>
@@ -310,7 +310,7 @@ export default function CoordAcademica() {
                       </div>
                       <div>
                         <div style={{ fontSize:16, fontWeight:700, color:B.text }}>{selTeacher.name}</div>
-                        <div style={{ fontSize:11, color:B.textSec }}>Docente · Niveles: {selTeacher.levels.join(", ")}</div>
+                        <div style={{ fontSize:13, color:B.textSec }}>Docente · Niveles: {selTeacher.levels.join(", ")}</div>
                       </div>
                     </div>
                     <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:14 }}>
@@ -321,16 +321,16 @@ export default function CoordAcademica() {
                       ].map((m,i) => (
                         <div key={i} style={{ background:B.bg, borderRadius:9, padding:"10px 12px", textAlign:"center" }}>
                           <div style={{ fontSize:18, fontWeight:800, color:m.color }}>{m.value}</div>
-                          <div style={{ fontSize:9, color:B.textSec, marginTop:2 }}>{m.label}</div>
+                          <div style={{ fontSize:11, color:B.textSec, marginTop:2 }}>{m.label}</div>
                         </div>
                       ))}
                     </div>
-                    <div style={{ fontSize:11, fontWeight:600, color:B.textSec, textTransform:"uppercase", letterSpacing:.5, marginBottom:8 }}>Grupos asignados</div>
+                    <div style={{ fontSize:13, fontWeight:600, color:B.textSec, textTransform:"uppercase", letterSpacing:.5, marginBottom:8 }}>Grupos asignados</div>
                     {GROUPS.filter(g=>g.teacher===selTeacher.id).map(g => (
                       <div key={g.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 10px", background:B.bg, borderRadius:8, marginBottom:6 }}>
                         <Badge text={g.level} bg={levelBg(g.level)} color={levelColor(g.level)} />
-                        <span style={{ fontSize:12, color:B.text, flex:1 }}>{g.time} · {g.students} estudiantes</span>
-                        <span style={{ fontSize:10, color:B.textSec }}>U{g.unit}/12</span>
+                        <span style={{ fontSize:13, color:B.text, flex:1 }}>{g.time} · {g.students} estudiantes</span>
+                        <span style={{ fontSize:12, color:B.textSec }}>U{g.unit}/12</span>
                       </div>
                     ))}
                   </div>
@@ -342,19 +342,19 @@ export default function CoordAcademica() {
                       onMouseEnter={e=>e.currentTarget.style.borderColor=B.primary}
                       onMouseLeave={e=>e.currentTarget.style.borderColor=B.border}>
                       <div style={{ display:"flex", gap:12, alignItems:"center", marginBottom:10 }}>
-                        <div style={{ width:42, height:42, borderRadius:"50%", background:B.primaryDim, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:700, color:B.primary, flexShrink:0 }}>
+                        <div style={{ width:42, height:42, borderRadius:"50%", background:B.primaryDim, display:"flex", alignItems:"center", justifyContent:"center", fontSize:15, fontWeight:700, color:B.primary, flexShrink:0 }}>
                           {t.name.split(" ").map(n=>n[0]).join("").slice(0,2)}
                         </div>
                         <div style={{ flex:1 }}>
-                          <div style={{ fontSize:13, fontWeight:700, color:B.text }}>{t.name}</div>
-                          <div style={{ fontSize:10, color:B.textSec }}>{t.groups.length} grupos · {t.levels.join(", ")}</div>
+                          <div style={{ fontSize:14, fontWeight:700, color:B.text }}>{t.name}</div>
+                          <div style={{ fontSize:12, color:B.textSec }}>{t.groups.length} grupos · {t.levels.join(", ")}</div>
                         </div>
                         <Badge text={`★ ${t.rating}`} bg={B.secondaryDim} color="#92400e" />
                       </div>
                       <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
                         {t.groups.map(g => <Badge key={g} text={g} bg={B.bg} color={B.textSec} />)}
                       </div>
-                      <div style={{ display:"flex", justifyContent:"space-between", fontSize:10, color:B.textSec, marginTop:10 }}>
+                      <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:B.textSec, marginTop:10 }}>
                         <span>Asistencia: <strong style={{ color:attCol(t.attendance) }}>{t.attendance}%</strong></span>
                         <span>{t.hours}h semanales</span>
                       </div>
@@ -371,14 +371,14 @@ export default function CoordAcademica() {
               <div style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
                 <div style={{ display:"flex", gap:8, marginBottom:10 }}>
                   <div style={{ flex:1, display:"flex", alignItems:"center", gap:8, background:B.white, border:`1px solid ${B.border}`, borderRadius:9, padding:"7px 12px" }}>
-                    <i className="ti ti-search" style={{ color:B.textSec, fontSize:13 }} aria-hidden="true" />
-                    <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar estudiante..." style={{ border:"none", outline:"none", fontSize:12, background:"transparent", flex:1, fontFamily:"inherit", color:B.text }} />
+                    <i className="ti ti-search" style={{ color:B.textSec, fontSize:14 }} aria-hidden="true" />
+                    <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar estudiante..." style={{ border:"none", outline:"none", fontSize:13, background:"transparent", flex:1, fontFamily:"inherit", color:B.text }} />
                   </div>
-                  <select value={filterLevel} onChange={e=>setFilterLevel(e.target.value)} style={{ padding:"7px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:11, background:B.white, fontFamily:"inherit" }}>
+                  <select value={filterLevel} onChange={e=>setFilterLevel(e.target.value)} style={{ padding:"7px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.white, fontFamily:"inherit" }}>
                     <option value="all">Todos los niveles</option>
                     {["A1","A2","B1","B2","C1"].map(l=><option key={l}>{l}</option>)}
                   </select>
-                  <select value={filterType} onChange={e=>setFilterType(e.target.value)} style={{ padding:"7px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:11, background:B.white, fontFamily:"inherit" }}>
+                  <select value={filterType} onChange={e=>setFilterType(e.target.value)} style={{ padding:"7px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.white, fontFamily:"inherit" }}>
                     <option value="all">Todos los tipos</option>
                     <option value="regular">Regular</option>
                     <option value="scholarship">Beca</option>
@@ -386,11 +386,11 @@ export default function CoordAcademica() {
                   </select>
                 </div>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, overflow:"hidden", flex:1, overflowY:"auto" }}>
-                  <table style={{ width:"100%", borderCollapse:"collapse", fontSize:11 }}>
+                  <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
                     <thead style={{ position:"sticky", top:0 }}>
                       <tr style={{ background:B.bg }}>
                         {["Estudiante","Nivel","Grupo","Tipo","Asistencia","Promedio","Estado",""].map(h=>(
-                          <th key={h} style={{ padding:"8px 10px", textAlign:"left", fontSize:9, fontWeight:600, color:B.textSec, letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>
+                          <th key={h} style={{ padding:"8px 10px", textAlign:"left", fontSize:11, fontWeight:600, color:B.textSec, letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -399,7 +399,7 @@ export default function CoordAcademica() {
                         <tr key={s.id} onClick={() => setSelStudent(selStudent?.id===s.id?null:s)} style={{ borderTop:`1px solid ${B.borderLight}`, cursor:"pointer", background:selStudent?.id===s.id?B.primaryDim:"transparent" }}>
                           <td style={{ padding:"10px 10px" }}><div style={{ fontWeight:600, color:B.text }}>{s.name}</div></td>
                           <td style={{ padding:"10px 10px" }}><Badge text={s.level} bg={levelBg(s.level)} color={levelColor(s.level)} /></td>
-                          <td style={{ padding:"10px 10px", fontSize:10, color:B.textSec }}>{groupLabel(s.group)}</td>
+                          <td style={{ padding:"10px 10px", fontSize:12, color:B.textSec }}>{groupLabel(s.group)}</td>
                           <td style={{ padding:"10px 10px" }}>
                             <Badge text={s.type==="scholarship"?"Beca":s.type==="b2b"?"B2B":"Regular"} bg={s.type==="scholarship"?B.secondaryDim:s.type==="b2b"?B.primaryDim:B.bg} color={s.type==="scholarship"?"#92400e":s.type==="b2b"?B.primary:B.textSec} />
                           </td>
@@ -409,7 +409,7 @@ export default function CoordAcademica() {
                             <Badge text={s.state==="active"?"Activo":"Suspendido"} bg={s.state==="active"?B.greenDim:B.redDim} color={s.state==="active"?"#065f46":B.red} />
                           </td>
                           <td style={{ padding:"10px 10px" }}>
-                            <button style={{ fontSize:9, padding:"3px 8px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver →</button>
+                            <button style={{ fontSize:11, padding:"3px 8px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver →</button>
                           </td>
                         </tr>
                       ))}
@@ -420,8 +420,8 @@ export default function CoordAcademica() {
               {selStudent && (
                 <div style={{ width:250, background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14, flexShrink:0, overflow:"auto" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:12 }}>
-                    <div style={{ fontSize:12, fontWeight:700, color:B.text }}>{selStudent.name}</div>
-                    <button onClick={()=>setSelStudent(null)} style={{ background:"none", border:"none", cursor:"pointer", color:B.textSec, fontSize:14 }}>✕</button>
+                    <div style={{ fontSize:13, fontWeight:700, color:B.text }}>{selStudent.name}</div>
+                    <button onClick={()=>setSelStudent(null)} style={{ background:"none", border:"none", cursor:"pointer", color:B.textSec, fontSize:15 }}>✕</button>
                   </div>
                   <div style={{ display:"flex", gap:5, marginBottom:12, flexWrap:"wrap" }}>
                     <Badge text={selStudent.level} bg={levelBg(selStudent.level)} color={levelColor(selStudent.level)} />
@@ -430,16 +430,16 @@ export default function CoordAcademica() {
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:12 }}>
                     <div style={{ background:B.bg, borderRadius:8, padding:"8px 10px", textAlign:"center" }}>
                       <div style={{ fontSize:16, fontWeight:800, color:attCol(selStudent.attendance) }}>{selStudent.attendance}%</div>
-                      <div style={{ fontSize:9, color:B.textSec }}>Asistencia</div>
+                      <div style={{ fontSize:11, color:B.textSec }}>Asistencia</div>
                     </div>
                     <div style={{ background:B.bg, borderRadius:8, padding:"8px 10px", textAlign:"center" }}>
                       <div style={{ fontSize:16, fontWeight:800, color:scoreCol(selStudent.score) }}>{selStudent.score}%</div>
-                      <div style={{ fontSize:9, color:B.textSec }}>Promedio</div>
+                      <div style={{ fontSize:11, color:B.textSec }}>Promedio</div>
                     </div>
                   </div>
                   <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                    <button onClick={() => { setTransferModal(GROUPS.find(g=>g.id===selStudent.group)); }} style={{ padding:"8px", background:B.primaryDim, color:B.primary, border:`1px solid ${B.border}`, borderRadius:8, fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Cambiar de grupo</button>
-                    {selStudent.scholarship && <button onClick={()=>setUpgradeModal({...SCHOLARSHIPS.find(s=>s.name===selStudent.name)||SCHOLARSHIPS[0]})} style={{ padding:"8px", background:B.secondaryDim, color:"#92400e", border:`1px solid ${B.amber}30`, borderRadius:8, fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Upgrade → Plan completo</button>}
+                    <button onClick={() => { setTransferModal(GROUPS.find(g=>g.id===selStudent.group)); }} style={{ padding:"8px", background:B.primaryDim, color:B.primary, border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Cambiar de grupo</button>
+                    {selStudent.scholarship && <button onClick={()=>setUpgradeModal({...SCHOLARSHIPS.find(s=>s.name===selStudent.name)||SCHOLARSHIPS[0]})} style={{ padding:"8px", background:B.secondaryDim, color:"#92400e", border:`1px solid ${B.amber}30`, borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Upgrade → Plan completo</button>}
                   </div>
                 </div>
               )}
@@ -449,20 +449,20 @@ export default function CoordAcademica() {
           {/* AT RISK */}
           {view==="atRisk" && (
             <div>
-              <div style={{ background:B.redDim, border:`1px solid ${B.red}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:11, color:B.red, display:"flex", gap:8 }}>
-                <i className="ti ti-alert-circle" style={{ fontSize:13, flexShrink:0 }} aria-hidden="true" />
+              <div style={{ background:B.redDim, border:`1px solid ${B.red}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:13, color:B.red, display:"flex", gap:8 }}>
+                <i className="ti ti-alert-circle" style={{ fontSize:14, flexShrink:0 }} aria-hidden="true" />
                 Estudiantes con asistencia menor al 70% o promedio menor al 65%. Contacta a sus docentes y coordina un plan de apoyo.
               </div>
               {AT_RISK.map(s => (
                 <div key={s.id} style={{ background:B.white, border:`1px solid ${B.red}30`, borderRadius:12, padding:14, marginBottom:10 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
                     <div style={{ display:"flex", gap:10, alignItems:"center" }}>
-                      <div style={{ width:40, height:40, borderRadius:"50%", background:B.redDim, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:B.red, flexShrink:0 }}>
+                      <div style={{ width:40, height:40, borderRadius:"50%", background:B.redDim, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:700, color:B.red, flexShrink:0 }}>
                         {s.name.split(" ").map(n=>n[0]).join("").slice(0,2)}
                       </div>
                       <div>
-                        <div style={{ fontSize:13, fontWeight:700, color:B.text }}>{s.name}</div>
-                        <div style={{ fontSize:10, color:B.textSec }}>{groupLabel(s.group)} · {s.type==="scholarship"?"Becado":"Regular"}</div>
+                        <div style={{ fontSize:14, fontWeight:700, color:B.text }}>{s.name}</div>
+                        <div style={{ fontSize:12, color:B.textSec }}>{groupLabel(s.group)} · {s.type==="scholarship"?"Becado":"Regular"}</div>
                       </div>
                     </div>
                     <Badge text={s.level} bg={levelBg(s.level)} color={levelColor(s.level)} />
@@ -470,17 +470,17 @@ export default function CoordAcademica() {
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:10 }}>
                     <div style={{ background: s.attendance<70?B.redDim:B.greenDim, borderRadius:8, padding:"8px 10px" }}>
                       <div style={{ fontSize:16, fontWeight:800, color:attCol(s.attendance) }}>{s.attendance}%</div>
-                      <div style={{ fontSize:9, color:B.textSec }}>Asistencia {s.attendance<70?"⚠ Bajo mínimo":""}</div>
+                      <div style={{ fontSize:11, color:B.textSec }}>Asistencia {s.attendance<70?"⚠ Bajo mínimo":""}</div>
                     </div>
                     <div style={{ background: s.score<65?B.redDim:B.greenDim, borderRadius:8, padding:"8px 10px" }}>
                       <div style={{ fontSize:16, fontWeight:800, color:scoreCol(s.score) }}>{s.score}%</div>
-                      <div style={{ fontSize:9, color:B.textSec }}>Promedio {s.score<65?"⚠ Bajo mínimo":""}</div>
+                      <div style={{ fontSize:11, color:B.textSec }}>Promedio {s.score<65?"⚠ Bajo mínimo":""}</div>
                     </div>
                   </div>
                   <div style={{ display:"flex", gap:7 }}>
-                    <button style={{ flex:1, fontSize:10, padding:"7px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Notificar docente</button>
-                    <button style={{ flex:1, fontSize:10, padding:"7px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Contactar estudiante</button>
-                    <button onClick={()=>setTransferModal(GROUPS.find(g=>g.id===s.group))} style={{ flex:1, fontSize:10, padding:"7px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:7, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Cambiar grupo</button>
+                    <button style={{ flex:1, fontSize:12, padding:"7px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Notificar docente</button>
+                    <button style={{ flex:1, fontSize:12, padding:"7px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Contactar estudiante</button>
+                    <button onClick={()=>setTransferModal(GROUPS.find(g=>g.id===s.group))} style={{ flex:1, fontSize:12, padding:"7px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:7, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Cambiar grupo</button>
                   </div>
                 </div>
               ))}
@@ -494,45 +494,45 @@ export default function CoordAcademica() {
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:32, textAlign:"center" }}>
                   <div style={{ fontSize:40, marginBottom:12 }}>✅</div>
                   <div style={{ fontSize:16, fontWeight:700, color:B.text, marginBottom:6 }}>Grupo creado</div>
-                  <div style={{ fontSize:12, color:B.textSec, marginBottom:20 }}>El nuevo grupo ya aparece en la lista. El docente asignado recibirá una notificación.</div>
-                  <button onClick={()=>setSchedCreated(false)} style={{ padding:"9px 20px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Crear otro grupo</button>
+                  <div style={{ fontSize:13, color:B.textSec, marginBottom:20 }}>El nuevo grupo ya aparece en la lista. El docente asignado recibirá una notificación.</div>
+                  <button onClick={()=>setSchedCreated(false)} style={{ padding:"9px 20px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Crear otro grupo</button>
                 </div>
               ) : (
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:20 }}>
-                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:16 }}>Nuevo grupo / horario</div>
+                  <div style={{ fontSize:14, fontWeight:700, color:B.text, marginBottom:16 }}>Nuevo grupo / horario</div>
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
                     <div>
-                      <label style={{ fontSize:11, color:B.textSec, display:"block", marginBottom:4 }}>Nivel</label>
-                      <select value={newGroup.level} onChange={e=>setNewGroup(g=>({...g,level:e.target.value}))} style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:11, background:B.bg, fontFamily:"inherit" }}>
+                      <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>Nivel</label>
+                      <select value={newGroup.level} onChange={e=>setNewGroup(g=>({...g,level:e.target.value}))} style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.bg, fontFamily:"inherit" }}>
                         {["A1","A2","B1","B2","C1"].map(l=><option key={l}>{l}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label style={{ fontSize:11, color:B.textSec, display:"block", marginBottom:4 }}>Horario</label>
-                      <input value={newGroup.time} onChange={e=>setNewGroup(g=>({...g,time:e.target.value}))} placeholder="Ej: 7:00–8:00 PM" style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:11, background:B.bg, fontFamily:"inherit" }} />
+                      <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>Horario</label>
+                      <input value={newGroup.time} onChange={e=>setNewGroup(g=>({...g,time:e.target.value}))} placeholder="Ej: 7:00–8:00 PM" style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.bg, fontFamily:"inherit" }} />
                     </div>
                     <div>
-                      <label style={{ fontSize:11, color:B.textSec, display:"block", marginBottom:4 }}>Días</label>
-                      <select style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:11, background:B.bg, fontFamily:"inherit" }}>
+                      <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>Días</label>
+                      <select style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.bg, fontFamily:"inherit" }}>
                         <option>L·M·V</option><option>M·J</option><option>L·V</option>
                       </select>
                     </div>
                     <div>
-                      <label style={{ fontSize:11, color:B.textSec, display:"block", marginBottom:4 }}>Cupo máximo</label>
-                      <input type="number" value={newGroup.cap} onChange={e=>setNewGroup(g=>({...g,cap:+e.target.value}))} style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:11, background:B.bg, fontFamily:"inherit" }} />
+                      <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>Cupo máximo</label>
+                      <input type="number" value={newGroup.cap} onChange={e=>setNewGroup(g=>({...g,cap:+e.target.value}))} style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.bg, fontFamily:"inherit" }} />
                     </div>
                   </div>
                   <div style={{ marginBottom:12 }}>
-                    <label style={{ fontSize:11, color:B.textSec, display:"block", marginBottom:4 }}>Docente asignado</label>
-                    <select value={newGroup.teacher} onChange={e=>setNewGroup(g=>({...g,teacher:+e.target.value}))} style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:11, background:B.bg, fontFamily:"inherit" }}>
+                    <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>Docente asignado</label>
+                    <select value={newGroup.teacher} onChange={e=>setNewGroup(g=>({...g,teacher:+e.target.value}))} style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.bg, fontFamily:"inherit" }}>
                       {TEACHERS.map(t=><option key={t.id} value={t.id}>{t.name}</option>)}
                     </select>
                   </div>
-                  <div style={{ background:B.primaryDim, borderRadius:9, padding:"9px 12px", fontSize:11, color:B.primary, marginBottom:14, display:"flex", gap:6 }}>
-                    <i className="ti ti-info-circle" style={{ fontSize:12, flexShrink:0 }} aria-hidden="true" />
+                  <div style={{ background:B.primaryDim, borderRadius:9, padding:"9px 12px", fontSize:13, color:B.primary, marginBottom:14, display:"flex", gap:6 }}>
+                    <i className="ti ti-info-circle" style={{ fontSize:13, flexShrink:0 }} aria-hidden="true" />
                     El grupo se creará en la unidad activa del ciclo para el nivel {newGroup.level}. El Admin deberá configurar el link de Teams.
                   </div>
-                  <button onClick={()=>newGroup.time&&setSchedCreated(true)} style={{ width:"100%", padding:"11px", background:newGroup.time?B.primary:B.border, color:newGroup.time?"#fff":B.textSec, border:"none", borderRadius:10, fontSize:12, fontWeight:700, cursor:newGroup.time?"pointer":"not-allowed", fontFamily:"inherit" }}>
+                  <button onClick={()=>newGroup.time&&setSchedCreated(true)} style={{ width:"100%", padding:"11px", background:newGroup.time?B.primary:B.border, color:newGroup.time?"#fff":B.textSec, border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:newGroup.time?"pointer":"not-allowed", fontFamily:"inherit" }}>
                     Crear grupo
                   </button>
                 </div>
@@ -548,8 +548,8 @@ export default function CoordAcademica() {
                   <div key={s.id} style={{ background:B.white, border:`1px solid ${s.eligible?B.amber:B.border}`, borderRadius:12, padding:16 }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
                       <div>
-                        <div style={{ fontSize:14, fontWeight:700, color:B.text }}>{s.name}</div>
-                        <div style={{ fontSize:11, color:B.textSec }}>{s.level} · {s.program} · Ingresó: {s.start}</div>
+                        <div style={{ fontSize:15, fontWeight:700, color:B.text }}>{s.name}</div>
+                        <div style={{ fontSize:13, color:B.textSec }}>{s.level} · {s.program} · Ingresó: {s.start}</div>
                       </div>
                       <Badge text={s.eligible?"Elegible para upgrade":"Sin cumplir criterios"} bg={s.eligible?B.secondaryDim:B.bg} color={s.eligible?"#92400e":B.textSec} />
                     </div>
@@ -560,17 +560,17 @@ export default function CoordAcademica() {
                         { label:"Criterio", value:s.attendance>=70?"✓ Cumple":"✗ No cumple", color:s.attendance>=70?B.green:B.red },
                       ].map((m,i) => (
                         <div key={i} style={{ background:B.bg, borderRadius:8, padding:"8px 10px" }}>
-                          <div style={{ fontSize:11, fontWeight:700, color:m.color }}>{m.value}</div>
-                          <div style={{ fontSize:9, color:B.textSec, marginTop:2 }}>{m.label}</div>
+                          <div style={{ fontSize:13, fontWeight:700, color:m.color }}>{m.value}</div>
+                          <div style={{ fontSize:11, color:B.textSec, marginTop:2 }}>{m.label}</div>
                         </div>
                       ))}
                     </div>
                     {s.eligible && (
-                      <button onClick={()=>setUpgradeModal(s)} style={{ width:"100%", padding:"9px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
+                      <button onClick={()=>setUpgradeModal(s)} style={{ width:"100%", padding:"9px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
                         Hacer upgrade a Plan Completo ($95/mes)
                       </button>
                     )}
-                    {!s.eligible && <div style={{ fontSize:11, color:B.textSec, textAlign:"center", padding:"6px 0" }}>Necesita ≥70% de asistencia para ser elegible.</div>}
+                    {!s.eligible && <div style={{ fontSize:13, color:B.textSec, textAlign:"center", padding:"6px 0" }}>Necesita ≥70% de asistencia para ser elegible.</div>}
                   </div>
                 ))}
               </div>
@@ -593,11 +593,11 @@ export default function CoordAcademica() {
                     <i className={`ti ${r.icon}`} style={{ fontSize:18, color:r.color }} aria-hidden="true" />
                   </div>
                   <div style={{ flex:1 }}>
-                    <div style={{ fontSize:12, fontWeight:600, color:B.text, marginBottom:3 }}>{r.title}</div>
-                    <div style={{ fontSize:10, color:B.textSec, marginBottom:8 }}>{r.desc}</div>
+                    <div style={{ fontSize:13, fontWeight:600, color:B.text, marginBottom:3 }}>{r.title}</div>
+                    <div style={{ fontSize:12, color:B.textSec, marginBottom:8 }}>{r.desc}</div>
                     <div style={{ display:"flex", gap:6 }}>
-                      <button style={{ fontSize:9, padding:"3px 10px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver reporte</button>
-                      <button style={{ fontSize:9, padding:"3px 10px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>↓ Exportar</button>
+                      <button style={{ fontSize:11, padding:"3px 10px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver reporte</button>
+                      <button style={{ fontSize:11, padding:"3px 10px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>↓ Exportar</button>
                     </div>
                   </div>
                 </div>
@@ -611,19 +611,19 @@ export default function CoordAcademica() {
       {upgradeModal && (
         <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}>
           <div style={{ background:B.white, borderRadius:16, padding:24, width:380, border:`1px solid ${B.border}` }}>
-            <div style={{ fontSize:14, fontWeight:700, color:B.text, marginBottom:4 }}>Upgrade a Plan Completo</div>
-            <div style={{ fontSize:11, color:B.textSec, marginBottom:14 }}>{upgradeModal.name} · Beca {upgradeModal.program}</div>
+            <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Upgrade a Plan Completo</div>
+            <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>{upgradeModal.name} · Beca {upgradeModal.program}</div>
             <div style={{ background:B.secondaryDim, borderRadius:10, padding:12, marginBottom:14 }}>
-              <div style={{ fontSize:11, fontWeight:600, color:"#92400e", marginBottom:6 }}>¿Qué cambia?</div>
+              <div style={{ fontSize:13, fontWeight:600, color:"#92400e", marginBottom:6 }}>¿Qué cambia?</div>
               {["Acceso 24/7 a plataforma completa","Todos los niveles hasta C1","Exámenes digitales incluidos","Cobro mensual de $95/mes desde hoy","El progreso actual se conserva"].map((item,i) => (
-                <div key={i} style={{ fontSize:10, color:"#92400e", display:"flex", gap:6, marginBottom:4 }}>
-                  <i className="ti ti-check" style={{ fontSize:11, color:B.green, flexShrink:0 }} aria-hidden="true" />{item}
+                <div key={i} style={{ fontSize:12, color:"#92400e", display:"flex", gap:6, marginBottom:4 }}>
+                  <i className="ti ti-check" style={{ fontSize:13, color:B.green, flexShrink:0 }} aria-hidden="true" />{item}
                 </div>
               ))}
             </div>
             <div style={{ display:"flex", gap:8 }}>
-              <button onClick={()=>setUpgradeModal(null)} style={{ flex:1, padding:"9px", background:B.bg, border:`1px solid ${B.border}`, borderRadius:9, fontSize:11, cursor:"pointer", fontFamily:"inherit", color:B.textSec }}>Cancelar</button>
-              <button onClick={()=>setUpgradeModal(null)} style={{ flex:2, padding:"9px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Confirmar upgrade</button>
+              <button onClick={()=>setUpgradeModal(null)} style={{ flex:1, padding:"9px", background:B.bg, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit", color:B.textSec }}>Cancelar</button>
+              <button onClick={()=>setUpgradeModal(null)} style={{ flex:2, padding:"9px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Confirmar upgrade</button>
             </div>
           </div>
         </div>
@@ -633,21 +633,21 @@ export default function CoordAcademica() {
       {transferModal && (
         <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}>
           <div style={{ background:B.white, borderRadius:16, padding:24, width:380 }}>
-            <div style={{ fontSize:14, fontWeight:700, color:B.text, marginBottom:4 }}>Mover estudiante a otro grupo</div>
-            <div style={{ fontSize:11, color:B.textSec, marginBottom:14 }}>Grupo actual: {transferModal.level} · {transferModal.time}</div>
-            <label style={{ fontSize:11, color:B.textSec, display:"block", marginBottom:5 }}>Estudiante</label>
-            <select style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:11, background:B.bg, fontFamily:"inherit", marginBottom:10 }}>
+            <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Mover estudiante a otro grupo</div>
+            <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>Grupo actual: {transferModal.level} · {transferModal.time}</div>
+            <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:5 }}>Estudiante</label>
+            <select style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit", marginBottom:10 }}>
               {STUDENTS.filter(s=>s.group===transferModal.id).map(s=><option key={s.id}>{s.name}</option>)}
             </select>
-            <label style={{ fontSize:11, color:B.textSec, display:"block", marginBottom:5 }}>Nuevo grupo</label>
-            <select style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:11, background:B.bg, fontFamily:"inherit", marginBottom:14 }}>
+            <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:5 }}>Nuevo grupo</label>
+            <select style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit", marginBottom:14 }}>
               {GROUPS.filter(g=>g.id!==transferModal.id&&g.level===transferModal.level&&g.students<g.cap).map(g=>(
                 <option key={g.id}>{g.level} · {g.time} ({g.cap-g.students} cupos)</option>
               ))}
             </select>
             <div style={{ display:"flex", gap:8 }}>
-              <button onClick={()=>setTransferModal(null)} style={{ flex:1, padding:"9px", background:B.bg, border:`1px solid ${B.border}`, borderRadius:9, fontSize:11, cursor:"pointer", fontFamily:"inherit", color:B.textSec }}>Cancelar</button>
-              <button onClick={()=>setTransferModal(null)} style={{ flex:2, padding:"9px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:11, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Mover estudiante</button>
+              <button onClick={()=>setTransferModal(null)} style={{ flex:1, padding:"9px", background:B.bg, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit", color:B.textSec }}>Cancelar</button>
+              <button onClick={()=>setTransferModal(null)} style={{ flex:2, padding:"9px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Mover estudiante</button>
             </div>
           </div>
         </div>
