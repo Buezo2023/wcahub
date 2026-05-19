@@ -406,6 +406,41 @@ export default function GestorCobros() {
               </div>
             </div>
           )}
+
+          {/* ── PRECIOS ── */}
+          {view==="precios" && (
+            <div>
+              <div style={{ background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:12, color:"var(--text-secondary)", display:"flex", gap:8 }}>
+                <i className="ti ti-info-circle" style={{ fontSize:14, flexShrink:0 }} aria-hidden="true"/>
+                Visualización y edición de precios de programas. Los cambios requieren aprobación del Admin.
+              </div>
+              <div style={{ maxWidth:580 }}>
+                {[
+                  { icon:"🇬🇧", name:"Inglés completo",      price:95,  interval:"mes",       color:"#155266" },
+                  { icon:"💻",  name:"Asistente Virtual",    price:75,  interval:"mes",       color:"#7c3aed" },
+                  { icon:"⚡",  name:"Inglés + VA",           price:170, interval:"mes",       color:"#0f3d4d" },
+                  { icon:"🎓",  name:"Beca Inglés",           price:50,  interval:"trimestre", color:"#059669" },
+                  { icon:"📱",  name:"VA · Marketing Digital",price:95, interval:"3 meses",  color:"#db2777" },
+                  { icon:"⚖️",  name:"VA · Legal Assistant",  price:95, interval:"3 meses",  color:"#0e7490" },
+                  { icon:"🏥",  name:"VA · Cuidador Remoto",  price:95, interval:"3 meses",  color:"#059669" },
+                ].map((p,i,arr) => (
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:14, padding:"16px 18px", background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:i===0?"14px 14px 0 0":i===arr.length-1?"0 0 14px 14px":"0", borderTop:i>0?"none":"1px solid var(--border)", boxShadow:i===0?"var(--shadow-sm)":"none" }}>
+                    <span style={{ fontSize:20 }}>{p.icon}</span>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)" }}>{p.name}</div>
+                      <div style={{ fontSize:11, color:"var(--text-secondary)" }}>/{p.interval}</div>
+                    </div>
+                    <div style={{ fontSize:22, fontWeight:800, color:p.color }}>${p.price}</div>
+                    <span style={{ fontSize:10, padding:"3px 9px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", borderRadius:20 }}>Solo lectura</span>
+                  </div>
+                ))}
+                <div style={{ marginTop:12, fontSize:12, color:"var(--text-tertiary)", textAlign:"center" }}>
+                  Para modificar precios contactá al Admin o Super Admin.
+                </div>
+              </div>
+            </div>
+          )}
+
         </div>
       </main>
 

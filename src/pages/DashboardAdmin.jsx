@@ -96,6 +96,17 @@ function Stat({ label, value, sub, color, icon }) {
 
 export default function AdminDashboard() {
   const [view, setView] = useState("home");
+  const [actionModal, setActionModal] = useState(null); // {type, student, group}
+  const [actionNote, setActionNote] = useState("");
+  const [actionDone, setActionDone] = useState(null);
+  const [students, setStudents] = useState([
+    {id:1, name:"María López",    level:"B1", group:"B1·6PM", status:"active",   type:"regular"},
+    {id:2, name:"Carlos Torres",  level:"A1", group:"A1·6PM", status:"active",   type:"regular"},
+    {id:3, name:"Ana Mejía",      level:"A1", group:"A1·8PM", status:"active",   type:"regular"},
+    {id:4, name:"Luis Morales",   level:"A1", group:"A1·6PM", status:"suspended",type:"regular"},
+    {id:5, name:"Pedro Jiménez",  level:"A2", group:"A2·7PM", status:"active",   type:"scholarship"},
+    {id:6, name:"Isabel Navarro", level:"C1", group:"C1·6PM", status:"active",   type:"regular"},
+  ]);
   const [search, setSearch] = useState("");
   const [filterState, setFilterState] = useState("all");
   const [filterLevel, setFilterLevel] = useState("all");
@@ -625,28 +636,81 @@ export default function AdminDashboard() {
             </div>
           )}
 
+
+          {/* ── PRECIOS DE ESPECIALIZACIONES ── */}
+          {view==="precios" && (
+            <div>
+              <div style={{ background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:12, color:"var(--text-secondary)", display:"flex", gap:8 }}>
+                <i className="ti ti-info-circle" style={{ fontSize:14, flexShrink:0 }} aria-hidden="true"/>
+                Podés editar los precios de los programas. Los cambios aplican a nuevas inscripciones. Estudiantes activos conservan su precio actual.
+              </div>
+              <AdminPrices />
+            </div>
+          )}
+
         </div>
       </main>
 
-      {/* ── MODAL: Teams link ── */}
-      {teamsModal && (
-        <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}>
-          <div style={{ background:B.white, borderRadius:16, padding:24, width:400, border:`1px solid ${B.border}` }}>
-            <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Configurar link de Teams</div>
-            <div style={{ fontSize:13, color:B.textSec, marginBottom:16 }}>Grupo: {teamsModal.level} · {teamsModal.time} · {teamsModal.days}</div>
-            <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:6 }}>Link de la reunión recurrente de Teams</label>
-            <input value={teamsLink} onChange={e=>setTeamsLink(e.target.value)} placeholder="https://teams.microsoft.com/l/meetup-join/..." style={{ width:"100%", padding:"9px 12px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, color:B.text, background:B.bg, fontFamily:"inherit", marginBottom:14 }} />
-            <div style={{ background:B.primaryDim, borderRadius:8, padding:"9px 12px", fontSize:12, color:B.primary, marginBottom:16, display:"flex", gap:6 }}>
-              <i className="ti ti-info-circle" style={{ fontSize:13, flexShrink:0 }} aria-hidden="true" />
-              Este link aparecerá en el portal de los {teamsModal.students} estudiantes del grupo.
+      {/* Action toast */}
+      {actionDone && (
+        <div style={{ position:"fixed", top:20, right:90, background:"#059669", color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:9999, boxShadow:"0 6px 20px rgba(5,150,105,.3)", display:"flex", gap:8, animation:"fadeIn .3s" }}>
+          <i className="ti ti-check" style={{ fontSize:15 }} aria-hidden="true"/>
+          {actionDone}
+        </div>
+      )}
+
+      {/* Action modal */}
+      {actionModal && (
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}
+          onClick={e=>{ if(e.target===e.currentTarget) setActionModal(null); }}>
+          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, width:420, border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)" }}>
+            <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)", marginBottom:4 }}>
+              {{reactivate:"Reactivar cuenta",suspend:"Suspender cuenta",upgrade:"Upgrade a Plan Completo",changeGroup:"Cambiar de grupo"}[actionModal.type]}
             </div>
+            <div style={{ fontSize:12, color:"var(--text-secondary)", marginBottom:14 }}>{actionModal.student?.name} · {actionModal.student?.level}</div>
+
+            {actionModal.type==="suspend" && (
+              <div style={{ background:"#fef2f2", border:"1px solid #fca5a5", borderRadius:9, padding:"10px 14px", marginBottom:14, fontSize:12, color:"#dc2626" }}>
+                El estudiante perderá acceso inmediatamente. Su progreso se conserva.
+              </div>
+            )}
+            {actionModal.type==="reactivate" && (
+              <div style={{ background:"#ecfdf5", border:"1px solid #6ee7b7", borderRadius:9, padding:"10px 14px", marginBottom:14, fontSize:12, color:"#059669" }}>
+                El estudiante recuperará acceso a su portal de inmediato.
+              </div>
+            )}
+            {actionModal.type==="upgrade" && (
+              <div style={{ background:"#fff8e6", border:"1px solid #ffbb23", borderRadius:9, padding:"10px 14px", marginBottom:14, fontSize:12, color:"#d97706" }}>
+                Se habilitarán todos los niveles hasta C1 y se generará una nueva suscripción de $95/mes.
+              </div>
+            )}
+            {actionModal.type==="changeGroup" && (
+              <div style={{ marginBottom:14 }}>
+                <label style={{ fontSize:11, color:"var(--text-secondary)", display:"block", marginBottom:5 }}>Nuevo grupo</label>
+                <select style={{ width:"100%", padding:"10px 12px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", fontFamily:"inherit", color:"var(--text-primary)" }}>
+                  {["A1 · 6:00 PM","A1 · 7:00 PM","A1 · 8:00 PM","A2 · 7:00 PM","B1 · 6:00 PM"].map(g=><option key={g}>{g}</option>)}
+                </select>
+              </div>
+            )}
+
+            <div>
+              <label style={{ fontSize:11, color:"var(--text-secondary)", display:"block", marginBottom:5 }}>Nota interna (opcional)</label>
+              <input value={actionNote} onChange={e=>setActionNote(e.target.value)} placeholder="Motivo o comentario..." style={{ width:"100%", padding:"10px 12px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit", marginBottom:16 }}/>
+            </div>
+
             <div style={{ display:"flex", gap:8 }}>
-              <button onClick={() => setTeamsModal(null)} style={{ flex:1, padding:"9px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
-              <button onClick={() => setTeamsModal(null)} style={{ flex:1, padding:"9px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Guardar link</button>
+              <button onClick={()=>{ setActionModal(null); setActionNote(""); }} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit", color:"var(--text-secondary)" }}>Cancelar</button>
+              <button onClick={()=>{
+                const msgs = {reactivate:"Cuenta reactivada correctamente",suspend:"Cuenta suspendida",upgrade:"Upgrade completado",changeGroup:"Grupo actualizado"};
+                setActionDone(msgs[actionModal.type]);
+                setActionModal(null); setActionNote("");
+                setTimeout(()=>setActionDone(null), 3000);
+              }} style={{ flex:2, padding:"10px", background:actionModal.type==="suspend"?"#dc2626":"#155266", color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
+                Confirmar
+              </button>
             </div>
           </div>
         </div>
       )}
-    </div>
   );
 }

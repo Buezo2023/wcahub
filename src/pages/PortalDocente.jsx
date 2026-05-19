@@ -210,7 +210,7 @@ export default function TeacherPortal(){
                         <div style={{fontSize:13,fontWeight:600,color:C.textPri}}>{g.level} · {g.schedule}</div>
                         <div style={{fontSize:12,color:C.textSec,marginTop:2}}>U9: Comforts · {g.students} alumnos</div>
                       </div>
-                      <button style={{fontSize:12,padding:"5px 12px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>▷ Teams</button>
+                      <button style={{fontSize:12,padding:"5px 12px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}} onClick={()=>showToast("Abriendo Microsoft Teams...","#155266")}>▷ Teams</button>
                     </div>
                   ))}
                 </div>
@@ -277,7 +277,7 @@ export default function TeacherPortal(){
                     <div style={{fontSize:16,fontWeight:800,color:C.textPri,marginBottom:3}}>Nivel {group.level} · <span style={{color:C.accent}}>{group.schedule}</span></div>
                     <div style={{fontSize:13,color:C.textSec}}>{group.days} · {group.students} estudiantes · U{group.activeUnit} activa</div>
                   </div>
-                  <button style={{fontSize:13,padding:"7px 16px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:9,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>▷ Abrir Teams</button>
+                  <button style={{fontSize:13,padding:"7px 16px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:9,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}} onClick={()=>showToast("Abriendo Microsoft Teams...","#155266")}>▷ Abrir Teams</button>
                 </div>
               </div>
               <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
@@ -332,7 +332,7 @@ export default function TeacherPortal(){
                     {!s.recorded?(
                       <div style={{display:"flex",gap:6}}>
                         <input value={recLinks[i]||""} onChange={e=>setRecLinks(r=>({...r,[i]:e.target.value}))} placeholder="Link de Stream (grabación)..." style={{flex:1,padding:"5px 8px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:6,fontSize:12,color:C.textPri,fontFamily:"inherit"}}/>
-                        <button style={{fontSize:12,padding:"5px 10px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:6,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>Subir</button>
+                        <button style={{fontSize:12,padding:"5px 10px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:6,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}} onClick={()=>showToast("✓ Grabación subida correctamente")}>Subir</button>
                       </div>
                     ):(
                       <div style={{fontSize:12,color:C.green}}>✓ Grabación disponible 7 días</div>
@@ -344,7 +344,7 @@ export default function TeacherPortal(){
                 <div style={{fontSize:13,fontWeight:700,color:C.textPri,marginBottom:4}}>Tomar asistencia — Hoy</div>
                 <div style={{fontSize:12,color:C.textSec,marginBottom:14}}>A1 · 6:00 PM · U9: Comforts</div>
                 {grpStudents.map(s=><AttendanceRow key={s.id} student={s}/>)}
-                <button style={{marginTop:8,width:"100%",padding:"9px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Guardar asistencia</button>
+                <button style={{marginTop:8,width:"100%",padding:"9px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}} onClick={()=>showToast("✓ Asistencia guardada correctamente")}>Guardar asistencia</button>
               </div>
             </div>
           )}
@@ -433,8 +433,8 @@ export default function TeacherPortal(){
                     </div>
                   </div>
                   <div style={{display:"flex",gap:8,marginTop:8}}>
-                    <button style={{flex:1,padding:"9px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Guardar cambios</button>
-                    <button style={{padding:"11px 18px",background:C.greenDim,color:C.green,border:`1px solid ${C.green}40`,borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Publicar</button>
+                    <button style={{flex:1,padding:"9px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}} onClick={()=>showToast("✓ Cambios guardados")}>Guardar cambios</button>
+                    <button style={{padding:"11px 18px",background:C.greenDim,color:C.green,border:`1px solid ${C.green}40`,borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}} onClick={()=>showToast("✓ Actividad publicada — los estudiantes ya pueden verla")}>Publicar</button>
                   </div>
                 </div>
               ):(
@@ -500,6 +500,14 @@ export default function TeacherPortal(){
         </div>
       )}
 
+    </div>
+
+      {/* Toast notification */}
+      {toastMsg && (
+        <div style={{ position:"fixed", top:20, right:90, background:toastMsg.color, color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:9999, boxShadow:"0 6px 20px rgba(0,0,0,.2)", display:"flex", gap:8, alignItems:"center", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+          ✓ {toastMsg.msg}
+        </div>
+      )}
     </div>
   );
 }
