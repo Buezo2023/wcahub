@@ -1,202 +1,322 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
+// ─── Brand ───────────────────────────────────────────────────────
+const P = "#155266", PH = "#0f3d4d", PD = "#e8f3f6";
+const Y = "#ffbb23", YD = "#fff8e6";
+const G = "#059669", GD = "#ecfdf5";
+const R = "#dc2626", RD = "#fef2f2";
+const A = "#d97706", AD = "#fffbeb";
+
+// ─── Student data ────────────────────────────────────────────────
+const STUDENT = {
+  name:"María", lastName:"Rodríguez", level:"B1", levelName:"Intermedio",
+  levelFull:"Wide Angle Level 3 — B1", group:"B1 · 6:00–7:00 PM",
+  teacher:"Ana Torres", unit:9, unitTitle:"Future", nextClass:"Lunes 16 Jun · 6:00 PM",
+  teamsLink:"#", daysUntilClass:3, xp:3540, rank:"Achiever", streak:8,
+  examScore:85, examAttempts:1,
+};
+
+// ─── Units for B1 (Wide Angle Level 3) ──────────────────────────
 const UNITS = [
-  { n: 1, title: "Vocabulario cotidiano", status: "done", score: 88 },
-  { n: 2, title: "Tiempos verbales I", status: "done", score: 92 },
-  { n: 3, title: "Conversación básica", status: "done", score: 76 },
-  { n: 4, title: "Reading comprensión I", status: "done", score: 85 },
-  { n: 5, title: "Escritura práctica", status: "done", score: 90 },
-  { n: 6, title: "Gramática en uso", status: "done", score: 82 },
-  { n: 7, title: "Pronunciación I", status: "done", score: 78 },
-  { n: 8, title: "Comprensión auditiva I", status: "done", score: 88 },
-  { n: 9, title: "Expresión escrita", status: "current", score: null },
-  { n: 10, title: "Pronunciación avanzada", status: "locked", score: null },
-  { n: 11, title: "Comprensión auditiva II", status: "locked", score: null },
-  { n: 12, title: "Evaluación final B1", status: "locked", score: null },
+  { n:1,  title:"Identity",       acts:21, testActs:3 },
+  { n:2,  title:"Relationships",  acts:20, testActs:3 },
+  { n:3,  title:"Responsibilities",acts:22,testActs:3 },
+  { n:4,  title:"Extremes",       acts:21, testActs:3 },
+  { n:5,  title:"Creativity",     acts:21, testActs:3 },
+  { n:6,  title:"Places",         acts:22, testActs:3 },
+  { n:7,  title:"People",         acts:20, testActs:3 },
+  { n:8,  title:"Stories",        acts:21, testActs:3 },
+  { n:9,  title:"Future",         acts:20, testActs:3 },
+  { n:10, title:"Performance",    acts:20, testActs:3 },
+  { n:11, title:"Experiences",    acts:20, testActs:3 },
+  { n:12, title:"Change",         acts:20, testActs:3 },
 ];
 
-const SCHEDULE = [
-  { day: "Lun", date: "16 Jun", time: "6:00–7:00 PM", unit: "U9: Expresión escrita", teacher: "José", status: "next" },
-  { day: "Mié", date: "18 Jun", time: "6:00–7:00 PM", unit: "U9: Repaso y práctica", teacher: "José", status: "upcoming" },
-  { day: "Vie", date: "20 Jun", time: "6:00–7:00 PM", unit: "U9: Cierre y examen", teacher: "José", status: "upcoming" },
-  { day: "Lun", date: "23 Jun", time: "6:00–7:00 PM", unit: "U10: Pronunciación avanzada", teacher: "José", status: "upcoming" },
+// Simulated progress: units 1-8 done, 9 active, 10-12 locked
+const PROGRESS = {
+  1:{actsDone:21,testDone:3,score:92},  2:{actsDone:20,testDone:3,score:88},
+  3:{actsDone:22,testDone:3,score:91},  4:{actsDone:21,testDone:3,score:85},
+  5:{actsDone:21,testDone:3,score:87},  6:{actsDone:22,testDone:3,score:90},
+  7:{actsDone:20,testDone:3,score:83},  8:{actsDone:21,testDone:3,score:86},
+  9:{actsDone:7, testDone:0,score:0},   10:{actsDone:0,testDone:0,score:0},
+  11:{actsDone:0,testDone:0,score:0},   12:{actsDone:0,testDone:0,score:0},
+};
+
+// ─── Skills data ─────────────────────────────────────────────────
+const SKILLS = [
+  { name:"Listening",        total:48, done:32, score:89, color:"#6b21a8" },
+  { name:"Reading",          total:23, done:17, score:85, color:"#4d7c0f" },
+  { name:"Speaking",         total:12, done:8,  score:82, color:"#be185d" },
+  { name:"Pronunciation",    total:12, done:8,  score:78, color:"#c2410c" },
+  { name:"English For Real", total:36, done:24, score:91, color:"#0e7490" },
+  { name:"Writing",          total:12, done:8,  score:80, color:"#b91c1c" },
+  { name:"Vocabulary",       total:53, done:36, score:87, color:"#166534" },
+  { name:"Grammar",          total:60, done:40, score:84, color:"#1e40af" },
 ];
 
-const PAYMENTS = [
-  { date: "1 Jun 2025", desc: "Inglés B1 — Junio", amount: "$95.00", status: "paid" },
-  { date: "1 May 2025", desc: "Inglés B1 — Mayo", amount: "$95.00", status: "paid" },
-  { date: "1 Abr 2025", desc: "Inglés B1 — Abril", amount: "$95.00", status: "paid" },
-  { date: "1 Mar 2025", desc: "Inscripción + Marzo", amount: "$120.00", status: "paid" },
+const totalActs = SKILLS.reduce((a,s)=>a+s.total,0);
+const totalDone = SKILLS.reduce((a,s)=>a+s.done,0);
+const avgScore  = Math.round(SKILLS.reduce((a,s)=>a+s.score,0)/SKILLS.length);
+
+// ─── Navigation ───────────────────────────────────────────────────
+const NAV = [
+  { id:"inicio",    icon:"ti-layout-dashboard", label:"Inicio"       },
+  { id:"practica",  icon:"ti-device-laptop",    label:"Práctica 24/7"},
+  { id:"clases",    icon:"ti-video",            label:"Clases en vivo"},
+  { id:"examen",    icon:"ti-writing",          label:"Examen"        },
+  { id:"progreso",  icon:"ti-certificate",      label:"Mi progreso"   },
+  { id:"pagos",     icon:"ti-credit-card",      label:"Pagos"         },
 ];
 
-const LEVEL_PATH = [
-  { code: "A1", name: "Principiante", status: "done" },
-  { code: "A2", name: "Básico", status: "done" },
-  { code: "B1", name: "Intermedio", status: "current" },
-  { code: "B2", name: "Interm. alto", status: "locked" },
-  { code: "C1", name: "Avanzado", status: "locked" },
-];
+// ─── Circular Progress Ring ──────────────────────────────────────
+function Ring({ pct, size=36, stroke=3, color=Y, bg="#e5e7eb", children }) {
+  const r = (size-stroke*2)/2;
+  const circ = 2*Math.PI*r;
+  const dash = (pct/100)*circ;
+  return (
+    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ flexShrink:0 }}>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={bg} strokeWidth={stroke}/>
+      <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={color} strokeWidth={stroke}
+        strokeDasharray={`${dash} ${circ-dash}`} strokeLinecap="round"
+        transform={`rotate(-90 ${size/2} ${size/2})`}
+        style={{ transition:"stroke-dasharray 1s ease" }}/>
+      {children && <foreignObject x={0} y={0} width={size} height={size}><div style={{ display:"flex", alignItems:"center", justifyContent:"center", height:"100%", fontSize:9, fontWeight:700, color }}>{children}</div></foreignObject>}
+    </svg>
+  );
+}
 
-const ATTEMPTS = [
-  { label: "Intento 1", score: 58, status: "fail" },
-  { label: "Intento 2", score: 64, status: "fail" },
-  { label: "Intento 3", score: null, status: "available" },
-];
+// ─── Unit number badge (Oxford style — amber circle) ─────────────
+function UnitBadge({ n, isActive, isDone }) {
+  const bg = isDone ? G : isActive ? Y : "#d4b483";
+  return (
+    <div style={{ width:34, height:34, borderRadius:"50%", background:bg, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:"#fff", flexShrink:0, transition:"background .3s" }}>
+      {n}
+    </div>
+  );
+}
 
-const navItems = [
-  { id: "home", icon: "⌂", label: "Inicio" },
-  { id: "program", icon: "◈", label: "Mi programa" },
-  { id: "classes", icon: "▷", label: "Clases en vivo" },
-  { id: "practice", icon: "✦", label: "Práctica" },
-  { id: "exam", icon: "✎", label: "Examen" },
-  { id: "progress", icon: "↑", label: "Mi progreso" },
-  { id: "payments", icon: "$", label: "Pagos" },
-];
-
-const avgScore = Math.round(UNITS.filter(u => u.score).reduce((a, u) => a + u.score, 0) / UNITS.filter(u => u.score).length);
-const doneCount = UNITS.filter(u => u.status === "done").length;
-
-export default function WCAPortal() {
-  const [view, setView] = useState("home");
-  const [examStarted, setExamStarted] = useState(false);
-  const [examQ, setExamQ] = useState(0);
-  const [examAnswers, setExamAnswers] = useState([]);
-  const [examDone, setExamDone] = useState(false);
-  const [selected, setSelected] = useState(null);
-
-  const examQuestions = [
-    { q: "Choose the correct sentence:", opts: ["She write well.", "She writes well.", "She writing well.", "She have written well."], ans: 1 },
-    { q: "What does 'elaborate' mean?", opts: ["simple", "develop in detail", "reduce", "ignore"], ans: 1 },
-    { q: "Complete: 'By the time he arrived, we ___ dinner.'", opts: ["finish", "finished", "had finished", "have finished"], ans: 2 },
-    { q: "Which sentence is most formal?", opts: ["Hey, can you send that over?", "Could you please forward that document?", "Send it already.", "I need that thing."], ans: 1 },
-  ];
-
-  function submitAnswer(i) {
-    if (selected !== null) return;
-    setSelected(i);
-    setTimeout(() => {
-      const newAnswers = [...examAnswers, { q: examQ, chosen: i, correct: i === examQuestions[examQ].ans }];
-      setExamAnswers(newAnswers);
-      if (examQ < examQuestions.length - 1) {
-        setExamQ(examQ + 1);
-        setSelected(null);
-      } else {
-        setExamDone(true);
-      }
-    }, 900);
-  }
-
-  const examScore = examAnswers.length > 0
-    ? Math.round((examAnswers.filter(a => a.correct).length / examQuestions.length) * 100)
-    : 0;
+// ─── Unit row (Online Practice style) ────────────────────────────
+function UnitRow({ unit, prog, isActive, isDone, isLocked, onClick }) {
+  const actsPct = unit.acts > 0 ? Math.round((prog.actsDone/unit.acts)*100) : 0;
+  const testPct = unit.testActs > 0 ? Math.round((prog.testDone/unit.testActs)*100) : 0;
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "var(--bg-page)",  overflow: "hidden",  fontFamily: "'DM Sans','Outfit','Segoe UI',sans-serif" }}>
+    <div>
+      {/* Unit activities row */}
+      <div onClick={!isLocked ? onClick : undefined} style={{
+        display:"flex", alignItems:"center", gap:16, padding:"14px 20px",
+        background:"var(--bg-surface)", border:"1px solid var(--border)",
+        borderRadius:10, marginBottom:6, cursor:isLocked?"not-allowed":"pointer",
+        opacity:isLocked?.5:1, transition:"all .15s", boxShadow:"var(--shadow-sm)",
+      }}
+      onMouseEnter={e=>{ if(!isLocked) e.currentTarget.style.borderColor=Y; }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor="var(--border)"; }}>
+        <UnitBadge n={unit.n} isActive={isActive} isDone={isDone}/>
+        <div style={{ flex:1 }}>
+          <div style={{ fontSize:14, fontWeight:isActive?700:500, color:isLocked?"var(--text-tertiary)":"var(--text-primary)" }}>
+            Unit {unit.n} {unit.title}
+            {isActive && <span style={{ marginLeft:8, fontSize:10, background:Y, color:PH, padding:"2px 8px", borderRadius:20, fontWeight:700 }}>ACTIVA</span>}
+            {isLocked && <span style={{ marginLeft:8, fontSize:10, background:"var(--bg-surface-subtle)", color:"var(--text-tertiary)", padding:"2px 8px", borderRadius:20 }}>🔒 Bloqueada</span>}
+          </div>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:140, justifyContent:"flex-end" }}>
+          <div style={{ textAlign:"right" }}>
+            <div style={{ fontSize:12, color:"var(--text-secondary)" }}>{prog.actsDone}/{unit.acts}</div>
+            <div style={{ fontSize:10, color:"var(--text-tertiary)" }}>Activities done</div>
+          </div>
+          <Ring pct={actsPct} size={36} stroke={3} color={isDone?G:isActive?Y:"#d1d5db"}/>
+        </div>
+        <div style={{ fontSize:14, fontWeight:600, color:isDone?G:isActive&&actsPct>0?A:"var(--text-tertiary)", minWidth:42, textAlign:"right" }}>
+          {prog.score>0?`${prog.score}%`:"0%"}
+        </div>
+      </div>
 
-      {/* Sidebar */}
-      <aside style={{ width: 200, background: "#155266", display: "flex", flexDirection: "column", padding: "20px 0", flexShrink: 0 }}>
-        <div style={{ padding: "0 20px 20px", borderBottom: "0.5px solid rgba(255,255,255,0.08)", marginBottom: 11 }}>
-          <div style={{ fontSize: 20, fontWeight: 700, color: "var(--bg-surface)", letterSpacing: -0.5 }}>WCA</div>
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 2, letterSpacing: 1, textTransform: "uppercase" }}>Portal del estudiante</div>
+      {/* Unit test row */}
+      <div style={{
+        display:"flex", alignItems:"center", gap:16, padding:"12px 20px",
+        background:"var(--bg-surface)", border:"1px solid var(--border)",
+        borderRadius:10, marginBottom:12, cursor:isLocked||(!isDone&&!isActive)?"not-allowed":"pointer",
+        opacity:isLocked||(!isDone&&!isActive)?.4:1, boxShadow:"var(--shadow-sm)",
+        transition:"all .15s",
+      }}
+      onMouseEnter={e=>{ if(!isLocked) e.currentTarget.style.borderColor=P; }}
+      onMouseLeave={e=>{ e.currentTarget.style.borderColor="var(--border)"; }}>
+        <UnitBadge n={unit.n} isActive={isActive} isDone={isDone}/>
+        <div style={{ flex:1 }}>
+          <div style={{ fontSize:14, fontWeight:500, color:isLocked||(!isDone&&!isActive)?"var(--text-tertiary)":"var(--text-primary)" }}>
+            Unit {unit.n} Test
+            {isDone && prog.testDone===unit.testActs && <span style={{ marginLeft:8, fontSize:10, background:GD, color:G, padding:"2px 8px", borderRadius:20, fontWeight:700 }}>✓ Completo</span>}
+          </div>
+        </div>
+        <div style={{ display:"flex", alignItems:"center", gap:8, minWidth:140, justifyContent:"flex-end" }}>
+          <div style={{ textAlign:"right" }}>
+            <div style={{ fontSize:12, color:"var(--text-secondary)" }}>{prog.testDone}/{unit.testActs}</div>
+            <div style={{ fontSize:10, color:"var(--text-tertiary)" }}>Activities done</div>
+          </div>
+          <Ring pct={testPct} size={36} stroke={3} color={prog.testDone===unit.testActs?G:P}/>
+        </div>
+        <div style={{ fontSize:14, fontWeight:600, color:prog.testDone>0?G:"var(--text-tertiary)", minWidth:42, textAlign:"right" }}>
+          {prog.testDone>0?`${Math.round((prog.testDone/unit.testActs)*100)}%`:"0%"}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Skill card (Oxford Overall Scores style) ────────────────────
+function SkillCard({ skill }) {
+  const pct = Math.round((skill.done/skill.total)*100);
+  return (
+    <div style={{ background:skill.color, borderRadius:12, padding:"16px 14px", position:"relative", overflow:"hidden" }}>
+      <div style={{ fontSize:14, fontWeight:700, color:"#fff", marginBottom:8 }}>{skill.name}</div>
+      <div style={{ fontSize:11, color:"rgba(255,255,255,.7)", marginBottom:2 }}>Scores</div>
+      <div style={{ fontSize:22, fontWeight:800, color:"#fff", marginBottom:12 }}>{skill.score}%</div>
+      <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,.7)", marginBottom:2 }}>Activities done</div>
+          <div style={{ fontSize:16, fontWeight:700, color:"#fff" }}>{skill.done}/{skill.total}</div>
+        </div>
+        <Ring pct={pct} size={44} stroke={4} color="rgba(255,255,255,.9)" bg="rgba(255,255,255,.3)"/>
+      </div>
+    </div>
+  );
+}
+
+// ─── MAIN ────────────────────────────────────────────────────────
+export default function PortalEstudiante() {
+  const [view,        setView]       = useState("inicio");
+  const [selUnit,     setSelUnit]    = useState(null);
+  const [showScores,  setShowScores] = useState("last");
+  const [filterSubmit,setFilterSubmit]=useState("time_off");
+
+  const activeUnit = STUDENT.unit;
+  const timeMins   = 347; // demo time on activities
+
+  return (
+    <div style={{ display:"flex", minHeight:"100vh", background:"var(--bg-page)", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+
+      {/* SIDEBAR */}
+      <aside style={{ width:200, background:P, display:"flex", flexDirection:"column", padding:"0 0 16px", flexShrink:0, minHeight:"100vh", position:"sticky", top:0 }}>
+        <div style={{ padding:"22px 18px 18px", borderBottom:"1px solid rgba(255,255,255,.08)", marginBottom:8 }}>
+          <div style={{ fontSize:17, fontWeight:800, color:"#fff" }}>WCA <span style={{ color:Y }}>Hub</span></div>
+          <div style={{ fontSize:9, color:"rgba(255,255,255,.35)", marginTop:2, textTransform:"uppercase", letterSpacing:1 }}>Portal del estudiante</div>
         </div>
 
-        {navItems.map(item => (
-          <button key={item.id} onClick={() => setView(item.id)} style={{
-            display: "flex", alignItems: "center", gap: 12, padding: "9px 20px", border: "none", background: view === item.id ? "rgba(255,255,255,0.1)" : "transparent",
-            color: view === item.id ? "var(--bg-surface)" : "rgba(255,255,255,0.45)", cursor: "pointer", fontSize: 13, textAlign: "left",
-            borderLeft: view === item.id ? "2px solid #ffbb23" : "2px solid transparent", transition: "all 0.15s"
-          }}>
-            <span style={{ fontSize: 16, width: 18, textAlign: "center", opacity: view === item.id ? 1 : 0.7 }}>{item.icon}</span>
-            {item.label}
+        {NAV.map(n=>(
+          <button key={n.id} onClick={()=>setView(n.id)} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 18px", border:"none", background:view===n.id?"rgba(255,255,255,.12)":"transparent", color:view===n.id?"#fff":"rgba(255,255,255,.45)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:`2px solid ${view===n.id?Y:"transparent"}`, transition:"all .15s", fontFamily:"inherit", fontWeight:view===n.id?600:400, width:"100%" }}>
+            <i className={"ti "+n.icon} style={{ fontSize:14, width:18, textAlign:"center" }} aria-hidden="true"/>
+            {n.label}
           </button>
         ))}
 
-        <div style={{ marginTop: "auto", padding: "16px 20px", borderTop: "0.5px solid rgba(255,255,255,0.08)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "var(--wca-primary-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 600, color: "#ffbb23" }}>MR</div>
-            <div>
-              <div style={{ fontSize: 13, color: "var(--bg-surface)", fontWeight: 500 }}>María Rodríguez</div>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", marginTop: 1 }}>Inglés B1</div>
-            </div>
+        {/* Student card */}
+        <div style={{ marginTop:"auto", padding:"14px 18px 0", borderTop:"1px solid rgba(255,255,255,.08)" }}>
+          <div style={{ display:"flex", alignItems:"center", gap:9 }}>
+            <div style={{ width:32, height:32, borderRadius:"50%", background:Y, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:PH }}>MR</div>
+            <div><div style={{ fontSize:12, color:"#fff", fontWeight:600 }}>{STUDENT.name} {STUDENT.lastName}</div><div style={{ fontSize:10, color:"rgba(255,255,255,.35)" }}>Inglés {STUDENT.level}</div></div>
           </div>
         </div>
       </aside>
 
-      {/* Main */}
-      <main style={{ flex: 1, overflow: "auto", display: "flex", flexDirection: "column" }}>
-
+      {/* MAIN */}
+      <main style={{ flex:1, display:"flex", flexDirection:"column", minHeight:"100vh" }}>
         {/* Topbar */}
-        <div style={{ background: "var(--bg-surface)", borderBottom: "0.5px solid var(--border)", padding: "0 24px", height: 60, display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
-          <div style={{ fontSize: 14, fontWeight: 500, color: "var(--text-primary)" }}>
-            { {home:"Inicio",program:"Mi programa",classes:"Clases en vivo",practice:"Práctica 24/7",exam:"Examen de unidad",progress:"Mi progreso",payments:"Estado de cuenta"}[view] }
+        <div style={{ height:60, background:"var(--bg-surface)", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 24px", flexShrink:0, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
+          <div>
+            <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>
+              {{"inicio":"Inicio","practica":"Práctica 24/7 — Online Practice","clases":"Clases en vivo","examen":"Examen","progreso":"Mi progreso","pagos":"Pagos"}[view]}
+            </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <div style={{ fontSize: 12, background: "var(--amber-dim)", color: "#92400e", padding: "7px 14px", borderRadius: 20, fontWeight: 500 }}>Unidad 9 activa</div>
-            <div style={{ fontSize: 12, background: "var(--green-dim)", color: "#065f46", padding: "7px 14px", borderRadius: 20, fontWeight: 500 }}>Próxima clase: Lunes</div>
+          <div style={{ display:"flex", gap:8 }}>
+            <div style={{ fontSize:11, background:YD, color:A, border:`1px solid ${Y}40`, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>U{STUDENT.unit} activa</div>
+            <div style={{ fontSize:11, background:GD, color:"#065f46", padding:"3px 10px", borderRadius:20, fontWeight:600 }}>Próxima clase: {["L","M","X","J","V","S","D"][(new Date()).getDay()]}</div>
           </div>
         </div>
 
-        <div style={{ padding: 24, flex: 1, overflowY: "auto" }}>
+        <div style={{ flex:1, overflowY:"auto" }}>
 
-          {/* ── HOME ── */}
-          {view === "home" && (
-            <div>
-              {/* Welcome */}
-              <div style={{ background: "#155266", borderRadius: 14, padding: "20px 24px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div>
-                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", marginBottom: 4, letterSpacing: 0.5 }}>BIENVENIDA DE VUELTA</div>
-                  <div style={{ fontSize: 19, fontWeight: 600, color: "var(--bg-surface)", marginBottom: 9 }}>¡Hola, María! 👋</div>
-                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.85 }}>Tu próxima clase en vivo es el <span style={{ color: "#ffbb23" }}>lunes a las 6:00 PM</span> con José.<br />Tienes la Unidad 9 activa y lista para practicar.</div>
+          {/* ── INICIO ── */}
+          {view==="inicio" && (
+            <div style={{ padding:24 }}>
+              {/* Welcome card */}
+              <div style={{ background:`linear-gradient(135deg,${P},${PH})`, borderRadius:16, padding:"22px 28px", marginBottom:20, position:"relative", overflow:"hidden" }}>
+                <div style={{ position:"absolute", right:-30, top:-30, width:160, height:160, borderRadius:"50%", background:"rgba(255,255,255,.05)" }}/>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,.5)", textTransform:"uppercase", letterSpacing:1, marginBottom:4 }}>Bienvenida de vuelta</div>
+                <div style={{ fontSize:24, fontWeight:800, color:"#fff", marginBottom:6 }}>¡Hola, {STUDENT.name}! 👋</div>
+                <div style={{ fontSize:13, color:"rgba(255,255,255,.7)", marginBottom:18, lineHeight:1.6 }}>
+                  Tu próxima clase en vivo es el <span style={{ color:Y, fontWeight:600 }}>lunes a las 6:00 PM</span> con {STUDENT.teacher}.<br/>
+                  Tienes la Unidad {STUDENT.unit} activa y lista para practicar.
                 </div>
-                <div style={{ textAlign: "right", flexShrink: 0, marginLeft: 16 }}>
-                  <div style={{ fontSize: 36, fontWeight: 700, color: "#ffbb23", lineHeight: 1 }}>{Math.round(doneCount / 12 * 100)}%</div>
-                  <div style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 4 }}>ciclo B1 completado</div>
-                  <div style={{ marginTop: 10, height: 4, width: 80, background: "rgba(255,255,255,0.15)", borderRadius: 2, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${Math.round(doneCount / 12 * 100)}%`, background: "#ffbb23", borderRadius: 2 }} />
-                  </div>
+                <div style={{ display:"flex", gap:10 }}>
+                  <button onClick={()=>setView("practica")} style={{ padding:"9px 20px", background:Y, color:PH, border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Ir a practicar →</button>
+                  <button onClick={()=>setView("examen")} style={{ padding:"9px 18px", background:"rgba(255,255,255,.15)", color:"#fff", border:"1px solid rgba(255,255,255,.2)", borderRadius:10, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Ir al examen</button>
+                </div>
+                {/* Progress ring */}
+                <div style={{ position:"absolute", right:28, top:"50%", transform:"translateY(-50%)", textAlign:"center" }}>
+                  <Ring pct={Math.round((STUDENT.unit-1)/12*100)} size={72} stroke={5} color={Y} bg="rgba(255,255,255,.2)">
+                    <div style={{ textAlign:"center" }}><div style={{ fontSize:14, fontWeight:800, color:Y }}>{Math.round((STUDENT.unit-1)/12*100)}%</div></div>
+                  </Ring>
+                  <div style={{ fontSize:10, color:"rgba(255,255,255,.4)", marginTop:4 }}>ciclo {STUDENT.level}</div>
                 </div>
               </div>
 
-              {/* Metric cards */}
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 16 }}>
+              {/* KPI row */}
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
                 {[
-                  { label: "Unidades completadas", val: `${doneCount}/12`, sub: "este ciclo", color: "#065f46", bg: "var(--green-dim)" },
-                  { label: "Promedio de exámenes", val: `${avgScore}%`, sub: "últimas 8 unidades", color: "#0f3d4d", bg: "var(--wca-primary-dim)" },
-                  { label: "Racha actual", val: "8 sem", sub: "sin faltar", color: "#92400e", bg: "var(--amber-dim)" },
-                  { label: "Próximo nivel", val: "B2", sub: "al aprobar U12", color: "#0f3d4d", bg: "var(--wca-primary-dim)" },
-                ].map((m, i) => (
-                  <div key={i} style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: "12px 14px" }}>
-                    <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginBottom: 9 }}>{m.label}</div>
-                    <div style={{ fontSize: 22, fontWeight: 600, color: "var(--text-primary)", lineHeight: 1 }}>{m.val}</div>
-                    <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 4 }}>{m.sub}</div>
+                  { label:"Unidades completadas", value:`${STUDENT.unit-1}/12`, sub:"este ciclo",     color:P, icon:"ti-check" },
+                  { label:"Promedio de exámenes",  value:`${STUDENT.examScore}%`, sub:"últimas 8 unidades", color:G, icon:"ti-writing" },
+                  { label:"Racha actual",          value:`${STUDENT.streak} sem`, sub:"sin faltar",    color:Y, icon:"ti-flame" },
+                  { label:"Próximo nivel",         value:"B2",                    sub:"al aprobar U12", color:"#7c3aed", icon:"ti-arrow-up" },
+                ].map((k,i)=>(
+                  <div key={i} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:"16px 18px", borderTop:`3px solid ${k.color}`, boxShadow:"var(--shadow-sm)" }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
+                      <div style={{ fontSize:11, color:"var(--text-secondary)" }}>{k.label}</div>
+                      <i className={"ti "+k.icon} style={{ fontSize:15, color:k.color }} aria-hidden="true"/>
+                    </div>
+                    <div style={{ fontSize:22, fontWeight:800, color:"var(--text-primary)", lineHeight:1 }}>{k.value}</div>
+                    <div style={{ fontSize:11, color:"var(--text-tertiary)", marginTop:4 }}>{k.sub}</div>
                   </div>
                 ))}
               </div>
 
-              {/* Today + unit */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 20 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "var(--text-primary)" }}>Unidad activa — U9</div>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)", marginBottom: 11 }}>Expresión escrita</div>
-                  <div style={{ fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.85, marginBottom: 14 }}>Aprende a estructurar textos formales e informales, correos y párrafos argumentativos en inglés.</div>
-                  <div style={{ display: "flex", gap: 11 }}>
-                    <button onClick={() => setView("practice")} style={{ flex: 1, padding: "8px", background: "#155266", color: "var(--bg-surface)", border: "none", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>Ir a practicar</button>
-                    <button onClick={() => setView("exam")} style={{ flex: 1, padding: "8px", background: "transparent", color: "#155266", border: "0.5px solid #ccc", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>Ir al examen</button>
+              <div style={{ display:"grid", gridTemplateColumns:"1.2fr 1fr", gap:14 }}>
+                {/* Unidad activa */}
+                <div style={{ background:"var(--bg-surface)", border:`1.5px solid ${Y}60`, borderRadius:14, padding:20, boxShadow:"var(--shadow-sm)" }}>
+                  <div style={{ fontSize:11, color:"var(--text-tertiary)", marginBottom:6, textTransform:"uppercase", letterSpacing:.5 }}>Unidad activa — U{STUDENT.unit}</div>
+                  <div style={{ fontSize:20, fontWeight:800, color:"var(--text-primary)", marginBottom:6 }}>{STUDENT.unitTitle}</div>
+                  <div style={{ fontSize:13, color:"var(--text-secondary)", lineHeight:1.6, marginBottom:18 }}>
+                    Practica el contenido de esta unidad antes de la clase y refuerza con los ejercicios de listening, vocabulary y grammar.
+                  </div>
+                  {/* Unit progress bar */}
+                  <div style={{ display:"flex", gap:3, marginBottom:12 }}>
+                    {Array.from({length:12},(_,i)=>(
+                      <div key={i} style={{ flex:1, height:6, borderRadius:3, background:i+1<activeUnit?G:i+1===activeUnit?Y:"var(--bg-surface-subtle)", transition:"background .3s" }}/>
+                    ))}
+                  </div>
+                  <div style={{ display:"flex", gap:8 }}>
+                    <button onClick={()=>setView("practica")} style={{ flex:1, padding:"10px", background:P, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Ir a practicar</button>
+                    <button onClick={()=>setView("examen")} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", color:"var(--text-primary)", border:"1px solid var(--border)", borderRadius:10, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Ir al examen</button>
                   </div>
                 </div>
-                <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 20 }}>
-                  <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "var(--text-primary)" }}>Próximas clases en vivo</div>
-                  {SCHEDULE.slice(0, 3).map((s, i) => (
-                    <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: i > 0 ? "0.5px solid #e8f3f6" : "none" }}>
-                      <div style={{ width: 34, height: 34, borderRadius: 8, background: s.status === "next" ? "#155266" : "var(--wca-primary-dim)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <div style={{ fontSize: 8, color: s.status === "next" ? "rgba(255,255,255,0.6)" : "#999", textTransform: "uppercase" }}>{s.day}</div>
-                        <div style={{ fontSize: 13, fontWeight: 600, color: s.status === "next" ? "var(--bg-surface)" : "var(--text-secondary)" }}>{s.date.split(" ")[0]}</div>
+
+                {/* Próximas clases */}
+                <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:20, boxShadow:"var(--shadow-sm)" }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)", marginBottom:14 }}>Próximas clases en vivo</div>
+                  {[
+                    { day:"LUN", date:16, time:"6:00–7:00 PM", unit:`U${STUDENT.unit}: Future`,       next:true  },
+                    { day:"MIÉ", date:18, time:"6:00–7:00 PM", unit:`U${STUDENT.unit}: Repaso`,       next:false },
+                    { day:"VIE", date:20, time:"6:00–7:00 PM", unit:`U${STUDENT.unit}: Cierre`,       next:false },
+                  ].map((c,i)=>(
+                    <div key={i} style={{ display:"flex", gap:12, alignItems:"center", padding:"10px 0", borderBottom:i<2?"1px solid var(--border)":"none" }}>
+                      <div style={{ width:44, height:44, borderRadius:10, background:c.next?P:"var(--bg-surface-subtle)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                        <div style={{ fontSize:8, color:c.next?"rgba(255,255,255,.6)":"var(--text-tertiary)", fontWeight:600 }}>{c.day}</div>
+                        <div style={{ fontSize:17, fontWeight:800, color:c.next?"#fff":"var(--text-primary)" }}>{c.date}</div>
                       </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500 }}>{s.time}</div>
-                        <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 1 }}>{s.unit}</div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:13, fontWeight:c.next?600:400, color:"var(--text-primary)" }}>{c.time}</div>
+                        <div style={{ fontSize:11, color:"var(--text-secondary)" }}>{c.unit}</div>
                       </div>
-                      {s.status === "next" && <div style={{ fontSize: 12, background: "var(--green-dim)", color: "#065f46", padding: "6px 12px", borderRadius: 20, flexShrink: 0 }}>Próxima</div>}
+                      {c.next && <a href={STUDENT.teamsLink} style={{ fontSize:11, padding:"5px 10px", background:P, color:"#fff", borderRadius:8, textDecoration:"none", fontWeight:600 }}>Unirme</a>}
                     </div>
                   ))}
                 </div>
@@ -204,290 +324,285 @@ export default function WCAPortal() {
             </div>
           )}
 
-          {/* ── PROGRAM ── */}
-          {view === "program" && (
+          {/* ── PRÁCTICA 24/7 — ONLINE PRACTICE ── */}
+          {view==="practica" && (
             <div>
-              <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 20, marginBottom: 16 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                  <div>
-                    <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)" }}>Inglés B1 — Ciclo actual</div>
-                    <div style={{ fontSize: 13, color: "var(--text-tertiary)", marginTop: 2 }}>12 unidades · Lunes inicia nueva unidad</div>
+              {/* Wide Angle level header (amber bar like Oxford) */}
+              <div style={{ background:Y, padding:"14px 24px", display:"flex", alignItems:"center", gap:14 }}>
+                <div style={{ width:40, height:40, borderRadius:8, background:"rgba(255,255,255,.3)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:20 }}>📖</div>
+                <div style={{ fontSize:16, fontWeight:700, color:PH }}>{STUDENT.levelFull}</div>
+              </div>
+
+              {/* Overall Scores section */}
+              <div style={{ background:"var(--bg-surface)", borderBottom:"1px solid var(--border)", padding:"20px 24px 24px" }}>
+                <div style={{ textAlign:"center", marginBottom:20 }}>
+                  <div style={{ width:48, height:48, background:"var(--bg-surface-subtle)", borderRadius:10, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 10px" }}>
+                    <i className="ti ti-chart-bar" style={{ fontSize:24, color:"var(--text-primary)" }} aria-hidden="true"/>
                   </div>
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: 22, fontWeight: 700, color: "#155266" }}>{doneCount}/12</div>
-                    <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>completadas</div>
+                  <div style={{ fontSize:18, fontWeight:700, color:"var(--text-primary)" }}>Overall scores</div>
+                  <div style={{ height:1, background:"var(--border)", marginTop:14 }}/>
+                </div>
+
+                {/* Global stats */}
+                <div style={{ display:"flex", justifyContent:"center", gap:48, marginBottom:24 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+                    <div>
+                      <div style={{ fontSize:20, fontWeight:800, color:"var(--text-primary)" }}><span style={{ color:P }}>{totalDone}</span>/{totalActs}</div>
+                      <div style={{ fontSize:12, color:"var(--text-secondary)" }}>Activities done</div>
+                    </div>
+                    <Ring pct={Math.round(totalDone/totalActs*100)} size={44} stroke={4} color={P}/>
+                  </div>
+                  <div style={{ borderLeft:"1px solid var(--border)", paddingLeft:48 }}>
+                    <div style={{ fontSize:11, color:"var(--text-secondary)", marginBottom:4 }}>Scores</div>
+                    <div style={{ fontSize:22, fontWeight:800, color:"var(--text-primary)" }}>{avgScore}%</div>
+                  </div>
+                  <div style={{ borderLeft:"1px solid var(--border)", paddingLeft:48, display:"flex", alignItems:"center", gap:12 }}>
+                    <div style={{ width:32, height:32, background:"var(--bg-surface-subtle)", borderRadius:"50%", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      <i className="ti ti-clock" style={{ fontSize:16, color:"var(--text-secondary)" }} aria-hidden="true"/>
+                    </div>
+                    <div>
+                      <div style={{ fontSize:11, color:"var(--text-secondary)" }}>Time on activities</div>
+                      <div style={{ fontSize:18, fontWeight:700, color:"var(--text-primary)" }}>{timeMins}<span style={{ fontSize:12, fontWeight:400 }}>mins</span></div>
+                    </div>
                   </div>
                 </div>
-                <div style={{ height: 6, background: "var(--wca-primary-dim)", borderRadius: 3, overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${Math.round(doneCount / 12 * 100)}%`, background: "#155266", borderRadius: 3 }} />
+
+                {/* Skill cards grid */}
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:10, marginBottom:4 }}>
+                  {SKILLS.slice(0,5).map(s=><SkillCard key={s.name} skill={s}/>)}
+                </div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr) 2fr", gap:10 }}>
+                  {SKILLS.slice(5).map(s=><SkillCard key={s.name} skill={s}/>)}
+                  <div/>
                 </div>
               </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {UNITS.map((u, i) => (
-                  <div key={i} style={{
-                    display: "flex", alignItems: "center", gap: 12, padding: "11px 14px",
-                    background: u.status === "current" ? "#155266" : "var(--bg-surface)",
-                    border: u.status === "current" ? "none" : "0.5px solid #d1dde3",
-                    borderRadius: 10, opacity: u.status === "locked" ? 0.5 : 1,
-                    cursor: u.status !== "locked" ? "pointer" : "default"
-                  }}>
-                    <div style={{
-                      width: 36, height: 36, borderRadius: "50%", flexShrink: 0,
-                      background: u.status === "done" ? "var(--green-dim)" : u.status === "current" ? "rgba(255,255,255,0.15)" : "var(--wca-primary-dim)",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: u.status === "done" ? 14 : 11,
-                      color: u.status === "done" ? "#065f46" : u.status === "current" ? "var(--bg-surface)" : "var(--text-tertiary)",
-                      fontWeight: 600
-                    }}>
-                      {u.status === "done" ? "✓" : u.status === "locked" ? "🔒" : u.n}
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: u.status === "current" ? "var(--bg-surface)" : "var(--text-primary)" }}>
-                        U{u.n} — {u.title}
+
+              {/* Online Practice list header */}
+              <div style={{ padding:"18px 24px 0" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:16, paddingBottom:14, borderBottom:"1px solid var(--border)" }}>
+                  <div style={{ fontSize:15, fontWeight:600, color:"var(--text-secondary)", textAlign:"center", flex:1 }}>Online Practice</div>
+                  <div style={{ display:"flex", gap:8 }}>
+                    {/* Filter dropdowns like Oxford */}
+                    {[["Submit","Time off","ti-clock"],["Show","Last attempt","ti-eye"],["Scores","%","ti-chart-pie"]].map(([pre,val,ic],i)=>(
+                      <div key={i} style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:8, cursor:"pointer", fontSize:12 }}>
+                        <span style={{ color:"var(--text-secondary)" }}>{pre}</span>
+                        <strong style={{ color:"var(--text-primary)" }}>{val}</strong>
+                        <i className="ti ti-chevron-down" style={{ fontSize:11, color:"var(--text-tertiary)" }} aria-hidden="true"/>
                       </div>
-                      {u.status === "done" && <div style={{ fontSize: 12, color: "#059669", marginTop: 1 }}>Aprobada con {u.score}%</div>}
-                      {u.status === "current" && <div style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", marginTop: 1 }}>En curso esta semana</div>}
-                      {u.status === "locked" && <div style={{ fontSize: 12, color: "var(--border-strong)", marginTop: 1 }}>Bloqueada — aprueba el examen anterior</div>}
-                    </div>
-                    {u.status === "done" && (
-                      <div style={{ height: 4, width: 50, background: "var(--green-dim)", borderRadius: 2, overflow: "hidden" }}>
-                        <div style={{ height: "100%", width: `${u.score}%`, background: "#059669", borderRadius: 2 }} />
-                      </div>
-                    )}
-                    {u.status === "current" && (
-                      <div style={{ fontSize: 12, background: "#ffbb23", color: "var(--bg-surface)", padding: "7px 14px", borderRadius: 20, flexShrink: 0 }}>Activa</div>
-                    )}
+                    ))}
                   </div>
-                ))}
+                </div>
+
+                {/* Units list */}
+                <div style={{ paddingBottom:24 }}>
+                  {UNITS.map(unit=>{
+                    const prog  = PROGRESS[unit.n] || {actsDone:0,testDone:0,score:0};
+                    const isDone = prog.actsDone===unit.acts && prog.testDone===unit.testActs;
+                    const isActive = unit.n === activeUnit;
+                    const isLocked = unit.n > activeUnit;
+                    return (
+                      <UnitRow key={unit.n} unit={unit} prog={prog}
+                        isActive={isActive} isDone={isDone} isLocked={isLocked}
+                        onClick={()=>setSelUnit(selUnit===unit.n?null:unit.n)}
+                      />
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}
 
-          {/* ── CLASSES ── */}
-          {view === "classes" && (
-            <div>
-              <div style={{ background: "#155266", borderRadius: 14, padding: "18px 20px", marginBottom: 14 }}>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginBottom: 4, letterSpacing: 0.5 }}>PRÓXIMA CLASE EN VIVO</div>
-                <div style={{ fontSize: 17, fontWeight: 600, color: "var(--bg-surface)", marginBottom: 9 }}>Lunes 16 Jun — 6:00 PM</div>
-                <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginBottom: 14 }}>U9: Expresión escrita · con José</div>
-                <button style={{ padding: "9px 20px", background: "#ffbb23", color: "var(--bg-surface)", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-                  ▷ Unirse a la clase
+          {/* ── CLASES EN VIVO ── */}
+          {view==="clases" && (
+            <div style={{ padding:24 }}>
+              <div style={{ background:`linear-gradient(135deg,${P},${PH})`, borderRadius:16, padding:24, marginBottom:20, color:"#fff" }}>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,.5)", marginBottom:4 }}>Próxima clase en vivo</div>
+                <div style={{ fontSize:22, fontWeight:800, marginBottom:4 }}>Lunes 16 Jun · 6:00 PM</div>
+                <div style={{ fontSize:13, color:"rgba(255,255,255,.7)", marginBottom:18 }}>Docente: {STUDENT.teacher} · U{STUDENT.unit}: {STUDENT.unitTitle}</div>
+                <a href={STUDENT.teamsLink} style={{ display:"inline-flex", alignItems:"center", gap:8, padding:"10px 22px", background:Y, color:PH, borderRadius:10, textDecoration:"none", fontSize:13, fontWeight:700 }}>
+                  <i className="ti ti-video" style={{ fontSize:15 }} aria-hidden="true"/> Unirme en Microsoft Teams
+                </a>
+              </div>
+
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
+                <div style={{ padding:"14px 20px", borderBottom:"1px solid var(--border)", fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>Grabaciones disponibles</div>
+                {[
+                  { title:`U${STUDENT.unit-1}: ${UNITS[activeUnit-2]?.title||"Prev"}`, date:"Vie 13 Jun · 6:00 PM", available:true  },
+                  { title:`U${STUDENT.unit-1}: Repaso`,                                date:"Mié 11 Jun · 6:00 PM", available:true  },
+                  { title:`U${STUDENT.unit-2}: ${UNITS[activeUnit-3]?.title||""}`,     date:"Vie 6 Jun · 6:00 PM",  available:false },
+                ].map((r,i)=>(
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 20px", borderBottom:"1px solid var(--border)", opacity:r.available?1:.4 }}>
+                    <div style={{ width:40, height:40, borderRadius:9, background:r.available?PD:"var(--bg-surface-subtle)", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      <i className="ti ti-video" style={{ fontSize:18, color:r.available?P:"var(--text-tertiary)" }} aria-hidden="true"/>
+                    </div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, fontWeight:500, color:"var(--text-primary)" }}>{r.title}</div>
+                      <div style={{ fontSize:11, color:"var(--text-secondary)" }}>{r.date}</div>
+                    </div>
+                    {r.available
+                      ? <button style={{ fontSize:12, padding:"7px 14px", background:P, color:"#fff", border:"none", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>▶ Ver</button>
+                      : <span style={{ fontSize:11, color:"var(--text-tertiary)" }}>Expirada</span>}
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop:10, padding:"10px 14px", background:YD, border:`1px solid ${Y}40`, borderRadius:9, fontSize:12, color:A, display:"flex", gap:7 }}>
+                <i className="ti ti-info-circle" style={{ fontSize:13 }} aria-hidden="true"/>
+                Las grabaciones están disponibles por <strong>7 días</strong> después de cada clase.
+              </div>
+            </div>
+          )}
+
+          {/* ── EXAMEN ── */}
+          {view==="examen" && (
+            <div style={{ padding:24, maxWidth:680 }}>
+              <div style={{ background:"var(--bg-surface)", border:`1.5px solid ${Y}50`, borderRadius:16, padding:24, marginBottom:16, boxShadow:"var(--shadow-sm)" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
+                  <div>
+                    <div style={{ fontSize:11, color:"var(--text-tertiary)", textTransform:"uppercase", letterSpacing:.5, marginBottom:4 }}>Examen de unidad activa</div>
+                    <div style={{ fontSize:20, fontWeight:800, color:"var(--text-primary)" }}>U{STUDENT.unit}: {STUDENT.unitTitle}</div>
+                    <div style={{ fontSize:13, color:"var(--text-secondary)", marginTop:4 }}>Nivel {STUDENT.level} · Programa Inglés completo</div>
+                  </div>
+                  <div style={{ textAlign:"right" }}>
+                    <div style={{ fontSize:28, fontWeight:800, color:G }}>{STUDENT.examScore}%</div>
+                    <div style={{ fontSize:11, color:"var(--text-secondary)" }}>último intento</div>
+                  </div>
+                </div>
+                <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:18 }}>
+                  {[["Intentos usados",`${STUDENT.examAttempts}/3`,A],["Para aprobar","≥ 70%",G],["Temporizador","30 min",P]].map(([l,v,c],i)=>(
+                    <div key={i} style={{ background:"var(--bg-surface-subtle)", borderRadius:9, padding:"10px 12px" }}>
+                      <div style={{ fontSize:11, color:"var(--text-secondary)", marginBottom:3 }}>{l}</div>
+                      <div style={{ fontSize:16, fontWeight:700, color:c }}>{v}</div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ background:GD, border:`1px solid ${G}40`, borderRadius:9, padding:"10px 14px", marginBottom:16, fontSize:12, color:"#065f46", display:"flex", gap:7 }}>
+                  <i className="ti ti-check" style={{ fontSize:13 }} aria-hidden="true"/>
+                  ¡Aprobaste con {STUDENT.examScore}%! La U{STUDENT.unit+1} está desbloqueada. Podés intentar mejorar tu puntaje.
+                </div>
+                <button style={{ width:"100%", padding:"13px", background:P, color:"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
+                  Hacer examen — Intento {STUDENT.examAttempts+1}/3
                 </button>
               </div>
-              <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 20 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "var(--text-primary)" }}>Calendario de clases</div>
-                {SCHEDULE.map((s, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: i > 0 ? "0.5px solid #e8f3f6" : "none" }}>
-                    <div style={{ width: 42, height: 42, borderRadius: 10, background: s.status === "next" ? "#155266" : "var(--bg-page)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0, border: "0.5px solid var(--border)" }}>
-                      <div style={{ fontSize: 8, color: s.status === "next" ? "rgba(255,255,255,0.5)" : "var(--text-tertiary)", textTransform: "uppercase" }}>{s.day}</div>
-                      <div style={{ fontSize: 15, fontWeight: 700, color: s.status === "next" ? "var(--bg-surface)" : "var(--text-primary)" }}>{s.date.split(" ")[0]}</div>
-                      <div style={{ fontSize: 8, color: s.status === "next" ? "rgba(255,255,255,0.4)" : "var(--border-strong)" }}>{s.date.split(" ")[1]}</div>
+
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
+                <div style={{ padding:"13px 18px", borderBottom:"1px solid var(--border)", fontSize:12, fontWeight:700, color:"var(--text-primary)" }}>Historial de intentos</div>
+                {[{n:1,score:STUDENT.examScore,date:"Hace 3 días",passed:true}].map((h,i)=>(
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:14, padding:"13px 18px" }}>
+                    <div style={{ width:36, height:36, borderRadius:9, background:GD, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:G }}>#{h.n}</div>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, color:"var(--text-primary)" }}>Intento {h.n}</div>
+                      <div style={{ fontSize:11, color:"var(--text-secondary)" }}>{h.date}</div>
                     </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)" }}>{s.time}</div>
-                      <div style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 2 }}>{s.unit}</div>
-                      <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 1 }}>Docente: {s.teacher}</div>
-                    </div>
-                    {s.status === "next"
-                      ? <button style={{ fontSize: 12, background: "#ffbb23", color: "var(--bg-surface)", border: "none", padding: "7px 14px", borderRadius: 20, cursor: "pointer", fontFamily: "inherit" }}>Unirse</button>
-                      : <div style={{ fontSize: 12, color: "var(--text-tertiary)" }}>Próximamente</div>}
+                    <div style={{ fontSize:20, fontWeight:800, color:G }}>{h.score}%</div>
+                    <div style={{ fontSize:10, padding:"3px 10px", background:GD, color:G, borderRadius:20, fontWeight:600 }}>✓ Aprobado</div>
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          {/* ── PRACTICE ── */}
-          {view === "practice" && (
-            <div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-                {[
-                  { title: "Videos de la lección", desc: "3 videos · ~45 min", icon: "▶", color: "var(--wca-primary-dim)", tc: "#0f3d4d" },
-                  { title: "Ejercicios escritos", desc: "12 ejercicios · Auto-corrección", icon: "✎", color: "var(--green-dim)", tc: "#065f46" },
-                  { title: "Flashcards vocabulario", desc: "24 tarjetas · Spaced repetition", icon: "⧉", color: "var(--amber-dim)", tc: "#92400e" },
-                  { title: "Diálogos de práctica", desc: "5 situaciones reales", icon: "◎", color: "var(--wca-primary-dim)", tc: "#0f3d4d" },
-                  { title: "Lectura complementaria", desc: "2 textos con preguntas", icon: "☰", color: "#fce4ec", tc: "#155266" },
-                  { title: "Material de clase (PDF)", desc: "Notas del docente · U9", icon: "↓", color: "var(--wca-primary-dim)", tc: "var(--text-secondary)" },
-                ].map((item, i) => (
-                  <div key={i} style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: "14px 16px", cursor: "pointer", display: "flex", gap: 12, alignItems: "flex-start" }}>
-                    <div style={{ width: 36, height: 42, borderRadius: 10, background: item.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: item.tc, flexShrink: 0 }}>{item.icon}</div>
+          {/* ── MI PROGRESO ── */}
+          {view==="progreso" && (
+            <div style={{ padding:24 }}>
+              {/* Level journey */}
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:20, marginBottom:16, boxShadow:"var(--shadow-sm)" }}>
+                <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)", marginBottom:16 }}>Tu camino A1 → C1</div>
+                <div style={{ display:"flex", alignItems:"center", gap:0 }}>
+                  {[["A1","Básico",true,true],["A2","Elemental",true,true],["B1","Intermedio",true,false],["B2","Avanzado",false,false],["C1","Superior",false,false]].map(([l,n,done,passed],i)=>(
+                    <div key={l} style={{ flex:1, display:"flex", flexDirection:"column", alignItems:"center", position:"relative" }}>
+                      {i<4 && <div style={{ position:"absolute", left:"50%", top:19, right:"-50%", height:3, background:done&&passed?G:done?Y:"var(--bg-surface-subtle)", zIndex:0 }}/>}
+                      <div style={{ width:40, height:40, borderRadius:"50%", background:done&&passed?G:done?P:"var(--bg-surface-subtle)", border:`3px solid ${done&&passed?G:done?Y:"var(--border)"}`, display:"flex", alignItems:"center", justifyContent:"center", zIndex:1, fontSize:12, fontWeight:700, color:done?"#fff":"var(--text-tertiary)" }}>
+                        {done&&passed?"✓":l}
+                      </div>
+                      <div style={{ fontSize:11, fontWeight:600, color:done?"var(--text-primary)":"var(--text-tertiary)", marginTop:6 }}>{l}</div>
+                      <div style={{ fontSize:9, color:"var(--text-tertiary)" }}>{n}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* XP + badges */}
+              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:16 }}>
+                <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)", marginBottom:14 }}>XP & Rango</div>
+                  <div style={{ display:"flex", gap:14, alignItems:"center", marginBottom:12 }}>
+                    <div style={{ fontSize:36, fontWeight:800, color:Y }}>{STUDENT.xp.toLocaleString()}</div>
                     <div>
-                      <div style={{ fontSize: 13, fontWeight: 500, color: "var(--text-primary)" }}>{item.title}</div>
-                      <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 3 }}>{item.desc}</div>
+                      <div style={{ fontSize:12, color:"var(--text-secondary)" }}>XP total</div>
+                      <div style={{ fontSize:11, padding:"3px 10px", background:PD, color:P, borderRadius:20, fontWeight:600, marginTop:3 }}>🥇 {STUDENT.rank}</div>
                     </div>
                   </div>
-                ))}
+                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:11, color:"var(--text-tertiary)", marginBottom:4 }}>
+                    <span>Achiever</span><span>WCA Pro (5000 XP)</span>
+                  </div>
+                  <div style={{ height:8, background:"var(--bg-surface-subtle)", borderRadius:4, overflow:"hidden" }}>
+                    <div style={{ height:"100%", width:`${(STUDENT.xp/5000)*100}%`, background:`linear-gradient(90deg,${P},${Y})`, borderRadius:4 }}/>
+                  </div>
+                  <div style={{ fontSize:10, color:"var(--text-tertiary)", marginTop:4 }}>{5000-STUDENT.xp} XP para WCA Pro</div>
+                </div>
+
+                <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)", marginBottom:14 }}>Badges</div>
+                  <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+                    {[["🎯","Racha 8sem"],["📖","8 unidades"],["💯","Nota perfecta"],["⚡","Quick learner"],["🎓","Nivel A2"],["🎓","Nivel B1"]].map(([e,l],i)=>(
+                      <div key={i} style={{ textAlign:"center", padding:"8px 10px", background:"var(--bg-surface-subtle)", borderRadius:9, border:"1px solid var(--border)" }}>
+                        <div style={{ fontSize:20 }}>{e}</div>
+                        <div style={{ fontSize:9, color:"var(--text-secondary)", marginTop:3, lineHeight:1.3 }}>{l}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-              <div style={{ background: "var(--bg-page)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 24 }}>
-                <div style={{ fontSize: 13, color: "var(--text-tertiary)", display: "flex", alignItems: "center", gap: 12 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#059669", display: "inline-block" }}></span>
-                  Plataforma disponible 24/7 — accede cuando quieras, desde cualquier dispositivo.
+
+              {/* Certificate */}
+              <div style={{ background:`linear-gradient(135deg,${GD},#f0fdf4)`, border:`1.5px solid ${G}40`, borderRadius:14, padding:20, display:"flex", gap:16, alignItems:"center", boxShadow:"var(--shadow-sm)" }}>
+                <div style={{ fontSize:40 }}>🎓</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)", marginBottom:3 }}>Certificado A2 — Completado</div>
+                  <div style={{ fontSize:12, color:"var(--text-secondary)" }}>CEFR nivel A2 · Emitido Jun 2025 · Verificable con QR</div>
+                </div>
+                <div style={{ display:"flex", gap:7 }}>
+                  <button style={{ padding:"8px 16px", background:G, color:"#fff", border:"none", borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>↓ Descargar</button>
+                  <button style={{ padding:"8px 12px", background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>LinkedIn</button>
                 </div>
               </div>
             </div>
           )}
 
-          {/* ── EXAM ── */}
-          {view === "exam" && (
-            <div>
-              {!examStarted && (
-                <div>
-                  <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 24, marginBottom: 16, textAlign: "center" }}>
-                    <div style={{ fontSize: 32, marginBottom: 11 }}>✎</div>
-                    <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)", marginBottom: 4 }}>Examen final — Unidad 9</div>
-                    <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 16, lineHeight: 1.8 }}>Expresión escrita · 20 preguntas · ~20 minutos<br />Necesitas <strong>70% o más</strong> para desbloquear la Unidad 10.</div>
-                    <div style={{ display: "flex", justifyContent: "center", gap: 11, marginBottom: 20 }}>
-                      {ATTEMPTS.map((a, i) => (
-                        <div key={i} style={{ textAlign: "center" }}>
-                          <div style={{
-                            width: 40, height: 40, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 600, margin: "0 auto 4px",
-                            background: a.status === "fail" ? "var(--red-dim)" : a.status === "available" ? "var(--green-dim)" : "var(--wca-primary-dim)",
-                            color: a.status === "fail" ? "#dc2626" : a.status === "available" ? "#059669" : "var(--text-tertiary)",
-                            border: `1.5px solid ${a.status === "fail" ? "#fca5a5" : a.status === "available" ? "#a5d6a7" : "#e0e0e0"}`
-                          }}>
-                            {a.status === "fail" ? "✗" : a.status === "available" ? "→" : "○"}
-                          </div>
-                          <div style={{ fontSize: 11, color: "var(--text-tertiary)" }}>{a.label}</div>
-                          {a.score && <div style={{ fontSize: 11, color: "#dc2626", fontWeight: 600 }}>{a.score}%</div>}
-                        </div>
-                      ))}
-                    </div>
-                    <div style={{ background: "var(--amber-dim)", borderRadius: 8, padding: "8px 14px", fontSize: 13, color: "#92400e", marginBottom: 16, display: "inline-block" }}>
-                      Intento 3 de 3 disponible — ¡prepárate bien!
-                    </div>
-                    <button onClick={() => setExamStarted(true)} style={{ display: "block", width: "100%", padding: 20, background: "#155266", color: "var(--bg-surface)", border: "none", borderRadius: 10, fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-                      Comenzar examen →
-                    </button>
+          {/* ── PAGOS ── */}
+          {view==="pagos" && (
+            <div style={{ padding:24, maxWidth:600 }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:20, marginBottom:14, boxShadow:"var(--shadow-sm)" }}>
+                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
+                  <div>
+                    <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>Suscripción activa</div>
+                    <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:2 }}>Inglés completo · Mensual</div>
                   </div>
+                  <div style={{ fontSize:11, padding:"3px 10px", background:GD, color:"#065f46", borderRadius:20, fontWeight:600, height:"fit-content" }}>Activa</div>
                 </div>
-              )}
-
-              {examStarted && !examDone && (
-                <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 24 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                    <div style={{ fontSize: 13, color: "var(--text-tertiary)" }}>Pregunta {examQ + 1} de {examQuestions.length}</div>
-                    <div style={{ fontSize: 12, background: "var(--wca-primary-dim)", padding: "7px 14px", borderRadius: 20, color: "var(--text-secondary)" }}>U9 · Expresión escrita</div>
+                <div style={{ display:"flex", gap:12 }}>
+                  <div style={{ flex:1, background:"var(--bg-surface-subtle)", borderRadius:9, padding:"10px 12px" }}>
+                    <div style={{ fontSize:24, fontWeight:800, color:P }}>$95</div>
+                    <div style={{ fontSize:11, color:"var(--text-tertiary)" }}>por mes</div>
                   </div>
-                  <div style={{ height: 4, background: "var(--wca-primary-dim)", borderRadius: 2, marginBottom: 18, overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${((examQ) / examQuestions.length) * 100}%`, background: "#155266", borderRadius: 2, transition: "width 0.4s" }} />
+                  <div style={{ flex:1, background:"var(--bg-surface-subtle)", borderRadius:9, padding:"10px 12px" }}>
+                    <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>16 Jul</div>
+                    <div style={{ fontSize:11, color:"var(--text-tertiary)" }}>próxima renovación</div>
                   </div>
-                  <div style={{ fontSize: 15, fontWeight: 500, color: "var(--text-primary)", marginBottom: 16, lineHeight: 1.85 }}>{examQuestions[examQ].q}</div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 11 }}>
-                    {examQuestions[examQ].opts.map((opt, i) => {
-                      const isSelected = selected === i;
-                      const isCorrect = i === examQuestions[examQ].ans;
-                      const showResult = selected !== null;
-                      let bg = "var(--bg-surface)", border = "0.5px solid #d1dde3", color = "var(--text-primary)";
-                      if (showResult && isCorrect) { bg = "var(--green-dim)"; border = "1.5px solid #34d399"; color = "#065f46"; }
-                      else if (showResult && isSelected && !isCorrect) { bg = "var(--red-dim)"; border = "1.5px solid #fca5a5"; color = "#dc2626"; }
-                      else if (isSelected) { bg = "var(--wca-primary-dim)"; border = "1.5px solid #ffbb23"; color = "#0f3d4d"; }
-                      return (
-                        <button key={i} onClick={() => submitAnswer(i)} style={{ padding: "11px 14px", border, borderRadius: 8, background: bg, color, fontSize: 13, textAlign: "left", cursor: selected === null ? "pointer" : "default", fontFamily: "inherit", transition: "all 0.15s" }}>
-                          {opt}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {examDone && (
-                <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 24, textAlign: "center" }}>
-                  <div style={{ fontSize: 42, fontWeight: 700, color: examScore >= 70 ? "#059669" : "#dc2626", marginBottom: 4 }}>{examScore}%</div>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text-primary)", marginBottom: 9 }}>
-                    {examScore >= 70 ? "¡Aprobado! 🎉" : "No aprobado — consulta a tu docente"}
-                  </div>
-                  <div style={{ fontSize: 13, color: "var(--text-secondary)", marginBottom: 18, lineHeight: 1.8 }}>
-                    {examScore >= 70
-                      ? "Excelente trabajo. La Unidad 10 se ha desbloqueado automáticamente."
-                      : "Agotaste tus 3 intentos. Tu docente José puede habilitarte un intento adicional."}
-                  </div>
-                  {examScore >= 70 && (
-                    <div style={{ background: "var(--green-dim)", borderRadius: 10, padding: "12px 16px", marginBottom: 16, textAlign: "left" }}>
-                      <div style={{ fontSize: 13, color: "#065f46", fontWeight: 600 }}>🔓 Unidad 10 desbloqueada — Pronunciación avanzada</div>
-                      <div style={{ fontSize: 12, color: "#059669", marginTop: 3 }}>Disponible el próximo lunes con la clase en vivo de U10.</div>
-                    </div>
-                  )}
-                  <button onClick={() => { setExamStarted(false); setExamDone(false); setExamQ(0); setExamAnswers([]); setSelected(null); }} style={{ padding: "9px 24px", background: "#155266", color: "var(--bg-surface)", border: "none", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
-                    Volver al examen
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* ── PROGRESS ── */}
-          {view === "progress" && (
-            <div>
-              <div style={{ display: "flex", gap: 0, marginBottom: 16, overflow: "hidden", borderRadius: 10, border: "0.5px solid var(--border)" }}>
-                {LEVEL_PATH.map((lv, i) => (
-                  <div key={i} style={{
-                    flex: 1, padding: "12px 8px", textAlign: "center",
-                    background: lv.status === "done" ? "var(--green-dim)" : lv.status === "current" ? "#155266" : "var(--bg-page)",
-                    borderRight: i < LEVEL_PATH.length - 1 ? "0.5px solid #d1dde3" : "none"
-                  }}>
-                    <div style={{ fontSize: 16, fontWeight: 700, color: lv.status === "done" ? "#065f46" : lv.status === "current" ? "var(--bg-surface)" : "var(--border)" }}>{lv.code}</div>
-                    <div style={{ fontSize: 11, color: lv.status === "done" ? "#059669" : lv.status === "current" ? "rgba(255,255,255,0.5)" : "var(--border-strong)", marginTop: 3 }}>{lv.name}</div>
-                    <div style={{ fontSize: 12, marginTop: 6, color: lv.status === "done" ? "#059669" : lv.status === "current" ? "#ffbb23" : "var(--border)" }}>
-                      {lv.status === "done" ? "✓" : lv.status === "current" ? "●" : "○"}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-                <div style={{ background: "var(--green-dim)", borderRadius: 12, padding: 20 }}>
-                  <div style={{ fontSize: 13, color: "#059669", marginBottom: 9, fontWeight: 600 }}>✓ Nivel A1 completado</div>
-                  <div style={{ fontSize: 12, color: "#059669", lineHeight: 1.85 }}>Certificado disponible en tu perfil.<br />Aprobado en febrero 2025.</div>
-                  <div style={{ marginTop: 10, padding: "6px 12px", background: "var(--bg-surface)", borderRadius: 6, fontSize: 13, color: "#065f46", fontWeight: 500, display: "inline-block", cursor: "pointer" }}>↓ Descargar certificado A1</div>
-                </div>
-                <div style={{ background: "var(--green-dim)", borderRadius: 12, padding: 20 }}>
-                  <div style={{ fontSize: 13, color: "#059669", marginBottom: 9, fontWeight: 600 }}>✓ Nivel A2 completado</div>
-                  <div style={{ fontSize: 12, color: "#059669", lineHeight: 1.85 }}>Certificado disponible en tu perfil.<br />Aprobado en abril 2025.</div>
-                  <div style={{ marginTop: 10, padding: "6px 12px", background: "var(--bg-surface)", borderRadius: 6, fontSize: 13, color: "#065f46", fontWeight: 500, display: "inline-block", cursor: "pointer" }}>↓ Descargar certificado A2</div>
                 </div>
               </div>
-              <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 20 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "var(--text-primary)" }}>Rendimiento por unidad — B1</div>
-                {UNITS.filter(u => u.score).map((u, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-                    <div style={{ fontSize: 12, color: "var(--text-tertiary)", width: 24 }}>U{u.n}</div>
-                    <div style={{ flex: 1, height: 5, background: "var(--wca-primary-dim)", borderRadius: 3, overflow: "hidden" }}>
-                      <div style={{ height: "100%", width: `${u.score}%`, background: u.score >= 80 ? "#059669" : u.score >= 70 ? "#ffc107" : "#ef5350", borderRadius: 3 }} />
-                    </div>
-                    <div style={{ fontSize: 12, fontWeight: 600, color: u.score >= 80 ? "#059669" : u.score >= 70 ? "#92400e" : "#dc2626", width: 32, textAlign: "right" }}>{u.score}%</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
-          {/* ── PAYMENTS ── */}
-          {view === "payments" && (
-            <div>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12, marginBottom: 14 }}>
-                {[
-                  { label: "Estado actual", val: "Al día", color: "#065f46", bg: "var(--green-dim)" },
-                  { label: "Próximo pago", val: "1 Jul", color: "#0f3d4d", bg: "var(--wca-primary-dim)" },
-                  { label: "Total pagado", val: "$405", color: "var(--text-primary)", bg: "var(--bg-page)" },
-                ].map((m, i) => (
-                  <div key={i} style={{ background: m.bg, borderRadius: 10, padding: "12px 14px", border: "0.5px solid var(--border)" }}>
-                    <div style={{ fontSize: 12, color: m.color, opacity: 0.7, marginBottom: 4 }}>{m.label}</div>
-                    <div style={{ fontSize: 20, fontWeight: 700, color: m.color }}>{m.val}</div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ background: "var(--bg-surface)", border: "0.5px solid var(--border)", borderRadius: 12, padding: 20 }}>
-                <div style={{ fontSize: 13, fontWeight: 500, marginBottom: 16, color: "var(--text-primary)" }}>Historial de pagos</div>
-                {PAYMENTS.map((p, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 0", borderTop: i > 0 ? "0.5px solid #e8f3f6" : "none" }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 8, background: "var(--green-dim)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 15, flexShrink: 0 }}>✓</div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontSize: 13, color: "var(--text-primary)", fontWeight: 500 }}>{p.desc}</div>
-                      <div style={{ fontSize: 12, color: "var(--text-tertiary)", marginTop: 1 }}>{p.date}</div>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
+                <div style={{ padding:"13px 18px", borderBottom:"1px solid var(--border)", fontSize:12, fontWeight:700, color:"var(--text-primary)" }}>Historial de pagos</div>
+                {[["16 Jun 2025","$95","Stripe ···4242"],["16 May 2025","$95","Stripe ···4242"],["16 Abr 2025","$95","Transferencia BAC"]].map(([d,a,m],i)=>(
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:14, padding:"13px 18px", borderBottom:"1px solid var(--border)" }}>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontSize:13, color:"var(--text-primary)", fontWeight:500 }}>{d}</div>
+                      <div style={{ fontSize:11, color:"var(--text-secondary)" }}>{m}</div>
                     </div>
-                    <div style={{ fontSize: 14, fontWeight: 600, color: "var(--text-primary)" }}>{p.amount}</div>
-                    <div style={{ fontSize: 12, background: "var(--green-dim)", color: "#065f46", padding: "6px 12px", borderRadius: 20 }}>Pagado</div>
-                    <button style={{ fontSize: 12, background: "transparent", border: "0.5px solid #ddd", borderRadius: 6, padding: "6px 12px", cursor: "pointer", color: "var(--text-secondary)", fontFamily: "inherit" }}>↓ Recibo</button>
+                    <div style={{ fontSize:16, fontWeight:700, color:"var(--text-primary)" }}>{a}</div>
+                    <div style={{ fontSize:10, padding:"3px 9px", background:GD, color:G, borderRadius:20, fontWeight:600 }}>✓</div>
+                    <button style={{ fontSize:11, padding:"5px 10px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", border:"1px solid var(--border)", borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Recibo</button>
                   </div>
                 ))}
               </div>
