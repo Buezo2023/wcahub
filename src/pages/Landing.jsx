@@ -1,573 +1,557 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
-const B = {
-  primary:"#155266", primaryHov:"#0f3d4d", primaryDim:"#e8f3f6",
-  secondary:"#ffbb23", secondaryDim:"#fff4d2", accent:"#fab82c",
-  dark:"#0f3d4d", bg:"#f5f7fa", white:"#ffffff",
-  text:"#1f2933", textSec:"#6b7280", border:"#d1dde3",
-  green:"#059669", greenDim:"#d1fae5", red:"#dc2626",
+/* ─── Design direction: "Luxury EdTech Internacional"
+   Fondo crema casi-blanco, sidebar de color sólido WCA verde-petróleo,
+   tipografía Georgia para display + DM Sans para body,
+   amarillo dorado #ffbb23 como acento dominante,
+   composición asimétrica, scroll animations suaves,
+   vocación: WCA es LA academia VA bilingüe de LATAM
+─────────────────────────────────────────────────────── */
+
+const T = {
+  deep:   "#0f2d38",
+  teal:   "#155266",
+  tealMid:"#1a6a82",
+  cream:  "#faf9f7",
+  white:  "#ffffff",
+  gold:   "#ffbb23",
+  goldDk: "#e6a800",
+  ink:    "#0f1b22",
+  muted:  "#4a6270",
+  border: "#dde6ea",
+  purple: "#5b3fa6",
+  rose:   "#c2185b",
+  tealLt: "#e8f3f6",
 };
 
-// ─── PLACEMENT TEST ──────────────────────────────────────────────
-const QUESTIONS = [
-  { q:"What is the meaning of 'happy'?", opts:["Sad","Tired","Glad","Angry"], ans:2, lvl:1 },
-  { q:"Choose the correct sentence:", opts:["She have a car.","She has a car.","She haves a car.","She is have a car."], ans:1, lvl:1 },
-  { q:"Fill in: 'I ___ to school every day.'", opts:["go","goes","going","gone"], ans:0, lvl:1 },
-  { q:"Someone says 'I'm starving.' They mean:", opts:["They are cold.","They are tired.","They are very hungry.","They are happy."], ans:2, lvl:2 },
-  { q:"Which sentence is in the past tense?", opts:["She walks to work.","She will walk.","She walked to work.","She is walking."], ans:2, lvl:2 },
-  { q:"Choose the word that means 'to get bigger':", opts:["shrink","expand","reduce","divide"], ans:1, lvl:2 },
-  { q:"Complete: 'If it rains tomorrow, we ___ stay inside.'", opts:["will","would","should have","are"], ans:0, lvl:3 },
-  { q:"'The meeting was postponed.' What does 'postponed' mean?", opts:["cancelled","moved to a later time","started early","made longer"], ans:1, lvl:3 },
-  { q:"Which uses Present Perfect correctly?", opts:["I have saw that movie.","I have seen that movie.","I seen that movie.","I did see that."], ans:1, lvl:3 },
-  { q:"Choose the correct conditional:", opts:["She would come if she had known.","She would have come if she had known.","She will have come.","She should come."], ans:1, lvl:4 },
-  { q:"Identify the passive voice sentence:", opts:["The chef prepared the meal.","The meal was prepared by the chef.","Someone prepared the meal.","The chef had prepared it."], ans:1, lvl:4 },
-  { q:"'The speech was ambiguous.' 'Ambiguous' means:", opts:["very clear","open to multiple interpretations","inspiring","controversial"], ans:1, lvl:4 },
-  { q:"'Cognitive dissonance occurs when...' What is it?", opts:["Mental clarity","Holding two conflicting ideas","Learning new beliefs","Selective memory"], ans:1, lvl:5 },
-  { q:"Choose the most natural phrasing:", opts:["It's high time we addressed this.","It's high time we will address this.","It's high time we have addressed.","It's high time we are addressing."], ans:0, lvl:5 },
-  { q:"In a formal email, which closing is correct?", opts:["See ya!","Cheers mate","Yours sincerely","Later"], ans:2, lvl:5 },
+const programs = [
+  { id:"en",      icon:"🇬🇧", name:"Inglés Completo",        price:95,  tag:"Base",          color:T.teal,   desc:"CEFR A1–C1 · Oxford Wide Angle · Clases en vivo + práctica 24/7", popular:false },
+  { id:"va",      icon:"💻",  name:"Asistente Virtual",      price:75,  tag:"Más popular",   color:T.purple, desc:"VA bilingüe · Herramientas digitales · Gestión remota profesional", popular:true  },
+  { id:"va_mkt",  icon:"📱",  name:"VA · Marketing Digital", price:95,  tag:"Especialización",color:T.rose,   desc:"Redes sociales · Copywriting · Email marketing · Analítica web",   popular:false },
+  { id:"va_legal",icon:"⚖️",  name:"VA · Legal Assistant",   price:95,  tag:"Especialización",color:"#0e7490",desc:"Documentos legales · Inglés jurídico · Agenda legal · CRM Legal",  popular:false },
+  { id:"va_care", icon:"🏥",  name:"VA · Cuidador Remoto",   price:95,  tag:"Especialización",color:T.tealMid,desc:"Terminología médica · Coordinación de citas · Registros de salud", popular:false },
 ];
 
-const LEVELS = [
-  { code:"A1", name:"Principiante",    range:[0,3],  desc:"Construyes bases sólidas desde cero.",           color:B.primary },
-  { code:"A2", name:"Básico",          range:[4,6],  desc:"Amplías vocabulario y gramática fundamental.",   color:"#0f5a78" },
-  { code:"B1", name:"Intermedio",      range:[7,9],  desc:"Trabajas fluidez y precisión gramatical.",       color:B.dark },
-  { code:"B2", name:"Interm. alto",    range:[10,12],desc:"Comunicación profesional y matices avanzados.", color:"#1a4d3a" },
-  { code:"C1", name:"Avanzado",        range:[13,15],desc:"Perfeccionas uso académico y profesional.",      color:"#2d1b69" },
+const stats = [
+  { n:"1,200+", label:"Graduados activos"  },
+  { n:"20+",    label:"Países"             },
+  { n:"94%",    label:"Tasa de empleo"     },
+  { n:"$18/hr", label:"Salario promedio"   },
 ];
 
-const PROGRAMS = [
-  { id:"en",   name:"Inglés completo",  price:95,  interval:"mes",    desc:"A1 → C1 con certificación CEFR. Clases en vivo + plataforma 24/7.", tag:null,    color:B.primary },
-  { id:"va",   name:"Asistente Virtual",price:75,  interval:"mes",    desc:"4 módulos de formación como VA bilingüe. Certificado WCA.",         tag:null,    color:B.dark },
-  { id:"combo",name:"Inglés + VA",      price:170, interval:"mes",    desc:"Los dos programas combinados. Progreso independiente por programa.", tag:"Popular",color:B.secondary },
-  { id:"beca", name:"Beca Inglés",      price:50,  interval:"trimestre",desc:"A1 → B1 con beca. Solo clases en vivo. Cupos limitados.",          tag:"Beca",  color:B.green },
+const testimonials = [
+  { name:"Andrea Castillo",  country:"🇨🇴 Colombia",  role:"VA · Marketing Digital",   quote:"En 6 meses pasé de cero a facturar $1,400/mes desde casa. WCA cambió mi vida completamente.", avatar:"AC" },
+  { name:"Diego Ramírez",    country:"🇲🇽 México",    role:"VA · Legal Assistant",      quote:"El nivel de inglés que aprendí me abrió puertas con clientes en Nueva York. Imposible sin WCA.", avatar:"DR" },
+  { name:"Valentina Ortega", country:"🇦🇷 Argentina", role:"Asistente Virtual General", quote:"Ahora trabajo para 3 clientes en EEUU. La formación de WCA es brutal — práctica y enfocada.", avatar:"VO" },
+  { name:"Carlos Jiménez",   country:"🇭🇳 Honduras",  role:"VA · Cuidador Remoto",      quote:"Desde Tegucigalpa trabajando para clínicas en Miami. Si yo pude, cualquiera puede.", avatar:"CJ" },
 ];
 
-const SCHEDULES = [
-  { time:"6:00 – 7:00 PM", days:"Lun · Mié · Vie", cupos:4,  teacher:"José R."  },
-  { time:"7:00 – 8:00 PM", days:"Lun · Mié · Vie", cupos:7,  teacher:"José R."  },
-  { time:"8:00 – 9:00 PM", days:"Lun · Mié · Vie", cupos:12, teacher:"Ana T."   },
-  { time:"9:00 – 10:00 PM",days:"Lun · Mié · Vie", cupos:0,  teacher:"Ana T."   },
+const howItWorks = [
+  { n:"01", title:"Placement Test",        desc:"Hacés el test gratuito y detectamos tu nivel de inglés. Sin presión, sin trampa." },
+  { n:"02", title:"Elegís tu programa",    desc:"Inglés, VA General o una especialización. O combinás: Inglés + VA a la vez." },
+  { n:"03", title:"Clases en vivo",        desc:"3 veces por semana vía Teams con tu grupo. Grabaciones disponibles 7 días." },
+  { n:"04", title:"Práctica 24/7",         desc:"Plataforma propia con ejercicios, exámenes y feedback inmediato. Sin horarios." },
+  { n:"05", title:"Certificado CEFR/WCA",  desc:"Al completar cada nivel recibís un certificado verificable con QR. Compartilo en LinkedIn." },
 ];
 
-const TESTIMONIALS = [
-  { name:"María López",    country:"🇭🇳", level:"B1", text:"Llevo 6 meses en WCA y ya me desenvuelvo en entrevistas de trabajo en inglés. La metodología de clases en vivo + práctica diaria es lo que hace la diferencia.", avatar:"ML" },
-  { name:"Carlos Reyes",   country:"🇨🇴", level:"A2", text:"Entré sin saber nada y en 3 meses ya puedo mantener conversaciones básicas. El hecho de poder ingresar al ciclo cualquier semana me facilitó mucho comenzar.", avatar:"CR" },
-  { name:"Ana Sofía Vega", country:"🇦🇷", level:"C1", text:"Completé los 5 niveles en WCA y conseguí el trabajo que quería. El certificado con QR verificable fue clave en mi entrevista con una empresa internacional.", avatar:"AV" },
-];
-
-const FAQS = [
-  { q:"¿Puedo empezar en cualquier momento?", a:"Sí. WCA usa matrícula continua — el ciclo corre todos los lunes independientemente. Al inscribirte, el sistema te ubica automáticamente en la unidad activa de tu nivel." },
-  { q:"¿Necesito un horario fijo?", a:"Las clases en vivo son 3 veces por semana en el horario que eliges. El contenido de práctica está disponible 24/7, por lo que puedes estudiar cuando quieras." },
-  { q:"¿Qué pasa si falto a una clase?", a:"Todas las clases se graban y quedan disponibles 7 días en tu portal. Nunca pierdes el contenido." },
-  { q:"¿Los certificados son reconocidos?", a:"Sí. Los certificados de WCA están basados en el Marco Común Europeo de Referencia (CEFR) y tienen un código QR verificable que cualquier empleador puede consultar." },
-  { q:"¿Puedo pausar la suscripción?", a:"Si necesitas cancelar, tu progreso se conserva indefinidamente. Al reactivar, retomas exactamente desde donde estabas." },
-  { q:"¿Cómo sé qué nivel me corresponde?", a:"Al inscribirte haces un Placement Test de 15 preguntas (~20 minutos). El sistema detecta tu nivel automáticamente y te ubica en el ciclo correcto." },
-];
-
-// ─── COMPONENTS ──────────────────────────────────────────────────
-function Btn({ children, variant="primary", onClick, style={} }) {
-  const base = { padding:"11px 24px", borderRadius:10, fontSize:13, fontWeight:700, cursor:"pointer", border:"none", fontFamily:"inherit", transition:"all .15s", ...style };
-  const styles = {
-    primary: { background:B.primary, color:"#fff", ...base },
-    secondary: { background:B.secondary, color:B.dark, ...base },
-    outline: { background:"transparent", color:B.primary, border:`2px solid ${B.primary}`, ...base },
-    ghost: { background:"rgba(255,255,255,.1)", color:"#fff", border:"1px solid rgba(255,255,255,.2)", ...base },
-  };
-  return <button onClick={onClick} style={styles[variant]}>{children}</button>;
+function useInView(threshold = 0.15) {
+  const ref = useRef(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setInView(true); }, { threshold });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, []);
+  return [ref, inView];
 }
 
-// ─── MAIN ─────────────────────────────────────────────────────────
-export default function LandingPage() {
-  const [section, setSection]   = useState("landing"); // landing | test | enroll | confirm
-  const [testStep, setTestStep] = useState(0);
-  const [answers, setAnswers]   = useState([]);
-  const [selected, setSelected] = useState(null);
-  const [detectedLevel, setDetectedLevel] = useState(null);
-  const [why, setWhy]           = useState("");
-  const [selProgram, setSelProgram] = useState(null);
-  const [selSchedule, setSelSchedule] = useState(0);
-  const [enrollStep, setEnrollStep] = useState(0); // 0=program 1=schedule 2=data 3=payment
-  const [payMethod, setPayMethod] = useState("card");
-  const [faqOpen, setFaqOpen]   = useState(null);
-  const [mobileMenu, setMobileMenu] = useState(false);
-
-  // Test logic
-  function submitAnswer(i) {
-    if (selected !== null) return;
-    setSelected(i);
-    setTimeout(() => {
-      const newAnswers = [...answers, { q:testStep, correct:i===QUESTIONS[testStep].ans }];
-      setAnswers(newAnswers);
-      if (testStep < QUESTIONS.length - 1) {
-        setTestStep(testStep + 1);
-        setSelected(null);
-      } else {
-        const score = newAnswers.filter(a=>a.correct).length;
-        const lvl = LEVELS.find(l => score >= l.range[0] && score <= l.range[1]) || LEVELS[0];
-        setDetectedLevel(lvl);
-        setTestStep(testStep + 1);
-      }
-    }, 700);
-  }
-
-  const progress = ((testStep) / QUESTIONS.length) * 100;
-
-  if (section === "test") return <PlacementTest testStep={testStep} selected={selected} submitAnswer={submitAnswer} QUESTIONS={QUESTIONS} progress={progress} detectedLevel={detectedLevel} why={why} setWhy={setWhy} onEnroll={() => { setSelProgram("en"); setSection("enroll"); }} onBack={() => setSection("landing")} />;
-
-  if (section === "enroll") return <EnrollFlow step={enrollStep} setStep={setEnrollStep} detectedLevel={detectedLevel} selProgram={selProgram} setSelProgram={setSelProgram} selSchedule={selSchedule} setSelSchedule={setSelSchedule} payMethod={payMethod} setPayMethod={setPayMethod} PROGRAMS={PROGRAMS} SCHEDULES={SCHEDULES} onDone={() => setSection("confirm")} onBack={() => setSection("landing")} />;
-
-  if (section === "confirm") return <ConfirmScreen detectedLevel={detectedLevel} selProgram={PROGRAMS.find(p=>p.id===selProgram)} schedule={SCHEDULES[selSchedule]} onPortal={() => setSection("landing")} />;
-
-  // ── LANDING ──
+function FadeIn({ children, delay = 0, direction = "up", style = {} }) {
+  const [ref, inView] = useInView();
   return (
-    <div style={{ background:B.bg, minHeight:"100%", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+    <div ref={ref} style={{
+      opacity: inView ? 1 : 0,
+      transform: inView ? "none" : direction === "up" ? "translateY(28px)" : direction === "left" ? "translateX(-28px)" : "translateX(28px)",
+      transition: `opacity .65s ${delay}s ease, transform .65s ${delay}s ease`,
+      ...style,
+    }}>
+      {children}
+    </div>
+  );
+}
 
-      {/* NAV */}
-      <nav style={{ background:B.white, borderBottom:`1px solid ${B.border}`, position:"sticky", top:0, zIndex:50 }}>
-        <div style={{ maxWidth:1080, margin:"0 auto", padding:"0 24px", height:60, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
-          <div style={{ fontSize:20, fontWeight:800, color:B.primary, letterSpacing:-0.5 }}>
-            WCA <span style={{ color:B.secondary }}>Hub</span>
+export default function Landing() {
+  const [activeProgram, setActiveProgram] = useState("va");
+  const [step, setStep] = useState(0);
+  const [email, setEmail] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  return (
+    <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:T.cream, color:T.ink, overflowX:"hidden" }}>
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600;700;800&display=swap');
+        :root { scroll-behavior: smooth; }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        ::selection { background: ${T.gold}60; }
+        .serif { font-family: 'DM Serif Display', Georgia, serif; }
+        .hover-lift { transition: transform .2s, box-shadow .2s; }
+        .hover-lift:hover { transform: translateY(-4px); box-shadow: 0 16px 48px rgba(15,45,56,.14); }
+        .gold-btn { background: ${T.gold}; color: ${T.deep}; border: none; cursor: pointer; font-weight: 700; font-family: inherit; transition: background .15s, transform .1s; }
+        .gold-btn:hover { background: ${T.goldDk}; transform: translateY(-1px); }
+        .ghost-btn { background: transparent; color: ${T.white}; border: 1.5px solid rgba(255,255,255,.35); cursor: pointer; font-family: inherit; transition: all .15s; }
+        .ghost-btn:hover { background: rgba(255,255,255,.1); border-color: rgba(255,255,255,.7); }
+        .teal-btn { background: ${T.teal}; color: ${T.white}; border: none; cursor: pointer; font-family: inherit; font-weight: 700; transition: background .15s; }
+        .teal-btn:hover { background: ${T.tealMid}; }
+        @media (max-width: 768px) {
+          .hero-grid { flex-direction: column !important; }
+          .hide-mobile { display: none !important; }
+          .hero-text h1 { font-size: 36px !important; }
+          .stats-grid { grid-template-columns: repeat(2,1fr) !important; }
+          .programs-grid { grid-template-columns: 1fr !important; }
+          .how-grid { grid-template-columns: 1fr !important; }
+          .testimonials-grid { grid-template-columns: 1fr !important; }
+          .cta-inner { flex-direction: column !important; text-align: center; }
+          .footer-grid { grid-template-columns: 1fr !important; }
+          .nav-links { display: none; }
+        }
+        @keyframes floatY { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+        @keyframes fadeUp { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:none} }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+        .float { animation: floatY 4s ease-in-out infinite; }
+        .float2 { animation: floatY 4s ease-in-out infinite 2s; }
+      `}</style>
+
+      {/* ── NAV ────────────────────────────────────────────────── */}
+      <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(250,249,247,.95)", backdropFilter:"blur(12px)", borderBottom:`1px solid ${T.border}`, padding:"0 24px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+          <div style={{ width:36, height:36, borderRadius:9, background:T.teal, display:"flex", alignItems:"center", justifyContent:"center" }}>
+            <span style={{ fontSize:16, fontWeight:800, color:T.gold }}>W</span>
           </div>
-          <div style={{ display:"flex", gap:28, alignItems:"center" }}>
-            {["Programas","Metodología","Precios","Testimonios"].map(item => (
-              <a key={item} href={`#${item.toLowerCase()}`} style={{ fontSize:13, color:B.textSec, textDecoration:"none", fontWeight:500 }}>{item}</a>
-            ))}
+          <div>
+            <div style={{ fontSize:15, fontWeight:800, color:T.teal, letterSpacing:-.3 }}>WCA <span style={{ color:T.gold }}>Academy</span></div>
+            <div style={{ fontSize:9, color:T.muted, letterSpacing:1.5, textTransform:"uppercase" }}>Virtual Assistant Training</div>
           </div>
-          <div style={{ display:"flex", gap:10 }}>
-            <Btn variant="outline" style={{ padding:"8px 18px", fontSize:12 }}>Iniciar sesión</Btn>
-            <Btn variant="primary" onClick={() => setSection("test")} style={{ padding:"8px 18px", fontSize:12 }}>Comenzar gratis</Btn>
-          </div>
+        </div>
+
+        <div className="nav-links" style={{ display:"flex", alignItems:"center", gap:28 }}>
+          {[["Programas","#programas"],["Cómo funciona","#como"],["Testimonios","#testimonios"],["Precios","#precios"]].map(([l,h])=>(
+            <a key={l} href={h} style={{ fontSize:13, color:T.muted, textDecoration:"none", fontWeight:500, transition:"color .15s" }}
+              onMouseEnter={e=>e.target.style.color=T.teal} onMouseLeave={e=>e.target.style.color=T.muted}>{l}</a>
+          ))}
+        </div>
+
+        <div style={{ display:"flex", gap:8 }}>
+          <button className="ghost-btn" style={{ padding:"8px 16px", borderRadius:9, fontSize:12, color:T.teal, borderColor:T.border }} onClick={()=>{}}>Iniciar sesión</button>
+          <button className="gold-btn" style={{ padding:"9px 18px", borderRadius:9, fontSize:12 }} onClick={()=>document.getElementById("registro")?.scrollIntoView({behavior:"smooth"})}>Comenzar gratis</button>
         </div>
       </nav>
 
-      {/* HERO */}
-      <section style={{ background:`linear-gradient(135deg, ${B.primary} 0%, ${B.dark} 60%, #0a2e3d 100%)`, padding:"72px 24px 80px" }}>
-        <div style={{ maxWidth:900, margin:"0 auto", textAlign:"center" }}>
-          <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,187,35,.15)", border:"1px solid rgba(255,187,35,.3)", borderRadius:20, padding:"5px 14px", marginBottom:20 }}>
-            <span style={{ width:8, height:8, borderRadius:"50%", background:B.secondary, display:"inline-block" }} />
-            <span style={{ fontSize:11, color:B.secondary, fontWeight:600, letterSpacing:.5 }}>100% REMOTO · ESTUDIANTES EN 20+ PAÍSES</span>
-          </div>
-          <h1 style={{ fontSize:46, fontWeight:800, color:"#fff", lineHeight:1.15, marginBottom:18, letterSpacing:-1 }}>
-            Aprende inglés con<br />
-            <span style={{ color:B.secondary }}>metodología continua</span>
-          </h1>
-          <p style={{ fontSize:17, color:"rgba(255,255,255,.65)", maxWidth:580, margin:"0 auto 36px", lineHeight:1.7 }}>
-            Entra en cualquier semana, avanza a tu ritmo y obtén certificados CEFR verificables. Clases en vivo + práctica 24/7.
-          </p>
-          <div style={{ display:"flex", gap:12, justifyContent:"center", flexWrap:"wrap" }}>
-            <Btn variant="secondary" onClick={() => setSection("test")} style={{ fontSize:14, padding:"13px 30px" }}>
-              Hacer Placement Test gratuito →
-            </Btn>
-            <Btn variant="ghost" style={{ fontSize:14, padding:"13px 30px" }}>
-              Ver clase de prueba
-            </Btn>
-          </div>
-          {/* Stats */}
-          <div style={{ display:"flex", gap:0, justifyContent:"center", marginTop:52, borderTop:"1px solid rgba(255,255,255,.1)", paddingTop:36 }}>
-            {[["134+","Estudiantes activos"],["20+","Países"],["5","Niveles CEFR"],["98%","Satisfacción"]].map(([n,l],i) => (
-              <div key={i} style={{ flex:1, textAlign:"center", borderRight: i<3?"1px solid rgba(255,255,255,.1)":undefined }}>
-                <div style={{ fontSize:28, fontWeight:800, color:B.secondary }}>{n}</div>
-                <div style={{ fontSize:11, color:"rgba(255,255,255,.45)", marginTop:4 }}>{l}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* ── HERO ───────────────────────────────────────────────── */}
+      <section style={{ background:`linear-gradient(150deg, ${T.deep} 0%, ${T.teal} 55%, ${T.tealMid} 100%)`, padding:"80px 24px 90px", position:"relative", overflow:"hidden" }}>
+        {/* Decorative circles */}
+        <div style={{ position:"absolute", top:-80, right:-80, width:400, height:400, borderRadius:"50%", background:"rgba(255,187,35,.06)", pointerEvents:"none" }}/>
+        <div style={{ position:"absolute", bottom:-60, left:"20%", width:250, height:250, borderRadius:"50%", background:"rgba(255,255,255,.04)", pointerEvents:"none" }}/>
+        <div style={{ position:"absolute", top:"30%", left:"-5%", width:150, height:150, borderRadius:"50%", border:"1px solid rgba(255,187,35,.15)", pointerEvents:"none" }}/>
 
-      {/* HOW IT WORKS */}
-      <section style={{ padding:"64px 24px", background:B.white }}>
-        <div style={{ maxWidth:860, margin:"0 auto" }}>
-          <div style={{ textAlign:"center", marginBottom:44 }}>
-            <div style={{ fontSize:11, fontWeight:700, color:B.secondary, letterSpacing:2, textTransform:"uppercase", marginBottom:8 }}>Metodología</div>
-            <h2 style={{ fontSize:30, fontWeight:800, color:B.text, letterSpacing:-0.5 }}>Así funciona WCA</h2>
-          </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:24 }}>
-            {[
-              { n:"1", icon:"ti-clipboard-list", title:"Haz el Placement Test", desc:"15 preguntas en 20 minutos. El sistema detecta tu nivel A1–C1 automáticamente y te ubica en el ciclo activo.", color:B.primary },
-              { n:"2", icon:"ti-user-plus", title:"Elige tu horario", desc:"Selecciona el programa y el horario de clase que te conviene. Pagas y accedes de inmediato.", color:B.dark },
-              { n:"3", icon:"ti-rocket", title:"Aprende y certifícate", desc:"Clases en vivo 3x por semana + plataforma 24/7. Aprueba los exámenes y obtén tu certificado CEFR.", color:B.secondary },
-            ].map((s,i) => (
-              <div key={i} style={{ textAlign:"center", padding:"28px 20px", background:B.bg, borderRadius:16, border:`1px solid ${B.border}` }}>
-                <div style={{ width:56, height:56, borderRadius:"50%", background:s.color, margin:"0 auto 16px", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                  <i className={`ti ${s.icon}`} style={{ fontSize:24, color:"#fff" }} aria-hidden="true" />
-                </div>
-                <div style={{ fontSize:22, fontWeight:800, color:s.color, marginBottom:6 }}>{s.n}.</div>
-                <div style={{ fontSize:14, fontWeight:700, color:B.text, marginBottom:8 }}>{s.title}</div>
-                <div style={{ fontSize:12, color:B.textSec, lineHeight:1.7 }}>{s.desc}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+        <div style={{ maxWidth:1100, margin:"0 auto", display:"flex", alignItems:"center", gap:60 }} className="hero-grid">
 
-      {/* PROGRAMS */}
-      <section id="programas" style={{ padding:"64px 24px", background:B.bg }}>
-        <div style={{ maxWidth:920, margin:"0 auto" }}>
-          <div style={{ textAlign:"center", marginBottom:44 }}>
-            <div style={{ fontSize:11, fontWeight:700, color:B.secondary, letterSpacing:2, textTransform:"uppercase", marginBottom:8 }}>Programas</div>
-            <h2 style={{ fontSize:30, fontWeight:800, color:B.text, letterSpacing:-0.5 }}>Elige tu programa</h2>
-          </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:16 }}>
-            {PROGRAMS.map(p => (
-              <div key={p.id} style={{ background:B.white, borderRadius:16, padding:24, border:`2px solid ${p.id==="combo"?B.secondary:B.border}`, position:"relative", overflow:"hidden" }}>
-                {p.tag && <div style={{ position:"absolute", top:16, right:16, fontSize:10, background:p.id==="combo"?B.secondary:B.greenDim, color:p.id==="combo"?B.dark:"#065f46", padding:"3px 10px", borderRadius:20, fontWeight:700 }}>{p.tag}</div>}
-                <div style={{ fontSize:16, fontWeight:800, color:p.color, marginBottom:6 }}>{p.name}</div>
-                <div style={{ fontSize:12, color:B.textSec, lineHeight:1.6, marginBottom:16 }}>{p.desc}</div>
-                <div style={{ display:"flex", alignItems:"baseline", gap:4, marginBottom:20 }}>
-                  <span style={{ fontSize:28, fontWeight:800, color:B.text }}>${p.price}</span>
-                  <span style={{ fontSize:12, color:B.textSec }}>/{p.interval}</span>
-                </div>
-                <Btn variant={p.id==="combo"?"secondary":"primary"} onClick={() => { setSelProgram(p.id); setSection("test"); }} style={{ width:"100%", padding:"10px" }}>
-                  Comenzar
-                </Btn>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* TESTIMONIALS */}
-      <section id="testimonios" style={{ padding:"64px 24px", background:B.white }}>
-        <div style={{ maxWidth:900, margin:"0 auto" }}>
-          <div style={{ textAlign:"center", marginBottom:44 }}>
-            <div style={{ fontSize:11, fontWeight:700, color:B.secondary, letterSpacing:2, textTransform:"uppercase", marginBottom:8 }}>Testimonios</div>
-            <h2 style={{ fontSize:30, fontWeight:800, color:B.text, letterSpacing:-0.5 }}>Lo que dicen nuestros estudiantes</h2>
-          </div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:16 }}>
-            {TESTIMONIALS.map((t,i) => (
-              <div key={i} style={{ background:B.bg, borderRadius:16, padding:22, border:`1px solid ${B.border}` }}>
-                <div style={{ fontSize:22, color:B.secondary, marginBottom:12, lineHeight:1 }}>"</div>
-                <div style={{ fontSize:12, color:B.text, lineHeight:1.8, marginBottom:18 }}>{t.text}</div>
-                <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                  <div style={{ width:36, height:36, borderRadius:"50%", background:B.primaryDim, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:B.primary }}>{t.avatar}</div>
-                  <div>
-                    <div style={{ fontSize:12, fontWeight:700, color:B.text }}>{t.name} {t.country}</div>
-                    <div style={{ fontSize:10, color:B.textSec }}>Nivel {t.level}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ */}
-      <section style={{ padding:"64px 24px", background:B.bg }}>
-        <div style={{ maxWidth:680, margin:"0 auto" }}>
-          <div style={{ textAlign:"center", marginBottom:44 }}>
-            <h2 style={{ fontSize:30, fontWeight:800, color:B.text, letterSpacing:-0.5 }}>Preguntas frecuentes</h2>
-          </div>
-          {FAQS.map((f,i) => (
-            <div key={i} style={{ background:B.white, borderRadius:12, border:`1px solid ${B.border}`, marginBottom:8, overflow:"hidden" }}>
-              <button onClick={() => setFaqOpen(faqOpen===i?null:i)} style={{ width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center", padding:"16px 18px", background:"transparent", border:"none", cursor:"pointer", textAlign:"left", fontFamily:"inherit" }}>
-                <span style={{ fontSize:13, fontWeight:600, color:B.text }}>{f.q}</span>
-                <i className={`ti ti-chevron-${faqOpen===i?"up":"down"}`} style={{ fontSize:16, color:B.textSec, flexShrink:0, marginLeft:12 }} aria-hidden="true" />
-              </button>
-              {faqOpen===i && <div style={{ padding:"0 18px 16px", fontSize:12, color:B.textSec, lineHeight:1.8 }}>{f.a}</div>}
+          {/* Text */}
+          <div className="hero-text" style={{ flex:1, minWidth:0 }}>
+            <div style={{ display:"inline-flex", alignItems:"center", gap:8, background:"rgba(255,187,35,.15)", border:"1px solid rgba(255,187,35,.3)", borderRadius:30, padding:"6px 14px", marginBottom:24 }}>
+              <div style={{ width:6, height:6, borderRadius:"50%", background:T.gold, animation:"pulse 2s infinite" }}/>
+              <span style={{ fontSize:12, color:T.gold, fontWeight:600 }}>Academia VA Bilingüe #1 en LATAM</span>
             </div>
+
+            <h1 className="serif" style={{ fontSize:54, fontWeight:400, color:T.white, lineHeight:1.1, marginBottom:20, letterSpacing:-1 }}>
+              Conviértete en<br/>
+              <em style={{ color:T.gold }}>Asistente Virtual</em><br/>
+              bilingüe de alto valor
+            </h1>
+
+            <p style={{ fontSize:16, color:"rgba(255,255,255,.7)", lineHeight:1.8, marginBottom:32, maxWidth:480 }}>
+              Aprende inglés y formación VA al mismo tiempo. En 3–6 meses estás facturando en dólares desde cualquier lugar del mundo.
+            </p>
+
+            <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginBottom:40 }}>
+              <button className="gold-btn" style={{ padding:"14px 32px", borderRadius:12, fontSize:15 }} onClick={()=>document.getElementById("registro")?.scrollIntoView({behavior:"smooth"})}>
+                Comenzar gratis →
+              </button>
+              <button className="ghost-btn" style={{ padding:"14px 24px", borderRadius:12, fontSize:14, display:"flex", alignItems:"center", gap:8 }} onClick={()=>document.getElementById("como")?.scrollIntoView({behavior:"smooth"})}>
+                ▶ Cómo funciona
+              </button>
+            </div>
+
+            {/* Flags */}
+            <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+              <div style={{ display:"flex" }}>
+                {["🇭🇳","🇨🇴","🇲🇽","🇦🇷","🇵🇪","🇪🇸"].map((f,i)=>(
+                  <div key={i} style={{ width:28, height:28, borderRadius:"50%", border:`2px solid ${T.teal}`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, marginLeft:i>0?-8:0, background:T.deep }}>
+                    {f}
+                  </div>
+                ))}
+              </div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,.5)" }}>+1,200 graduados en 20+ países</div>
+            </div>
+          </div>
+
+          {/* Card visual */}
+          <div className="hide-mobile float" style={{ flexShrink:0, width:340 }}>
+            <div style={{ background:"rgba(255,255,255,.07)", backdropFilter:"blur(20px)", border:"1px solid rgba(255,255,255,.12)", borderRadius:24, padding:24 }}>
+              <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+                <div style={{ fontSize:12, color:"rgba(255,255,255,.5)", fontWeight:600, letterSpacing:1 }}>MI PROGRESO</div>
+                <div style={{ fontSize:10, background:T.gold, color:T.deep, padding:"3px 10px", borderRadius:20, fontWeight:700 }}>ACTIVO</div>
+              </div>
+              {/* Progress rings */}
+              <div style={{ display:"flex", gap:14, marginBottom:20 }}>
+                {[{l:"Inglés",pct:75,c:T.gold},{l:"VA General",pct:58,c:"#a78bfa"},{l:"Marketing",pct:30,c:"#f9a8d4"}].map(({l,pct,c},i)=>(
+                  <div key={i} style={{ flex:1, textAlign:"center" }}>
+                    <svg viewBox="0 0 60 60" width={60} height={60} style={{ display:"block", margin:"0 auto 6px" }}>
+                      <circle cx={30} cy={30} r={24} fill="none" stroke="rgba(255,255,255,.1)" strokeWidth={5}/>
+                      <circle cx={30} cy={30} r={24} fill="none" stroke={c} strokeWidth={5}
+                        strokeDasharray={`${(pct/100)*150.8} 150.8`} strokeLinecap="round"
+                        transform="rotate(-90 30 30)" style={{transition:"stroke-dasharray 1s"}}/>
+                      <text x={30} y={35} textAnchor="middle" fontSize={13} fontWeight="700" fill={c}>{pct}%</text>
+                    </svg>
+                    <div style={{ fontSize:10, color:"rgba(255,255,255,.55)", fontWeight:500 }}>{l}</div>
+                  </div>
+                ))}
+              </div>
+              {/* Next class */}
+              <div style={{ background:"rgba(255,187,35,.12)", border:"1px solid rgba(255,187,35,.25)", borderRadius:12, padding:"12px 14px", marginBottom:14 }}>
+                <div style={{ fontSize:10, color:T.gold, fontWeight:600, marginBottom:4 }}>PRÓXIMA CLASE EN VIVO</div>
+                <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>Lunes · 6:00 PM</div>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,.55)" }}>Unit 9: Future · con Ana Torres</div>
+              </div>
+              {/* Skills */}
+              {[["Listening",89,"#6b21a8"],["Vocabulary",87,"#166534"],["Communication",92,"#7c3aed"]].map(([s,v,c])=>(
+                <div key={s} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,.6)", width:100, flexShrink:0 }}>{s}</div>
+                  <div style={{ flex:1, height:5, background:"rgba(255,255,255,.1)", borderRadius:3 }}>
+                    <div style={{ height:"100%", width:`${v}%`, background:c, borderRadius:3 }}/>
+                  </div>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,.7)", fontWeight:600, width:28, textAlign:"right" }}>{v}%</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Stats bar */}
+        <div style={{ maxWidth:1100, margin:"60px auto 0" }}>
+          <div className="stats-grid" style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:1, background:"rgba(255,255,255,.1)", borderRadius:16, overflow:"hidden" }}>
+            {stats.map((s,i)=>(
+              <div key={i} style={{ padding:"20px 24px", textAlign:"center", background:"rgba(255,255,255,.05)" }}>
+                <div className="serif" style={{ fontSize:32, fontWeight:400, color:T.gold, lineHeight:1 }}>{s.n}</div>
+                <div style={{ fontSize:12, color:"rgba(255,255,255,.55)", marginTop:5 }}>{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── WHY VA BILINGÜE ────────────────────────────────────── */}
+      <section style={{ padding:"90px 24px", maxWidth:1100, margin:"0 auto" }}>
+        <FadeIn>
+          <div style={{ textAlign:"center", marginBottom:56 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:T.teal, letterSpacing:2.5, textTransform:"uppercase", marginBottom:12 }}>El mercado más demandado</div>
+            <h2 className="serif" style={{ fontSize:42, color:T.ink, lineHeight:1.2, marginBottom:16 }}>
+              El inglés solo ya no alcanza.<br/>
+              <span style={{ color:T.teal }}>Los empleadores buscan VAs.</span>
+            </h2>
+            <p style={{ fontSize:16, color:T.muted, maxWidth:560, margin:"0 auto", lineHeight:1.8 }}>
+              El trabajo remoto bilingüe creció 340% en LATAM desde 2020. Las empresas de EEUU y Europa pagan en dólares a profesionales que combinan inglés + habilidades VA.
+            </p>
+          </div>
+        </FadeIn>
+
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:24 }} className="how-grid">
+          {[
+            { icon:"💵", title:"Gana en dólares",    desc:"El VA bilingüe promedio factura entre $800–2,500 USD/mes. Desde tu casa, en cualquier país de LATAM.", color:T.teal },
+            { icon:"🌍", title:"Trabaja desde donde quieras", desc:"Tus clientes están en EE.UU., Canadá y Europa. Tu oficina es donde tengas wifi.", color:"#7c3aed" },
+            { icon:"⚡", title:"6 meses para empezar", desc:"No necesitás título universitario. Con WCA en 6 meses estás lista/o para trabajar con clientes internacionales.", color:T.rose },
+          ].map((c,i)=>(
+            <FadeIn key={i} delay={i*0.12}>
+              <div className="hover-lift" style={{ background:T.white, border:`1px solid ${T.border}`, borderRadius:20, padding:28, borderTop:`4px solid ${c.color}` }}>
+                <div style={{ fontSize:36, marginBottom:16 }}>{c.icon}</div>
+                <div className="serif" style={{ fontSize:20, color:T.ink, marginBottom:10 }}>{c.title}</div>
+                <div style={{ fontSize:14, color:T.muted, lineHeight:1.75 }}>{c.desc}</div>
+              </div>
+            </FadeIn>
           ))}
         </div>
       </section>
 
-      {/* CTA FINAL */}
-      <section style={{ background:`linear-gradient(135deg, ${B.primary}, ${B.dark})`, padding:"64px 24px", textAlign:"center" }}>
-        <div style={{ maxWidth:600, margin:"0 auto" }}>
-          <h2 style={{ fontSize:32, fontWeight:800, color:"#fff", marginBottom:12, letterSpacing:-0.5 }}>¿Listo para empezar?</h2>
-          <p style={{ fontSize:15, color:"rgba(255,255,255,.65)", marginBottom:30, lineHeight:1.7 }}>
-            Haz el Placement Test gratis y descubre tu nivel en 20 minutos. Sin compromiso.
-          </p>
-          <Btn variant="secondary" onClick={() => setSection("test")} style={{ fontSize:14, padding:"14px 36px" }}>
-            Comenzar Placement Test →
-          </Btn>
+      {/* ── PROGRAMS ───────────────────────────────────────────── */}
+      <section id="programas" style={{ background:T.deep, padding:"90px 24px" }}>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <FadeIn>
+            <div style={{ textAlign:"center", marginBottom:56 }}>
+              <div style={{ fontSize:11, fontWeight:700, color:T.gold, letterSpacing:2.5, textTransform:"uppercase", marginBottom:12 }}>Programas</div>
+              <h2 className="serif" style={{ fontSize:42, color:T.white, lineHeight:1.2, marginBottom:16 }}>
+                Un ecosistema completo.<br/><span style={{ color:T.gold }}>Empieza donde quieras.</span>
+              </h2>
+              <p style={{ fontSize:15, color:"rgba(255,255,255,.55)", maxWidth:520, margin:"0 auto", lineHeight:1.8 }}>
+                Podés inscribirte en uno o combinar programas. Cada uno avanza de forma independiente.
+              </p>
+            </div>
+          </FadeIn>
+
+          {/* Program tabs */}
+          <div style={{ display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap", marginBottom:40 }}>
+            {programs.map(p=>(
+              <button key={p.id} onClick={()=>setActiveProgram(p.id)} style={{
+                padding:"9px 18px", borderRadius:30, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit",
+                background: activeProgram===p.id ? p.color : "rgba(255,255,255,.06)",
+                color: activeProgram===p.id ? "#fff" : "rgba(255,255,255,.5)",
+                border: `1.5px solid ${activeProgram===p.id ? p.color : "rgba(255,255,255,.1)"}`,
+                transition:"all .2s",
+              }}>
+                {p.icon} {p.name}
+              </button>
+            ))}
+          </div>
+
+          {/* Active program detail */}
+          {programs.filter(p=>p.id===activeProgram).map(p=>(
+            <FadeIn key={p.id}>
+              <div style={{ background:"rgba(255,255,255,.05)", backdropFilter:"blur(10px)", border:`1px solid rgba(255,255,255,.1)`, borderRadius:24, padding:"36px 40px", display:"flex", gap:40, alignItems:"center" }}>
+                <div style={{ width:90, height:90, borderRadius:22, background:p.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:44, flexShrink:0 }}>{p.icon}</div>
+                <div style={{ flex:1 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
+                    <div className="serif" style={{ fontSize:26, color:T.white }}>{p.name}</div>
+                    {p.popular && <span style={{ fontSize:10, background:T.gold, color:T.deep, padding:"3px 10px", borderRadius:20, fontWeight:700 }}>{p.tag}</span>}
+                    {!p.popular && p.tag && <span style={{ fontSize:10, background:"rgba(255,255,255,.1)", color:"rgba(255,255,255,.6)", padding:"3px 10px", borderRadius:20 }}>{p.tag}</span>}
+                  </div>
+                  <div style={{ fontSize:14, color:"rgba(255,255,255,.6)", lineHeight:1.7, marginBottom:20 }}>{p.desc}</div>
+                  <div style={{ display:"flex", gap:12, alignItems:"center" }}>
+                    <div className="serif" style={{ fontSize:36, color:T.gold }}>${p.price}</div>
+                    <div style={{ fontSize:13, color:"rgba(255,255,255,.4)" }}>/ mes</div>
+                    <button className="gold-btn" style={{ marginLeft:"auto", padding:"12px 28px", borderRadius:12, fontSize:14 }} onClick={()=>document.getElementById("registro")?.scrollIntoView({behavior:"smooth"})}>
+                      Inscribirme →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </FadeIn>
+          ))}
+
+          {/* Prereq note */}
+          <div style={{ marginTop:16, textAlign:"center", fontSize:12, color:"rgba(255,255,255,.3)" }}>
+            Las especializaciones VA requieren completar primero el programa <strong style={{color:"rgba(255,255,255,.5)"}}>Asistente Virtual General</strong>
+          </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer style={{ background:B.dark, padding:"40px 24px" }}>
-        <div style={{ maxWidth:1080, margin:"0 auto", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-          <div>
-            <div style={{ fontSize:18, fontWeight:800, color:"#fff" }}>WCA <span style={{ color:B.secondary }}>Hub</span></div>
-            <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", marginTop:4 }}>World Connect Academy · wcahub.com</div>
+      {/* ── HOW IT WORKS ───────────────────────────────────────── */}
+      <section id="como" style={{ padding:"90px 24px", maxWidth:1100, margin:"0 auto" }}>
+        <FadeIn>
+          <div style={{ textAlign:"center", marginBottom:60 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:T.teal, letterSpacing:2.5, textTransform:"uppercase", marginBottom:12 }}>Metodología</div>
+            <h2 className="serif" style={{ fontSize:42, color:T.ink, lineHeight:1.2 }}>
+              Simple. Enfocado.<br/><span style={{ color:T.teal }}>Con resultados reales.</span>
+            </h2>
           </div>
-          <div style={{ fontSize:11, color:"rgba(255,255,255,.3)" }}>© 2025 WCA Academy · Todos los derechos reservados</div>
-        </div>
-      </footer>
-    </div>
-  );
-}
+        </FadeIn>
 
-// ─── PLACEMENT TEST ───────────────────────────────────────────────
-function PlacementTest({ testStep, selected, submitAnswer, QUESTIONS, progress, detectedLevel, why, setWhy, onEnroll, onBack }) {
-  const done = testStep >= QUESTIONS.length;
-
-  if (done && detectedLevel) return (
-    <div style={{ minHeight:"100%", background:B.bg, display:"flex", alignItems:"center", justifyContent:"center", padding:24, fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
-      <div style={{ background:B.white, borderRadius:20, padding:36, maxWidth:500, width:"100%", textAlign:"center", boxShadow:"0 20px 60px rgba(0,0,0,.08)" }}>
-        <div style={{ width:72, height:72, borderRadius:"50%", background:B.primaryDim, margin:"0 auto 16px", display:"flex", alignItems:"center", justifyContent:"center" }}>
-          <i className="ti ti-certificate" style={{ fontSize:36, color:B.primary }} aria-hidden="true" />
-        </div>
-        <div style={{ fontSize:11, color:B.secondary, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Tu nivel detectado</div>
-        <div style={{ fontSize:52, fontWeight:800, color:B.primary, lineHeight:1 }}>{detectedLevel.code}</div>
-        <div style={{ fontSize:18, fontWeight:600, color:B.text, marginTop:4, marginBottom:12 }}>{detectedLevel.name}</div>
-        <div style={{ fontSize:13, color:B.textSec, lineHeight:1.7, marginBottom:24, padding:"12px 16px", background:B.bg, borderRadius:10 }}>{detectedLevel.desc}</div>
-
-        {/* Pregunta abierta */}
-        <div style={{ textAlign:"left", marginBottom:20 }}>
-          <label style={{ fontSize:12, fontWeight:600, color:B.text, display:"block", marginBottom:6 }}>¿Por qué quieres aprender inglés? <span style={{ fontWeight:400, color:B.textSec }}>(opcional)</span></label>
-          <textarea value={why} onChange={e=>setWhy(e.target.value)} placeholder="Trabajo, viajes, estudios, objetivos personales..." rows={3} style={{ width:"100%", padding:"10px 12px", border:`1px solid ${B.border}`, borderRadius:10, fontSize:12, color:B.text, background:B.bg, resize:"none", fontFamily:"inherit" }} />
-          <div style={{ fontSize:10, color:B.textSec, marginTop:4 }}>Tu respuesta ayuda al docente a personalizar las clases.</div>
-        </div>
-
-        <button onClick={onEnroll} style={{ width:"100%", padding:"13px", background:B.primary, color:"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", marginBottom:10 }}>
-          Continuar con la inscripción →
-        </button>
-        <button onClick={onBack} style={{ width:"100%", padding:"10px", background:"transparent", color:B.textSec, border:"none", cursor:"pointer", fontSize:12, fontFamily:"inherit" }}>
-          ← Volver al inicio
-        </button>
-      </div>
-    </div>
-  );
-
-  const q = QUESTIONS[testStep];
-  return (
-    <div style={{ minHeight:"100%", background:B.bg, display:"flex", alignItems:"center", justifyContent:"center", padding:24, fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
-      <div style={{ background:B.white, borderRadius:20, padding:32, maxWidth:520, width:"100%", boxShadow:"0 20px 60px rgba(0,0,0,.08)" }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
-          <div style={{ fontSize:13, fontWeight:600, color:B.primary }}>WCA Placement Test</div>
-          <div style={{ fontSize:12, color:B.textSec }}>{testStep + 1} / {QUESTIONS.length}</div>
-        </div>
-        <div style={{ height:6, background:B.bg, borderRadius:3, marginBottom:24, overflow:"hidden" }}>
-          <div style={{ height:"100%", width:`${progress}%`, background:B.primary, borderRadius:3, transition:"width .4s" }} />
-        </div>
-        <div style={{ fontSize:15, fontWeight:600, color:B.text, marginBottom:20, lineHeight:1.5 }}>{q.q}</div>
-        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-          {q.opts.map((opt,i) => {
-            const isSelected = selected === i;
-            const isCorrect = i === q.ans;
-            const showResult = selected !== null;
-            let bg = B.bg, border = `1px solid ${B.border}`, color = B.text;
-            if (showResult && isCorrect) { bg = B.greenDim; border = `2px solid ${B.green}`; color = "#065f46"; }
-            else if (showResult && isSelected && !isCorrect) { bg = "#fee2e2"; border = `2px solid ${B.red}`; color = B.red; }
-            else if (isSelected) { bg = B.primaryDim; border = `2px solid ${B.primary}`; color = B.primary; }
-            return (
-              <button key={i} onClick={() => submitAnswer(i)} style={{ padding:"12px 16px", border, borderRadius:10, background:bg, color, fontSize:13, textAlign:"left", cursor:selected===null?"pointer":"default", fontFamily:"inherit", fontWeight: isSelected||isCorrect?600:400, transition:"all .15s" }}>
-                {opt}
-              </button>
-            );
-          })}
-        </div>
-        <button onClick={onBack} style={{ marginTop:20, background:"none", border:"none", cursor:"pointer", fontSize:11, color:B.textSec, fontFamily:"inherit" }}>← Volver</button>
-      </div>
-    </div>
-  );
-}
-
-// ─── ENROLL FLOW ──────────────────────────────────────────────────
-function EnrollFlow({ step, setStep, detectedLevel, selProgram, setSelProgram, selSchedule, setSelSchedule, payMethod, setPayMethod, PROGRAMS, SCHEDULES, onDone, onBack }) {
-  const [form, setForm] = useState({ name:"", email:"", phone:"", country:"" });
-  const prog = PROGRAMS.find(p=>p.id===selProgram);
-
-  const STEPS = ["Programa","Horario","Tus datos","Pago"];
-
-  return (
-    <div style={{ minHeight:"100%", background:B.bg, fontFamily:"'DM Sans','Segoe UI',sans-serif", padding:"32px 24px" }}>
-      <div style={{ maxWidth:600, margin:"0 auto" }}>
-
-        {/* Header */}
-        <div style={{ textAlign:"center", marginBottom:28 }}>
-          <div style={{ fontSize:20, fontWeight:800, color:B.primary, marginBottom:4 }}>WCA <span style={{ color:B.secondary }}>Hub</span></div>
-          {detectedLevel && <div style={{ fontSize:11, color:B.textSec }}>Nivel detectado: <strong style={{ color:B.primary }}>{detectedLevel.code} — {detectedLevel.name}</strong></div>}
-        </div>
-
-        {/* Steps bar */}
-        <div style={{ display:"flex", alignItems:"center", marginBottom:28 }}>
-          {STEPS.map((s,i) => (
-            <div key={i} style={{ display:"flex", alignItems:"center", flex: i<STEPS.length-1?1:"auto" }}>
-              <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:4 }}>
-                <div style={{ width:28, height:28, borderRadius:"50%", background:i<step?B.green:i===step?B.primary:B.border, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color: i<=step?"#fff":B.textSec }}>
-                  {i<step?"✓":i+1}
+        <div className="how-grid" style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:0 }}>
+          {howItWorks.map((h,i)=>(
+            <FadeIn key={i} delay={i*0.1}>
+              <div style={{ textAlign:"center", padding:"0 16px", position:"relative" }}>
+                {i < howItWorks.length-1 && (
+                  <div style={{ position:"absolute", top:28, left:"60%", right:0, height:1, background:`linear-gradient(90deg,${T.gold},transparent)`, opacity:.3 }}/>
+                )}
+                <div style={{ width:56, height:56, borderRadius:"50%", background:T.teal, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px", position:"relative", zIndex:1 }}>
+                  <span className="serif" style={{ fontSize:18, color:T.gold }}>{h.n}</span>
                 </div>
-                <div style={{ fontSize:9, color:i===step?B.primary:B.textSec, fontWeight:i===step?700:400, whiteSpace:"nowrap" }}>{s}</div>
+                <div className="serif" style={{ fontSize:16, color:T.ink, marginBottom:8 }}>{h.title}</div>
+                <div style={{ fontSize:13, color:T.muted, lineHeight:1.65 }}>{h.desc}</div>
               </div>
-              {i<STEPS.length-1 && <div style={{ flex:1, height:2, background:i<step?B.green:B.border, margin:"0 6px 14px" }} />}
-            </div>
+            </FadeIn>
           ))}
         </div>
+      </section>
 
-        <div style={{ background:B.white, borderRadius:16, padding:24, border:`1px solid ${B.border}` }}>
-
-          {/* STEP 0: Program */}
-          {step === 0 && (
-            <div>
-              {detectedLevel && (
-                <div style={{ background:B.primaryDim, borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:12, color:B.primary, display:"flex", gap:8 }}>
-                  <i className="ti ti-certificate" style={{ fontSize:14, flexShrink:0 }} aria-hidden="true" />
-                  Tu Placement Test detectó <strong>Nivel {detectedLevel.code}</strong>. Ingresas en la unidad activa del ciclo.
-                </div>
-              )}
-              <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:14 }}>Elige tu programa</div>
-              {PROGRAMS.map(p => (
-                <div key={p.id} onClick={() => setSelProgram(p.id)} style={{ display:"flex", alignItems:"center", gap:14, padding:14, border:`2px solid ${selProgram===p.id?p.color:B.border}`, borderRadius:12, marginBottom:10, cursor:"pointer", background:selProgram===p.id?`${p.color}08`:"transparent", transition:"all .15s" }}>
-                  <div style={{ width:40, height:40, borderRadius:10, background:`${p.color}15`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                    <i className={p.id==="beca"?"ti ti-certificate":"ti ti-language"} style={{ fontSize:20, color:p.color }} aria-hidden="true" />
-                  </div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:13, fontWeight:600, color:B.text }}>{p.name}</div>
-                    <div style={{ fontSize:11, color:B.textSec, marginTop:2 }}>{p.desc}</div>
-                  </div>
-                  <div style={{ textAlign:"right" }}>
-                    <div style={{ fontSize:18, fontWeight:800, color:p.color }}>${p.price}</div>
-                    <div style={{ fontSize:10, color:B.textSec }}>/{p.interval}</div>
-                  </div>
-                </div>
-              ))}
-              <button onClick={() => selProgram && setStep(1)} style={{ width:"100%", padding:"12px", background:selProgram?B.primary:B.border, color:selProgram?"#fff":B.textSec, border:"none", borderRadius:12, fontSize:13, fontWeight:700, cursor:selProgram?"pointer":"not-allowed", fontFamily:"inherit", marginTop:6 }}>Continuar →</button>
+      {/* ── TESTIMONIALS ───────────────────────────────────────── */}
+      <section id="testimonios" style={{ background:"#f0f7fa", padding:"90px 24px" }}>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <FadeIn>
+            <div style={{ textAlign:"center", marginBottom:56 }}>
+              <div style={{ fontSize:11, fontWeight:700, color:T.teal, letterSpacing:2.5, textTransform:"uppercase", marginBottom:12 }}>Testimonios</div>
+              <h2 className="serif" style={{ fontSize:42, color:T.ink, lineHeight:1.2 }}>
+                Sus palabras,<br/><span style={{ color:T.teal }}>no las nuestras.</span>
+              </h2>
             </div>
-          )}
+          </FadeIn>
+          <div className="testimonials-grid" style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:20 }}>
+            {testimonials.map((t,i)=>(
+              <FadeIn key={i} delay={i*0.1}>
+                <div className="hover-lift" style={{ background:T.white, border:`1px solid ${T.border}`, borderRadius:20, padding:28 }}>
+                  <div style={{ fontSize:32, color:T.gold, fontFamily:"Georgia", lineHeight:1, marginBottom:16 }}>"</div>
+                  <p className="serif" style={{ fontSize:17, color:T.ink, lineHeight:1.65, marginBottom:20, fontStyle:"italic" }}>"{t.quote}"</p>
+                  <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                    <div style={{ width:42, height:42, borderRadius:"50%", background:T.teal, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:T.gold, flexShrink:0 }}>{t.avatar}</div>
+                    <div>
+                      <div style={{ fontSize:14, fontWeight:700, color:T.ink }}>{t.name}</div>
+                      <div style={{ fontSize:12, color:T.muted }}>{t.country} · {t.role}</div>
+                    </div>
+                  </div>
+                </div>
+              </FadeIn>
+            ))}
+          </div>
+        </div>
+      </section>
 
-          {/* STEP 1: Schedule */}
-          {step === 1 && (
-            <div>
-              <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:14 }}>Elige tu horario</div>
-              <div style={{ fontSize:11, color:B.textSec, marginBottom:14 }}>Clases en vivo lunes, miércoles y viernes. El contenido de práctica está disponible 24/7.</div>
-              {SCHEDULES.map((s,i) => (
-                <div key={i} onClick={() => s.cupos>0&&setSelSchedule(i)} style={{ display:"flex", alignItems:"center", gap:14, padding:14, border:`2px solid ${selSchedule===i&&s.cupos>0?B.primary:B.border}`, borderRadius:12, marginBottom:10, cursor:s.cupos>0?"pointer":"not-allowed", background:selSchedule===i&&s.cupos>0?B.primaryDim:s.cupos===0?"#fafafa":"transparent", opacity:s.cupos===0?.5:1, transition:"all .15s" }}>
-                  <div style={{ flex:1 }}>
-                    <div style={{ fontSize:14, fontWeight:700, color:B.text }}>{s.time}</div>
-                    <div style={{ fontSize:11, color:B.textSec, marginTop:2 }}>{s.days} · Docente: {s.teacher}</div>
-                  </div>
-                  <div style={{ fontSize:11, fontWeight:600, color:s.cupos===0?B.red:s.cupos<=5?B.amber:B.green }}>
-                    {s.cupos===0?"Sin cupos":`${s.cupos} cupos`}
-                  </div>
-                </div>
-              ))}
-              <div style={{ display:"flex", gap:8, marginTop:6 }}>
-                <button onClick={() => setStep(0)} style={{ flex:1, padding:"11px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:12, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>← Volver</button>
-                <button onClick={() => setStep(2)} style={{ flex:2, padding:"11px", background:B.primary, color:"#fff", border:"none", borderRadius:12, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Continuar →</button>
-              </div>
-            </div>
-          )}
+      {/* ── PRICING ────────────────────────────────────────────── */}
+      <section id="precios" style={{ padding:"90px 24px", maxWidth:1100, margin:"0 auto" }}>
+        <FadeIn>
+          <div style={{ textAlign:"center", marginBottom:56 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:T.teal, letterSpacing:2.5, textTransform:"uppercase", marginBottom:12 }}>Precios</div>
+            <h2 className="serif" style={{ fontSize:42, color:T.ink, lineHeight:1.2, marginBottom:16 }}>
+              Transparente.<br/><span style={{ color:T.teal }}>Sin sorpresas.</span>
+            </h2>
+            <p style={{ fontSize:15, color:T.muted, maxWidth:480, margin:"0 auto" }}>Pagás mes a mes. Sin contratos. Sin permanencia mínima. Cancelás cuando quieras.</p>
+          </div>
+        </FadeIn>
 
-          {/* STEP 2: Data */}
-          {step === 2 && (
-            <div>
-              <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:14 }}>Tus datos personales</div>
-              {[
-                { label:"Nombre completo", key:"name", ph:"María Rodríguez", type:"text" },
-                { label:"Correo electrónico", key:"email", ph:"maria@correo.com", type:"email" },
-                { label:"Teléfono / WhatsApp", key:"phone", ph:"+504 9999-0000", type:"tel" },
-                { label:"País de residencia", key:"country", ph:"Honduras", type:"text" },
-              ].map(f => (
-                <div key={f.key} style={{ marginBottom:12 }}>
-                  <label style={{ fontSize:11, color:B.textSec, display:"block", marginBottom:4 }}>{f.label}</label>
-                  <input type={f.type} value={form[f.key]} onChange={e=>setForm(d=>({...d,[f.key]:e.target.value}))} placeholder={f.ph} style={{ width:"100%", padding:"10px 12px", border:`1px solid ${B.border}`, borderRadius:10, fontSize:12, color:B.text, background:B.bg, fontFamily:"inherit" }} />
+        <div className="programs-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
+          {programs.slice(0,3).map((p,i)=>(
+            <FadeIn key={i} delay={i*0.1}>
+              <div className="hover-lift" style={{ background:p.popular?T.teal:T.white, border:`1.5px solid ${p.popular?T.teal:T.border}`, borderRadius:22, padding:"28px 24px", position:"relative", overflow:"hidden" }}>
+                {p.popular && <div style={{ position:"absolute", top:16, right:-24, background:T.gold, color:T.deep, fontSize:10, fontWeight:700, padding:"4px 36px", transform:"rotate(30deg)" }}>Popular</div>}
+                <div style={{ fontSize:32, marginBottom:14 }}>{p.icon}</div>
+                <div className="serif" style={{ fontSize:20, color:p.popular?T.white:T.ink, marginBottom:8 }}>{p.name}</div>
+                <div style={{ fontSize:13, color:p.popular?"rgba(255,255,255,.6)":T.muted, lineHeight:1.7, marginBottom:20, minHeight:56 }}>{p.desc}</div>
+                <div style={{ display:"flex", alignItems:"baseline", gap:6, marginBottom:24 }}>
+                  <span className="serif" style={{ fontSize:40, color:p.popular?T.gold:T.teal, lineHeight:1 }}>${p.price}</span>
+                  <span style={{ fontSize:13, color:p.popular?"rgba(255,255,255,.5)":T.muted }}>/ mes</span>
                 </div>
-              ))}
-              <div style={{ display:"flex", gap:8, marginTop:6 }}>
-                <button onClick={() => setStep(1)} style={{ flex:1, padding:"11px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:12, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>← Volver</button>
-                <button onClick={() => form.name&&form.email&&setStep(3)} style={{ flex:2, padding:"11px", background:B.primary, color:"#fff", border:"none", borderRadius:12, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Continuar →</button>
-              </div>
-            </div>
-          )}
-
-          {/* STEP 3: Payment */}
-          {step === 3 && (
-            <div>
-              <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:14 }}>Confirma y paga</div>
-              {/* Summary */}
-              <div style={{ background:B.bg, borderRadius:10, padding:14, marginBottom:16 }}>
-                <div style={{ fontSize:11, fontWeight:600, color:B.textSec, textTransform:"uppercase", letterSpacing:.5, marginBottom:10 }}>Resumen</div>
-                {[[prog?.name||"—", `$${prog?.price||0}/${prog?.interval}`],[`Horario: ${SCHEDULES[selSchedule]?.time}`,""],[`Unidad de ingreso`,`U${detectedLevel?LEVELS.indexOf(LEVELS.find(l=>l.code===detectedLevel.code))+5:1} (ciclo activo)`]].map(([k,v],i) => (
-                  <div key={i} style={{ display:"flex", justifyContent:"space-between", fontSize:11, padding:"5px 0", borderTop:i>0?`1px solid ${B.border}`:"none" }}>
-                    <span style={{ color:B.textSec }}>{k}</span>
-                    {v && <span style={{ fontWeight:600, color:B.text }}>{v}</span>}
-                  </div>
-                ))}
-                <div style={{ display:"flex", justifyContent:"space-between", fontSize:14, fontWeight:800, padding:"10px 0 0", borderTop:`2px solid ${B.border}`, marginTop:8 }}>
-                  <span style={{ color:B.text }}>Total hoy</span>
-                  <span style={{ color:B.primary }}>${prog?.price || 0}.00</span>
-                </div>
-              </div>
-              {/* Payment method */}
-              <div style={{ display:"flex", gap:8, marginBottom:14 }}>
-                {[["card","ti-credit-card","Tarjeta"],["transfer","ti-building-bank","Transferencia"],["cash","ti-cash","Efectivo"]].map(([id,icon,label]) => (
-                  <button key={id} onClick={() => setPayMethod(id)} style={{ flex:1, padding:"10px 6px", border:`2px solid ${payMethod===id?B.primary:B.border}`, borderRadius:10, background:payMethod===id?B.primaryDim:B.white, cursor:"pointer", fontFamily:"inherit" }}>
-                    <i className={`ti ${icon}`} style={{ fontSize:18, color:payMethod===id?B.primary:B.textSec, display:"block", marginBottom:4 }} aria-hidden="true" />
-                    <div style={{ fontSize:10, fontWeight:600, color:payMethod===id?B.primary:B.textSec }}>{label}</div>
-                  </button>
-                ))}
-              </div>
-              {payMethod==="card" && (
-                <div>
-                  <input placeholder="Número de tarjeta" style={{ width:"100%", padding:"10px 12px", border:`1px solid ${B.border}`, borderRadius:10, fontSize:12, marginBottom:8, background:B.bg, fontFamily:"inherit" }} />
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
-                    <input placeholder="MM/AA" style={{ padding:"10px 12px", border:`1px solid ${B.border}`, borderRadius:10, fontSize:12, background:B.bg, fontFamily:"inherit" }} />
-                    <input placeholder="CVV" style={{ padding:"10px 12px", border:`1px solid ${B.border}`, borderRadius:10, fontSize:12, background:B.bg, fontFamily:"inherit" }} />
-                  </div>
-                </div>
-              )}
-              {payMethod==="transfer" && (
-                <div style={{ background:B.primaryDim, borderRadius:10, padding:14, fontSize:11, color:B.primary, lineHeight:1.8 }}>
-                  <div style={{ fontWeight:700, marginBottom:6 }}>Datos para transferencia</div>
-                  <div>Banco: BAC Credomatic · Cuenta: 0123-4567-8901</div>
-                  <div>A nombre de: WCA Academy S.A.</div>
-                  <div style={{ marginTop:8, fontWeight:600 }}>Tu código de referencia: WCA-{detectedLevel?.code||"A1"}-{Math.floor(Math.random()*9000)+1000}</div>
-                </div>
-              )}
-              {payMethod==="cash" && (
-                <div style={{ background:B.primaryDim, borderRadius:10, padding:14, fontSize:11, color:B.primary, lineHeight:1.8 }}>
-                  <div style={{ fontWeight:700, marginBottom:6 }}>Pago en sede WCA</div>
-                  <div>Bulevar Morazán, San Pedro Sula</div>
-                  <div>Horario de caja: Lun–Vie 8 AM–6 PM</div>
-                </div>
-              )}
-              <div style={{ display:"flex", gap:8, marginTop:14 }}>
-                <button onClick={() => setStep(2)} style={{ flex:1, padding:"11px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:12, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>← Volver</button>
-                <button onClick={onDone} style={{ flex:2, padding:"11px", background:B.primary, color:"#fff", border:"none", borderRadius:12, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
-                  {payMethod==="card"?"Pagar y activar matrícula →":"Confirmar inscripción →"}
+                <button className={p.popular?"gold-btn":"teal-btn"} style={{ width:"100%", padding:"13px", borderRadius:12, fontSize:14 }} onClick={()=>document.getElementById("registro")?.scrollIntoView({behavior:"smooth"})}>
+                  Comenzar ahora
                 </button>
               </div>
-            </div>
-          )}
-        </div>
-        <button onClick={onBack} style={{ marginTop:14, background:"none", border:"none", cursor:"pointer", fontSize:11, color:B.textSec, display:"block", margin:"14px auto 0", fontFamily:"inherit" }}>← Volver al inicio</button>
-      </div>
-    </div>
-  );
-}
-
-// ─── CONFIRM ─────────────────────────────────────────────────────
-function ConfirmScreen({ detectedLevel, selProgram, schedule, onPortal }) {
-  return (
-    <div style={{ minHeight:"100%", background:B.bg, display:"flex", alignItems:"center", justifyContent:"center", padding:24, fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
-      <div style={{ background:B.white, borderRadius:20, padding:36, maxWidth:480, width:"100%", textAlign:"center", boxShadow:"0 20px 60px rgba(0,0,0,.08)" }}>
-        <div style={{ fontSize:52, marginBottom:12 }}>🎉</div>
-        <div style={{ fontSize:22, fontWeight:800, color:B.text, marginBottom:6 }}>¡Bienvenido/a a WCA!</div>
-        <div style={{ fontSize:13, color:B.textSec, marginBottom:24, lineHeight:1.7 }}>
-          Tu matrícula está activa. Recibirás un correo y WhatsApp con tus credenciales de acceso a wcahub.com.
-        </div>
-        <div style={{ background:B.bg, borderRadius:12, padding:16, marginBottom:24, textAlign:"left" }}>
-          {[
-            ["Nivel", `${detectedLevel?.code||"A1"} — ${detectedLevel?.name||""}`],
-            ["Programa", selProgram?.name||"Inglés"],
-            ["Horario", `${schedule?.time||""} · ${schedule?.days||""}`],
-            ["Primera clase", "Próximo lunes"],
-            ["Acceso plataforma", "Activo ahora"],
-          ].map(([k,v],i) => (
-            <div key={i} style={{ display:"flex", justifyContent:"space-between", fontSize:12, padding:"6px 0", borderBottom:i<4?`1px solid ${B.border}`:"none" }}>
-              <span style={{ color:B.textSec }}>{k}</span>
-              <span style={{ fontWeight:600, color:B.text }}>{v}</span>
-            </div>
+            </FadeIn>
           ))}
         </div>
-        <div style={{ background:B.greenDim, borderRadius:10, padding:"10px 14px", marginBottom:20, fontSize:11, color:"#065f46", display:"flex", gap:8 }}>
-          <i className="ti ti-bolt" style={{ fontSize:13, flexShrink:0 }} aria-hidden="true" />
-          El sistema te ubicó en la unidad activa del ciclo. No necesitas hacer nada más.
+
+        {/* Especializations */}
+        <FadeIn delay={0.2}>
+          <div style={{ marginTop:20, background:"var(--bg-surface, #fff)", border:`1px solid ${T.border}`, borderRadius:22, padding:"24px 28px" }}>
+            <div style={{ fontSize:13, fontWeight:700, color:T.muted, marginBottom:16, textTransform:"uppercase", letterSpacing:.8 }}>Especializaciones VA · $95/mes c/u · Requieren VA General</div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
+              {programs.slice(2).map((p,i)=>(
+                <div key={i} style={{ display:"flex", gap:12, alignItems:"center", padding:"12px 14px", background:"#f8fafc", borderRadius:12, border:`1px solid ${T.border}` }}>
+                  <span style={{ fontSize:22 }}>{p.icon}</span>
+                  <div>
+                    <div style={{ fontSize:13, fontWeight:600, color:T.ink }}>{p.name.replace("VA · ","")}</div>
+                    <div style={{ fontSize:11, color:T.muted }}>12 semanas · 12 unidades</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </FadeIn>
+      </section>
+
+      {/* ── REGISTER / CTA ─────────────────────────────────────── */}
+      <section id="registro" style={{ background:T.deep, padding:"90px 24px" }}>
+        <div style={{ maxWidth:640, margin:"0 auto", textAlign:"center" }}>
+          <FadeIn>
+            <div style={{ fontSize:11, fontWeight:700, color:T.gold, letterSpacing:2.5, textTransform:"uppercase", marginBottom:16 }}>Empieza hoy</div>
+            <h2 className="serif" style={{ fontSize:44, color:T.white, lineHeight:1.15, marginBottom:16 }}>
+              Tu carrera como VA<br/><em style={{ color:T.gold }}>comienza aquí.</em>
+            </h2>
+            <p style={{ fontSize:15, color:"rgba(255,255,255,.55)", marginBottom:40, lineHeight:1.8 }}>
+              Hacé el placement test gratuito. En 5 minutos sabés tu nivel de inglés y qué programa te conviene.
+            </p>
+          </FadeIn>
+
+          {/* Auth options */}
+          <FadeIn delay={0.1}>
+            <div style={{ background:"rgba(255,255,255,.05)", border:"1px solid rgba(255,255,255,.1)", borderRadius:20, padding:28 }}>
+              <div style={{ fontSize:14, color:"rgba(255,255,255,.6)", marginBottom:20, fontWeight:500 }}>Registrate con tu cuenta</div>
+              <div style={{ display:"flex", gap:12, marginBottom:20 }}>
+                {/* Microsoft */}
+                <button style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+                  onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.14)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.08)";}}>
+                  <svg width="18" height="18" viewBox="0 0 21 21" fill="none">
+                    <rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/>
+                    <rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/>
+                  </svg>
+                  Continuar con Microsoft
+                </button>
+                {/* Google */}
+                <button style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+                  onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.14)";}}
+                  onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.08)";}}>
+                  <svg width="18" height="18" viewBox="0 0 48 48">
+                    <path fill="#4285f4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/>
+                    <path fill="#34a853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.32-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/>
+                    <path fill="#fbbc05" d="M11.68 28.18A13.93 13.93 0 0 1 10.9 24c0-1.45.25-2.86.68-4.18v-5.7H4.34A23.93 23.93 0 0 0 0 24c0 3.87.93 7.53 2.56 10.77l7.12-5.7.99-.89z"/>
+                    <path fill="#ea4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.34 5.7C13.42 14.62 18.27 10.75 24 10.75z"/>
+                  </svg>
+                  Continuar con Google
+                </button>
+              </div>
+
+              <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:20 }}>
+                <div style={{ flex:1, height:1, background:"rgba(255,255,255,.1)" }}/><span style={{ fontSize:12, color:"rgba(255,255,255,.3)" }}>o</span><div style={{ flex:1, height:1, background:"rgba(255,255,255,.1)" }}/>
+              </div>
+
+              <div style={{ display:"flex", gap:10, marginBottom:14 }}>
+                <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="tu@email.com" type="email" style={{ flex:1, padding:"13px 16px", borderRadius:12, border:"1px solid rgba(255,255,255,.15)", background:"rgba(255,255,255,.07)", color:"#fff", fontSize:14, fontFamily:"inherit", outline:"none" }}
+                  onFocus={e=>{e.target.style.borderColor=T.gold;}} onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,.15)";}}/>
+                <button className="gold-btn" style={{ padding:"13px 24px", borderRadius:12, fontSize:14, whiteSpace:"nowrap" }}>
+                  Comenzar gratis
+                </button>
+              </div>
+              <div style={{ fontSize:11, color:"rgba(255,255,255,.3)" }}>Sin tarjeta de crédito. Placement test gratuito. Cancela cuando quieras.</div>
+            </div>
+          </FadeIn>
         </div>
-        <button onClick={onPortal} style={{ width:"100%", padding:"12px", background:B.primary, color:"#fff", border:"none", borderRadius:12, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
-          Ir a mi portal →
-        </button>
-      </div>
+      </section>
+
+      {/* ── FOOTER ─────────────────────────────────────────────── */}
+      <footer style={{ background:T.ink, padding:"48px 24px 32px" }}>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <div className="footer-grid" style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:40, marginBottom:40 }}>
+            <div>
+              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
+                <div style={{ width:34, height:34, borderRadius:9, background:T.teal, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                  <span style={{ fontSize:16, fontWeight:800, color:T.gold }}>W</span>
+                </div>
+                <div>
+                  <div style={{ fontSize:14, fontWeight:800, color:"#fff" }}>WCA Academy</div>
+                  <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", letterSpacing:1.5 }}>VIRTUAL ASSISTANT TRAINING</div>
+                </div>
+              </div>
+              <p style={{ fontSize:13, color:"rgba(255,255,255,.35)", lineHeight:1.8, maxWidth:280 }}>
+                La academia VA bilingüe de referencia en Latinoamérica. Inglés + formación VA + especialización.
+              </p>
+            </div>
+            {[
+              { title:"Programas", links:["Inglés Completo","VA General","Marketing Digital","Legal Assistant","Cuidador Remoto"] },
+              { title:"Empresa",   links:["Sobre WCA","Instructores","Metodología","B2B / Empresas","Blog"] },
+              { title:"Soporte",   links:["Centro de ayuda","Política de privacidad","Términos de uso","Contacto"] },
+            ].map((col,i)=>(
+              <div key={i}>
+                <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,.4)", letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>{col.title}</div>
+                {col.links.map(l=><div key={l} style={{ fontSize:13, color:"rgba(255,255,255,.3)", marginBottom:9, cursor:"pointer", transition:"color .15s" }}
+                  onMouseEnter={e=>e.target.style.color="#fff"} onMouseLeave={e=>e.target.style.color="rgba(255,255,255,.3)"}>{l}</div>)}
+              </div>
+            ))}
+          </div>
+          <div style={{ borderTop:"1px solid rgba(255,255,255,.06)", paddingTop:24, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:10 }}>
+            <div style={{ fontSize:12, color:"rgba(255,255,255,.2)" }}>© 2025 World Connect Academy. Todos los derechos reservados.</div>
+            <div style={{ display:"flex", gap:6 }}>
+              {["🇭🇳","🇨🇴","🇲🇽","🇦🇷","🇵🇪"].map((f,i)=><span key={i} style={{ fontSize:16 }}>{f}</span>)}
+              <span style={{ fontSize:12, color:"rgba(255,255,255,.2)", marginLeft:6 }}>+15 países más</span>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
