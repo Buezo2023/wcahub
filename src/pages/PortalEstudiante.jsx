@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { LEVELS, UNITS, SKILLS_BY_LEVEL } from "../data/englishContent.js";
 
 const P="#155266",PH="#0f3d4d",PD="#e8f3f6";
 const Y="#ffbb23",YD="#fff8e6";
@@ -74,13 +75,9 @@ const ENROLLMENTS = {
 const COMPLETED_PREREQS = { va:true }; // VA General completado → puede hacer especializaciones
 
 // ─── UNITS per program ────────────────────────────────────────────
+// PROGRAM_UNITS uses imported UNITS data
 const PROGRAM_UNITS = {
-  en:[
-    {n:1,t:"Identity"},{n:2,t:"Relationships"},{n:3,t:"Responsibilities"},
-    {n:4,t:"Extremes"},{n:5,t:"Creativity"},{n:6,t:"Places"},
-    {n:7,t:"People"},{n:8,t:"Stories"},{n:9,t:"Future"},
-    {n:10,t:"Performance"},{n:11,t:"Experiences"},{n:12,t:"Change"},
-  ],
+  en: Object.fromEntries(["A1","A2","B1","B2","C1"].map(l => [l, UNITS[l]])),
   va:[
     {n:1,t:"Introducción al VA"},{n:2,t:"Comunicación escrita"},{n:3,t:"Herramientas digitales"},
     {n:4,t:"Inglés profesional"},{n:5,t:"Gestión de clientes"},{n:6,t:"Gestión de proyectos"},
@@ -181,6 +178,9 @@ function SkillCard({skill}){
 
 // ─── Unit row (Online Practice style) ────────────────────────────
 function UnitRow({unit,prog,isActive,isDone,isLocked,color}){
+  const [expanded, setExpanded] = useState(false);
+  // unit may come from UNITS (rich) or legacy {n,t} format
+  const isRich = unit && unit.grammar;
   const actsPct=unit.acts>0?Math.round((prog.actsDone/unit.acts)*100):0;
   const testPct=prog.testDone>0?Math.round((prog.testDone/3)*100):0;
   return(
@@ -191,7 +191,7 @@ function UnitRow({unit,prog,isActive,isDone,isLocked,color}){
         <div style={{width:32,height:32,borderRadius:"50%",background:isDone?G:isActive?Y:"#d4b483",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:"#fff",flexShrink:0}}>{unit.n}</div>
         <div style={{flex:1}}>
           <div style={{fontSize:13,fontWeight:isActive?700:500,color:isLocked?"var(--text-tertiary)":"var(--text-primary)"}}>
-            Unit {unit.n} — {unit.t}
+            Unit {unit.n} — {title}
             {isActive&&<span style={{marginLeft:8,fontSize:10,background:Y,color:PH,padding:"2px 8px",borderRadius:20,fontWeight:700}}>ACTIVA</span>}
             {isLocked&&<span style={{marginLeft:6,fontSize:10,color:"var(--text-tertiary)"}}>🔒</span>}
           </div>
@@ -275,12 +275,19 @@ export default function PortalEstudiante(){
   const unenrolledProgs = ALL_PROGRAMS.filter(p=>!enrolled.includes(p.id));
   const prog = ALL_PROGRAMS.find(p=>p.id===activeProg) || enrolledProgs[0];
   const enrollment = ENROLLMENTS[activeProg] || ENROLLMENTS[enrolled[0]];
-  const skills = SKILLS[activeProg] || SKILLS[enrolled[0]] || [];
-  const units = PROGRAM_UNITS[activeProg] || PROGRAM_UNITS[enrolled[0]] || [];
+  const skills = activeProg === "en"
+    ? (SKILLS_BY_LEVEL[currentLevel] || SKILLS_BY_LEVEL["B1"] || [])
+    : (SKILLS[activeProg] || SKILLS[enrolled[0]] || []);
+  // For the English program, use the student's current level to get units
+  const currentLevel = enrollment?.level || "B1";
+  const unitSource = activeProg === "en"
+    ? (UNITS[currentLevel] || UNITS["B1"] || [])
+    : (PROGRAM_UNITS[activeProg] || []);
+  const units = unitSource;
   const progress = PROG_PROGRESS(activeProg);
   const totalActs = (skills||[]).reduce((a,s)=>a+s.total,0);
-  const totalDone = (skills||[]).reduce((a,s)=>a+s.done,0);
-  const avgScore  = skills.length>0?Math.round(skills.reduce((a,s)=>a+s.score,0)/skills.length):0;
+  const totalDone = (skills||[]).reduce((a,s)=>a+(s.done||0),0);
+  const avgScore  = skills.length>0?Math.round(skills.reduce((a,s)=>a+(s.score||0),0)/skills.length):0;
 
   function handleEnroll(progId){
     setEnrolled(e=>[...e,progId]);
@@ -523,7 +530,11 @@ export default function PortalEstudiante(){
                     const isLocked=unit.n>(en2?.unit||1);
                     return(
                       <UnitRow key={unit.n}
-                        unit={{...unit,acts:unit.n===en2?.unit?prog2.actsDone+13:20}}
+                        unit={{
+                          ...unit,
+                          title: unit.title || unit.t || "",
+                          acts: unit.activities || (unit.n===en2?.unit?prog2.actsDone+13:20)
+                        }}
                         prog={prog2}
                         isActive={isActive} isDone={isDone} isLocked={isLocked}
                         color={prog?.color||P}/>
