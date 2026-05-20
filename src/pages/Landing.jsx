@@ -472,6 +472,179 @@ export default function Landing() {
       </section>
 
       {/* ── REGISTER / CTA ─────────────────────────────────────── */}
+
+      {/* ── ALIADOS ────────────────────────────────────────────── */}
+      <section style={{ background:"#ffffff", padding:"72px 24px", borderTop:"1px solid #e8f0f3" }}>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+
+          {/* Header */}
+          <div style={{ textAlign:"center", marginBottom:52 }}>
+            <div style={{ fontSize:11, fontWeight:700, color:T.teal, letterSpacing:2.5, textTransform:"uppercase", marginBottom:10 }}>
+              Ecosistema de alianzas
+            </div>
+            <h2 className="serif" style={{ fontSize:34, color:T.ink, lineHeight:1.2, marginBottom:0 }}>
+              Construimos junto a los mejores
+            </h2>
+          </div>
+
+          {/* Grupo 1 — Impulsados por */}
+          <div style={{ marginBottom:48 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:22 }}>
+              <div style={{ height:1, flex:1, background:"linear-gradient(90deg,transparent,#e2e8f0)" }}/>
+              <div style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 16px", background:T.tealLt||"#e8f3f6", borderRadius:30, border:"1px solid #c5dde5" }}>
+                <span style={{ fontSize:14 }}>🚀</span>
+                <span style={{ fontSize:11, fontWeight:700, color:T.teal, letterSpacing:1, textTransform:"uppercase" }}>Impulsados por</span>
+              </div>
+              <div style={{ height:1, flex:1, background:"linear-gradient(90deg,#e2e8f0,transparent)" }}/>
+            </div>
+            <div style={{ display:"flex", gap:16, justifyContent:"center", flexWrap:"wrap" }}>
+
+              {/* BID LAB */}
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"16px 24px", background:"#f0f8ff", border:"1.5px solid #bfdbfe", borderRadius:16, cursor:"default", minWidth:180 }}>
+                <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                  <circle cx="14" cy="14" r="14" fill="#1e40af"/>
+                  <text x="14" y="19" textAnchor="middle" fontSize="10" fontWeight="800" fill="white">BID</text>
+                </svg>
+                <div>
+                  <div style={{ fontSize:14, fontWeight:800, color:"#1e40af", letterSpacing:-.3 }}>BID <span style={{ color:"#60a5fa" }}>LAB</span></div>
+                  <div style={{ fontSize:9, color:"#93c5fd", fontWeight:500, letterSpacing:.5 }}>BANCO INTERAMERICANO</div>
+                </div>
+              </div>
+
+              {/* Región Plateada */}
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"16px 24px", background:"linear-gradient(135deg,#f0fdf4,#ecfdf5)", border:"1.5px solid #86efac", borderRadius:16, cursor:"default", minWidth:200 }}>
+                <div style={{ width:36, height:36, borderRadius:"50%", background:"linear-gradient(135deg,#059669,#10b981)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <span style={{ fontSize:16 }}>🌿</span>
+                </div>
+                <div>
+                  <div style={{ fontSize:13, fontWeight:800, color:"#065f46", letterSpacing:-.2 }}>Región Plateada</div>
+                  <div style={{ fontSize:9, color:"#6ee7b7", fontWeight:600, letterSpacing:.5, textTransform:"uppercase" }}>Iniciativa de Impacto</div>
+                </div>
+              </div>
+
+              {/* Red de Impacto LATAM */}
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"16px 24px", background:"linear-gradient(135deg,#fff7ed,#ffedd5)", border:"1.5px solid #fdba74", borderRadius:16, cursor:"default", minWidth:210 }}>
+                <div style={{ width:36, height:36, borderRadius:"50%", background:"linear-gradient(135deg,#ea580c,#f97316)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <span style={{ fontSize:16 }}>🌎</span>
+                </div>
+                <div>
+                  <div style={{ fontSize:13, fontWeight:800, color:"#9a3412" }}>Red de Impacto</div>
+                  <div style={{ fontSize:11, fontWeight:700, color:"#ea580c", letterSpacing:.3 }}>LATAM</div>
+                </div>
+              </div>
+
+              {/* Iniciativa Dinámica */}
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"16px 24px", background:"linear-gradient(135deg,#faf5ff,#f3e8ff)", border:"1.5px solid #c4b5fd", borderRadius:16, cursor:"default", minWidth:190 }}>
+                <div style={{ width:36, height:36, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#8b5cf6)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <span style={{ fontSize:16 }}>⚡</span>
+                </div>
+                <div>
+                  <div style={{ fontSize:13, fontWeight:800, color:"#5b21b6" }}>Iniciativa Dinámica</div>
+                  <div style={{ fontSize:9, color:"#c4b5fd", fontWeight:600, letterSpacing:.5, textTransform:"uppercase" }}>Aceleradora LATAM</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Grupo 2 — Respaldados por */}
+          <div style={{ marginBottom:48 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:22 }}>
+              <div style={{ height:1, flex:1, background:"linear-gradient(90deg,transparent,#e2e8f0)" }}/>
+              <div style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 16px", background:"#fef2f2", borderRadius:30, border:"1px solid #fca5a5" }}>
+                <span style={{ fontSize:14 }}>🤝</span>
+                <span style={{ fontSize:11, fontWeight:700, color:"#dc2626", letterSpacing:1, textTransform:"uppercase" }}>Respaldados por</span>
+              </div>
+              <div style={{ height:1, flex:1, background:"linear-gradient(90deg,#e2e8f0,transparent)" }}/>
+            </div>
+            <div style={{ display:"flex", gap:16, justifyContent:"center", flexWrap:"wrap" }}>
+
+              {/* USA Flag + Embassy */}
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:12, padding:"16px 24px", background:"linear-gradient(135deg,#fff,#f8faff)", border:"1.5px solid #bfdbfe", borderRadius:16, cursor:"default", minWidth:230, boxShadow:"0 2px 8px rgba(0,0,200,.06)" }}>
+                <div style={{ fontSize:28, lineHeight:1 }}>🇺🇸</div>
+                <div style={{ borderLeft:"1.5px solid #e2e8f0", paddingLeft:12 }}>
+                  <div style={{ fontSize:12, fontWeight:800, color:"#1e3a8a", letterSpacing:-.2 }}>U.S. Embassy</div>
+                  <div style={{ fontSize:9, color:"#93c5fd", fontWeight:600, letterSpacing:.5, textTransform:"uppercase" }}>Tegucigalpa, Honduras</div>
+                </div>
+              </div>
+
+              {/* Exchange Alumni */}
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:12, padding:"16px 24px", background:"linear-gradient(135deg,#fefce8,#fef9c3)", border:"1.5px solid #fde68a", borderRadius:16, cursor:"default", minWidth:220 }}>
+                <div style={{ width:40, height:40, borderRadius:"50%", background:"linear-gradient(135deg,#1e3a8a,#1e40af)", border:"2px solid #fde68a", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <span style={{ fontSize:13, fontWeight:900, color:"#fde68a" }}>EA</span>
+                </div>
+                <div>
+                  <div style={{ fontSize:12, fontWeight:800, color:"#92400e", letterSpacing:-.2 }}>Exchange Alumni</div>
+                  <div style={{ fontSize:9, color:"#d97706", fontWeight:600, letterSpacing:.4, textTransform:"uppercase" }}>Connect · Empower · Inspire</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Grupo 3 — Apoyo Financiero Internacional */}
+          <div>
+            <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:22 }}>
+              <div style={{ height:1, flex:1, background:"linear-gradient(90deg,transparent,#e2e8f0)" }}/>
+              <div style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 16px", background:"#f0fdf4", borderRadius:30, border:"1px solid #86efac" }}>
+                <span style={{ fontSize:14 }}>🌍</span>
+                <span style={{ fontSize:11, fontWeight:700, color:"#16a34a", letterSpacing:1, textTransform:"uppercase" }}>Apoyo internacional</span>
+              </div>
+              <div style={{ height:1, flex:1, background:"linear-gradient(90deg,#e2e8f0,transparent)" }}/>
+            </div>
+            <div style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
+
+              {/* BCIE */}
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 20px", background:"linear-gradient(135deg,#f0fdf4,#ecfdf5)", border:"1.5px solid #6ee7b7", borderRadius:14, cursor:"default", minWidth:170 }}>
+                <div style={{ width:34, height:34, borderRadius:8, background:"linear-gradient(135deg,#065f46,#059669)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <span style={{ fontSize:11, fontWeight:900, color:"white" }}>BCIE</span>
+                </div>
+                <div>
+                  <div style={{ fontSize:12, fontWeight:700, color:"#065f46" }}>BCIE</div>
+                  <div style={{ fontSize:8, color:"#6ee7b7", fontWeight:600, letterSpacing:.3, textTransform:"uppercase" }}>Banco Centroamericano</div>
+                </div>
+              </div>
+
+              {/* Unión Europea */}
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 20px", background:"linear-gradient(135deg,#eff6ff,#dbeafe)", border:"1.5px solid #93c5fd", borderRadius:14, cursor:"default", minWidth:170 }}>
+                <div style={{ width:34, height:34, borderRadius:"50%", background:"#003399", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:18 }}>🇪🇺</div>
+                <div>
+                  <div style={{ fontSize:12, fontWeight:700, color:"#1e3a8a" }}>Unión Europea</div>
+                  <div style={{ fontSize:8, color:"#93c5fd", fontWeight:600, letterSpacing:.3, textTransform:"uppercase" }}>Cooperación al Desarrollo</div>
+                </div>
+              </div>
+
+              {/* Cooperación Alemana */}
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 20px", background:"linear-gradient(135deg,#fafafa,#f5f5f5)", border:"1.5px solid #d1d5db", borderRadius:14, cursor:"default", minWidth:190 }}>
+                <div style={{ width:34, height:34, borderRadius:8, background:"linear-gradient(135deg,#111,#374151)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <span style={{ fontSize:14 }}>🇩🇪</span>
+                </div>
+                <div>
+                  <div style={{ fontSize:12, fontWeight:700, color:"#111" }}>Cooperación Alemana</div>
+                  <div style={{ fontSize:8, color:"#9ca3af", fontWeight:600, letterSpacing:.3, textTransform:"uppercase" }}>Deutsche Zusammenarbeit</div>
+                </div>
+              </div>
+
+              {/* KFW */}
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 20px", background:"linear-gradient(135deg,#fffbeb,#fef3c7)", border:"1.5px solid #fcd34d", borderRadius:14, cursor:"default", minWidth:130 }}>
+                <div style={{ width:34, height:34, borderRadius:8, background:"linear-gradient(135deg,#78350f,#d97706)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                  <span style={{ fontSize:13, fontWeight:900, color:"white" }}>KfW</span>
+                </div>
+                <div>
+                  <div style={{ fontSize:13, fontWeight:800, color:"#78350f" }}>KfW</div>
+                  <div style={{ fontSize:8, color:"#fcd34d", fontWeight:600, letterSpacing:.3, textTransform:"uppercase" }}>Banco de Fomento</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tagline final */}
+          <div style={{ textAlign:"center", marginTop:44 }}>
+            <p style={{ fontSize:13, color:T.muted, fontStyle:"italic" }}>
+              WCA forma parte de un ecosistema global comprometido con el desarrollo económico de Latinoamérica.
+            </p>
+          </div>
+        </div>
+      </section>
+
       <section id="registro" style={{ background:T.deep, padding:"90px 24px" }}>
         <div style={{ maxWidth:640, margin:"0 auto", textAlign:"center" }}>
           <FadeIn>
