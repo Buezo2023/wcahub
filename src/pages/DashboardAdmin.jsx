@@ -94,6 +94,69 @@ function Stat({ label, value, sub, color, icon }) {
   );
 }
 
+
+// ─── AdminPrices component ────────────────────────────────────────
+const PROG_PRICES_INIT = [
+  { id:1, icon:"🇬🇧", name:"Inglés completo",      price:95,  interval:"mes",       students:110, color:"#155266" },
+  { id:2, icon:"💻",  name:"Asistente Virtual",    price:75,  interval:"mes",       students:28,  color:"#7c3aed" },
+  { id:3, icon:"⚡",  name:"Inglés + VA",           price:170, interval:"mes",       students:32,  color:"#0f3d4d" },
+  { id:4, icon:"🎓",  name:"Beca Inglés",           price:50,  interval:"trimestre", students:18,  color:"#059669" },
+  { id:5, icon:"📱",  name:"VA · Marketing Digital",price:95, interval:"3 meses",  students:0,   color:"#db2777" },
+  { id:6, icon:"⚖️",  name:"VA · Legal Assistant",  price:95, interval:"3 meses",  students:0,   color:"#0e7490" },
+  { id:7, icon:"🏥",  name:"VA · Cuidador Remoto",  price:95, interval:"3 meses",  students:0,   color:"#059669" },
+];
+
+function AdminPrices() {
+  const [progs, setProgs] = useState(PROG_PRICES_INIT);
+  const [editing, setEditing] = useState(null);
+  const [tmp, setTmp] = useState("");
+  const [saved, setSaved] = useState(null);
+
+  function savePrice(id) {
+    setProgs(p => p.map(x => x.id===id ? {...x, price:+tmp} : x));
+    setEditing(null);
+    setSaved(id);
+    setTimeout(() => setSaved(null), 2500);
+  }
+
+  return (
+    <div style={{ maxWidth:620 }}>
+      {saved && (
+        <div style={{ position:"fixed", top:20, right:90, background:"#059669", color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:9999, boxShadow:"0 6px 20px rgba(5,150,105,.3)", display:"flex", gap:8 }}>
+          ✓ Precio guardado correctamente
+        </div>
+      )}
+      <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
+        {progs.map((p,i) => (
+          <div key={p.id} style={{ display:"flex", alignItems:"center", gap:14, padding:"18px 20px", borderBottom:i<progs.length-1?"1px solid var(--border)":"none" }}>
+            <span style={{ fontSize:22 }}>{p.icon}</span>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)" }}>{p.name}</div>
+              <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:2 }}>Cobro {p.interval} · {p.students} estudiantes activos</div>
+            </div>
+            {editing===p.id ? (
+              <div style={{ display:"flex", gap:7, alignItems:"center" }}>
+                <span style={{ fontSize:14, color:"var(--text-secondary)" }}>$</span>
+                <input autoFocus value={tmp} onChange={e=>setTmp(e.target.value)} onKeyDown={e=>{ if(e.key==="Enter") savePrice(p.id); if(e.key==="Escape") setEditing(null); }} style={{ width:72, padding:"7px 9px", border:"2px solid #155266", borderRadius:8, fontSize:15, fontWeight:700, color:"#155266", textAlign:"center", fontFamily:"inherit" }}/>
+                <button onClick={()=>savePrice(p.id)} style={{ padding:"8px 14px", background:"#155266", color:"#fff", border:"none", borderRadius:8, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>✓</button>
+                <button onClick={()=>setEditing(null)} style={{ padding:"8px 10px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", border:"1px solid var(--border)", borderRadius:8, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>✕</button>
+              </div>
+            ) : (
+              <div style={{ display:"flex", alignItems:"center", gap:12 }}>
+                <div style={{ fontSize:24, fontWeight:800, color:p.color }}>${p.price}</div>
+                <div style={{ fontSize:12, color:"var(--text-tertiary)" }}><span style={{fontSize:12,color:"var(--text-tertiary)"}}>{"/" + p.interval}</span></div>
+                <button onClick={()=>{ setEditing(p.id); setTmp(String(p.price)); }} style={{ padding:"7px 14px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", border:"1px solid var(--border)", borderRadius:8, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}
+                  onMouseEnter={e=>{e.currentTarget.style.borderColor="#155266";e.currentTarget.style.color="#155266";}}
+                  onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.color="var(--text-secondary)";}}>✎ Editar</button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const [view, setView] = useState("home");
   const [actionModal, setActionModal] = useState(null); // {type, student, group}
@@ -171,7 +234,7 @@ export default function AdminDashboard() {
         {/* Topbar */}
         <div style={{ height:54, background:B.white, borderBottom:`1px solid ${B.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 22px", flexShrink:0 }}>
           <div style={{ fontSize:15, fontWeight:700, color:B.text }}>
-            {{ home:"Resumen general", students:"Estudiantes", groups:"Grupos y horarios", enrollments:"Nueva matrícula", payments:"Pagos operativos", cycle:"Estado del ciclo", reports:"Reportes", b2b:"Empresas B2B" }[view]}
+            {({ home:"Resumen general", students:"Estudiantes", groups:"Grupos y horarios", enrollments:"Nueva matrícula", payments:"Pagos operativos", cycle:"Estado del ciclo", reports:"Reportes", b2b:"Empresas B2B", precios:"Precios" })[view]}
           </div>
           <div style={{ display:"flex", gap:8, alignItems:"center" }}>
             {suspended.length > 0 && <div style={{ fontSize:12, background:B.redDim, color:B.red, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>⚠ {suspended.length} suspendidos</div>}
@@ -225,7 +288,7 @@ export default function AdminDashboard() {
                       <div style={{ height:4, width:50, background:B.bg, borderRadius:2, overflow:"hidden" }}>
                         <div style={{ height:"100%", width:`${(c.unit/12)*100}%`, background:B.primary, borderRadius:2 }} />
                       </div>
-                      <div style={{ fontSize:12, color:B.textSec, width:22, textAlign:"right" }}>{c.unit}/12</div>
+                      <div style={{ fontSize:12, color:B.textSec, width:22, textAlign:"right" }}>{c.unit} de 12</div>
                     </div>
                   ))}
                 </div>
@@ -393,7 +456,7 @@ export default function AdminDashboard() {
                     {selStudent.state === "suspended" && (
                       <button style={{ padding:"8px", background:B.green, color:"var(--bg-surface)", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Reactivar cuenta</button>
                     )}
-                    <button style={{ padding:"8px", background:B.primaryDim, color:B.primary, border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Cambiar grupo/horario</button>
+                    <button style={{ padding:"8px", background:B.primaryDim, color:B.primary, border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Cambiar grupo · horario</button>
                     {selStudent.type === "scholarship" && (
                       <button style={{ padding:"8px", background:B.secondaryDim, color:"#92400e", border:`1px solid ${B.amber}40`, borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Upgrade a plan completo</button>
                     )}
@@ -430,7 +493,7 @@ export default function AdminDashboard() {
                       <div style={{ height:"100%", width:`${(g.students/g.capacity)*100}%`, background:g.students/g.capacity>0.9?B.red:g.students/g.capacity>0.7?B.amber:B.green, borderRadius:2 }} />
                     </div>
                     <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:B.textSec, marginBottom:10 }}>
-                      <span>{g.students}/{g.capacity} cupos</span>
+                      <span>{g.students} {"/"} {g.capacity} cupos</span>
                       <span>U{g.unit} activa</span>
                     </div>
                     {!g.teamsSet && (
@@ -498,7 +561,7 @@ export default function AdminDashboard() {
                         </div>
                       </div>
                       <div style={{ textAlign:"right" }}>
-                        <div style={{ fontSize:13, color:B.primary, fontWeight:600 }}>U{c.unit} / 12</div>
+                        <div style={{ fontSize:13, color:B.primary, fontWeight:600 }}>U{c.unit} de 12</div>
                         <div style={{ fontSize:11, color:B.textSec }}>Próximo avance: lunes</div>
                       </div>
                     </div>
@@ -560,8 +623,8 @@ export default function AdminDashboard() {
                 <Stat label="Próxima factura" value="1 Jul" sub="$510 · 2 empresas" color={B.green} icon="ti-receipt" />
               </div>
               {[
-                { name:"TechCorp Honduras", contact:"Rodrigo Paredes", employees:2, plan:"Inglés B2", amount:"$190/mes", status:"active" },
-                { name:"Freelancers MX",    contact:"Diego Fuentes",   employees:1, plan:"Inglés B2", amount:"$95/mes",  status:"active" },
+                { name:"TechCorp Honduras", contact:"Rodrigo Paredes", employees:2, plan:"Inglés B2", amount:"$190 por mes", status:"active" },
+                { name:"Freelancers MX",    contact:"Diego Fuentes",   employees:1, plan:"Inglés B2", amount:"$95 por mes",  status:"active" },
               ].map((co, i) => (
                 <div key={i} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16, marginBottom:10 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
@@ -665,7 +728,7 @@ export default function AdminDashboard() {
           onClick={e=>{ if(e.target===e.currentTarget) setActionModal(null); }}>
           <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, width:420, border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)" }}>
             <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)", marginBottom:4 }}>
-              {{reactivate:"Reactivar cuenta",suspend:"Suspender cuenta",upgrade:"Upgrade a Plan Completo",changeGroup:"Cambiar de grupo"}[actionModal.type]}
+              {({"reactivate":"Reactivar cuenta","suspend":"Suspender cuenta","upgrade":"Upgrade a Plan Completo","changeGroup":"Cambiar de grupo"})[actionModal.type]}
             </div>
             <div style={{ fontSize:12, color:"var(--text-secondary)", marginBottom:14 }}>{actionModal.student?.name} · {actionModal.student?.level}</div>
 
@@ -681,7 +744,7 @@ export default function AdminDashboard() {
             )}
             {actionModal.type==="upgrade" && (
               <div style={{ background:"#fff8e6", border:"1px solid #ffbb23", borderRadius:9, padding:"10px 14px", marginBottom:14, fontSize:12, color:"#d97706" }}>
-                Se habilitarán todos los niveles hasta C1 y se generará una nueva suscripción de $95/mes.
+                Se habilitarán todos los niveles hasta C1. Nueva suscripción: $95 por mes.
               </div>
             )}
             {actionModal.type==="changeGroup" && (
@@ -712,5 +775,6 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+    </div>
   );
 }

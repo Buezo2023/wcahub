@@ -500,7 +500,6 @@ export default function TeacherPortal(){
         </div>
       )}
 
-    </div>
 
       {/* Toast notification */}
       {toastMsg && (
