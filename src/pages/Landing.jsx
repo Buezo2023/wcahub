@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 
 /* ─── Design direction: "Luxury EdTech Internacional"
    Fondo crema casi-blanco, sidebar de color sólido WCA verde-petróleo,
@@ -54,6 +55,18 @@ const howItWorks = [
   { n:"05", title:"Certificado CEFR/WCA",  desc:"Al completar cada nivel recibís un certificado verificable con QR. Compartilo en LinkedIn." },
 ];
 
+
+const ROLES = [
+  { path:"/portal",       icon:"👨‍🎓", label:"Portal Estudiante",     role:"Estudiante",    color:"#155266", desc:"Accede a tus programas, práctica y clases en vivo" },
+  { path:"/docente",      icon:"👩‍🏫", label:"Portal Docente",         role:"Docente",       color:"#92400e", desc:"Gestiona tus grupos, asistencia y contenido" },
+  { path:"/admin",        icon:"⚙️",  label:"Dashboard Admin",        role:"Admin",         color:"#0f3d4d", desc:"Estudiantes, pagos, grupos y matrículas" },
+  { path:"/super",        icon:"⭐",  label:"Super Admin",            role:"Super Admin",   color:"#2d1b69", desc:"Control total del sistema, programas y RRHH" },
+  { path:"/crm",          icon:"💼",  label:"CRM Ventas",             role:"Asesor Ventas", color:"#059669", desc:"Pipeline, leads, tareas y métricas de conversión" },
+  { path:"/cobros",       icon:"💳",  label:"Gestor de Cobros",       role:"Cobros",        color:"#d97706", desc:"Pagos, transferencias, vencidos y recibos" },
+  { path:"/coordinacion", icon:"🎓",  label:"Coordinación Académica", role:"Coordinadora",  color:"#155266", desc:"Docentes, grupos, horarios y becas" },
+  { path:"/bi",           icon:"📊",  label:"Dashboard BI",           role:"Directivos",    color:"#3c3489", desc:"MRR, ARR, retención, cohortes y métricas clave" },
+];
+
 function useInView(threshold = 0.15) {
   const ref = useRef(null);
   const [inView, setInView] = useState(false);
@@ -76,14 +89,18 @@ function FadeIn({ children, delay = 0, direction = "up", style = {} }) {
     }}>
       {children}
     </div>
+
   );
 }
 
 export default function Landing() {
+  const navigate = useNavigate();
   const [activeProgram, setActiveProgram] = useState("va");
   const [step, setStep] = useState(0);
   const [email, setEmail] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const [roleModal, setRoleModal] = useState(false);
+  const [hoveredRole, setHoveredRole] = useState(null);
 
   return (
     <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", background:T.cream, color:T.ink, overflowX:"hidden" }}>
@@ -142,7 +159,7 @@ export default function Landing() {
         </div>
 
         <div style={{ display:"flex", gap:8 }}>
-          <button className="ghost-btn" style={{ padding:"8px 16px", borderRadius:9, fontSize:12, color:T.teal, borderColor:T.border }} onClick={()=>{}}>Iniciar sesión</button>
+          <button className="ghost-btn" style={{ padding:"8px 16px", borderRadius:9, fontSize:12, color:T.teal, borderColor:T.border }} onClick={()=>setRoleModal(true)}>Iniciar sesión</button>
           <button className="gold-btn" style={{ padding:"9px 18px", borderRadius:9, fontSize:12 }} onClick={()=>document.getElementById("registro")?.scrollIntoView({behavior:"smooth"})}>Comenzar gratis</button>
         </div>
       </nav>
@@ -552,6 +569,59 @@ export default function Landing() {
           </div>
         </div>
       </footer>
+
+      {/* ── ROLE SELECTOR MODAL ── */}
+      {roleModal && (
+        <div
+          onClick={e=>{ if(e.target===e.currentTarget) setRoleModal(false); }}
+          style={{ position:"fixed", inset:0, background:"rgba(10,25,35,.7)", backdropFilter:"blur(8px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9999, padding:20 }}>
+          <div style={{ background:"#ffffff", borderRadius:28, padding:"32px 32px 28px", width:640, maxWidth:"100%", boxShadow:"0 32px 80px rgba(0,0,0,.3)", maxHeight:"90vh", overflowY:"auto" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:24 }}>
+              <div>
+                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
+                  <div style={{ width:36, height:36, borderRadius:9, background:T.teal, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <span style={{ fontSize:16, fontWeight:800, color:T.gold }}>W</span>
+                  </div>
+                  <span style={{ fontSize:18, fontWeight:800, color:T.ink }}>WCA <span style={{ color:T.teal }}>Hub</span></span>
+                </div>
+                <div style={{ fontSize:14, color:T.muted, lineHeight:1.5 }}>
+                  Seleccioná el portal que querés explorar.<br/>
+                  <span style={{ fontSize:12, color:"#94a3b8" }}>Demo visual · sin backend real</span>
+                </div>
+              </div>
+              <button onClick={()=>setRoleModal(false)} style={{ background:"#f1f5f9", border:"none", width:34, height:34, borderRadius:"50%", fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#64748b", flexShrink:0 }}>✕</button>
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:20 }}>
+              {ROLES.map((r,i) => (
+                <button key={i} onClick={()=>{ setRoleModal(false); navigate(r.path); }}
+                  onMouseEnter={()=>setHoveredRole(i)} onMouseLeave={()=>setHoveredRole(null)}
+                  style={{ display:"flex", gap:13, alignItems:"center", padding:"14px 16px", background:hoveredRole===i?`${r.color}08`:"#f8fafc", border:`1.5px solid ${hoveredRole===i?r.color+"50":"#e2e8f0"}`, borderRadius:14, cursor:"pointer", textAlign:"left", fontFamily:"inherit", transition:"all .15s", transform:hoveredRole===i?"translateY(-1px)":"none", boxShadow:hoveredRole===i?`0 6px 20px ${r.color}18`:"none" }}>
+                  <div style={{ width:42, height:42, borderRadius:11, background:`${r.color}12`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, flexShrink:0 }}>{r.icon}</div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:13, fontWeight:700, color:"#0f172a", marginBottom:2 }}>{r.label}</div>
+                    <div style={{ fontSize:11, color:r.color, fontWeight:600, marginBottom:3 }}>{r.role}</div>
+                    <div style={{ fontSize:11, color:"#64748b", lineHeight:1.4 }}>{r.desc}</div>
+                  </div>
+                  <div style={{ fontSize:16, color:hoveredRole===i?r.color:"#cbd5e1", transition:"color .15s", flexShrink:0 }}>→</div>
+                </button>
+              ))}
+            </div>
+            <div style={{ borderTop:"1px solid #f1f5f9", paddingTop:18 }}>
+              <div style={{ fontSize:11, color:"#94a3b8", textAlign:"center", marginBottom:12 }}>¿Querés registrarte? Creá tu cuenta con:</div>
+              <div style={{ display:"flex", gap:10 }}>
+                <button onClick={()=>{ setRoleModal(false); document.getElementById("registro")?.scrollIntoView({behavior:"smooth"}); }} style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:9, padding:"11px", background:"#f8fafc", border:"1px solid #e2e8f0", borderRadius:11, cursor:"pointer", fontSize:13, fontWeight:600, color:"#0f172a", fontFamily:"inherit", transition:"all .15s" }} onMouseEnter={e=>{e.currentTarget.style.borderColor="#155266";e.currentTarget.style.background="#e8f3f6";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="#e2e8f0";e.currentTarget.style.background="#f8fafc";}}>
+                  <svg width="18" height="18" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+                  Microsoft
+                </button>
+                <button onClick={()=>{ setRoleModal(false); document.getElementById("registro")?.scrollIntoView({behavior:"smooth"}); }} style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:9, padding:"11px", background:"#f8fafc", border:"1px solid #e2e8f0", borderRadius:11, cursor:"pointer", fontSize:13, fontWeight:600, color:"#0f172a", fontFamily:"inherit", transition:"all .15s" }} onMouseEnter={e=>{e.currentTarget.style.borderColor="#db4437";e.currentTarget.style.background="#fef2f2";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="#e2e8f0";e.currentTarget.style.background="#f8fafc";}}>
+                  <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285f4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34a853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.32-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#fbbc05" d="M11.68 28.18A13.93 13.93 0 0 1 10.9 24c0-1.45.25-2.86.68-4.18v-5.7H4.34A23.93 23.93 0 0 0 0 24c0 3.87.93 7.53 2.56 10.77l7.12-5.7.99-.89z"/><path fill="#ea4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.34 5.7C13.42 14.62 18.27 10.75 24 10.75z"/></svg>
+                  Google
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
