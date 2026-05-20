@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from 'react-router-dom';
 
 const B = {
   primary:"#155266", dark:"#0f3d4d", primaryDim:"var(--wca-primary-dim)",
@@ -86,6 +87,7 @@ function Stat({ label, value, sub, color, icon }) {
 }
 
 export default function CoordAcademica() {
+  const navigate = useNavigate();
   const [view, setView]               = useState("home");
   const [selGroup, setSelGroup]       = useState(null);
   const [selTeacher, setSelTeacher]   = useState(null);
@@ -150,7 +152,18 @@ export default function CoordAcademica() {
             <div><div style={{ fontSize:12, color:"var(--bg-surface)", fontWeight:600 }}>Coordinadora WCA</div><div style={{ fontSize:11, color:"rgba(255,255,255,.4)" }}>Académica</div></div>
           </div>
         </div>
-      </aside>
+      
+      <button
+        onClick={()=>navigate("/")}
+        title="Cerrar sesión"
+        aria-label="Cerrar sesión y volver al inicio"
+        style={{ width:"100%", display:"flex", alignItems:"center", gap:9, padding:"10px 18px", background:"transparent", border:"none", borderTop:"1px solid rgba(255,255,255,.08)", marginTop:8, color:"rgba(255,255,255,.35)", fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+        onMouseEnter={e=>{e.currentTarget.style.color="#fff";e.currentTarget.style.background="rgba(220,38,38,.15)";}}
+        onMouseLeave={e=>{e.currentTarget.style.color="rgba(255,255,255,.35)";e.currentTarget.style.background="transparent";}}>
+        <i className="ti ti-logout" style={{fontSize:14}} aria-hidden="true"/>
+        Cerrar sesión
+      </button>
+</aside>
 
       {/* MAIN */}
       <main style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
@@ -654,7 +667,7 @@ export default function CoordAcademica() {
       {teacherModal && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}
           onClick={e=>{ if(e.target===e.currentTarget) setTeacherModal(null); }}>
-          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, width:460, maxWidth:"100%", border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)", maxHeight:"90vh", overflowY:"auto" }}>
+          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:460, maxWidth:"100%", border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)", maxHeight:"90vh", overflowY:"auto" }}>
             <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
               <div>
                 <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>{teacherModal.mode==="add"?"Agregar docente":teacherModal.mode==="edit"?"Editar docente":teacherModal.data.name}</div>

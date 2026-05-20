@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const P = "#155266", PH = "#0f3d4d", PD = "#e8f3f6";
 const Y = "#ffbb23", YD = "#fff8e6";
@@ -153,7 +154,7 @@ function Modal({ title, subtitle, onClose, children }) {
   return (
     <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}
       onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
-      <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, width:460, maxWidth:"100%", border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)", maxHeight:"90vh", overflowY:"auto" }}>
+      <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:460, maxWidth:"100%", border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)", maxHeight:"90vh", overflowY:"auto" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
           <div>
             <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>{title}</div>
@@ -168,6 +169,7 @@ function Modal({ title, subtitle, onClose, children }) {
 }
 
 export default function SuperAdmin() {
+  const navigate = useNavigate();
   const [view,       setView]       = useState("overview");
   const [staff,      setStaff]      = useState(STAFF_INIT);
   const [programs,   setPrograms]   = useState(PROGRAMS_INIT);
@@ -247,7 +249,18 @@ export default function SuperAdmin() {
             <div><div style={{ fontSize:12, color:"#fff", fontWeight:600 }}>Super Admin</div><div style={{ fontSize:10, color:"rgba(255,255,255,.3)" }}>wcahub.com</div></div>
           </div>
         </div>
-      </aside>
+      
+      <button
+        onClick={()=>navigate("/")}
+        title="Cerrar sesión"
+        aria-label="Cerrar sesión y volver al inicio"
+        style={{ width:"100%", display:"flex", alignItems:"center", gap:9, padding:"10px 18px", background:"transparent", border:"none", borderTop:"1px solid rgba(255,255,255,.08)", marginTop:8, color:"rgba(255,255,255,.35)", fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+        onMouseEnter={e=>{e.currentTarget.style.color="#fff";e.currentTarget.style.background="rgba(220,38,38,.15)";}}
+        onMouseLeave={e=>{e.currentTarget.style.color="rgba(255,255,255,.35)";e.currentTarget.style.background="transparent";}}>
+        <i className="ti ti-logout" style={{fontSize:14}} aria-hidden="true"/>
+        Cerrar sesión
+      </button>
+</aside>
 
       {/* MAIN */}
       <main style={{ flex:1, display:"flex", flexDirection:"column", minHeight:"100vh" }}>

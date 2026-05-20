@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const P="#155266",PH="#0f3d4d",PD="#e8f3f6";
 const Y="#ffbb23",YD="#fff8e6";
@@ -264,6 +265,7 @@ function UpsellBanner({prog,canEnroll,onEnroll}){
 
 // ─── MAIN ─────────────────────────────────────────────────────────
 export default function PortalEstudiante(){
+  const navigate = useNavigate();
   const [view,       setView]       = useState("inicio");
   const [activeProg, setActiveProg] = useState("en"); // current program in practice/exam
   const [enrolled,   setEnrolled]   = useState(Object.keys(ENROLLMENTS));
@@ -323,7 +325,18 @@ export default function PortalEstudiante(){
             <div><div style={{fontSize:12,color:"#fff",fontWeight:600}}>María Rodríguez</div><div style={{fontSize:10,color:"rgba(255,255,255,.35)"}}>{enrolled.length} programa{enrolled.length!==1?"s":""} activo{enrolled.length!==1?"s":""}</div></div>
           </div>
         </div>
-      </aside>
+      
+      <button
+        onClick={()=>navigate("/")}
+        title="Cerrar sesión"
+        aria-label="Cerrar sesión y volver al inicio"
+        style={{ width:"100%", display:"flex", alignItems:"center", gap:9, padding:"10px 18px", background:"transparent", border:"none", borderTop:"1px solid rgba(255,255,255,.08)", marginTop:8, color:"rgba(255,255,255,.35)", fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+        onMouseEnter={e=>{e.currentTarget.style.color="#fff";e.currentTarget.style.background="rgba(220,38,38,.15)";}}
+        onMouseLeave={e=>{e.currentTarget.style.color="rgba(255,255,255,.35)";e.currentTarget.style.background="transparent";}}>
+        <i className="ti ti-logout" style={{fontSize:14}} aria-hidden="true"/>
+        Cerrar sesión
+      </button>
+</aside>
 
       {/* MAIN */}
       <main style={{flex:1,display:"flex",flexDirection:"column",minHeight:"100vh"}}>

@@ -27,6 +27,59 @@ const PORTALS = [
   { path:'/preview',      icon:'🗺️',  label:'Platform Preview',        role:'Todos',        color:'#475569' },
 ];
 
+// ── Inject global WCA styles ──────────────────────────────────────
+const WCA_GLOBAL_CSS = `
+/* ── WCA Global Micro-interactions ──────────────────────────────── */
+@keyframes fadeUp  { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+@keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:none} }
+@keyframes popIn   { 0%{opacity:0;transform:scale(.94)} 60%{transform:scale(1.01)} 100%{opacity:1;transform:none} }
+@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+@keyframes menuUp  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+@keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* Focus ring — replaces browser default */
+*:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #155266;
+  border-radius: 6px;
+}
+
+/* Smooth interactive elements */
+button, a, [role="button"] { cursor: pointer; }
+
+/* Skeleton shimmer */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-surface-subtle) 25%, var(--border) 50%, var(--bg-surface-subtle) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+  border-radius: 6px;
+}
+
+/* Modal enter animation */
+.modal-enter { animation: popIn .22s cubic-bezier(.34,1.56,.64,1) both; }
+
+/* Toast enter */
+.toast-enter { animation: slideIn .3s ease both; }
+
+/* Card hover lift */
+.card-hover {
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,.1);
+}
+`;
+if (typeof document !== 'undefined') {
+  const existing = document.getElementById('wca-global');
+  if (!existing) {
+    const s = document.createElement('style');
+    s.id = 'wca-global';
+    s.textContent = WCA_GLOBAL_CSS;
+    document.head.appendChild(s);
+  }
+}
+
 function PageLoader() {
   return (
     <div style={{ height:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'var(--bg-page)', gap:16 }}>

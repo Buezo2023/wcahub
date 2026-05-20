@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 
 // ─── BRAND ───────────────────────────────────────────────────────────────────
 const B = {
@@ -158,6 +159,7 @@ function AdminPrices() {
 }
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const [view, setView] = useState("home");
   const [actionModal, setActionModal] = useState(null); // {type, student, group}
   const [actionNote, setActionNote] = useState("");
@@ -226,7 +228,18 @@ export default function AdminDashboard() {
             </div>
           </div>
         </div>
-      </aside>
+      
+      <button
+        onClick={()=>navigate("/")}
+        title="Cerrar sesión"
+        aria-label="Cerrar sesión y volver al inicio"
+        style={{ width:"100%", display:"flex", alignItems:"center", gap:9, padding:"10px 18px", background:"transparent", border:"none", borderTop:"1px solid rgba(255,255,255,.08)", marginTop:8, color:"rgba(255,255,255,.35)", fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+        onMouseEnter={e=>{e.currentTarget.style.color="#fff";e.currentTarget.style.background="rgba(220,38,38,.15)";}}
+        onMouseLeave={e=>{e.currentTarget.style.color="rgba(255,255,255,.35)";e.currentTarget.style.background="transparent";}}>
+        <i className="ti ti-logout" style={{fontSize:14}} aria-hidden="true"/>
+        Cerrar sesión
+      </button>
+</aside>
 
       {/* ── MAIN ── */}
       <main style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
@@ -716,7 +729,7 @@ export default function AdminDashboard() {
 
       {/* Action toast */}
       {actionDone && (
-        <div style={{ position:"fixed", top:20, right:90, background:"#059669", color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:9999, boxShadow:"0 6px 20px rgba(5,150,105,.3)", display:"flex", gap:8, animation:"fadeIn .3s" }}>
+        <div style={{ position:"fixed", top:20, right:90, background:"#059669", color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:9999, boxShadow:"0 6px 20px rgba(5,150,105,.3)", display:"flex", gap:8, animation:"slideIn .3s ease" }}>
           <i className="ti ti-check" style={{ fontSize:15 }} aria-hidden="true"/>
           {actionDone}
         </div>
@@ -726,7 +739,7 @@ export default function AdminDashboard() {
       {actionModal && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}
           onClick={e=>{ if(e.target===e.currentTarget) setActionModal(null); }}>
-          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, width:420, border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)" }}>
+          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:420, border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)" }}>
             <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)", marginBottom:4 }}>
               {({"reactivate":"Reactivar cuenta","suspend":"Suspender cuenta","upgrade":"Upgrade a Plan Completo","changeGroup":"Cambiar de grupo"})[actionModal.type]}
             </div>
