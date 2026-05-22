@@ -92,82 +92,9 @@ function Stat({ label, value, sub, color, icon }) {
       </div>
       <div style={{ fontSize:24, fontWeight:700, color:B.text, lineHeight:1 }}>{value}</div>
       {sub && <div style={{ fontSize:12, color:B.textSec, marginTop:4 }}>{sub}</div>}
-
-      {/* Enroll modal */}
-      {enrollModal && (
-        <div role="dialog" aria-modal="true" style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}
-          onClick={e=>{ if(e.target===e.currentTarget) setEnrollModal(false); }}>
-          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, width:440, border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
-              <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>Nuevo estudiante</div>
-              <button onClick={()=>setEnrollModal(false)} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--text-secondary)", fontSize:18 }} aria-label="Cerrar">✕</button>
-            </div>
-            {[
-              {label:"Nombre completo", ph:"María Rodríguez", type:"text"},
-              {label:"Email", ph:"m.rodriguez@correo.com", type:"email"},
-              {label:"Teléfono / WhatsApp", ph:"+504 9999-0000", type:"tel"},
-            ].map(f => (
-              <div key={f.label} style={{ marginBottom:11 }}>
-                <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>{f.label}</label>
-                <input type={f.type} aria-label={f.label} placeholder={f.ph} style={{ width:"100%", padding:"8px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, color:"var(--text-primary)", background:"var(--bg-surface-subtle)", fontFamily:"inherit" }} />
-              </div>
-            ))}
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:14 }}>
-              <div>
-                <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>Programa</label>
-                <select aria-label="Programa" style={{ width:"100%", padding:"8px 10px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", fontFamily:"inherit" }}>
-                  <option>Inglés</option><option>VA</option><option>Inglés + VA</option><option>Beca</option>
-                </select>
-              </div>
-              <div>
-                <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>Nivel</label>
-                <select aria-label="Nivel" style={{ width:"100%", padding:"8px 10px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", fontFamily:"inherit" }}>
-                  {["A1","A2","B1","B2","C1"].map(l => <option key={l}>{l}</option>)}
-                </select>
-              </div>
-            </div>
-            <div style={{ display:"flex", gap:8 }}>
-              <button onClick={()=>setEnrollModal(false)} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
-              <button onClick={()=>{ setEnrollModal(false); setActionDone("Estudiante matriculado correctamente"); setTimeout(()=>setActionDone(null),3000); }} style={{ flex:2, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Crear matrícula</button>
-            </div>
-          </div>
-        </div>
-      )}
-
-
-      {/* Teams link modal */}
-      {teamsModal && (
-        <div role="dialog" aria-modal="true" style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}
-          onClick={e=>{ if(e.target===e.currentTarget) setTeamsModal(null); }}>
-          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:24, width:400, border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
-              <div>
-                <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>Configurar link de Teams</div>
-                <div style={{ fontSize:12, color:"var(--text-secondary)", marginTop:2 }}>{teamsModal.level} · {teamsModal.time} · {teamsModal.teacher}</div>
-              </div>
-              <button onClick={()=>setTeamsModal(null)} style={{ background:"none", border:"none", cursor:"pointer", color:"var(--text-secondary)", fontSize:18 }} aria-label="Cerrar">✕</button>
-            </div>
-            <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:4 }}>Link de reunión de Microsoft Teams</label>
-            <input
-              aria-label="Link de Teams"
-              value={teamsLink}
-              onChange={e=>setTeamsLink(e.target.value)}
-              placeholder="https://teams.microsoft.com/l/meetup-join/..."
-              style={{ width:"100%", padding:"9px 12px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit", marginBottom:14 }}
-            />
-            <div style={{ display:"flex", gap:8 }}>
-              <button onClick={()=>setTeamsModal(null)} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
-              <button onClick={()=>{ setTeamsModal(null); setTeamsLink(""); setActionDone("Link de Teams guardado"); setTimeout(()=>setActionDone(null),3000); }} style={{ flex:2, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Guardar link</button>
-            </div>
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }
-
-
 // ─── AdminPrices component ────────────────────────────────────────
 const PROG_PRICES_INIT = [
   { id:1, icon:"🇬🇧", name:"Inglés completo",      price:95,  interval:"mes",       students:110, color:"#155266" },
@@ -301,17 +228,18 @@ export default function AdminDashboard() {
           </div>
         </div>
       
-      <button
-        onClick={()=>navigate("/")}
-        title="Cerrar sesión"
-        aria-label="Cerrar sesión y volver al inicio"
-        style={{ width:"100%", display:"flex", alignItems:"center", gap:9, padding:"10px 18px", background:"transparent", border:"none", borderTop:"1px solid rgba(255,255,255,.08)", marginTop:8, color:"rgba(255,255,255,.35)", fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
-        onMouseEnter={e=>{e.currentTarget.style.color="#fff";e.currentTarget.style.background="rgba(220,38,38,.15)";}}
-        onMouseLeave={e=>{e.currentTarget.style.color="rgba(255,255,255,.35)";e.currentTarget.style.background="transparent";}}>
-        <i className="ti ti-logout" style={{fontSize:14}} aria-hidden="true"/>
-        Cerrar sesión
-      </button>
-</aside>
+
+        <button
+          onClick={()=>navigate("/")}
+          title="Cerrar sesión"
+          aria-label="Cerrar sesión y volver al inicio"
+          style={{ width:"100%", display:"flex", alignItems:"center", gap:9, padding:"10px 18px", background:"transparent", border:"none", borderTop:"1px solid rgba(255,255,255,.08)", marginTop:8, color:"rgba(255,255,255,.35)", fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+          onMouseEnter={e=>{e.currentTarget.style.color="#fff";e.currentTarget.style.background="rgba(220,38,38,.15)";}}
+          onMouseLeave={e=>{e.currentTarget.style.color="rgba(255,255,255,.35)";e.currentTarget.style.background="transparent";}}>
+          <i className="ti ti-logout" style={{fontSize:14}} aria-hidden="true"/>
+          Cerrar sesión
+        </button>
+      </aside>
 
       {/* ── MAIN ── */}
       <main style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
@@ -860,6 +788,73 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
+      {/* ── Enroll modal ── */}
+      {enrollModal && (
+        <div role="dialog" aria-modal="true"
+          onClick={e=>{ if(e.target===e.currentTarget) setEnrollModal(false); }}
+          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}>
+          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, width:440, border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
+              <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>Nuevo estudiante</div>
+              <button onClick={()=>setEnrollModal(false)} aria-label="Cerrar" style={{ background:"none", border:"none", cursor:"pointer", color:"var(--text-secondary)", fontSize:18 }}>✕</button>
+            </div>
+            {[
+              {label:"Nombre completo", ph:"María Rodríguez", type:"text"},
+              {label:"Email", ph:"m.rodriguez@correo.com", type:"email"},
+              {label:"Teléfono / WhatsApp", ph:"+504 9999-0000", type:"tel"},
+            ].map(f => (
+              <div key={f.label} style={{ marginBottom:11 }}>
+                <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>{f.label}</label>
+                <input type={f.type} aria-label={f.label} placeholder={f.ph} style={{ width:"100%", padding:"8px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, color:"var(--text-primary)", background:"var(--bg-surface-subtle)", fontFamily:"inherit" }} />
+              </div>
+            ))}
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:14 }}>
+              <div>
+                <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>Programa</label>
+                <select aria-label="Programa" style={{ width:"100%", padding:"8px 10px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", fontFamily:"inherit" }}>
+                  <option>Inglés</option><option>VA</option><option>Inglés + VA</option><option>Beca</option>
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>Nivel</label>
+                <select aria-label="Nivel" style={{ width:"100%", padding:"8px 10px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", fontFamily:"inherit" }}>
+                  {["A1","A2","B1","B2","C1"].map(l => <option key={l}>{l}</option>)}
+                </select>
+              </div>
+            </div>
+            <div style={{ display:"flex", gap:8 }}>
+              <button onClick={()=>setEnrollModal(false)} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
+              <button onClick={()=>{ setEnrollModal(false); setActionDone("Estudiante matriculado correctamente"); setTimeout(()=>setActionDone(null),3000); }} style={{ flex:2, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Crear matrícula</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Teams link modal ── */}
+      {teamsModal && (
+        <div role="dialog" aria-modal="true"
+          onClick={e=>{ if(e.target===e.currentTarget) setTeamsModal(null); }}
+          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}>
+          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:24, width:400, border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+              <div>
+                <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>Configurar link de Teams</div>
+                {teamsModal && <div style={{ fontSize:12, color:"var(--text-secondary)", marginTop:2 }}>{teamsModal.level} · {teamsModal.time} · {teamsModal.teacher}</div>}
+              </div>
+              <button onClick={()=>setTeamsModal(null)} aria-label="Cerrar" style={{ background:"none", border:"none", cursor:"pointer", color:"var(--text-secondary)", fontSize:18 }}>✕</button>
+            </div>
+            <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:4 }}>Link de Microsoft Teams</label>
+            <input aria-label="Link de Teams" value={teamsLink} onChange={e=>setTeamsLink(e.target.value)}
+              placeholder="https://teams.microsoft.com/l/meetup-join/..."
+              style={{ width:"100%", padding:"9px 12px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit", marginBottom:14 }} />
+            <div style={{ display:"flex", gap:8 }}>
+              <button onClick={()=>{ setTeamsModal(null); setTeamsLink(""); }} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
+              <button onClick={()=>{ setTeamsModal(null); setTeamsLink(""); setActionDone("Link de Teams guardado"); setTimeout(()=>setActionDone(null),3000); }} style={{ flex:2, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Guardar link</button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
