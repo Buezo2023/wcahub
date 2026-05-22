@@ -206,7 +206,7 @@ function LeadPanel({ lead, onClose, onStageChange, onConvert, onLost }) {
         <button style={{ padding:"8px 12px", background:"#ecfdf5", color:"#16a34a", border:"none", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
           <i className="ti ti-brand-whatsapp" style={{ fontSize:14 }} aria-hidden="true"/>
         </button>
-        <button onClick={()=>{}} style={{ padding:"8px 12px", background:"#f1f5f9", color:"#64748b", border:"none", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
+        <button onClick={()=>setView("pipeline")} style={{ padding:"8px 12px", background:"#f1f5f9", color:"#64748b", border:"none", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
           <i className="ti ti-send" style={{ fontSize:14 }} aria-hidden="true"/>
         </button>
       </div>
@@ -227,7 +227,7 @@ function LeadPanel({ lead, onClose, onStageChange, onConvert, onLost }) {
       <div style={{ padding:"12px 20px", borderBottom:"1px solid #f1f5f9" }}>
         <div style={{ fontSize:11, color:"#94a3b8", marginBottom:7 }}>Enviar mensaje</div>
         <div style={{ display:"flex", gap:7 }}>
-          <input value={msgText} onChange={e=>setMsgText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendMsg()} placeholder="Escribe un mensaje..." style={{ flex:1, padding:"8px 11px", border:"1px solid #e2e8f0", borderRadius:9, fontSize:12, fontFamily:"inherit", color:"#0f172a", background:"#f8fafc", outline:"none" }}/>
+          <input aria-label="Mensaje" value={msgText} onChange={e=>setMsgText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendMsg()} placeholder="Escribe un mensaje..." style={{ flex:1, padding:"8px 11px", border:"1px solid #e2e8f0", borderRadius:9, fontSize:12, fontFamily:"inherit", color:"#0f172a", background:"#f8fafc", outline:"none" }}/>
           <button onClick={sendMsg} style={{ padding:"8px 14px", background:P, color:"#fff", border:"none", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>→</button>
         </div>
         {showSent && <div style={{ marginTop:7, fontSize:11, color:G, fontWeight:600 }}>✓ Mensaje enviado por WhatsApp</div>}
@@ -238,7 +238,7 @@ function LeadPanel({ lead, onClose, onStageChange, onConvert, onLost }) {
         <div style={{ fontSize:11, color:"#94a3b8", marginBottom:6 }}>Nota interna</div>
         <div style={{ fontSize:12, color:"#475569", background:"#f8fafc", borderRadius:8, padding:"9px 11px", lineHeight:1.65, marginBottom:7 }}>{lead.notes}</div>
         <div style={{ display:"flex", gap:7 }}>
-          <input value={noteText} onChange={e=>setNoteText(e.target.value)} placeholder="Agregar nota..." style={{ flex:1, padding:"7px 10px", border:"1px solid #e2e8f0", borderRadius:8, fontSize:12, fontFamily:"inherit", color:"#0f172a", background:"#f8fafc", outline:"none" }}/>
+          <input aria-label="Nota" value={noteText} onChange={e=>setNoteText(e.target.value)} placeholder="Agregar nota..." style={{ flex:1, padding:"7px 10px", border:"1px solid #e2e8f0", borderRadius:8, fontSize:12, fontFamily:"inherit", color:"#0f172a", background:"#f8fafc", outline:"none" }}/>
           <button onClick={()=>setNoteText("")} style={{ padding:"7px 12px", background:PD, color:P, border:"none", borderRadius:8, fontSize:12, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>+</button>
         </div>
       </div>
@@ -400,7 +400,7 @@ export default function CRM() {
             {/* Search */}
             <div style={{ display:"flex", alignItems:"center", gap:8, background:"#f8fafc", border:"1px solid #e2e8f0", borderRadius:10, padding:"7px 13px", width:240 }}>
               <i className="ti ti-search" style={{ fontSize:14, color:"#94a3b8" }} aria-hidden="true"/>
-              <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar lead..." style={{ border:"none", outline:"none", fontSize:13, background:"transparent", color:"#0f172a", flex:1, fontFamily:"inherit" }}/>
+              <input aria-label="Buscar lead" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar lead..." style={{ border:"none", outline:"none", fontSize:13, background:"transparent", color:"#0f172a", flex:1, fontFamily:"inherit" }}/>
             </div>
             {view==="pipeline"||view==="leads" ? (
               <select value={filterStage} onChange={e=>setFilterStage(e.target.value)} style={{ padding:"7px 12px", border:"1px solid #e2e8f0", borderRadius:10, fontSize:12, background:"#f8fafc", fontFamily:"inherit", color:"#475569" }}>

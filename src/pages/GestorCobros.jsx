@@ -364,7 +364,7 @@ export default function GestorCobros() {
                   <div style={{ display:"flex", gap:7 }}>
                     <button style={{ flex:1, fontSize:12, padding:"8px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:8, cursor:"pointer", fontFamily:"inherit" }}>
                       <i className="ti ti-brand-whatsapp" style={{ fontSize:13, verticalAlign:-1, marginRight:4 }} aria-hidden="true" />
-                      WhatsApp: {o.contact}
+                      Contactar por WhatsApp
                     </button>
                     <button onClick={() => setView("register")} style={{ flex:1, fontSize:12, padding:"8px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>
                       Registrar pago
@@ -457,9 +457,45 @@ export default function GestorCobros() {
         </div>
       </main>
 
+
+      {/* MODAL: Rechazar transferencia */}
+      {rejectModal && (
+        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}
+          onClick={e=>{ if(e.target===e.currentTarget) setRejectModal(null); }}>
+          <div style={{ background:B.white, borderRadius:16, padding:24, width:380, border:`1px solid ${B.border}`, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
+              <div style={{ fontSize:15, fontWeight:700, color:B.text }}>Rechazar transferencia</div>
+              <button onClick={()=>setRejectModal(null)} style={{ background:"none", border:"none", cursor:"pointer", color:B.textSec, fontSize:18 }} aria-label="Cerrar">✕</button>
+            </div>
+            <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>
+              {rejectModal.student} · ${rejectModal.amount} · {rejectModal.code}
+            </div>
+            <div style={{ background:B.redDim, border:`1px solid ${B.red}40`, borderRadius:9, padding:"9px 12px", marginBottom:14, fontSize:12, color:B.red }}>
+              El comprobante no es válido o el monto no corresponde. Se notificará al estudiante.
+            </div>
+            <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:5 }}>Motivo del rechazo (obligatorio)</label>
+            <input
+              aria-label="Motivo del rechazo"
+              value={anulaNote}
+              onChange={e=>setAnulaNote(e.target.value)}
+              placeholder="Ej: Comprobante ilegible, monto incorrecto..."
+              style={{ width:"100%", padding:"9px 12px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit", marginBottom:14, color:B.text }}
+            />
+            <div style={{ display:"flex", gap:8 }}>
+              <button onClick={()=>{ setRejectModal(null); setAnulaNote(""); }} style={{ flex:1, padding:"9px", background:B.bg, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit", color:B.textSec }}>Cancelar</button>
+              <button
+                onClick={()=>{ if(anulaNote){ setConfirmed(c=>[...c,rejectModal.id]); setRejectModal(null); setAnulaNote(""); } }}
+                style={{ flex:1, padding:"9px", background:anulaNote?B.red:B.border, color:anulaNote?"var(--bg-surface)":B.textSec, border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:anulaNote?"pointer":"not-allowed", fontFamily:"inherit" }}>
+                Confirmar rechazo
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* MODAL: Ver comprobante */}
       {proofModal && (
-        <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}>
+        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}>
           <div style={{ background:B.white, borderRadius:16, padding:24, width:380, border:`1px solid ${B.border}` }}>
             <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Comprobante de transferencia</div>
             <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>{proofModal.student} · ${proofModal.amount} · {proofModal.code}</div>
@@ -480,7 +516,7 @@ export default function GestorCobros() {
 
       {/* MODAL: Anular pago */}
       {anulaModal && (
-        <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}>
+        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}>
           <div style={{ background:B.white, borderRadius:16, padding:24, width:380 }}>
             <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Anular pago</div>
             <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>{anulaModal.student} · ${anulaModal.amount} — esta acción queda en el log de auditoría.</div>

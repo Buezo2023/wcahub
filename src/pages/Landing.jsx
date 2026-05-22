@@ -728,13 +728,15 @@ export default function Landing() {
             ].map((col,i)=>(
               <div key={i}>
                 <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,.4)", letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>{col.title}</div>
-                {col.links.map(l=><div key={l} style={{ fontSize:13, color:"rgba(255,255,255,.3)", marginBottom:9, cursor:"pointer", transition:"color .15s" }}
+                {col.links.map(l=><div key={l}
+                  onClick={()=>{const id=l.toLowerCase().replace(/[^a-z0-9]/g,"-");const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth"});}}
+                  style={{ fontSize:13, color:"rgba(255,255,255,.3)", marginBottom:9, cursor:"pointer", transition:"color .15s" }}
                   onMouseEnter={e=>e.target.style.color="#fff"} onMouseLeave={e=>e.target.style.color="rgba(255,255,255,.3)"}>{l}</div>)}
               </div>
             ))}
           </div>
           <div style={{ borderTop:"1px solid rgba(255,255,255,.06)", paddingTop:24, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"wrap", gap:10 }}>
-            <div style={{ fontSize:12, color:"rgba(255,255,255,.2)" }}>© 2025 World Connect Academy. Todos los derechos reservados.</div>
+            <div style={{ fontSize:12, color:"rgba(255,255,255,.2)" }}>© 2026 World Connect Academy. Todos los derechos reservados.</div>
             <div style={{ display:"flex", gap:6 }}>
               {["🇭🇳","🇨🇴","🇲🇽","🇦🇷","🇵🇪"].map((f,i)=><span key={i} style={{ fontSize:16 }}>{f}</span>)}
               <span style={{ fontSize:12, color:"rgba(255,255,255,.2)", marginLeft:6 }}>+15 países más</span>

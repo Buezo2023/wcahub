@@ -152,7 +152,7 @@ function BtnGhost({ onClick, children }) {
 }
 function Modal({ title, subtitle, onClose, children }) {
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}
+    <div role="dialog" aria-modal="true" style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}
       onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
       <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:460, maxWidth:"100%", border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)", maxHeight:"90vh", overflowY:"auto" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
@@ -522,7 +522,7 @@ export default function SuperAdmin() {
                     </div>
                     <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>{r.perms.map(p=><Badge key={p} text={p} bg={PD} color={P}/>)}</div>
                   </div>
-                  <button style={{ fontSize:11, padding:"5px 10px", background:PD, color:P, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>Editar</button>
+                  <button onClick={()=>{}} style={{ fontSize:11, padding:"5px 10px", background:PD, color:P, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>Editar</button>
                 </div>);
               })}
             </div>
@@ -585,8 +585,8 @@ export default function SuperAdmin() {
                     <select style={{ flex:1, padding:"8px 10px", border:"1px solid var(--border)", borderRadius:8, fontSize:12, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}>
                       {Array.from({length:12},(_,i)=><option key={i} selected={i+1===c.unit}>Unidad {i+1}</option>)}
                     </select>
-                    <button style={{ padding:"8px 16px", background:AD, color:A, border:`1px solid ${A}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Aplicar</button>
-                    <button style={{ padding:"8px 16px", background:RD, color:R, border:`1px solid ${R}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Reiniciar U1</button>
+                    <button onClick={()=>{}} style={{ padding:"8px 16px", background:AD, color:A, border:`1px solid ${A}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Aplicar</button>
+                    <button onClick={()=>{}} style={{ padding:"8px 16px", background:RD, color:R, border:`1px solid ${R}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Reiniciar U1</button>
                   </div>
                 </div>
               ))}
@@ -673,7 +673,7 @@ export default function SuperAdmin() {
                     <Badge text={int.status==="connected"?"✓ Conectado":"⚠ Pendiente"} bg={int.status==="connected"?GD:AD} color={int.status==="connected"?"#065f46":A}/>
                   </div>
                   <div style={{ display:"flex", gap:7 }}>
-                    <button style={{ flex:1, fontSize:12, padding:"8px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>{int.status==="connected"?"Reconfigurar":"Conectar"}</button>
+                    <button onClick={()=>{}} style={{ flex:1, fontSize:12, padding:"8px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>{int.status==="connected"?"Reconfigurar":"Conectar"}</button>
                     {int.status==="connected" && <button style={{ fontSize:12, padding:"8px 14px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", border:"1px solid var(--border)", borderRadius:8, cursor:"pointer", fontFamily:"inherit" }}>Probar</button>}
                   </div>
                 </div>
@@ -698,7 +698,7 @@ export default function SuperAdmin() {
                       <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)" }}>{t.label}</div>
                       <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:2 }}>Canal: <strong>{t.channel}</strong> · Trigger: <strong>{t.trigger}</strong></div>
                     </div>
-                    <button style={{ fontSize:11, padding:"6px 14px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Editar</button>
+                    <button onClick={()=>{}} style={{ fontSize:11, padding:"6px 14px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Editar</button>
                   </div>
                   <div style={{ background:"var(--bg-surface-subtle)", borderRadius:8, padding:"10px 13px", fontSize:12, color:"var(--text-primary)", fontStyle:"italic", lineHeight:1.7 }}>{t.preview}</div>
                 </div>
@@ -712,9 +712,9 @@ export default function SuperAdmin() {
               <div style={{ display:"flex", gap:8, marginBottom:14 }}>
                 <div style={{ flex:1, display:"flex", alignItems:"center", gap:9, background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:10, padding:"9px 13px" }}>
                   <i className="ti ti-search" style={{ color:"var(--text-tertiary)", fontSize:15 }} aria-hidden="true"/>
-                  <input placeholder="Buscar…" style={{ border:"none", outline:"none", fontSize:13, background:"transparent", color:"var(--text-primary)", flex:1, fontFamily:"inherit" }}/>
+                  <input aria-label="Buscar en auditoría" placeholder="Buscar…" style={{ border:"none", outline:"none", fontSize:13, background:"transparent", color:"var(--text-primary)", flex:1, fontFamily:"inherit" }}/>
                 </div>
-                <button style={{ padding:"9px 16px", background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:10, fontSize:12, cursor:"pointer", color:"var(--text-secondary)", fontFamily:"inherit" }}>↓ Exportar</button>
+                <button onClick={()=>{}} style={{ padding:"9px 16px", background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:10, fontSize:12, cursor:"pointer", color:"var(--text-secondary)", fontFamily:"inherit" }}>↓ Exportar</button>
               </div>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
                 <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
@@ -749,7 +749,7 @@ export default function SuperAdmin() {
                     <div style={{ fontSize:12, color:"var(--text-secondary)", marginTop:2 }}>{b.type} · {b.acc}</div>
                   </div>
                   <Badge text={b.active?"Activo":"Inactivo"} bg={b.active?GD:"var(--bg-surface-subtle)"} color={b.active?"#065f46":"var(--text-secondary)"}/>
-                  <button style={{ fontSize:12, padding:"7px 12px", background:b.active?RD:GD, color:b.active?R:G, border:"none", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>{b.active?"Desactivar":"Activar"}</button>
+                  <button onClick={()=>{}} style={{ fontSize:12, padding:"7px 12px", background:b.active?RD:GD, color:b.active?R:G, border:"none", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>{b.active?"Desactivar":"Activar"}</button>
                 </div>
               ))}
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>

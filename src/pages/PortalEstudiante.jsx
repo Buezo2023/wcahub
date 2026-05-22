@@ -566,7 +566,7 @@ export default function PortalEstudiante(){
                       <i className="ti ti-video" style={{fontSize:18,color:r.ok?prog?.color||P:"var(--text-tertiary)"}} aria-hidden="true"/>
                     </div>
                     <div style={{flex:1}}><div style={{fontSize:13,fontWeight:500,color:"var(--text-primary)"}}>{r.t}</div><div style={{fontSize:11,color:"var(--text-secondary)"}}>{r.d}</div></div>
-                    {r.ok?<button style={{fontSize:12,padding:"7px 14px",background:prog?.color||P,color:"#fff",border:"none",borderRadius:8,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>▶ Ver</button>:<span style={{fontSize:11,color:"var(--text-tertiary)"}}>Expirada</span>}
+                    {r.ok?<button onClick={()=>setView("practica")} style={{fontSize:12,padding:"7px 14px",background:prog?.color||P,color:"#fff",border:"none",borderRadius:8,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>▶ Ver</button>:<span style={{fontSize:11,color:"var(--text-tertiary)"}}>Expirada</span>}
                   </div>
                 ))}
               </div>

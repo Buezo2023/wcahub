@@ -344,7 +344,7 @@ export default function TeacherPortal(){
                     </div>
                     {!s.recorded?(
                       <div style={{display:"flex",gap:6}}>
-                        <input value={recLinks[i]||""} onChange={e=>setRecLinks(r=>({...r,[i]:e.target.value}))} placeholder="Link de Stream (grabación)..." style={{flex:1,padding:"5px 8px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:6,fontSize:12,color:C.textPri,fontFamily:"inherit"}}/>
+                        <input aria-label="Link de recurso" value={recLinks[i]||""} onChange={e=>setRecLinks(r=>({...r,[i]:e.target.value}))} placeholder="Link de Stream (grabación)..." style={{flex:1,padding:"5px 8px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:6,fontSize:12,color:C.textPri,fontFamily:"inherit"}}/>
                         <button style={{fontSize:12,padding:"5px 10px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:6,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}} onClick={()=>showToast("✓ Grabación subida correctamente")}>Subir</button>
                       </div>
                     ):(
@@ -480,7 +480,7 @@ export default function TeacherPortal(){
                       <div style={{fontSize:12,color:C.textTer,marginBottom:10}}>A1 · U{act.unit}</div>
                       <div style={{display:"flex",gap:6}}>
                         <button style={{flex:1,fontSize:12,padding:"5px",background:C.accentDim,color:C.accent,border:"none",borderRadius:7,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>Asignar a unidad</button>
-                        <button style={{fontSize:12,padding:"5px 10px",background:C.surfaceHigh,color:C.textSec,border:`1px solid ${C.border}`,borderRadius:7,cursor:"pointer",fontFamily:"inherit"}}>Editar</button>
+                        <button onClick={()=>{}} style={{fontSize:12,padding:"5px 10px",background:C.surfaceHigh,color:C.textSec,border:`1px solid ${C.border}`,borderRadius:7,cursor:"pointer",fontFamily:"inherit"}}>Editar</button>
                       </div>
                     </div>
                   );
@@ -501,7 +501,7 @@ export default function TeacherPortal(){
             <div style={{fontSize:12,color:C.textTer,marginBottom:8}}>Motivo (queda en el log de auditoría):</div>
             <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
               {["Problema técnico durante el examen","Se explicó el contenido de nuevo","Caso especial justificado"].map(r=>(
-                <button key={r} style={{fontSize:12,padding:"7px 10px",background:C.surfaceHigh,color:C.textSec,border:`1px solid ${C.border}`,borderRadius:8,cursor:"pointer",fontFamily:"inherit",textAlign:"left"}}>{r}</button>
+                <button key={r} onClick={()=>{}} style={{fontSize:12,padding:"7px 10px",background:C.surfaceHigh,color:C.textSec,border:`1px solid ${C.border}`,borderRadius:8,cursor:"pointer",fontFamily:"inherit",textAlign:"left"}}>{r}</button>
               ))}
             </div>
             <input placeholder="Nota adicional (opcional)..." style={{width:"100%",padding:"8px 12px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,fontSize:13,color:C.textPri,fontFamily:"inherit",marginBottom:14}}/>

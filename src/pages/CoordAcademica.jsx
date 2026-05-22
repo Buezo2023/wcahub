@@ -298,8 +298,8 @@ export default function CoordAcademica() {
                       {selGroup?.id===g.id && (
                         <div style={{ marginTop:12, borderTop:`1px solid ${B.borderLight}`, paddingTop:10, display:"flex", gap:6 }}>
                           <button onClick={e=>{e.stopPropagation();setTransferModal(g);}} style={{ flex:1, fontSize:12, padding:"7px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:7, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Mover estudiante</button>
-                          <button style={{ flex:1, fontSize:12, padding:"7px", background:B.secondaryDim, color:"#92400e", border:`1px solid ${B.amber}30`, borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Ver lista</button>
-                          <button style={{ flex:1, fontSize:12, padding:"7px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Cambiar docente</button>
+                          <button onClick={()=>setSelStudent(null)} style={{ flex:1, fontSize:12, padding:"7px", background:B.secondaryDim, color:"#92400e", border:`1px solid ${B.amber}30`, borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Ver lista</button>
+                          <button onClick={()=>setView("teachers")} style={{ flex:1, fontSize:12, padding:"7px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Cambiar docente</button>
                         </div>
                       )}
                     </div>
@@ -406,13 +406,13 @@ export default function CoordAcademica() {
                 <div style={{ display:"flex", gap:8, marginBottom:10 }}>
                   <div style={{ flex:1, display:"flex", alignItems:"center", gap:8, background:B.white, border:`1px solid ${B.border}`, borderRadius:9, padding:"7px 12px" }}>
                     <i className="ti ti-search" style={{ color:B.textSec, fontSize:14 }} aria-hidden="true" />
-                    <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar estudiante..." style={{ border:"none", outline:"none", fontSize:13, background:"transparent", flex:1, fontFamily:"inherit", color:B.text }} />
+                    <input aria-label="Buscar estudiante" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar estudiante..." style={{ border:"none", outline:"none", fontSize:13, background:"transparent", flex:1, fontFamily:"inherit", color:B.text }} />
                   </div>
-                  <select value={filterLevel} onChange={e=>setFilterLevel(e.target.value)} style={{ padding:"7px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.white, fontFamily:"inherit" }}>
+                  <select aria-label="Filtrar por nivel" value={filterLevel} onChange={e=>setFilterLevel(e.target.value)} style={{ padding:"7px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.white, fontFamily:"inherit" }}>
                     <option value="all">Todos los niveles</option>
                     {["A1","A2","B1","B2","C1"].map(l=><option key={l}>{l}</option>)}
                   </select>
-                  <select value={filterType} onChange={e=>setFilterType(e.target.value)} style={{ padding:"7px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.white, fontFamily:"inherit" }}>
+                  <select aria-label="Filtrar por tipo" value={filterType} onChange={e=>setFilterType(e.target.value)} style={{ padding:"7px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.white, fontFamily:"inherit" }}>
                     <option value="all">Todos los tipos</option>
                     <option value="regular">Regular</option>
                     <option value="scholarship">Beca</option>
@@ -443,7 +443,7 @@ export default function CoordAcademica() {
                             <Badge text={s.state==="active"?"Activo":"Suspendido"} bg={s.state==="active"?B.greenDim:B.redDim} color={s.state==="active"?"#065f46":B.red} />
                           </td>
                           <td style={{ padding:"10px 10px" }}>
-                            <button style={{ fontSize:11, padding:"3px 8px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver →</button>
+                            <button onClick={e=>{e.stopPropagation();setSelStudent(s);}} style={{ fontSize:11, padding:"3px 8px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver →</button>
                           </td>
                         </tr>
                       ))}
