@@ -74,7 +74,7 @@ create table programs (
   name         text not null,
   short_name   text,
   description  text,
-  price_monthly numeric(8,2) not null,
+  price_monthly numeric(8,2),
   price_quarterly numeric(8,2),
   requires     program_id references programs(id),
   active       boolean default true,
