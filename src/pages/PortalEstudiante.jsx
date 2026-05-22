@@ -275,15 +275,13 @@ export default function PortalEstudiante(){
   const unenrolledProgs = ALL_PROGRAMS.filter(p=>!enrolled.includes(p.id));
   const prog = ALL_PROGRAMS.find(p=>p.id===activeProg) || enrolledProgs[0];
   const enrollment = ENROLLMENTS[activeProg] || ENROLLMENTS[enrolled[0]];
+  const currentLevel = enrollment?.level || "B1";
+  const units = activeProg === "en"
+    ? (UNITS[currentLevel] || UNITS["B1"] || [])
+    : (PROGRAM_UNITS[activeProg] || []);
   const skills = activeProg === "en"
     ? (SKILLS_BY_LEVEL[currentLevel] || SKILLS_BY_LEVEL["B1"] || [])
     : (SKILLS[activeProg] || SKILLS[enrolled[0]] || []);
-  // For the English program, use the student's current level to get units
-  const currentLevel = enrollment?.level || "B1";
-  const unitSource = activeProg === "en"
-    ? (UNITS[currentLevel] || UNITS["B1"] || [])
-    : (PROGRAM_UNITS[activeProg] || []);
-  const units = unitSource;
   const progress = PROG_PROGRESS(activeProg);
   const totalActs = (skills||[]).reduce((a,s)=>a+s.total,0);
   const totalDone = (skills||[]).reduce((a,s)=>a+(s.done||0),0);
