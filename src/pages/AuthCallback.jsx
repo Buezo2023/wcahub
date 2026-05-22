@@ -21,18 +21,27 @@ export default function AuthCallback() {
   useEffect(() => {
     async function handleCallback() {
       try {
-        // 1. Get session from URL hash (Supabase sets it after OAuth)
+        // Handle both PKCE (code) and implicit (hash) flows from Supabase OAuth
+        const hashParams = new URLSearchParams(window.location.hash.slice(1));
+        const queryParams = new URLSearchParams(window.location.search);
+        const code = queryParams.get("code");
+        const errorDesc = queryParams.get("error_description") || hashParams.get("error_description");
+
+        if (errorDesc) throw new Error(errorDesc);
+
+        // Try to exchange code for session (PKCE flow)
+        if (code) {
+          const { error: exchangeError } =
+            await supabase.auth.exchangeCodeForSession(window.location.href);
+          if (exchangeError) throw exchangeError;
+        }
+
+        // Get session (works for both flows)
         const { data: { session }, error: sessionError } =
           await supabase.auth.getSession();
 
         if (sessionError) throw sessionError;
-        if (!session) {
-          // Try exchanging the code in the URL
-          const { data, error: exchangeError } =
-            await supabase.auth.exchangeCodeForSession(window.location.href);
-          if (exchangeError) throw exchangeError;
-          if (!data.session) throw new Error("No se pudo iniciar sesión.");
-        }
+        if (!session) throw new Error("No se pudo iniciar sesión. Intentá de nuevo.");
 
         setStatus("Cargando tu perfil…");
 

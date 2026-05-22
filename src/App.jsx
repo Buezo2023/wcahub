@@ -296,6 +296,7 @@ export default function App() {
             <Route path="/coordinacion" element={<CoordAcademica />} />
             <Route path="/bi"           element={<BIDashboard />} />
             <Route path="/preview"      element={<PlatformPreview />} />
+            <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="*"             element={<Navigate to="/hub" replace />} />
           </Routes>
         </Suspense>
