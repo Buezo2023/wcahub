@@ -12,6 +12,7 @@ const CRM             = lazy(() => import('./pages/CRM.jsx'));
 const GestorCobros    = lazy(() => import('./pages/GestorCobros.jsx'));
 const CoordAcademica  = lazy(() => import('./pages/CoordAcademica.jsx'));
 const BIDashboard     = lazy(() => import('./pages/BIDashboard.jsx'));
+const AuthCallback    = lazy(() => import('./pages/AuthCallback.jsx'));
 const PlatformPreview = lazy(() => import('./pages/PlatformPreview.jsx'));
 
 const PORTALS = [
