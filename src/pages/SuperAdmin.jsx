@@ -660,14 +660,20 @@ export default function SuperAdmin() {
                         <div style={{ display:"flex", gap:5 }}>
                           <button onClick={()=>openViewStaff(s)} style={{ fontSize:11, padding:"5px 10px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", border:"1px solid var(--border)", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>Ver</button>
                           <button onClick={()=>openEditStaff(s)} style={{ fontSize:11, padding:"5px 10px", background:PD, color:P, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>Editar</button>
-                          <button title="Reenviar email de acceso" onClick={async()=>{
+                          <button title="Reenviar invitación" aria-label="Reenviar email de invitación" onClick={async()=>{
                             try {
+                              showToast("Enviando invitación…", "#0369a1");
                               const {data:{session}} = await supabase.auth.getSession();
-                              const r = await fetch("/api/auth/invite",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${session?.access_token}`},body:JSON.stringify({action:"resend",email:s.email})});
+                              const r = await fetch("/api/auth/invite",{
+                                method:"POST",
+                                headers:{"Content-Type":"application/json",Authorization:`Bearer ${session?.access_token}`},
+                                body:JSON.stringify({action:"resend-supabase", email:s.email})
+                              });
                               const d = await r.json();
-                              showToast(d.data?.message || "✉ Email reenviado");
-                            } catch(e){showToast("Error al reenviar: "+e.message,R);}
-                          }} style={{ fontSize:11, padding:"5px 10px", background:"#e8f3f6", color:P, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>✉</button>
+                              if(d.data?.ok) showToast(`✉ Invitación enviada a ${s.email} — revisá bandeja y spam`);
+                              else showToast(d.data?.message || d.error || "Error al reenviar", R);
+                            } catch(e){showToast("Error: "+e.message, R);}
+                          }} style={{ fontSize:11, padding:"5px 10px", background:PD, color:P, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>✉ Reenviar</button>
                           <button onClick={()=>setDeleteConfirm(s)} style={{ fontSize:11, padding:"5px 10px", background:RD, color:R, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>🗑</button>
                         </div>
                       </td>

@@ -264,6 +264,43 @@ async function handleTestEmail(req, actor) {
   }
 }
 
+
+async function handleResendSupabase(req, actor) {
+  const { email } = req.body;
+  if (!email) return { status: 400, ok: false, message: 'email requerido' };
+
+  const admin = getSupabaseAdmin();
+
+  // Look up profile to get the correct portal
+  const { data: profile } = await admin.from('profiles')
+    .select('id, full_name, role')
+    .eq('email', email)
+    .maybeSingle();
+
+  if (!profile) return { ok: false, message: `No se encontró usuario con email ${email}` };
+
+  const PORTAL_MAP_LOCAL = {
+    docente: '/docente', coordinadora: '/coordinacion', admin: '/admin',
+    cobros: '/cobros', asesor_ventas: '/crm', super_admin: '/super', estudiante: '/portal',
+  };
+  const portalPath = PORTAL_MAP_LOCAL[profile.role] || '/portal';
+
+  const { error } = await admin.auth.admin.inviteUserByEmail(email, {
+    redirectTo: `https://wcahub.vercel.app${portalPath}`,
+    data: { full_name: profile.full_name, role: profile.role },
+  });
+
+  if (error) {
+    // If already invited/confirmed, Supabase returns 422 — still works via Google OAuth
+    if (error.status === 422 || error.message?.includes('already')) {
+      return { ok: true, message: `La cuenta ya fue activada — ${email} puede ingresar con Google directamente` };
+    }
+    return { ok: false, message: `Error Supabase: ${error.message}` };
+  }
+
+  return { ok: true, message: `Invitación enviada a ${email} — revisá bandeja + spam` };
+}
+
 // ── Main handler ───────────────────────────────────────────────────
 export default async function handler(req, res) {
   setCORS(req, res);
@@ -287,6 +324,10 @@ export default async function handler(req, res) {
       case 'resend':
         requireRole(actor, 'admin', 'super_admin');
         return ok(res, await handleResend(req, actor));
+
+      case 'resend-supabase':
+        requireRole(actor, 'admin', 'super_admin');
+        return ok(res, await handleResendSupabase(req, actor));
 
       case 'test-email':
         requireRole(actor, 'admin', 'super_admin');
