@@ -282,7 +282,6 @@ export default function App() {
     <ThemeProvider>
       <BrowserRouter>
         <Suspense fallback={<PageLoader />}>
-          <DemoMenu />
           <Routes>
             <Route path="/hub"          element={<NavHub />} />
             <Route path="/"             element={<Landing />} />
@@ -297,7 +296,7 @@ export default function App() {
             <Route path="/bi"           element={<BIDashboard />} />
             <Route path="/preview"      element={<PlatformPreview />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="*"             element={<Navigate to="/hub" replace />} />
+            <Route path="*"             element={<Navigate to="/" replace />} />
           </Routes>
         </Suspense>
       </BrowserRouter>

@@ -746,54 +746,57 @@ export default function Landing() {
         </div>
       </footer>
 
-      {/* ── ROLE SELECTOR MODAL ── */}
+      {/* ── LOGIN MODAL ── */}
       {roleModal && (
         <div
           onClick={e=>{ if(e.target===e.currentTarget) setRoleModal(false); }}
           style={{ position:"fixed", inset:0, background:"rgba(10,25,35,.7)", backdropFilter:"blur(8px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9999, padding:20 }}>
-          <div style={{ background:"#ffffff", borderRadius:28, padding:"32px 32px 28px", width:640, maxWidth:"100%", boxShadow:"0 32px 80px rgba(0,0,0,.3)", maxHeight:"90vh", overflowY:"auto" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:24 }}>
-              <div>
-                <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:6 }}>
-                  <div style={{ width:36, height:36, borderRadius:9, background:T.teal, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                    <span style={{ fontSize:16, fontWeight:800, color:T.gold }}>W</span>
-                  </div>
-                  <span style={{ fontSize:18, fontWeight:800, color:T.ink }}>WCA <span style={{ color:T.teal }}>Hub</span></span>
-                </div>
-                <div style={{ fontSize:14, color:T.muted, lineHeight:1.5 }}>
-                  Seleccioná el portal que querés explorar.<br/>
-                  <span style={{ fontSize:12, color:"#94a3b8" }}>Demo visual · sin backend real</span>
-                </div>
+          <div style={{ background:"#ffffff", borderRadius:24, padding:"36px 36px 28px", width:420, maxWidth:"100%", boxShadow:"0 32px 80px rgba(0,0,0,.3)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
+
+            {/* Logo + header */}
+            <div style={{ textAlign:"center", marginBottom:28 }}>
+              <div style={{ width:52, height:52, borderRadius:13, background:T.teal, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 14px" }}>
+                <span style={{ fontSize:22, fontWeight:900, color:T.gold }}>W</span>
               </div>
-              <button onClick={()=>setRoleModal(false)} style={{ background:"#f1f5f9", border:"none", width:34, height:34, borderRadius:"50%", fontSize:16, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", color:"#64748b", flexShrink:0 }}>✕</button>
-            </div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:20 }}>
-              {ROLES.map((r,i) => (
-                <button key={i} onClick={()=>{ setRoleModal(false); navigate(r.path); }}
-                  onMouseEnter={()=>setHoveredRole(i)} onMouseLeave={()=>setHoveredRole(null)}
-                  style={{ display:"flex", gap:13, alignItems:"center", padding:"14px 16px", background:hoveredRole===i?`${r.color}08`:"#f8fafc", border:`1.5px solid ${hoveredRole===i?r.color+"50":"#e2e8f0"}`, borderRadius:14, cursor:"pointer", textAlign:"left", fontFamily:"inherit", transition:"all .15s", transform:hoveredRole===i?"translateY(-1px)":"none", boxShadow:hoveredRole===i?`0 6px 20px ${r.color}18`:"none" }}>
-                  <div style={{ width:42, height:42, borderRadius:11, background:`${r.color}12`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, flexShrink:0 }}>{r.icon}</div>
-                  <div style={{ flex:1, minWidth:0 }}>
-                    <div style={{ fontSize:13, fontWeight:700, color:"#0f172a", marginBottom:2 }}>{r.label}</div>
-                    <div style={{ fontSize:11, color:r.color, fontWeight:600, marginBottom:3 }}>{r.role}</div>
-                    <div style={{ fontSize:11, color:"#64748b", lineHeight:1.4 }}>{r.desc}</div>
-                  </div>
-                  <div style={{ fontSize:16, color:hoveredRole===i?r.color:"#cbd5e1", transition:"color .15s", flexShrink:0 }}>→</div>
-                </button>
-              ))}
-            </div>
-            <div style={{ borderTop:"1px solid #f1f5f9", paddingTop:18 }}>
-              <div style={{ fontSize:11, color:"#94a3b8", textAlign:"center", marginBottom:12 }}>¿Querés registrarte? Creá tu cuenta con:</div>
-              <div style={{ display:"flex", gap:10 }}>
-                <button onClick={()=>{ setRoleModal(false); signInWithMicrosoft(); }} style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:9, padding:"11px", background:"#f8fafc", border:"1px solid #e2e8f0", borderRadius:11, cursor:"pointer", fontSize:13, fontWeight:600, color:"#0f172a", fontFamily:"inherit", transition:"all .15s" }} onMouseEnter={e=>{e.currentTarget.style.borderColor="#155266";e.currentTarget.style.background="#e8f3f6";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="#e2e8f0";e.currentTarget.style.background="#f8fafc";}}>
-                  <svg width="18" height="18" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
-                  Microsoft
-                </button>
-                <button onClick={()=>{ setRoleModal(false); signInWithGoogle(); }} style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:9, padding:"11px", background:"#f8fafc", border:"1px solid #e2e8f0", borderRadius:11, cursor:"pointer", fontSize:13, fontWeight:600, color:"#0f172a", fontFamily:"inherit", transition:"all .15s" }} onMouseEnter={e=>{e.currentTarget.style.borderColor="#db4437";e.currentTarget.style.background="#fef2f2";}} onMouseLeave={e=>{e.currentTarget.style.borderColor="#e2e8f0";e.currentTarget.style.background="#f8fafc";}}>
-                  <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285f4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34a853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.32-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#fbbc05" d="M11.68 28.18A13.93 13.93 0 0 1 10.9 24c0-1.45.25-2.86.68-4.18v-5.7H4.34A23.93 23.93 0 0 0 0 24c0 3.87.93 7.53 2.56 10.77l7.12-5.7.99-.89z"/><path fill="#ea4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.34 5.7C13.42 14.62 18.27 10.75 24 10.75z"/></svg>
-                  Google
-                </button>
+              <div style={{ fontSize:20, fontWeight:800, color:T.ink, marginBottom:6 }}>
+                WCA <span style={{ color:T.teal }}>Hub</span>
               </div>
+              <div style={{ fontSize:13, color:T.muted, lineHeight:1.6 }}>
+                Iniciá sesión o creá tu cuenta.<br/>
+                <span style={{ fontSize:12, color:"#94a3b8" }}>Tu acceso se configura según tu rol en WCA.</span>
+              </div>
+            </div>
+
+            {/* Auth buttons */}
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              <button
+                onClick={()=>{ setRoleModal(false); signInWithGoogle(); }}
+                style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", background:"#fff", border:"1.5px solid #e2e8f0", borderRadius:12, cursor:"pointer", fontSize:14, fontWeight:600, color:"#0f172a", fontFamily:"inherit", transition:"all .15s", boxShadow:"0 1px 4px rgba(0,0,0,.06)" }}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor="#4285f4";e.currentTarget.style.boxShadow="0 2px 12px rgba(66,133,244,.15)";}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor="#e2e8f0";e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,.06)";}}>
+                <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285f4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34a853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.32-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#fbbc05" d="M11.68 28.18A13.93 13.93 0 0 1 10.9 24c0-1.45.25-2.86.68-4.18v-5.7H4.34A23.93 23.93 0 0 0 0 24c0 3.87.93 7.53 2.56 10.77l7.12-5.7.99-.89z"/><path fill="#ea4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.34 5.7C13.42 14.62 18.27 10.75 24 10.75z"/></svg>
+                Continuar con Google
+              </button>
+
+              <button
+                onClick={()=>{ setRoleModal(false); signInWithMicrosoft(); }}
+                style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", background:"#fff", border:"1.5px solid #e2e8f0", borderRadius:12, cursor:"pointer", fontSize:14, fontWeight:600, color:"#0f172a", fontFamily:"inherit", transition:"all .15s", boxShadow:"0 1px 4px rgba(0,0,0,.06)" }}
+                onMouseEnter={e=>{e.currentTarget.style.borderColor="#00a4ef";e.currentTarget.style.boxShadow="0 2px 12px rgba(0,164,239,.15)";}}
+                onMouseLeave={e=>{e.currentTarget.style.borderColor="#e2e8f0";e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,.06)";}}>
+                <svg width="20" height="20" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>
+                Continuar con Microsoft
+              </button>
+            </div>
+
+            {/* Footer */}
+            <div style={{ marginTop:20, paddingTop:16, borderTop:"1px solid #f1f5f9", textAlign:"center" }}>
+              <p style={{ fontSize:11, color:"#94a3b8", lineHeight:1.6, margin:0 }}>
+                Al continuar aceptás los{" "}
+                <span style={{ color:T.teal, cursor:"pointer" }}>Términos de uso</span>
+                {" "}y la{" "}
+                <span style={{ color:T.teal, cursor:"pointer" }}>Política de privacidad</span>
+                {" "}de WCA Academy.
+              </p>
             </div>
           </div>
         </div>
