@@ -16,63 +16,109 @@ const ROLE_ROUTES = {
 export default function AuthCallback() {
   const navigate = useNavigate();
   const [status, setStatus] = useState("Verificando tu cuenta…");
-  const [error, setError] = useState(null);
+  const [error,  setError]  = useState(null);
 
   useEffect(() => {
+    // Safety timeout — if nothing happens in 15s, show error
+    const timeout = setTimeout(() => {
+      setError("El proceso tardó demasiado. Intentá de nuevo.");
+    }, 15000);
+
     async function handleCallback() {
       try {
         const queryParams = new URLSearchParams(window.location.search);
         const hashParams  = new URLSearchParams(window.location.hash.slice(1));
         const code        = queryParams.get("code");
-        const errorDesc   = queryParams.get("error_description") || hashParams.get("error_description");
+        const errorParam  = queryParams.get("error_description")
+                         || hashParams.get("error_description")
+                         || queryParams.get("error");
 
-        if (errorDesc) throw new Error(errorDesc);
+        if (errorParam) throw new Error(decodeURIComponent(errorParam));
 
+        // Exchange code for session (PKCE flow)
         if (code) {
           const { error: ex } = await supabase.auth.exchangeCodeForSession(window.location.href);
-          if (ex) throw ex;
+          if (ex) throw new Error("No se pudo verificar la sesión. Intentá de nuevo.");
         }
 
+        // Get session — wait a moment for it to settle
+        await new Promise(r => setTimeout(r, 300));
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError) throw sessionError;
-        if (!session) throw new Error("No se pudo iniciar sesión. Intentá de nuevo.");
+        if (sessionError) throw new Error("Error de sesión. Por favor intentá de nuevo.");
+        if (!session)     throw new Error("No se encontró sesión activa. Cerrá esta pestaña e intentá desde la landing.");
 
         setStatus("Cargando tu perfil…");
 
-        const userId = session.user.id;
+        // Fetch profile — handle missing onboarding_done column gracefully
         const { data: profile, error: profileError } = await supabase
           .from("profiles")
           .select("role, full_name, active, onboarding_done")
-          .eq("id", userId)
-          .single();
+          .eq("id", session.user.id)
+          .maybeSingle(); // maybeSingle returns null instead of error if no row
 
-        if (profileError) throw profileError;
+        // If profile doesn't exist yet (trigger may have failed), create it
+        if (!profile && !profileError) {
+          const { data: newProfile } = await supabase
+            .from("profiles")
+            .insert({
+              id:        session.user.id,
+              email:     session.user.email,
+              full_name: session.user.user_metadata?.full_name
+                      || session.user.user_metadata?.name
+                      || session.user.email?.split("@")[0],
+              role:      "estudiante",
+              active:    true,
+              onboarding_done: false,
+            })
+            .select("role, full_name, active, onboarding_done")
+            .single();
 
-        if (!profile.active) {
-          setError("Tu cuenta está suspendida. Contactá a WCA Academy en info@worldconnectacademy.com");
+          if (newProfile) {
+            clearTimeout(timeout);
+            return navigate("/onboarding", { replace: true });
+          }
+          throw new Error("No se pudo crear tu perfil. Contactá a soporte.");
+        }
+
+        if (profileError) {
+          // Log but don't expose internal error — try to redirect anyway
+          console.error("Profile fetch error:", profileError);
+          // Try to use session metadata as fallback
+          const role = session.user.user_metadata?.role || "estudiante";
+          clearTimeout(timeout);
+          return navigate(ROLE_ROUTES[role] || "/portal", { replace: true });
+        }
+
+        if (profile && !profile.active) {
+          clearTimeout(timeout);
+          setError("Tu cuenta está suspendida. Contactá a WCA Academy: info@worldconnectacademy.com");
           return;
         }
 
-        const firstName = profile.full_name?.split(" ")[0] || "";
+        const firstName = profile?.full_name?.split(" ")[0] || "";
         setStatus(firstName ? `¡Bienvenido, ${firstName}!` : "¡Bienvenido!");
 
-        // New student who hasn't done onboarding yet → send to onboarding
-        if (profile.role === "estudiante" && !profile.onboarding_done) {
-          setTimeout(() => navigate("/onboarding", { replace: true }), 600);
+        clearTimeout(timeout);
+
+        // New student → onboarding
+        if (profile?.role === "estudiante" && !profile?.onboarding_done) {
+          setTimeout(() => navigate("/onboarding", { replace: true }), 500);
           return;
         }
 
-        // Existing user → send to their portal
-        const route = ROLE_ROUTES[profile.role] || "/portal";
-        setTimeout(() => navigate(route, { replace: true }), 600);
+        // Everyone else → their portal
+        const route = ROLE_ROUTES[profile?.role] || "/portal";
+        setTimeout(() => navigate(route, { replace: true }), 500);
 
       } catch (err) {
-        console.error("Auth error:", err);
-        setError(err.message || "Error al iniciar sesión. Intentá de nuevo.");
+        clearTimeout(timeout);
+        console.error("Auth callback error:", err);
+        setError(err.message || "Ocurrió un error inesperado. Por favor intentá de nuevo.");
       }
     }
 
     handleCallback();
+    return () => clearTimeout(timeout);
   }, [navigate]);
 
   return (
@@ -127,6 +173,9 @@ export default function AuthCallback() {
             }} />
             <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
             <div style={{ fontSize: 14, color: "#64748b" }}>{status}</div>
+            <div style={{ fontSize: 11, color: "#94a3b8", marginTop: 8 }}>
+              Esto puede tardar unos segundos…
+            </div>
           </>
         )}
       </div>

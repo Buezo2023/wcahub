@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
+import { useSession } from "../lib/useSession.js";
 import { LEVELS, UNITS, SKILLS_BY_LEVEL } from "../data/englishContent.js";
 
 const P="#155266",PH="#0f3d4d",PD="#e8f3f6";
@@ -273,6 +274,13 @@ export default function PortalEstudiante(){
   const [enrolled,   setEnrolled]   = useState(Object.keys(ENROLLMENTS));
 
   useEffect(() => {
+    // Auth state listener — handles token expiry
+    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event === "SIGNED_OUT" || (!s && event !== "INITIAL_SESSION")) {
+        navigate("/", { replace: true });
+      }
+    });
+
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { navigate("/", { replace: true }); return; }
       supabase.from("profiles").select("full_name, email, avatar_url")

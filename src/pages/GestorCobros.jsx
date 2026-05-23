@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from 'react-router-dom';
+import { supabase } from "../lib/supabase.js";
 
 const B = {
   primary:"#155266", dark:"#0f3d4d", primaryDim:"var(--wca-primary-dim)",
@@ -69,6 +70,19 @@ function Stat({ label, value, sub, color, icon }) {
 
 export default function GestorCobros() {
   const navigate = useNavigate();
+
+  // Session guard — redirect on expiry
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) navigate("/", { replace: true });
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event === "SIGNED_OUT" || (!s && event !== "INITIAL_SESSION")) {
+        navigate("/", { replace: true });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate]);
   const [view, setView]             = useState("home");
   const [selTransfer, setSelTransfer] = useState(null);
   const [confirmed, setConfirmed]   = useState([]);

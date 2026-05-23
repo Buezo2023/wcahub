@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getLeads, createLead, updateLeadStage, createTask, toggleTask } from "../lib/db.js";
 import { useToast } from "../lib/hooks.jsx";
+import { supabase } from "../lib/supabase.js";
 
 // ─── Brand ───────────────────────────────────────────────────────
 const P  = "#155266";
@@ -320,6 +321,19 @@ function NewLeadModal({ onSave, onClose }) {
 // ─── MAIN ─────────────────────────────────────────────────────────
 export default function CRM() {
   const navigate = useNavigate();
+
+  // Session guard — redirect on expiry
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) navigate("/", { replace: true });
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event === "SIGNED_OUT" || (!s && event !== "INITIAL_SESSION")) {
+        navigate("/", { replace: true });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate]);
   const [view, setView]         = useState("pipeline");
   const [leads, setLeads]       = useState(LEADS_INIT);
   const [tasks, setTasks]       = useState(TASKS_INIT);

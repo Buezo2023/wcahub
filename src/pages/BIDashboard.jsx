@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
+import { supabase } from "../lib/supabase.js";
 
 // ─── BRAND ────────────────────────────────────────────────────────
 const B = {
@@ -167,6 +168,19 @@ const VIEWS = [
 
 export default function BIDashboard() {
   const navigate = useNavigate();
+
+  // Session guard — redirect on expiry
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) navigate("/", { replace: true });
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event === "SIGNED_OUT" || (!s && event !== "INITIAL_SESSION")) {
+        navigate("/", { replace: true });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate]);
   const [view, setView]       = useState("overview");
   const [period, setPeriod]   = useState("12m");
   const [animate, setAnimate] = useState(true);

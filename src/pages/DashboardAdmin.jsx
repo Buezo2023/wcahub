@@ -162,6 +162,19 @@ function AdminPrices() {
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
+
+  // Session guard — redirect on expiry
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) navigate("/", { replace: true });
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event === "SIGNED_OUT" || (!s && event !== "INITIAL_SESSION")) {
+        navigate("/", { replace: true });
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [navigate]);
   const [view, setView] = useState("home");
   const [actionModal, setActionModal] = useState(null); // {type, student, group}
   const [actionNote, setActionNote] = useState("");

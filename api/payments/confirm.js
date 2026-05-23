@@ -2,11 +2,18 @@
 // Body: { paymentId, action: 'confirm'|'reject', reason? }
 // Auth: cobros, admin, super_admin
 
-import { requireAuth, requireRole, getSupabaseAdmin, sendEmail, EmailTemplates, ok, err, CORS } from '../_utils.js';
+import { requireAuth, requireRole, getSupabaseAdmin, sendEmail, EmailTemplates, ok, err, setCORS, checkRateLimit } from '../_utils.js';
 
 export default async function handler(req, res) {
-  Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
+  setCORS(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // Rate limiting
+  try {
+    const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
+    checkRateLimit(`payment_confirm:${ip}`, 30, 60000);
+  } catch (e) { return err(res, e); }
+
   if (req.method !== 'PATCH') return res.status(405).json({ error: 'Method not allowed' });
 
   try {

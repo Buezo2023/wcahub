@@ -2,12 +2,19 @@
 // Body: { email, fullName, programId, level, groupId, price }
 // Auth: admin, super_admin, coordinadora
 
-import { requireAuth, requireRole, getSupabaseAdmin, sendEmail, EmailTemplates, ok, err, CORS } from '../_utils.js';
+import { requireAuth, requireRole, getSupabaseAdmin, sendEmail, EmailTemplates, ok, err, setCORS, checkRateLimit } from '../_utils.js';
 
 export default async function handler(req, res) {
   // CORS preflight
-  Object.entries(CORS).forEach(([k, v]) => res.setHeader(k, v));
+  setCORS(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // Rate limiting
+  try {
+    const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
+    checkRateLimit(`invite:${ip}`, 10, 60000);
+  } catch (e) { return err(res, e); }
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
@@ -20,27 +27,34 @@ export default async function handler(req, res) {
 
     const admin = getSupabaseAdmin();
 
-    // 2. Check if user already exists
-    const { data: existingUsers } = await admin.auth.admin.listUsers();
-    const existing = existingUsers?.users?.find(u => u.email === email);
+    // 2. Check if user already exists via profiles table (fast O(1) query)
+    const { data: existingProfile } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
 
     let userId;
-    let tempPassword;
+    let isNewUser = false;
 
-    if (existing) {
-      userId = existing.id;
+    if (existingProfile) {
+      userId = existingProfile.id;
     } else {
-      // 3. Create auth user with temporary password
-      tempPassword = Math.random().toString(36).slice(-8).toUpperCase() + Math.random().toString(10).slice(-4);
-
+      // 3. Create auth user — send magic link invite (more secure than temp password)
       const { data: newUser, error: createError } = await admin.auth.admin.createUser({
         email,
-        password: tempPassword,
         email_confirm: true,
         user_metadata: { full_name: fullName },
       });
       if (createError) throw createError;
       userId = newUser.user.id;
+      isNewUser = true;
+
+      // Send magic link invite so they set their own password
+      await admin.auth.admin.inviteUserByEmail(email, {
+        redirectTo: "https://wcahub.vercel.app/auth/callback",
+        data: { full_name: fullName },
+      }).catch(e => console.warn("Magic link invite:", e.message));
     }
 
     // 4. Ensure profile exists and has student role
@@ -83,28 +97,30 @@ export default async function handler(req, res) {
       metadata:  { email, programId, level },
     });
 
-    // 8. Send welcome email
+    // 8. Send welcome email (invite link already sent by Supabase above for new users)
     const programNames = {
-      en: 'Inglés Completo', va: 'Asistente Virtual',
-      va_mkt: 'VA · Marketing Digital', va_legal: 'VA · Legal',
-      va_care: 'VA · Cuidador Remoto',
+      en: "Inglés Completo", va: "Asistente Virtual",
+      va_mkt: "VA · Marketing Digital", va_legal: "VA · Legal",
+      va_care: "VA · Cuidador Remoto",
     };
 
-    if (tempPassword) {
-      const { subject, html } = EmailTemplates.invite({
-        name:        fullName.split(' ')[0],
-        email,
-        tempPassword,
-        programName: programNames[programId] || programId,
-      });
-      await sendEmail({ to: email, toName: fullName, subject, html });
+    if (!existingProfile) {
+      // New user — send custom welcome email with instructions
+      try {
+        const { subject, html } = EmailTemplates.invite({
+          name:        fullName.split(" ")[0],
+          email,
+          programName: programNames[programId] || programId,
+        });
+        await sendEmail({ to: email, toName: fullName, subject, html });
+      } catch(emailErr) { console.error("Welcome email:", emailErr.message); }
     }
 
     return ok(res, {
-      message:    `Estudiante ${existing ? 'matriculado' : 'invitado'} exitosamente`,
+      message:    `Estudiante ${existingProfile ? "matriculado" : "invitado"} exitosamente`,
       studentId:  student.id,
       enrolled:   !!enrollment,
-      emailSent:  !!tempPassword,
+      emailSent:  isNewUser,
     }, 201);
 
   } catch (e) {
