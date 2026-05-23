@@ -864,12 +864,16 @@ export default function SuperAdmin() {
                           body:JSON.stringify({ action:"test-email", to: session?.user?.email }),
                         });
                         const d = await r.json();
-                        const results = d.data?.results||{};
-                        const good = Object.values(results).find(r=>r.ok);
-                        if(good) showToast(`✓ Email enviado a ${d.data?.target} — revisá tu bandeja`);
-                        else {
-                          const errDetail = Object.values(results)[0];
-                          showToast("Error Mailrelay: " + (errDetail?.response ? JSON.stringify(errDetail.response).slice(0,100) : errDetail?.error || "sin respuesta"), R);
+                        const data = d.data || {};
+                        if (data.ok) {
+                          showToast(`✓ Email enviado a ${data.target} — revisá tu bandeja`);
+                        } else if (data.error) {
+                          showToast("Error de red: " + data.error, R);
+                        } else {
+                          const detail = data.response
+                            ? (typeof data.response === "string" ? data.response : JSON.stringify(data.response))
+                            : `HTTP ${data.status||"?"} — ${data.url||""}`;
+                          showToast("Error Mailrelay: " + detail.slice(0,120), R);
                         }
                       } catch(e){showToast("Error: "+e.message, R);}
                     }} style={{ fontSize:12, padding:"8px 16px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit", flexShrink:0, whiteSpace:"nowrap" }}>
