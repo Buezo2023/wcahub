@@ -273,36 +273,53 @@ export default function SuperAdmin() {
   function openEditStaff(s) { setStaffForm({...s, levels:s.levels||[]}); setStaffModal({mode:"edit", data:s}); }
   function openViewStaff(s) { setStaffModal({mode:"view", data:s}); }
   async function saveStaff() {
-    if (!staffForm.name || !staffForm.email) {
-      showToast("Nombre y email son requeridos", R); return;
+    const nombre = (staffForm.name || "").trim();
+    const correo = (staffForm.email || "").trim();
+    if (!nombre || !correo) {
+      globalToast.error("Nombre y email son requeridos");
+      return;
     }
+    if (saving) return;
     setSaving(true);
+    setStaffModal(null); // Cerrar modal inmediatamente para dar feedback visual
     try {
       if (staffModal.mode === "add") {
-        showToast("Creando usuario…", "#0369a1");
-        const result = await api.auth.inviteStaff({
-          email:     staffForm.email,
-          fullName:  staffForm.name,
-          role:      staffForm.role,
-          salary:    staffForm.salary || null,
-          hireDate:  new Date().toISOString().slice(0, 10),
+        globalToast.info("Creando usuario…");
+        const { data: { session } } = await supabase.auth.getSession();
+        const res = await fetch("/api/auth/invite", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({
+            action:   "staff",
+            email:    correo,
+            fullName: nombre,
+            role:     staffForm.role || "Docente",
+            salary:   staffForm.salary || null,
+            hireDate: new Date().toISOString().slice(0, 10),
+          }),
         });
-        // Reload from Supabase to confirm it was saved (no optimistic update)
-        const { getStaff } = await import("../lib/db.js");
-        const rows = await getStaff({ all: true });
-        const roleLabel2 = { docente:"Docente", coordinadora:"Coordinadora", admin:"Admin", cobros:"Gestor de Cobros", asesor_ventas:"Ventas" };
-        setStaff(rows.map(r => ({
-          id: r.id, name: r.profile?.full_name || r.profile?.email || staffForm.name,
-          role: roleLabel2[r.profile?.role] || r.position || staffForm.role,
-          email: r.profile?.email || staffForm.email,
-          phone: r.profile?.phone || "—", country: "Honduras",
-          salary: r.salary || 0,
-          hired: r.hire_date ? new Date(r.hire_date).toLocaleDateString("es-HN",{month:"short",year:"numeric"}) : "—",
-          status: r.active ? "active" : "inactive", levels: [],
-        })));
-        showToast(
-          `✓ ${staffForm.name} creado — ${result.message?.split(' — ')[1] || 'email de invitación enviado'}`
-        );
+        const json = await res.json();
+        if (!res.ok || !json.ok) {
+          globalToast.error("Error: " + (json.error || json.message || `HTTP ${res.status}`));
+        } else {
+          globalToast.success(`✓ ${nombre} creado — invitación enviada a ${correo}`);
+          // Reload staff from Supabase
+          const { getStaff } = await import("../lib/db.js");
+          const rows = await getStaff({ all: true });
+          const rl = { docente:"Docente", coordinadora:"Coordinadora", admin:"Admin", cobros:"Gestor de Cobros", asesor_ventas:"Ventas" };
+          setStaff(rows.map(r => ({
+            id: r.id, name: r.profile?.full_name || r.profile?.email || nombre,
+            role: rl[r.profile?.role] || r.position || staffForm.role,
+            email: r.profile?.email || correo,
+            phone: r.profile?.phone || "—", country: "Honduras",
+            salary: r.salary || 0,
+            hired: r.hire_date ? new Date(r.hire_date).toLocaleDateString("es-HN",{month:"short",year:"numeric"}) : "—",
+            status: r.active ? "active" : "inactive", levels: [],
+          })));
+        }
       } else {
         // Update existing staff
         const roleMap = {
@@ -324,10 +341,9 @@ export default function SuperAdmin() {
         showToast("Empleado actualizado correctamente");
       }
     } catch (e) {
-      showToast("Error: " + (e.message || "Intentá de nuevo"), R);
+      globalToast.error("Error: " + (e.message || "Intentá de nuevo"));
     } finally {
       setSaving(false);
-      setStaffModal(null);
     }
   }
   async function deleteStaff(id) {
@@ -1073,7 +1089,7 @@ export default function SuperAdmin() {
               <div style={{ display:"flex", gap:8, marginTop:18 }}>
                 <BtnGhost onClick={()=>setStaffModal(null)}>Cancelar</BtnGhost>
                 {staffModal.mode==="edit" && <button onClick={()=>setDeleteConfirm(staffModal.data)} style={{ padding:"10px 16px", background:RD, color:R, border:"none", borderRadius:10, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Eliminar</button>}
-                <BtnPrimary onClick={saving ? undefined : saveStaff} style={{ flex:1, opacity:saving?0.6:1, cursor:saving?"not-allowed":"pointer" }}>{saving?"Guardando…":staffModal.mode==="add"?"Crear empleado":"Guardar"}</BtnPrimary>
+                <BtnPrimary onClick={saveStaff} style={{ flex:1 }}>{staffModal.mode==="add"?"Crear empleado":"Guardar"}</BtnPrimary>
               </div>
             </div>
           )}
