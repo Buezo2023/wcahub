@@ -1079,7 +1079,15 @@ export default function SuperAdmin() {
               <div style={{ display:"flex", gap:8, marginTop:18 }}>
                 <BtnGhost onClick={()=>setStaffModal(null)}>Cancelar</BtnGhost>
                 {staffModal.mode==="edit" && <button onClick={()=>setDeleteConfirm(staffModal.data)} style={{ padding:"10px 16px", background:RD, color:R, border:"none", borderRadius:10, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Eliminar</button>}
-                <BtnPrimary onClick={saveStaff} style={{ flex:1 }}>{staffModal.mode==="add"?"Crear empleado":"Guardar"}</BtnPrimary>
+                <button
+  onClickCapture={(e)=>{
+    e.stopPropagation();
+    saveStaff();
+  }}
+  style={{ flex:1, padding:"10px 20px", background:"#155266", color:"#fff", border:"none",
+    borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
+  {staffModal.mode==="add"?"Crear empleado":"Guardar"}
+</button>
               </div>
             </div>
           )}
