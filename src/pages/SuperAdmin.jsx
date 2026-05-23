@@ -275,9 +275,8 @@ export default function SuperAdmin() {
   async function saveStaff() {
     const nombre = (staffForm.name || "").trim();
     const correo = (staffForm.email || "").trim();
-    // Validation with visible feedback regardless of toast
     if (!nombre || !correo) {
-      alert("Nombre y email son requeridos");
+      globalToast.error("Nombre y email son requeridos");
       return;
     }
     // Show immediate feedback
@@ -287,7 +286,7 @@ export default function SuperAdmin() {
     try {
       if (modoActual === "add") {
         const { data: { session } } = await supabase.auth.getSession();
-        if (!session) { alert("Sesión expirada — recargá la página"); setSaving(false); return; }
+        if (!session) { globalToast.error("Sesión expirada — recargá la página"); setSaving(false); return; }
         const res = await fetch("/api/auth/invite", {
           method: "POST",
           headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
@@ -295,7 +294,7 @@ export default function SuperAdmin() {
         });
         const json = await res.json().catch(()=>({}));
         if (!res.ok || !json.ok) {
-          alert("Error al crear: " + (json.error || json.message || `HTTP ${res.status}`));
+          globalToast.error("Error: " + (json.error || json.message || `HTTP ${res.status}`));
         } else {
           globalToast.success(`✓ ${nombre} creado — invitación enviada a ${correo}`);
           const { getStaff } = await import("../lib/db.js");
