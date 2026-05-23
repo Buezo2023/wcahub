@@ -367,6 +367,49 @@ export default function CRM() {
     });
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  // Load real leads and tasks from Supabase
+  useEffect(() => {
+    getLeads().then(rows => {
+      if (rows.length > 0) {
+        setLeads(rows.map(r => ({
+          id:       r.id,
+          name:     r.full_name,
+          email:    r.email,
+          phone:    r.phone || "",
+          country:  r.country || "🌎",
+          source:   r.source || "Orgánico",
+          stage:    r.stage || "nuevo",
+          score:    r.test_score || 50,
+          level:    r.level_interest || null,
+          program:  r.program_interest || "Inglés",
+          date:     new Date(r.created_at).toLocaleDateString("es-HN", { day:"2-digit", month:"short" }),
+          tags:     [],
+          notes:    r.notes || "",
+          lastMsg:  "",
+          activity: [{ type:"lead", text:`Lead registrado · ${r.source||"Orgánico"}`, time: new Date(r.created_at).toLocaleDateString("es-HN") }],
+        })));
+      }
+    }).catch(console.error);
+
+    supabase.from("crm_tasks")
+      .select("id, title, due_date, done, priority, leads(full_name)")
+      .order("due_date", { ascending: true })
+      .limit(50)
+      .then(({ data }) => {
+        if (data?.length) {
+          setTasks(data.map(t => ({
+            id:       t.id,
+            text:     t.title,
+            lead:     t.leads?.full_name || "—",
+            due:      t.due_date ? new Date(t.due_date).toLocaleDateString("es-HN",{day:"2-digit",month:"short"}) : "Sin fecha",
+            done:     t.done || false,
+            priority: t.priority || "medium",
+          })));
+        }
+      }).catch(console.error);
+  }, []);
+
   const [view, setView]         = useState("pipeline");
   const [leads, setLeads]       = useState(LEADS_INIT);
   const [tasks, setTasks]       = useState(TASKS_INIT);
@@ -381,11 +424,17 @@ export default function CRM() {
     setTimeout(() => setToast(null), 3000);
   }
 
-  function updateLeadStage(id, stage) {
+  async function updateLeadStage(id, stage) {
     setLeads(ls => ls.map(l => l.id===id ? {...l,stage} : l));
     const s = STAGES.find(x=>x.id===stage);
     showToast(`${s?.icon} Lead movido a ${s?.label}`);
     if (selLead?.id===id) setSelLead(l => ({...l,stage}));
+    // Persist if real ID (UUID)
+    if (typeof id === "string" && id.length > 10) {
+      import("../lib/db.js").then(({ updateLeadStage: persist }) =>
+        persist(id, stage).catch(console.error)
+      );
+    }
   }
 
   function convertLead(id) {
@@ -606,6 +655,22 @@ export default function CRM() {
               <div style={{ maxWidth:680 }}>
                 <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
                   <div style={{ fontSize:14, fontWeight:700, color:"#0f172a" }}>{pendingTasks} tareas pendientes hoy</div>
+                  <button onClick={async()=>{
+                    const titulo = window.prompt("Título de la tarea:");
+                    if(!titulo?.trim()) return;
+                    const leadName = window.prompt("Lead relacionado (nombre o email):");
+                    const due = window.prompt("Fecha límite (YYYY-MM-DD):", new Date().toISOString().slice(0,10));
+                    try {
+                      const saved = await createTask({ title:titulo.trim(), due_date:due||null, priority:"medium", done:false });
+                      setTasks(ts => [{
+                        id: saved.id, text: titulo.trim(),
+                        lead: leadName || "—",
+                        due: due ? new Date(due).toLocaleDateString("es-HN",{day:"2-digit",month:"short"}) : "Sin fecha",
+                        done: false, priority: "medium"
+                      }, ...ts]);
+                      showToast("✓ Tarea creada");
+                    } catch(e) { showToast("Error: "+e.message, R); }
+                  }} style={{ fontSize:12, padding:"7px 14px", background:P, color:"#fff", border:"none", borderRadius:9, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>+ Nueva tarea</button>
                 </div>
                 <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                   {tasks.map((t,i)=>(

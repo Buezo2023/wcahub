@@ -184,18 +184,40 @@ export default function BIDashboard() {
   const [view, setView]       = useState("overview");
   const [period, setPeriod]   = useState("12m");
   const [animate, setAnimate] = useState(true);
+  const [realStats, setRealStats] = useState(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   useEffect(() => { setAnimate(false); setTimeout(() => setAnimate(true), 50); }, [view]);
 
-  const currentMRR   = MRR_DATA[MRR_DATA.length - 1].mrr;
-  const prevMRR      = MRR_DATA[MRR_DATA.length - 2].mrr;
-  const mrrGrowth    = ((currentMRR - prevMRR) / prevMRR * 100).toFixed(1);
-  const totalStudents= MRR_DATA[MRR_DATA.length - 1].students;
+  // Load real stats from API
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) return;
+        const res = await fetch("/api/admin/stats", {
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          setRealStats(json);
+        }
+      } catch(e) { console.error("BI stats:", e); }
+      finally { setStatsLoading(false); }
+    }
+    loadStats();
+  }, []);
+
+  // Merge real stats with demo data — real takes priority
+  const currentMRR   = realStats?.mrr    > 0 ? realStats.mrr    : MRR_DATA[MRR_DATA.length - 1].mrr;
+  const prevMRR      = realStats?.mrrLastMonth > 0 ? realStats.mrrLastMonth : MRR_DATA[MRR_DATA.length - 2].mrr;
+  const mrrGrowth    = prevMRR > 0 ? ((currentMRR - prevMRR) / prevMRR * 100).toFixed(1) : "0.0";
+  const totalStudents= realStats?.totalStudents > 0 ? realStats.totalStudents : MRR_DATA[MRR_DATA.length - 1].students;
   const avgChurn     = (MRR_DATA.slice(-3).reduce((a,m) => a + m.churned, 0) / 3).toFixed(1);
-  const churnRate    = ((avgChurn / totalStudents) * 100).toFixed(1);
-  const arpu         = Math.round(currentMRR / totalStudents);
-  const ltv          = Math.round(arpu / (parseFloat(churnRate) / 100));
-  const annualRun    = currentMRR * 12;
+  const churnRate    = totalStudents > 0 ? ((avgChurn / totalStudents) * 100).toFixed(1) : "4.8";
+  const arpu         = realStats?.arpu ? parseFloat(realStats.arpu) : Math.round(currentMRR / (totalStudents || 1));
+  const ltv          = Math.round(arpu / (parseFloat(churnRate) / 100 || 0.048));
+  const annualRun    = realStats?.arr > 0 ? realStats.arr : currentMRR * 12;
 
   return (
     <div style={{ display:"flex", minHeight: "100vh", height: "100vh", background:B.bg,  overflow:"hidden",  fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
@@ -280,9 +302,9 @@ export default function BIDashboard() {
               <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:14 }}>
                 {[
                   { label:"MRR",          value:currentMRR, prefix:"$", suffix:"", color:B.primary, icon:"ti-trending-up", trend:`${mrrGrowth}%`, up:parseFloat(mrrGrowth)>0, sparkData:MRR_DATA.map(m=>m.mrr) },
-                  { label:"Estudiantes",  value:totalStudents, prefix:"", suffix:"", color:B.green, icon:"ti-users", trend:"+13 este mes", up:true, sparkData:MRR_DATA.map(m=>m.students) },
+                  { label:"Estudiantes",  value:totalStudents, prefix:"", suffix:"", color:B.green, icon:"ti-users", trend:realStats?.newStudentsMonth ? `+${realStats.newStudentsMonth} este mes` : "+13 este mes", up:true, sparkData:MRR_DATA.map(m=>m.students) },
                   { label:"Churn rate",   value:churnRate, prefix:"", suffix:"%", color:parseFloat(churnRate)>5?B.red:B.green, icon:"ti-door-exit", trend:`${avgChurn} avg/mes`, up:false, sparkData:MRR_DATA.map(m=>m.churned) },
-                  { label:"ARR",          value:annualRun, prefix:"$", suffix:"", color:B.secondary, icon:"ti-calendar", trend:`LTV ≈ $${ltv}`, up:true, sparkData:MRR_DATA.map(m=>m.mrr*12) },
+                  { label:"ARR",          value:annualRun, prefix:"$", suffix:"", color:B.secondary, icon:"ti-calendar", trend:realStats ? `LTV ≈ $${ltv}` : `LTV ≈ $${ltv} (demo)`, up:true, sparkData:MRR_DATA.map(m=>m.mrr*12) },
                 ].map((k,i) => (
                   <div key={i} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:"14px 15px", borderTop:`3px solid ${k.color}` }}>
                     <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>

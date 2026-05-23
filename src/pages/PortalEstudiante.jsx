@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
 import { useSession } from "../lib/useSession.js";
+import { useNotifications } from "../lib/useNotifications.js";
 import { LEVELS, UNITS, SKILLS_BY_LEVEL } from "../data/englishContent.js";
 
 const P="#155266",PH="#0f3d4d",PD="#e8f3f6";
@@ -528,6 +529,8 @@ export default function PortalEstudiante(){
     });
   }, [navigate]);
   const [showEnrollSuccess, setEnrollSuccess] = useState(null);
+  const [showNotifs, setShowNotifs] = useState(false);
+  const { notifications, unread, markRead, markAllRead } = useNotifications();
   const [realEnrollments,  setRealEnrollments] = useState({});
   const [realPayments,     setRealPayments]    = useState([]);
   const [uploadState,      setUploadState]     = useState({ loading:false, done:false, error:null });
@@ -614,7 +617,39 @@ export default function PortalEstudiante(){
           <div style={{fontSize:14,fontWeight:700,color:"var(--text-primary)"}}>
             {{"inicio":"Inicio","practica":"Práctica 24/7","clases":"Clases en vivo","examen":"Examen","progreso":"Mi progreso","pagos":"Pagos"}[view]}
           </div>
-          <div style={{display:"flex",gap:8}}>
+          <div style={{display:"flex",gap:8,alignItems:"center",position:"relative"}}>
+            <button onClick={()=>setShowNotifs(s=>!s)} aria-label="Notificaciones"
+              style={{position:"relative",background:"none",border:"none",cursor:"pointer",padding:6,borderRadius:8,color:"var(--text-secondary)",fontSize:20,display:"flex"}}>
+              <i className="ti ti-bell" aria-hidden="true"/>
+              {unread > 0 && (
+                <span style={{position:"absolute",top:0,right:0,width:16,height:16,borderRadius:"50%",background:"#dc2626",color:"#fff",fontSize:9,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{unread > 9?"9+":unread}</span>
+              )}
+            </button>
+            {showNotifs && (
+              <div style={{position:"absolute",top:44,right:0,width:320,background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,boxShadow:"0 8px 32px rgba(0,0,0,.15)",zIndex:999,overflow:"hidden"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 16px",borderBottom:"1px solid var(--border)"}}>
+                  <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)"}}>Notificaciones</div>
+                  {unread > 0 && <button onClick={markAllRead} style={{fontSize:11,color:P,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Marcar leídas</button>}
+                </div>
+                <div style={{maxHeight:320,overflowY:"auto"}}>
+                  {notifications.length === 0 ? (
+                    <div style={{padding:"24px 16px",textAlign:"center",fontSize:13,color:"var(--text-secondary)"}}>
+                      <div style={{fontSize:28,marginBottom:8}}>🔔</div>No hay notificaciones
+                    </div>
+                  ) : notifications.map(n=>(
+                    <div key={n.id} onClick={()=>markRead(n.id)}
+                      style={{display:"flex",gap:10,padding:"11px 16px",borderBottom:"1px solid var(--border)",background:n.read?"transparent":`${P}08`,cursor:"pointer"}}>
+                      <div style={{width:7,height:7,borderRadius:"50%",background:n.read?"var(--border)":P,flexShrink:0,marginTop:5}}/>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:12,fontWeight:n.read?400:600,color:"var(--text-primary)"}}>{n.title}</div>
+                        {n.body&&<div style={{fontSize:11,color:"var(--text-secondary)",marginTop:2,lineHeight:1.5}}>{n.body}</div>}
+                        <div style={{fontSize:10,color:"var(--text-tertiary)",marginTop:3}}>{new Date(n.created_at).toLocaleString("es-HN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             {enrolledProgs.map(p=><ProgTag key={p.id} prog={p}/>)}
           </div>
         </div>
