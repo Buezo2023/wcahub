@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react
 import { useGlobalSearch, GlobalSearchModal } from './lib/globalSearch.jsx';
 import { ToastContainer } from './lib/toast.jsx';
 import { Suspense, lazy, useState } from 'react';
+import { supabase } from './lib/supabase.js';
 import { ThemeProvider, ThemeToggle, useTheme } from './ThemeContext.jsx';
 
 const Landing         = lazy(() => import('./pages/Landing.jsx'));
@@ -19,7 +20,7 @@ const AuthCallback    = lazy(() => import('./pages/AuthCallback.jsx'));
 const PlatformPreview = lazy(() => import('./pages/PlatformPreview.jsx'));
 const PlacementTestPublic = lazy(() => import('./pages/PlacementTest.jsx'));
 
-// ── PrivateRoute — verifica sesión + rol ─────────────────────────
+// ── Role → portal map ────────────────────────────────────────────
 const ROLE_PORTALS = {
   estudiante:    '/portal',
   docente:       '/docente',
@@ -31,28 +32,44 @@ const ROLE_PORTALS = {
   directivo:     '/bi',
 };
 
+// ── PrivateRoute — verifica sesión activa + rol correcto ──────────
 function PrivateRoute({ element, allowedRoles }) {
-  const [state, setState] = React.useState({ loading: true, session: null, profile: null });
-  const navigate = useNavigate ? useNavigate() : null;
+  const [auth, setAuth] = React.useState({ ready: false, ok: false, redirect: null });
 
   React.useEffect(() => {
-    import('./lib/supabase.js').then(({ supabase }) => {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (!session) { setState({ loading: false, session: null, profile: null }); return; }
-        supabase.from('profiles').select('id, role, active').eq('id', session.user.id).maybeSingle()
-          .then(({ data: profile }) => setState({ loading: false, session, profile }));
-      });
+    // Use static supabase import — guaranteed same instance as AuthCallback
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) { setAuth({ ready: true, ok: false, redirect: '/' }); return; }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, active')
+        .eq('id', session.user.id)
+        .maybeSingle();
+
+      if (!profile) { setAuth({ ready: true, ok: false, redirect: '/' }); return; }
+
+      if (allowedRoles && !allowedRoles.includes(profile.role)) {
+        setAuth({ ready: true, ok: false, redirect: ROLE_PORTALS[profile.role] || '/' });
+        return;
+      }
+
+      setAuth({ ready: true, ok: true, redirect: null });
     });
-  }, []);
+  }, []);  // eslint-disable-line
 
-  if (state.loading) return <div style={{ display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh', fontFamily:'inherit', color:'var(--text-secondary,#64748b)', fontSize:14 }}>Verificando acceso…</div>;
+  if (!auth.ready) return (
+    <div style={{ display:'flex', alignItems:'center', justifyContent:'center',
+      minHeight:'100vh', gap:12, color:'var(--text-secondary,#64748b)', fontSize:13 }}>
+      <div style={{ width:16, height:16, border:'2px solid #e2e8f0',
+        borderTopColor:'#155266', borderRadius:'50%',
+        animation:'spin .7s linear infinite' }}/>
+      Verificando acceso…
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
 
-  if (!state.session) return <Navigate to="/" replace />;
-
-  if (allowedRoles && !allowedRoles.includes(state.profile?.role)) {
-    const correct = ROLE_PORTALS[state.profile?.role] || '/';
-    return <Navigate to={correct} replace />;
-  }
+  if (!auth.ok) return <Navigate to={auth.redirect || '/'} replace />;
 
   return element;
 }
