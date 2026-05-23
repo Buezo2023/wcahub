@@ -124,7 +124,7 @@ export async function sendEmail({ to, toName, subject, html }) {
 
   const apiKey = process.env.MAILRELAY_API_KEY;
   // Try the correct Mailrelay transactional endpoint (singular, not plural)
-  const url = `https://${MAILRELAY_DOMAIN}/api/v1/send_email`;
+  const url = `https://${MAILRELAY_DOMAIN}/api/v1/send_emails`;
 
   const body = {
     from_name:  FROM_NAME,
@@ -137,8 +137,10 @@ export async function sendEmail({ to, toName, subject, html }) {
   const res = await fetch(url, {
     method:  "POST",
     headers: {
+      "X-AUTH-TOKEN":  apiKey,
       "X-Auth-Token":  apiKey,
       "x-auth-token":  apiKey,
+      "Authorization": `Bearer ${apiKey}`,
       "Content-Type":  "application/json",
       "Accept":        "application/json",
     },

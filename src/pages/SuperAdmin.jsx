@@ -865,14 +865,10 @@ export default function SuperAdmin() {
                         });
                         const d = await r.json();
                         const data = d.data || {};
-                        if (data.workingEndpoint) {
+                        if (data.workingAuth) {
                           showToast(`✓ ${data.summary} — revisá tu bandeja`);
-                        } else if (data.bestEndpoint) {
-                          showToast(`Endpoint: ${data.bestEndpoint} — ${JSON.stringify(data.results[data.bestEndpoint]).slice(0,80)}`, R);
-                        } else if (data.error) {
-                          showToast("Error red: " + data.error, R);
                         } else {
-                          showToast(data.summary || "Sin respuesta de Mailrelay", R);
+                          showToast(data.summary || "Sin respuesta", R);
                         }
                       } catch(e){showToast("Error: "+e.message, R);}
                     }} style={{ fontSize:12, padding:"8px 16px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit", flexShrink:0, whiteSpace:"nowrap" }}>
