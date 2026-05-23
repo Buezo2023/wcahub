@@ -328,10 +328,10 @@ export default function BIDashboard() {
               {/* KPI row */}
               <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:14 }}>
                 {[
-                  { label:"MRR",          value:currentMRR, prefix:"$", suffix:"", color:B.primary, icon:"ti-trending-up", trend:`${mrrGrowth}%`, up:parseFloat(mrrGrowth)>0, sparkData:(mrrHistory.length>=2?mrrHistory:MRR_DATA).map(m=>m.mrr) },
-                  { label:"Estudiantes",  value:totalStudents, prefix:"", suffix:"", color:B.green, icon:"ti-users", trend:realStats?.newStudentsMonth ? `+${realStats.newStudentsMonth} este mes` : "+13 este mes", up:true, sparkData:MRR_DATA.map(m=>m.students) },
-                  { label:"Churn rate",   value:churnRate, prefix:"", suffix:"%", color:parseFloat(churnRate)>5?B.red:B.green, icon:"ti-door-exit", trend:`${avgChurn} avg/mes`, up:false, sparkData:MRR_DATA.map(m=>m.churned) },
-                  { label:"ARR",          value:annualRun, prefix:"$", suffix:"", color:B.secondary, icon:"ti-calendar", trend:realStats ? `LTV ≈ $${ltv}` : `LTV ≈ $${ltv} (demo)`, up:true, sparkData:(mrrHistory.length>=2?mrrHistory:MRR_DATA).map(m=>m.mrr*12) },
+                  { label:"MRR",          value:currentMRR, prefix:"$", suffix:"", color:B.primary, icon:"ti-trending-up", trend:`${mrrGrowth}%`, up:parseFloat(mrrGrowth)>0, sparkData:mrrHistory.length>=2?mrrHistory.map(m=>m.mrr):[] },
+                  { label:"Estudiantes",  value:totalStudents, prefix:"", suffix:"", color:B.green, icon:"ti-users", trend:realStats?.newStudentsMonth ? `+${realStats.newStudentsMonth} este mes` : "+13 este mes", up:true, sparkData:[] },
+                  { label:"Churn rate",   value:churnRate, prefix:"", suffix:"%", color:parseFloat(churnRate)>5?B.red:B.green, icon:"ti-door-exit", trend:`${avgChurn} avg/mes`, up:false, sparkData:[] },
+                  { label:"ARR",          value:annualRun, prefix:"$", suffix:"", color:B.secondary, icon:"ti-calendar", trend:realStats ? `LTV ≈ $${ltv}` : `LTV ≈ $${ltv} (demo)`, up:true, sparkData:mrrHistory.length>=2?mrrHistory.map(m=>m.mrr*12):[] },
                 ].map((k,i) => (
                   <div key={i} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:"14px 15px", borderTop:`3px solid ${k.color}` }}>
                     <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
@@ -367,7 +367,8 @@ export default function BIDashboard() {
                       </linearGradient>
                     </defs>
                     {(() => {
-                      const chartData = mrrHistory.length >= 2 ? mrrHistory : MRR_DATA;
+                      const chartData = mrrHistory.length >= 2 ? mrrHistory : null;  // null = no real data
+                      if (!chartData) return <text class="ts" x="200" y="65" textAnchor="middle">Sin datos de pagos aún</text>;
                       const max = Math.max(...chartData.map(m=>m.mrr), 1);
                       const pts = chartData.map((m,i) => {
                         const x = (i/(chartData.length-1))*388+6;

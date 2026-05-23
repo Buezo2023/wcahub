@@ -53,7 +53,7 @@ const SCHOLARSHIPS = [
   { id:2, name:"Jorge Ramírez",  level:"A1", progress:"9/12 unidades completadas", attendance:73, start:"Feb 2025", program:"A1→B1", eligible:false },
 ];
 
-const AT_RISK = STUDENTS.filter(s => s.attendance < 70 || s.score < 65);
+const AT_RISK = sourceStudents.filter(s => (s.attendance||0) < 70 || (s.score||0) < 65);
 
 const NAV = [
   { id:"home",       icon:"ti-layout-dashboard", label:"Inicio"           },
@@ -241,7 +241,7 @@ export default function CoordAcademica() {
           {view==="home" && (
             <div>
               <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:14 }}>
-                <Stat label="Estudiantes activos" value={totalStudents} sub={`${GROUPS.length} grupos · 5 niveles`} color={B.primary} icon="ti-users" />
+                <Stat label="Estudiantes activos" value={totalStudents} sub={realDbGroups.length > 0 ? `${realDbGroups.length} grupos activos` : "Sin grupos configurados"} color={B.primary} icon="ti-users" />
                 <Stat label="Docentes activos" value={teachers.length} sub="6 horarios cubiertos" color={B.teal} icon="ti-school" />
                 <Stat label="Asistencia promedio" value={`${avgAttendance}%`} sub="Todos los grupos" color={avgAttendance>=80?B.green:B.amber} icon="ti-calendar-check" />
                 <Stat label="En riesgo académico" value={AT_RISK.length} sub="Requieren seguimiento" color={AT_RISK.length>0?B.red:B.green} icon="ti-alert-triangle" />
@@ -403,7 +403,7 @@ export default function CoordAcademica() {
                       ))}
                     </div>
                     <div style={{ fontSize:13, fontWeight:600, color:B.textSec, textTransform:"uppercase", letterSpacing:.5, marginBottom:8 }}>Grupos asignados</div>
-                    {GROUPS.filter(g=>g.teacher===selTeacher.id).map(g => (
+                    {realDbGroups.filter(g => g.teacher === selTeacher?.name).map(g => (
                       <div key={g.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 10px", background:B.bg, borderRadius:8, marginBottom:6 }}>
                         <Badge text={g.level} bg={levelBg(g.level)} color={levelColor(g.level)} />
                         <span style={{ fontSize:13, color:B.text, flex:1 }}>{g.time} · {g.students} estudiantes</span>
@@ -676,24 +676,23 @@ export default function CoordAcademica() {
           {view==="scholarships" && (
             <div>
               <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                {(realStudents.filter(s=>s.scholarship).length > 0
-                  ? realStudents.filter(s=>s.scholarship).map(s=>({
-                      ...s, eligible: s.attendance>=70, progress:`U${Math.ceil(s.score/10)}/12`, start:"2025"
-                    }))
-                  : SCHOLARSHIPS).map(s => (
-                  <div key={s.id} style={{ background:B.white, border:`1px solid ${s.eligible?B.amber:B.border}`, borderRadius:12, padding:16 }}>
+                {realStudents.filter(s=>s.scholarship).length > 0
+                  ? realStudents.filter(s=>s.scholarship).map(s=>{
+                      const eligible = (s.attendance||0)>=70;
+                      return (
+                  <div key={s.id} style={{ background:B.white, border:`1px solid ${eligible?B.amber:B.border}`, borderRadius:12, padding:16 }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
                       <div>
                         <div style={{ fontSize:15, fontWeight:700, color:B.text }}>{s.name}</div>
                         <div style={{ fontSize:13, color:B.textSec }}>{s.level} · {s.program} · Ingresó: {s.start}</div>
                       </div>
-                      <Badge text={s.eligible?"Elegible para upgrade":"Sin cumplir criterios"} bg={s.eligible?B.secondaryDim:B.bg} color={s.eligible?"#92400e":B.textSec} />
+                      <Badge text={s.eligible?"Elegible para upgrade":"Sin cumplir criterios"} bg={eligible?B.secondaryDim:B.bg} color={eligible?"#92400e":B.textSec} />
                     </div>
                     <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, marginBottom:10 }}>
                       {[
                         { label:"Progreso", value:s.progress, color:B.primary },
                         { label:"Asistencia", value:`${s.attendance}%`, color:attCol(s.attendance) },
-                        { label:"Criterio", value:s.attendance>=70?"✓ Cumple":"✗ No cumple", color:s.attendance>=70?B.green:B.red },
+                        { label:"Criterio", value:(s.attendance||0)>=70?"✓ Cumple":"✗ No cumple", color:(s.attendance||0)>=70?B.green:B.red },
                       ].map((m,i) => (
                         <div key={i} style={{ background:B.bg, borderRadius:8, padding:"8px 10px" }}>
                           <div style={{ fontSize:13, fontWeight:700, color:m.color }}>{m.value}</div>
@@ -701,14 +700,17 @@ export default function CoordAcademica() {
                         </div>
                       ))}
                     </div>
-                    {s.eligible && (
-                      <button onClick={()=>setUpgradeModal(s)} style={{ width:"100%", padding:"9px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
+                    {eligible && (
+                      <button onClick={()=>setUpgradeModal({...s, eligible})} style={{ width:"100%", padding:"9px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
                         Hacer upgrade a Plan Completo ($95/mes)
                       </button>
                     )}
-                    {!s.eligible && <div style={{ fontSize:13, color:B.textSec, textAlign:"center", padding:"6px 0" }}>Necesita ≥70% de asistencia para ser elegible.</div>}
+                    {!eligible && <div style={{ fontSize:13, color:B.textSec, textAlign:"center", padding:"6px 0" }}>Necesita ≥70% de asistencia para ser elegible.</div>}
                   </div>
-                ))}
+                  );
+                })
+                  : <div style={{ fontSize:13, color:B.textSec, textAlign:"center", padding:"24px 0" }}>Sin estudiantes becados registrados aún.</div>
+                }
               </div>
             </div>
           )}

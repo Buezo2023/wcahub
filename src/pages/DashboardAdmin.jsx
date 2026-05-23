@@ -52,20 +52,11 @@ const PAYMENTS_PENDING = [
   { id:3, student:"Ana Mejía",     amount:"$95",  method:"Transferencia", date:"Hace 1 día", code:"WCA-A1-3301" },
 ];
 
-const ALERTS = [
-  { type:"red",   icon:"ti-alert-circle",  text:"2 estudiantes con pago vencido +30 días", action:"Ver estudiantes" },
-  { type:"amber", icon:"ti-clock",         text:"3 transferencias pendientes de confirmar", action:"Ver pagos" },
-  { type:"amber", icon:"ti-user-exclamation", text:"1 grupo sin link de Teams configurado — A2·9PM", action:"Configurar" },
-  { type:"blue",  icon:"ti-trending-up",   text:"12 nuevas matrículas este mes (+18% vs anterior)", action:null },
-];
+// Alerts are now dynamically generated from real data
+const ALERTS = [];  // populated from real Supabase data
 
-const CYCLE_STATUS = [
-  { level:"A1", unit:9,  title:"Comforts",    groups:3, students:55 },
-  { level:"A2", unit:6,  title:"Places",      groups:2, students:32 },
-  { level:"B1", unit:9,  title:"Images",      groups:2, students:33 },
-  { level:"B2", unit:4,  title:"Processes",   groups:1, students:8  },
-  { level:"C1", unit:7,  title:"Unit 7",      groups:1, students:6  },
-];
+// Cycle status loaded from Supabase cycle_config
+const CYCLE_STATUS = [];  // replaced by realCycleStatus state
 
 const NAV = [
   { id:"home",        icon:"ti-layout-dashboard", label:"Inicio"         },
@@ -450,6 +441,7 @@ export default function AdminDashboard() {
   const [view, setView] = useState("home");
   const [realStudents, setRealStudents] = useState([]);
   const [realGroups,   setRealGroups]   = useState([]);
+  const [realCycleStatus, setRealCycleStatus] = useState([]);
   const [loadingData,  setLoadingData]  = useState(true);
 
   // Load real students + groups from Supabase
@@ -510,6 +502,17 @@ export default function AdminDashboard() {
             dbId:     g.id,
           }));
           setRealGroups(mappedG);
+        }
+        // Load cycle status from Supabase
+        const { data: cycleRows } = await supabase
+          .from("cycle_config")
+          .select("level, current_unit, program_id")
+          .eq("program_id", "en");
+        if (cycleRows?.length) {
+          setRealCycleStatus(cycleRows.map(r => ({
+            level: r.level, unit: r.current_unit,
+            title: `Unidad ${r.current_unit}`, groups: 0, students: 0,
+          })));
         }
       } catch(e) { console.error("Admin data load:", e); }
       finally { setLoadingData(false); }
@@ -625,7 +628,7 @@ export default function AdminDashboard() {
           {view === "home" && (
             <div>
               {/* Alerts */}
-              {ALERTS.map((a, i) => (
+              {[...(suspended.length>0?[{type:"red",icon:"ti-alert-circle",text:`${suspended.length} estudiante${suspended.length>1?"s":""} con cuenta suspendida`,action:"Ver estudiantes"}]:[]),...(displayGroups.filter(g=>!g.teamsSet).length>0?[{type:"amber",icon:"ti-user-exclamation",text:`${displayGroups.filter(g=>!g.teamsSet).length} grupo(s) sin link de Teams`,action:"Configurar"}]:[])].map((a, i) => (
                 <div key={i} style={{ background: a.type==="red"?B.redDim:a.type==="amber"?B.amberDim:B.primaryDim, border:`1px solid ${a.type==="red"?B.red:a.type==="amber"?B.amber:B.border}`, borderRadius:10, padding:"9px 14px", marginBottom:7, display:"flex", alignItems:"center", gap:10 }}>
                   <i className={`ti ${a.icon}`} style={{ fontSize:16, color:a.type==="red"?B.red:a.type==="amber"?"#92400e":B.primary, flexShrink:0 }} aria-hidden="true" />
                   <div style={{ flex:1, fontSize:13, color:B.text }}>{a.text}</div>
@@ -650,7 +653,7 @@ export default function AdminDashboard() {
                     Estado del ciclo — esta semana
                     <button onClick={() => setView("cycle")} style={{ fontSize:11, padding:"3px 8px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>Ver todo</button>
                   </div>
-                  {CYCLE_STATUS.map(c => (
+                  {(realCycleStatus.length > 0 ? realCycleStatus : []).map(c => (
                     <div key={c.level} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderTop:`1px solid ${B.borderLight}` }}>
                       <div style={{ width:32, height:32, borderRadius:8, background:B.primaryDim, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:B.primary, flexShrink:0 }}>{c.level}</div>
                       <div style={{ flex:1 }}>
@@ -922,7 +925,7 @@ export default function AdminDashboard() {
             <div>
               <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16, marginBottom:14 }}>
                 <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:14 }}>Estado del ciclo continuo — todos los niveles</div>
-                {CYCLE_STATUS.map(c => (
+                {(realCycleStatus.length > 0 ? realCycleStatus : []).map(c => (
                   <div key={c.level} style={{ marginBottom:16, paddingBottom:16, borderBottom:`1px solid ${B.borderLight}` }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
                       <div style={{ display:"flex", alignItems:"center", gap:10 }}>

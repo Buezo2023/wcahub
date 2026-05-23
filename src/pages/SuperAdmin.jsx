@@ -48,7 +48,7 @@ const ROLES_DEF = [
   { name:"IT",               users:2,  perms:["Config","Integraciones","Backups"] },
   { name:"Soporte",          users:2,  perms:["Perfil estudiante","Reset password"] },
   { name:"Contabilidad",     users:2,  perms:["Reportes financieros","Auditoría"] },
-  { name:"Estudiante",       users:134,perms:["Su portal","Su contenido"] },
+  { name:"Estudiante",       users:0,  perms:["Su portal","Su contenido"] },
 ];
 
 const INTEGRATIONS = [
@@ -173,17 +173,34 @@ function Modal({ title, subtitle, onClose, children }) {
 
 export default function SuperAdmin() {
   const navigate = useNavigate();
-  const [toast,   setToast]   = useState(null);
-  const [saving,  setSaving]  = useState(false);
-  const [dbAudit, setDbAudit] = useState([]);
+  const [toast,      setToast]      = useState(null);
+  const [saving,     setSaving]     = useState(false);
+  const [dbAudit,    setDbAudit]    = useState([]);
+  const [realStats,  setRealStats]  = useState(null);   // from /api/admin/stats
+  const [statsLoading, setStatsLoading] = useState(true);
 
   function showToast(msg, color = "#059669") {
     setToast({ msg, color });
     setTimeout(() => setToast(null), 3000);
   }
 
-  // Load real audit log, staff and programs from Supabase
+  // Load real stats, audit log, staff and programs from Supabase
   useEffect(() => {
+    // Real KPI stats
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) return;
+      try {
+        const res = await fetch("/api/admin/stats", {
+          headers: { Authorization: `Bearer ${session.access_token}` }
+        });
+        if (res.ok) {
+          const json = await res.json();
+          setRealStats(json);
+        }
+      } catch(e) { console.error("Stats:", e); }
+      finally { setStatsLoading(false); }
+    });
+
     getAuditLog({ limit: 50 }).then(data => {
       if (data.length > 0) setDbAudit(data);
     }).catch(console.error);
@@ -259,13 +276,19 @@ export default function SuperAdmin() {
   const [progModal, setProgModal] = useState(null);
   const [progForm,  setProgForm]  = useState({});
 
-  const totalMRR    = MRR_DATA[MRR_DATA.length-1];
-  const prevMRR     = MRR_DATA[MRR_DATA.length-2];
-  const mrrGrowth   = ((totalMRR-prevMRR)/prevMRR*100).toFixed(1);
-  const totalStudents = 134;
-  const arpu        = Math.round(totalMRR/totalStudents);
-  const ltv         = Math.round(arpu/(4.8/100));
-  const nomina      = staff.filter(s=>s.status==="active").reduce((a,s)=>a+(+s.salary||0),0);
+  // Real KPIs — 0 when no data, never fake numbers
+  const totalMRR      = realStats?.mrr          ?? 0;
+  const prevMRR       = realStats?.mrrLastMonth ?? 0;
+  const mrrGrowth     = prevMRR > 0 ? ((totalMRR - prevMRR) / prevMRR * 100).toFixed(1) : "0.0";
+  const totalStudents = realStats?.totalStudents ?? 0;
+  const arpu          = realStats?.arpu ? parseFloat(realStats.arpu) : (totalStudents > 0 ? Math.round(totalMRR / totalStudents) : 0);
+  const ltv           = arpu > 0 ? Math.round(arpu / 0.048) : 0;
+  const annualRun     = realStats?.arr ?? totalMRR * 12;
+  const churnRate     = "—";   // Need cohort data
+  const nomina        = staff.filter(s=>s.status==="active").reduce((a,s)=>a+(+s.salary||0),0);
+  const staffCount    = realStats?.totalStaff ?? staff.filter(s=>s.status==="active").length;
+  const activeEnrolls = realStats?.activeEnrolls ?? 0;
+  const newThisMonth  = realStats?.newStudentsMonth ?? 0;
 
   const filteredStaff = staffFilter==="all" ? staff : staff.filter(s=>s.role===staffFilter);
 
@@ -450,23 +473,23 @@ export default function SuperAdmin() {
           {/* ── OVERVIEW ── */}
           {view==="overview" && <>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
-              <Stat label="MRR actual"           value={`$${totalMRR.toLocaleString()}`} sub={`+${mrrGrowth}% vs nov`} color={P}  icon="ti-trending-up"   up={true}/>
-              <Stat label="Estudiantes activos"  value={totalStudents}                    sub="9 grupos · 5 niveles"    color={G}  icon="ti-users"         />
-              <Stat label="Personal activo"      value={staff.filter(s=>s.status==="active").length} sub={`${staff.filter(s=>s.role==="Docente").length} docentes`} color={A} icon="ti-users-group"/>
+              <Stat label="MRR actual"           value={statsLoading ? "…" : totalMRR > 0 ? `$${totalMRR.toLocaleString()}` : "$0"} sub={totalMRR > 0 ? `+${mrrGrowth}% vs mes anterior` : "Sin pagos aún"} color={P}  icon="ti-trending-up"   up={parseFloat(mrrGrowth)>0}/>
+              <Stat label="Estudiantes activos"  value={statsLoading ? "…" : totalStudents} sub={activeEnrolls > 0 ? `${activeEnrolls} matrículas activas` : "Sin matrículas aún"} color={G}  icon="ti-users"         />
+              <Stat label="Personal activo"      value={statsLoading ? "…" : staffCount} sub={`${staff.filter(s=>s.role==="Docente"&&s.status==="active").length} docentes`} color={A} icon="ti-users-group"/>
               <Stat label="Programas activos"    value={programs.filter(p=>p.active).length} sub={`${programs.filter(p=>!p.active).length} inactivos`} color="var(--text-secondary)" icon="ti-books"/>
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
-              <Stat label="ARR proyectado"       value="$221k"            sub="A ritmo actual"    color={G}  icon="ti-calendar"   up={true}/>
-              <Stat label="Churn rate"           value="4.8%"             sub="Últimos 3m"        color={R}  icon="ti-door-exit"  />
-              <Stat label="ARPU"                 value={`$${arpu}`}       sub="Por alumno/mes"    color={P}  icon="ti-coin"       />
-              <Stat label="Nómina mensual"       value={`$${nomina.toLocaleString()}`} sub="USD total staff" color="var(--text-secondary)" icon="ti-receipt"/>
+              <Stat label="ARR proyectado"       value={statsLoading ? "…" : annualRun > 0 ? `$${Math.round(annualRun).toLocaleString()}` : "$0"} sub="Proyectado anual"  color={G}  icon="ti-calendar"   up={annualRun>0}/>
+              <Stat label="Churn rate"           value={churnRate}        sub="Datos insuficientes" color="var(--text-secondary)" icon="ti-door-exit"  />
+              <Stat label="ARPU"                 value={arpu > 0 ? `$${arpu}` : "—"} sub="Por alumno/mes"    color={P}  icon="ti-coin"       />
+              <Stat label="Nómina mensual"       value={nomina > 0 ? `$${nomina.toLocaleString()}` : "—"} sub="USD total staff" color="var(--text-secondary)" icon="ti-receipt"/>
             </div>
 
             <div style={{ display:"grid", gridTemplateColumns:"1.6fr 1fr", gap:14, marginBottom:14 }}>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:20, boxShadow:"var(--shadow-sm)" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>MRR — 12 meses</div>
-                  <div style={{ fontSize:11, color:G, fontWeight:600 }}>+119% YoY</div>
+                  <div style={{ fontSize:11, color:totalMRR>0?G:"var(--text-tertiary)", fontWeight:600 }}>{totalMRR>0?`+${mrrGrowth}% vs mes ant.`:"Sin datos aún"}</div>
                 </div>
                 <svg width="100%" height={110} viewBox="0 0 500 110" preserveAspectRatio="none">
                   <defs><linearGradient id="mrg2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor={P} stopOpacity={0.15}/><stop offset="100%" stopColor={P} stopOpacity={0}/></linearGradient></defs>
@@ -537,10 +560,10 @@ export default function SuperAdmin() {
               Módulo exclusivo para Super Admin — acceso restringido.
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:16 }}>
-              <Stat label="MRR actual"    value={`$${totalMRR.toLocaleString()}`} sub={`+${mrrGrowth}% vs nov`} color={P} icon="ti-trending-up" up={true}/>
-              <Stat label="ARR"           value="$221k"  sub="Proyectado"         color={G} icon="ti-calendar" up={true}/>
-              <Stat label="ARPU"          value={`$${arpu}`} sub="Por alumno/mes" color={A} icon="ti-coin"/>
-              <Stat label="LTV estimado" value={`$${ltv}`}  sub="Churn 4.8%/mes" color="var(--text-secondary)" icon="ti-chart-pie"/>
+              <Stat label="MRR actual"    value={statsLoading ? "…" : totalMRR > 0 ? `$${totalMRR.toLocaleString()}` : "$0"} sub={totalMRR > 0 ? `+${mrrGrowth}% vs mes ant.` : "Sin pagos aún"} color={P} icon="ti-trending-up" up={parseFloat(mrrGrowth)>0}/>
+              <Stat label="ARR"           value={annualRun > 0 ? `$${Math.round(annualRun/1000)}k` : "—"}  sub="Proyectado"        color={G} icon="ti-calendar" up={annualRun>0}/>
+              <Stat label="ARPU"          value={arpu > 0 ? `$${arpu}` : "—"} sub="Por alumno/mes" color={A} icon="ti-coin"/>
+              <Stat label="LTV estimado"  value={ltv > 0 ? `$${ltv.toLocaleString()}` : "—"}  sub="Estimado" color="var(--text-secondary)" icon="ti-chart-pie"/>
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:20, boxShadow:"var(--shadow-sm)" }}>
@@ -693,7 +716,7 @@ export default function SuperAdmin() {
                   <div style={{ flex:1 }}>
                     <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
                       <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)" }}>{r.name}</div>
-                      <Badge text={`${r.users} usuario${r.users!==1?"s":""}`} bg="var(--bg-surface-subtle)" color="var(--text-secondary)"/>
+                      <Badge text={r.name==="Estudiante" ? `${totalStudents} usuarios` : r.name==="Admin"?`${staffCount} staff`:`${r.users} usuarios`} bg="var(--bg-surface-subtle)" color="var(--text-secondary)"/>
                     </div>
                     <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>{r.perms.map(p=><Badge key={p} text={p} bg={PD} color={P}/>)}</div>
                   </div>

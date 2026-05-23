@@ -582,8 +582,8 @@ export default function CRM() {
   }, []);
 
   const [view, setView]         = useState("pipeline");
-  const [leads, setLeads]       = useState(LEADS_INIT);
-  const [tasks, setTasks]       = useState(TASKS_INIT);
+  const [leads, setLeads]       = useState([]);   // loaded from Supabase
+  const [tasks, setTasks]       = useState([]);   // loaded from Supabase
   const [selLead, setSelLead]   = useState(null);
   const [showNewLead, setShowNewLead] = useState(false);
   const [search, setSearch]     = useState("");

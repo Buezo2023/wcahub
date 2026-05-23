@@ -35,8 +35,8 @@ const OVERDUE = [
   { student:"Marcos Silva",  level:"B2", days:31, amount:95,  contact:"+55 11 9999-0000", lastContact:"Hace 8 días" },
 ];
 
-const AUDIT_LOG = [
-  { action:"Confirmó pago",    student:"Rodrigo Paredes", amount:"$170", time:"Hoy 08:55",   note:"Comprobante BAC verificado" },
+// AUDIT_LOG removed — usar datos reales de Supabase
+const AUDIT_LOG_UNUSED = [{ action:"Confirmó pago",    student:"Rodrigo Paredes", amount:"$170", time:"Hoy 08:55",   note:"Comprobante BAC verificado" },
   { action:"Registró efectivo",student:"Diego Fuentes",   amount:"$95",  time:"Ayer 11:20",  note:"Pagó en sede" },
   { action:"Anuló pago",       student:"Luis Morales",    amount:"$95",  time:"Hace 3 días", note:"Reembolso solicitado en 7 días" },
   { action:"Emitió recibo",    student:"Sofía Ramos",     amount:"$95",  time:"Ayer 18:30",  note:"Recibo #2024-089" },
@@ -565,8 +565,8 @@ export default function GestorCobros() {
                 Este es el log de tus propias acciones. Es inmutable y visible para Contabilidad.
               </div>
               <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, overflow:"hidden" }}>
-                {AUDIT_LOG.map((a,i) => (
-                  <div key={i} style={{ display:"flex", gap:12, padding:"11px 14px", borderBottom:i<AUDIT_LOG.length-1?`1px solid ${B.borderLight}`:"none" }}>
+                {([]).map((a,i) => (
+                  <div key={i} style={{ display:"flex", gap:12, padding:"11px 14px", borderBottom:i<0?`1px solid ${B.borderLight}`:"none" }}>
                     <div style={{ width:8, height:8, borderRadius:"50%", background:a.action.includes("Anuló")||a.action.includes("Marcó")?B.red:B.green, flexShrink:0, marginTop:5 }} />
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:13, color:B.text }}><strong>{a.action}</strong> — {a.student} · <span style={{ fontWeight:700, color:B.primary }}>{a.amount}</span></div>
