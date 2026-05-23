@@ -197,26 +197,40 @@ async function handleTestEmail(req, actor) {
   const fromEmail= process.env.MAILRELAY_FROM_EMAIL || 'no-reply@worldconnectacademy.com';
   const fromName = process.env.MAILRELAY_FROM_NAME  || 'WCA Academy';
 
-  const results = {};
-  for (const [label, url] of [['send_email', `https://${domain}/api/v1/send_email`], ['send_emails', `https://${domain}/api/v1/send_emails`]]) {
-    try {
-      const r = await fetch(url, {
-        method: 'POST',
-        headers: { 'x-auth-token': apiKey, 'content-type': 'application/json' },
-        body: JSON.stringify({
-          from: { email: fromEmail, name: fromName },
-          to:   [{ email: target, name: target }],
-          subject: '✅ Test WCA Hub — diagnóstico de email',
-          html_part: `<h2>Email de prueba</h2><p>Si ves esto, Mailrelay está funcionando. Dominio: ${domain}</p>`,
-        }),
-      });
-      const text = await r.text();
-      let json = null; try { json = JSON.parse(text); } catch {}
-      results[label] = { status: r.status, ok: r.ok, response: json || text.slice(0, 500), url };
-      if (r.ok) break;
-    } catch(e) { results[label] = { error: e.message, url }; }
+  if (!apiKey || !domain || domain === '(NO CONFIGURADO)') {
+    return { error: 'Mailrelay no configurado', domain, keyConfigured: false };
   }
-  return { target, domain, fromEmail, keyConfigured: apiKey.length > 10, results };
+
+  const url = `https://${domain}/api/v1/send_email`;
+  const body = {
+    from_name:  fromName,
+    from_email: fromEmail,
+    to:         [{ email: target, name: target }],
+    subject:    '✅ Test WCA Hub — email de diagnóstico',
+    html:       `<h2>Email de prueba</h2><p>Si ves esto, Mailrelay funciona correctamente.</p><p>Dominio: ${domain} · Para: ${target}</p>`,
+  };
+
+  let status, responseText, jsonResp;
+  try {
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-Auth-Token': apiKey, 'x-auth-token': apiKey,
+        'Content-Type': 'application/json', 'Accept': 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+    status = r.status;
+    responseText = await r.text();
+    try { jsonResp = JSON.parse(responseText); } catch { jsonResp = null; }
+    return {
+      target, domain, fromEmail, keyConfigured: apiKey.length > 10, url,
+      status, ok: r.ok,
+      response: jsonResp || responseText.slice(0, 200),
+    };
+  } catch(e) {
+    return { target, domain, url, error: e.message, keyConfigured: apiKey.length > 10 };
+  }
 }
 
 // ── Main handler ───────────────────────────────────────────────────

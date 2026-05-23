@@ -112,37 +112,44 @@ export function err(res, error) {
 }
 
 // ─── Mailrelay ────────────────────────────────────────────────────
-const MAILRELAY_URL = `https://${process.env.MAILRELAY_DOMAIN}/api/v1/send_emails`;
-const FROM = {
-  email: process.env.MAILRELAY_FROM_EMAIL || "no-reply@worldconnectacademy.com",
-  name:  process.env.MAILRELAY_FROM_NAME  || "WCA Academy",
-};
+const MAILRELAY_DOMAIN = process.env.MAILRELAY_DOMAIN || "";
+const FROM_EMAIL = process.env.MAILRELAY_FROM_EMAIL || "no-reply@worldconnectacademy.com";
+const FROM_NAME  = process.env.MAILRELAY_FROM_NAME  || "WCA Academy";
 
 export async function sendEmail({ to, toName, subject, html }) {
-  if (!process.env.MAILRELAY_API_KEY) {
-    console.warn("MAILRELAY_API_KEY not set — email skipped");
+  if (!process.env.MAILRELAY_API_KEY || !MAILRELAY_DOMAIN) {
+    console.warn("Mailrelay not configured — email skipped");
     return null;
   }
 
-  const res = await fetch(MAILRELAY_URL, {
+  const apiKey = process.env.MAILRELAY_API_KEY;
+  // Try the correct Mailrelay transactional endpoint (singular, not plural)
+  const url = `https://${MAILRELAY_DOMAIN}/api/v1/send_email`;
+
+  const body = {
+    from_name:  FROM_NAME,
+    from_email: FROM_EMAIL,
+    to:         [{ email: to, name: toName || to }],
+    subject,
+    html,
+  };
+
+  const res = await fetch(url, {
     method:  "POST",
     headers: {
-      "x-auth-token": process.env.MAILRELAY_API_KEY,
-      "content-type": "application/json",
+      "X-Auth-Token":  apiKey,
+      "x-auth-token":  apiKey,
+      "Content-Type":  "application/json",
+      "Accept":        "application/json",
     },
-    body: JSON.stringify({
-      from:      FROM,
-      to:        [{ email: to, name: toName || to }],
-      subject,
-      html_part: html,
-    }),
+    body: JSON.stringify(body),
   });
 
+  const responseText = await res.text().catch(() => "");
   if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new Error(`Mailrelay ${res.status}: ${body.slice(0, 200)}`);
+    throw new Error(`Mailrelay ${res.status} (${url}): ${responseText.slice(0, 300)}`);
   }
-  return res.json();
+  try { return JSON.parse(responseText); } catch { return { ok: true }; }
 }
 
 // ─── Email templates (inputs sanitized) ──────────────────────────
