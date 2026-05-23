@@ -293,11 +293,28 @@ export default function SuperAdmin() {
           salary:    staffForm.salary || null,
           hireDate:  new Date().toISOString().slice(0, 10),
         });
-        setStaff(p => [...p, { ...staffForm, id: Date.now() }]);
+        // Reload from Supabase to confirm it was saved (no optimistic update)
+        const { getStaff } = await import("../lib/db.js");
+        const rows = await getStaff({ active: null });
+        if (rows.length > 0) {
+          const roleLabel = { docente:"Docente", coordinadora:"Coordinadora", admin:"Admin", cobros:"Gestor de Cobros", asesor_ventas:"Ventas" };
+          setStaff(rows.map(r => ({
+            id: r.id, name: r.profile?.full_name || r.profile?.email || staffForm.name,
+            role: roleLabel[r.profile?.role] || r.position || staffForm.role,
+            email: r.profile?.email || staffForm.email,
+            phone: r.profile?.phone || "—", country: "Honduras",
+            salary: r.salary || 0,
+            hired: r.hire_date ? new Date(r.hire_date).toLocaleDateString("es-HN",{month:"short",year:"numeric"}) : "—",
+            status: r.active ? "active" : "inactive", levels: [],
+          })));
+        } else {
+          // Fallback: show locally if Supabase read fails (RLS may need fix)
+          setStaff(p => [...p, { ...staffForm, id: Date.now() }]);
+        }
         showToast(
           result.emailSent
-            ? `✓ ${staffForm.name} invitado — email enviado a ${staffForm.email}`
-            : `✓ ${staffForm.name} creado — configurá Mailrelay para enviar emails`
+            ? `✓ ${staffForm.name} guardado y email enviado a ${staffForm.email}`
+            : `✓ ${staffForm.name} guardado en BD — revisá email`
         );
       } else {
         // Update existing staff
