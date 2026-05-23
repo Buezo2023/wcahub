@@ -119,9 +119,9 @@ export function err(res, error) {
 // Mientras no esté configurado, los emails se envían via Mailrelay SMTP
 // o se saltan con un console.warn.
 
-const FROM_EMAIL = process.env.RESEND_FROM_EMAIL
-  || process.env.MAILRELAY_FROM_EMAIL
-  || "no-reply@worldconnectacademy.com";
+// FROM: si tenés dominio propio verificado en Resend, agregá RESEND_FROM_EMAIL en Vercel
+// Por ahora usa el dominio de prueba de Resend que funciona sin verificación
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 const FROM_NAME  = process.env.MAILRELAY_FROM_NAME || "WCA Academy";
 
 export async function sendEmail({ to, toName, subject, html }) {

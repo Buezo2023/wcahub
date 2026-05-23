@@ -203,7 +203,7 @@ async function handleTestEmail(req, actor) {
 
   // Test Resend API (replaced Mailrelay)
   const resendKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.MAILRELAY_FROM_EMAIL || "no-reply@worldconnectacademy.com";
+  const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
   const fromName  = process.env.MAILRELAY_FROM_NAME || "WCA Academy";
 
   if (!resendKey) {
