@@ -266,6 +266,200 @@ function UpsellBanner({prog,canEnroll,onEnroll}){
 }
 
 // ─── MAIN ─────────────────────────────────────────────────────────
+// ─── EXAM QUESTIONS (seed by unit, reused for all programs) ─────
+function generateQuestions(unit, progId) {
+  const enQ = {
+    1:[{q:"What is 'Good morning' in English?",opts:["Good morning","Good night","Good afternoon","Hello"],ans:0},{q:"How do you say '¿Cómo estás?' in English?",opts:["How are you?","Where are you?","Who are you?","What are you?"],ans:0},{q:"'The book is on the table' — what is on the table?",opts:["The book","The chair","The table","The pen"],ans:0},{q:"Complete: 'My name ___ María'",opts:["is","are","am","be"],ans:0},{q:"How many days are in a week?",opts:["Seven","Five","Six","Eight"],ans:0}],
+    2:[{q:"'She ___ a teacher' — correct verb?",opts:["is","are","am","be"],ans:0},{q:"What is the plural of 'child'?",opts:["Children","Childs","Childes","Child"],ans:0},{q:"'I go to school every day' — tense?",opts:["Simple present","Simple past","Future","Present continuous"],ans:0},{q:"Which is correct?",opts:["He doesn't like coffee","He don't like coffee","He not like coffee","He no like coffee"],ans:0},{q:"'Yesterday I ___ to the store'",opts:["went","go","goes","going"],ans:0}],
+    default:[{q:"Which sentence is correct?",opts:["I am studying English","I studying English","I are studying English","I is studying English"],ans:0},{q:"Complete: 'By next year I ___ English for two years'",opts:["will have studied","will study","am studying","have studied"],ans:0},{q:"What does 'although' mean?",opts:["A pesar de que","Por lo tanto","Sin embargo","Además"],ans:0},{q:"'The report ___ by the team last week'",opts:["was written","is written","wrote","writes"],ans:0},{q:"Which is more formal?",opts:["I would like to inquire","I want to ask","Can I ask?","Tell me about"],ans:0}],
+  };
+  const vaQ = [{q:"What is a Virtual Assistant?",opts:["A remote professional who provides support","A computer program","An office assistant","A translator"],ans:0},{q:"Which tool is commonly used for task management?",opts:["Trello","Instagram","Excel only","WhatsApp"],ans:0},{q:"'Asynchronous communication' means:",opts:["Not in real-time","Face to face","By phone","In the same timezone"],ans:0},{q:"What is a good practice when sending professional emails?",opts:["Use a clear subject line","Write in caps","Skip greetings","Use emojis always"],ans:0},{q:"Time management as a VA means:",opts:["Prioritizing tasks efficiently","Working 24 hours","Ignoring deadlines","Only working on urgent tasks"],ans:0}];
+  const questions = progId === "en" ? (enQ[unit] || enQ.default) : vaQ;
+  return questions;
+}
+
+// ─── EXAM MODULE COMPONENT ────────────────────────────────────────
+function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg, supabase }) {
+  const P = prog?.color || "#155266";
+  const G = "#059669", GD = "#ecfdf5";
+  const R = "#dc2626", RD = "#fef2f2";
+  const Y = "#ffbb23", A = "#d97706";
+
+  const [phase, setPhase] = useState("intro"); // intro | taking | result
+  const [answers, setAnswers] = useState({});
+  const [score, setScore] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(30 * 60); // 30 min in seconds
+  const [attempts, setAttempts] = useState(enrollment?.examScore ? 1 : 0);
+  const [saving, setSaving] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+
+  const unit = enrollment?.unit || 1;
+  const questions = generateQuestions(unit, activeProg);
+  const MAX_ATTEMPTS = 3;
+
+  // Timer countdown
+  useEffect(() => {
+    if (phase !== "taking") return;
+    if (timeLeft <= 0) { handleSubmit(); return; }
+    const t = setTimeout(() => setTimeLeft(s => s - 1), 1000);
+    return () => clearTimeout(t);
+  }, [phase, timeLeft]);
+
+  const formatTime = (s) => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+  const timerColor = timeLeft < 300 ? R : timeLeft < 600 ? A : G;
+
+  async function handleSubmit() {
+    const correct = questions.filter((q, i) => answers[i] === q.ans).length;
+    const pct = Math.round((correct / questions.length) * 100);
+    setScore(pct);
+    setPhase("result");
+    setSaving(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data: student } = await supabase.from("students").select("id")
+          .eq("profile_id", session.user.id).maybeSingle();
+        if (student) {
+          await supabase.from("enrollments")
+            .update({ exam_score: pct })
+            .eq("student_id", student.id)
+            .eq("program_id", activeProg);
+          await supabase.from("student_progress").upsert({
+            student_id:   student.id,
+            program_id:   activeProg,
+            unit:         unit,
+            exam_score:   pct,
+            passed:       pct >= 70,
+            updated_at:   new Date().toISOString(),
+          }, { onConflict: "student_id,program_id,unit" });
+          if (pct >= 70) {
+            await supabase.from("audit_log").insert({
+              action: "exam_passed",
+              entity: "enrollment",
+              metadata: { program: activeProg, unit, score: pct },
+            }).catch(() => {});
+          }
+        }
+      }
+      setConfirmed(true);
+      setAttempts(a => a + 1);
+    } catch(e) { console.error("Exam save:", e); }
+    finally { setSaving(false); }
+  }
+
+  const passed = score >= 70;
+  const answered = Object.keys(answers).length;
+  const allAnswered = answered === questions.length;
+
+  if (phase === "intro") return (
+    <div style={{ padding:24 }}>
+      <div style={{ display:"flex", gap:8, marginBottom:16 }}>
+        {enrolledProgs.map(p => (
+          <button key={p.id} onClick={() => setActiveProg(p.id)} style={{ display:"flex", alignItems:"center", gap:7, padding:"8px 16px", background:activeProg===p.id?p.color:"var(--bg-surface)", color:activeProg===p.id?"#fff":"var(--text-secondary)", border:`1.5px solid ${activeProg===p.id?p.color:"var(--border)"}`, borderRadius:30, fontSize:12, fontWeight:activeProg===p.id?700:400, cursor:"pointer", fontFamily:"inherit" }}>
+            <span style={{ fontSize:14 }}>{p.icon}</span>{p.shortName}
+          </button>
+        ))}
+      </div>
+      <div style={{ background:"var(--bg-surface)", border:`1.5px solid ${P}40`, borderRadius:16, padding:28, maxWidth:540 }}>
+        <div style={{ fontSize:11, color:"var(--text-tertiary)", textTransform:"uppercase", letterSpacing:.5, marginBottom:4 }}>Examen · {prog?.shortName}</div>
+        <div style={{ fontSize:22, fontWeight:800, color:"var(--text-primary)", marginBottom:4 }}>Unidad {unit}</div>
+        {enrollment?.examScore > 0 && (
+          <div style={{ fontSize:14, color:enrollment.examScore>=70?G:R, fontWeight:600, marginBottom:12 }}>
+            Último intento: {enrollment.examScore}% {enrollment.examScore>=70?"✓ Aprobado":"✗ No aprobado"}
+          </div>
+        )}
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:20 }}>
+          {[["Preguntas", questions.length,"var(--text-primary)"],["Para aprobar","≥ 70%",G],["Tiempo límite","30 min",P]].map(([l,v,c],i) => (
+            <div key={i} style={{ background:"var(--bg-surface-subtle)", borderRadius:9, padding:"12px 14px" }}>
+              <div style={{ fontSize:20, fontWeight:800, color:c }}>{v}</div>
+              <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:3 }}>{l}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ background:"var(--bg-surface-subtle)", borderRadius:10, padding:"10px 14px", marginBottom:20, fontSize:12, color:"var(--text-secondary)", lineHeight:1.7 }}>
+          Una vez iniciado el temporizador no se puede pausar. Respondé todas las preguntas antes de enviar.
+          {attempts >= MAX_ATTEMPTS && <span style={{ color:R, display:"block", marginTop:4 }}>⚠ Agotaste tus {MAX_ATTEMPTS} intentos. Contactá a tu coordinadora para solicitar uno extra.</span>}
+        </div>
+        <button
+          disabled={attempts >= MAX_ATTEMPTS}
+          onClick={() => { setAnswers({}); setTimeLeft(30*60); setPhase("taking"); }}
+          style={{ width:"100%", padding:"14px", background:attempts>=MAX_ATTEMPTS?"var(--bg-surface-subtle)":P, color:attempts>=MAX_ATTEMPTS?"var(--text-tertiary)":"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:attempts>=MAX_ATTEMPTS?"not-allowed":"pointer", fontFamily:"inherit" }}>
+          {attempts === 0 ? "Comenzar examen" : `Reintentar — Intento ${attempts+1}/${MAX_ATTEMPTS}`}
+        </button>
+      </div>
+    </div>
+  );
+
+  if (phase === "taking") return (
+    <div style={{ padding:24, maxWidth:620 }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20, background:"var(--bg-surface)", border:`1px solid ${P}30`, borderRadius:12, padding:"12px 18px" }}>
+        <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>Examen U{unit} · {prog?.shortName}</div>
+        <div style={{ display:"flex", alignItems:"center", gap:14 }}>
+          <div style={{ fontSize:12, color:"var(--text-secondary)" }}>{answered}/{questions.length} respondidas</div>
+          <div style={{ fontSize:16, fontWeight:800, color:timerColor, fontVariantNumeric:"tabular-nums" }}>⏱ {formatTime(timeLeft)}</div>
+        </div>
+      </div>
+      <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+        {questions.map((q, qi) => (
+          <div key={qi} style={{ background:"var(--bg-surface)", border:`1.5px solid ${answers[qi]!==undefined?P+"60":"var(--border)"}`, borderRadius:14, padding:20 }}>
+            <div style={{ fontSize:14, fontWeight:600, color:"var(--text-primary)", marginBottom:14 }}>
+              <span style={{ color:P, marginRight:8, fontWeight:800 }}>{qi+1}.</span>{q.q}
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+              {q.opts.map((opt, oi) => {
+                const selected = answers[qi] === oi;
+                return (
+                  <button key={oi} onClick={() => setAnswers(a => ({...a,[qi]:oi}))}
+                    style={{ display:"flex", alignItems:"center", gap:12, padding:"11px 16px", background:selected?`${P}12`:"var(--bg-surface-subtle)", border:`1.5px solid ${selected?P:"var(--border)"}`, borderRadius:9, cursor:"pointer", textAlign:"left", fontFamily:"inherit", fontSize:13, color:selected?P:"var(--text-primary)", fontWeight:selected?600:400, transition:"all .15s" }}>
+                    <div style={{ width:20, height:20, borderRadius:"50%", border:`2px solid ${selected?P:"var(--border)"}`, background:selected?P:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                      {selected && <div style={{ width:8, height:8, borderRadius:"50%", background:"#fff" }}/>}
+                    </div>
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+      <button
+        disabled={!allAnswered || saving}
+        onClick={handleSubmit}
+        style={{ width:"100%", marginTop:20, padding:"14px", background:allAnswered?P:"var(--bg-surface-subtle)", color:allAnswered?"#fff":"var(--text-tertiary)", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:allAnswered?"pointer":"not-allowed", fontFamily:"inherit" }}>
+        {saving ? "Guardando…" : allAnswered ? "Enviar examen" : `Respondé las ${questions.length-answered} restantes`}
+      </button>
+    </div>
+  );
+
+  if (phase === "result") return (
+    <div style={{ padding:24, maxWidth:500 }}>
+      <div style={{ background:"var(--bg-surface)", border:`2px solid ${passed?G:R}`, borderRadius:20, padding:32, textAlign:"center", marginBottom:16 }}>
+        <div style={{ fontSize:56, marginBottom:8 }}>{passed?"🏆":"📚"}</div>
+        <div style={{ fontSize:15, fontWeight:600, color:"var(--text-secondary)", marginBottom:4 }}>{passed?"¡Aprobaste!":"Casi — seguí practicando"}</div>
+        <div style={{ fontSize:52, fontWeight:800, color:passed?G:R, lineHeight:1 }}>{score}%</div>
+        <div style={{ fontSize:13, color:"var(--text-secondary)", marginTop:6 }}>Unidad {unit} · {prog?.shortName}</div>
+        {saving && <div style={{ fontSize:12, color:"var(--text-tertiary)", marginTop:8 }}>Guardando resultado…</div>}
+        {confirmed && <div style={{ fontSize:12, color:G, marginTop:8 }}>✓ Resultado guardado en tu historial</div>}
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:16 }}>
+        {[["Correctas",`${questions.filter((_,i)=>answers[i]===questions[i].ans).length}/${questions.length}`,passed?G:R],["Porcentaje",`${score}%`,passed?G:R],["Resultado",passed?"Aprobado":"Reprobado",passed?G:R],["Intentos usados",`${attempts}/${MAX_ATTEMPTS}`,A]].map(([l,v,c],i)=>(
+          <div key={i} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:10, padding:"12px 14px" }}>
+            <div style={{ fontSize:16, fontWeight:800, color:c }}>{v}</div>
+            <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:3 }}>{l}</div>
+          </div>
+        ))}
+      </div>
+      {passed && <div style={{ background:GD, border:`1px solid ${G}40`, borderRadius:10, padding:"12px 14px", fontSize:13, color:"#065f46", marginBottom:12 }}>✓ Tu coordinadora será notificada para coordinar el avance a la siguiente unidad.</div>}
+      {!passed && attempts < MAX_ATTEMPTS && <div style={{ background:RD, border:`1px solid ${R}40`, borderRadius:10, padding:"12px 14px", fontSize:13, color:R, marginBottom:12 }}>Necesitás ≥70% para aprobar. Podés reintentar {MAX_ATTEMPTS-attempts} vez más.</div>}
+      <button onClick={() => setPhase("intro")} style={{ width:"100%", padding:"13px", background:P, color:"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
+        {passed ? "Ver mi progreso" : attempts < MAX_ATTEMPTS ? "Intentar de nuevo" : "Volver al examen"}
+      </button>
+    </div>
+  );
+
+  return null;
+}
+
 export default function PortalEstudiante(){
   const navigate = useNavigate();
   const [user, setUser] = useState({ name:"", email:"", avatar:null });
@@ -645,38 +839,14 @@ export default function PortalEstudiante(){
 
           {/* ── EXAMEN ── */}
           {view==="examen"&&(
-            <div style={{padding:24}}>
-              <div style={{display:"flex",gap:8,marginBottom:16}}>
-                {enrolledProgs.map(p=><ProgramPill key={p.id} prog={p} active={activeProg===p.id} onClick={()=>setActiveProg(p.id)}/>)}
-              </div>
-              <div style={{background:"var(--bg-surface)",border:`1.5px solid ${prog?.color||P}40`,borderRadius:16,padding:24,marginBottom:14,boxShadow:"var(--shadow-sm)"}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
-                  <div>
-                    <div style={{fontSize:11,color:"var(--text-tertiary)",textTransform:"uppercase",letterSpacing:.5,marginBottom:4}}>Examen · {prog?.shortName}</div>
-                    <div style={{fontSize:20,fontWeight:800,color:"var(--text-primary)"}}>U{enrollment?.unit}: {enrollment?.unitTitle}</div>
-                  </div>
-                  <div style={{textAlign:"right"}}>
-                    <div style={{fontSize:28,fontWeight:800,color:G}}>{enrollment?.examScore}%</div>
-                    <div style={{fontSize:11,color:"var(--text-secondary)"}}>último intento</div>
-                  </div>
-                </div>
-                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:18}}>
-                  {[["Intentos usados","1/3",A],["Para aprobar","≥ 70%",G],["Temporizador","30 min",prog?.color||P]].map(([l,v,c],i)=>(
-                    <div key={i} style={{background:"var(--bg-surface-subtle)",borderRadius:9,padding:"10px 12px"}}>
-                      <div style={{fontSize:11,color:"var(--text-secondary)",marginBottom:3}}>{l}</div>
-                      <div style={{fontSize:16,fontWeight:700,color:c}}>{v}</div>
-                    </div>
-                  ))}
-                </div>
-                <div style={{background:GD,border:`1px solid ${G}40`,borderRadius:9,padding:"10px 14px",marginBottom:16,fontSize:12,color:"#065f46",display:"flex",gap:7}}>
-                  <i className="ti ti-check" style={{fontSize:13}} aria-hidden="true"/>
-                  ¡Aprobaste con {enrollment?.examScore}%! Podés intentar mejorar tu puntaje.
-                </div>
-                <button style={{width:"100%",padding:"13px",background:prog?.color||P,color:"#fff",border:"none",borderRadius:12,fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
-                  Hacer examen — Intento 2/3
-                </button>
-              </div>
-            </div>
+            <ExamModule
+              prog={prog}
+              enrollment={enrollment}
+              enrolledProgs={enrolledProgs}
+              activeProg={activeProg}
+              setActiveProg={setActiveProg}
+              supabase={supabase}
+            />
           )}
 
           {/* ── PROGRESO ── */}

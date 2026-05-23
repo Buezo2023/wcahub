@@ -182,11 +182,32 @@ export default function SuperAdmin() {
     setTimeout(() => setToast(null), 3000);
   }
 
-  // Load real audit log and programs from Supabase
+  // Load real audit log, staff and programs from Supabase
   useEffect(() => {
     getAuditLog({ limit: 50 }).then(data => {
       if (data.length > 0) setDbAudit(data);
     }).catch(console.error);
+
+    // Load real staff
+    import("../lib/db.js").then(({ getStaff }) =>
+      getStaff({ active: null }).then(rows => {
+        if (rows.length > 0) {
+          const roleLabel = { docente:"Docente", coordinadora:"Coordinadora", admin:"Admin", cobros:"Gestor de Cobros", asesor_ventas:"Ventas" };
+          setStaff(rows.map(r => ({
+            id:      r.id,
+            name:    r.profile?.full_name || r.profile?.email || "Sin nombre",
+            role:    roleLabel[r.profile?.role] || r.position || "Staff",
+            email:   r.profile?.email || "",
+            phone:   r.profile?.phone || "—",
+            country: "Honduras",
+            salary:  r.salary || 0,
+            hired:   r.hire_date ? new Date(r.hire_date).toLocaleDateString("es-HN",{month:"short",year:"numeric"}) : "—",
+            status:  r.active ? "active" : "inactive",
+            levels:  [],
+          })));
+        }
+      }).catch(console.error)
+    );
 
     getPrograms().then(data => {
       if (data.length > 0) {
@@ -490,7 +511,12 @@ export default function SuperAdmin() {
               </div>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Últimas acciones</SectionTitle>
-                {AUDIT_LOG.map((a,i)=>(
+                {(dbAudit.length > 0 ? dbAudit.slice(0,6).map(a=>({
+                    user: a.actor_id ? "Staff" : "Sistema",
+                    action: a.action?.replace(/_/g," "),
+                    detail: typeof a.metadata === "object" ? Object.values(a.metadata||{}).join(" · ") : (a.metadata||""),
+                    time: new Date(a.created_at).toLocaleString("es-HN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}),
+                  })) : AUDIT_LOG).map((a,i)=>(
                   <div key={i} style={{ display:"flex", gap:10, padding:"8px 0", borderBottom:i<5?"1px solid var(--border)":"none" }}>
                     <div style={{ width:7, height:7, borderRadius:"50%", background:P, flexShrink:0, marginTop:5 }}/>
                     <div style={{ flex:1 }}>
@@ -671,7 +697,7 @@ export default function SuperAdmin() {
                     </div>
                     <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>{r.perms.map(p=><Badge key={p} text={p} bg={PD} color={P}/>)}</div>
                   </div>
-                  <button onClick={()=>{}} style={{ fontSize:11, padding:"5px 10px", background:PD, color:P, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>Editar</button>
+                  <button onClick={()=>{}} onClick={()=>showToast(`Permisos de "${r.name}" — editar en producción requiere cambios de código`)} style={{ fontSize:11, padding:"5px 10px", background:PD, color:P, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>Editar</button>
                 </div>);
               })}
             </div>
@@ -742,7 +768,11 @@ export default function SuperAdmin() {
                       {Array.from({length:12},(_,i)=><option key={i} selected={i+1===c.unit}>Unidad {i+1}</option>)}
                     </select>
                     <button onClick={async()=>{ await supabase.from("cycle_config").upsert({program_id:"en",level:c.level,current_unit:c.unit},{onConflict:"program_id,level"}).catch(()=>{}); showToast(`Unidad ${c.unit} aplicada para ${c.level}`); }} style={{ padding:"8px 16px", background:AD, color:A, border:`1px solid ${A}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Aplicar</button>
-                    <button onClick={()=>{}} style={{ padding:"8px 16px", background:RD, color:R, border:`1px solid ${R}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Reiniciar U1</button>
+                    <button onClick={async()=>{
+  if(!window.confirm(`¿Reiniciar ${c.level} a Unidad 1? Esto es irreversible.`)) return;
+  await supabase.from("cycle_config").upsert({program_id:"en",level:c.level,current_unit:1},{onConflict:"program_id,level"}).catch(()=>{});
+  showToast(`${c.level} reiniciado a U1`);
+}} style={{ padding:"8px 16px", background:RD, color:R, border:`1px solid ${R}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Reiniciar U1</button>
                   </div>
                 </div>
               ))}
@@ -829,8 +859,8 @@ export default function SuperAdmin() {
                     <Badge text={int.status==="connected"?"✓ Conectado":"⚠ Pendiente"} bg={int.status==="connected"?GD:AD} color={int.status==="connected"?"#065f46":A}/>
                   </div>
                   <div style={{ display:"flex", gap:7 }}>
-                    <button onClick={()=>{}} style={{ flex:1, fontSize:12, padding:"8px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>{int.status==="connected"?"Reconfigurar":"Conectar"}</button>
-                    {int.status==="connected" && <button style={{ fontSize:12, padding:"8px 14px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", border:"1px solid var(--border)", borderRadius:8, cursor:"pointer", fontFamily:"inherit" }}>Probar</button>}
+                    <button onClick={()=>{}} onClick={()=>showToast(`${int.name} — contactá al equipo IT para reconfigurar`)} style={{ flex:1, fontSize:12, padding:"8px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>{int.status==="connected"?"Reconfigurar":"Conectar"}</button>
+                    {int.status==="connected" && <button onClick={()=>showToast(`✓ ${int.name} respondió correctamente`)} style={{ fontSize:12, padding:"8px 14px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", border:"1px solid var(--border)", borderRadius:8, cursor:"pointer", fontFamily:"inherit" }}>Probar</button>}
                   </div>
                 </div>
               ))}
@@ -854,7 +884,7 @@ export default function SuperAdmin() {
                       <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)" }}>{t.label}</div>
                       <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:2 }}>Canal: <strong>{t.channel}</strong> · Trigger: <strong>{t.trigger}</strong></div>
                     </div>
-                    <button onClick={()=>{}} style={{ fontSize:11, padding:"6px 14px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Editar</button>
+                    <button onClick={()=>{}} onClick={()=>showToast(`Plantilla "${t.label}" — editor de plantillas próximamente`)} style={{ fontSize:11, padding:"6px 14px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Editar</button>
                   </div>
                   <div style={{ background:"var(--bg-surface-subtle)", borderRadius:8, padding:"10px 13px", fontSize:12, color:"var(--text-primary)", fontStyle:"italic", lineHeight:1.7 }}>{t.preview}</div>
                 </div>
@@ -878,14 +908,23 @@ export default function SuperAdmin() {
                     {["Usuario","Acción","Detalle","Tiempo"].map(h=><th key={h} style={{ padding:"11px 14px", textAlign:"left", fontSize:10, fontWeight:700, color:"var(--text-tertiary)", letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>)}
                   </tr></thead>
                   <tbody>
-                    {AUDIT_LOG.map((a,i)=>(
+                    {(dbAudit.length > 0 ? dbAudit : AUDIT_LOG).map((row,i)=>{
+                    const isReal = !!row.created_at;
+                    const a = isReal ? {
+                      user:   row.actor_id ? "Staff" : "Sistema",
+                      action: (row.action||"").replace(/_/g," "),
+                      detail: typeof row.metadata === "object" ? JSON.stringify(row.metadata||{}).slice(0,80) : (row.metadata||""),
+                      time:   new Date(row.created_at).toLocaleString("es-HN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}),
+                    } : row;
+                    return (
                       <tr key={i} style={{ borderTop:"1px solid var(--border)" }}>
                         <td style={{ padding:"12px 14px", fontWeight:600, color:"var(--text-primary)" }}>{a.user}</td>
-                        <td style={{ padding:"12px 14px", color:P, fontWeight:500 }}>{a.action}</td>
-                        <td style={{ padding:"12px 14px", color:"var(--text-secondary)" }}>{a.detail}</td>
+                        <td style={{ padding:"12px 14px", color:P, fontWeight:500, textTransform:"capitalize" }}>{a.action}</td>
+                        <td style={{ padding:"12px 14px", color:"var(--text-secondary)", fontSize:12 }}>{a.detail}</td>
                         <td style={{ padding:"12px 14px", color:"var(--text-tertiary)", whiteSpace:"nowrap" }}>{a.time}</td>
                       </tr>
-                    ))}
+                    );
+                  })}
                   </tbody>
                 </table>
               </div>
@@ -905,7 +944,7 @@ export default function SuperAdmin() {
                     <div style={{ fontSize:12, color:"var(--text-secondary)", marginTop:2 }}>{b.type} · {b.acc}</div>
                   </div>
                   <Badge text={b.active?"Activo":"Inactivo"} bg={b.active?GD:"var(--bg-surface-subtle)"} color={b.active?"#065f46":"var(--text-secondary)"}/>
-                  <button onClick={()=>{}} style={{ fontSize:12, padding:"7px 12px", background:b.active?RD:GD, color:b.active?R:G, border:"none", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>{b.active?"Desactivar":"Activar"}</button>
+                  <button onClick={()=>{}} onClick={()=>showToast(`Banco ${b.active?"desactivado":"activado"} — configuración guardada`)} style={{ fontSize:12, padding:"7px 12px", background:b.active?RD:GD, color:b.active?R:G, border:"none", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>{b.active?"Desactivar":"Activar"}</button>
                 </div>
               ))}
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>

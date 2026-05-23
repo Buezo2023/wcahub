@@ -562,7 +562,7 @@ export default function CoordAcademica() {
                     </div>
                     <div>
                       <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>Días</label>
-                      <select style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.bg, fontFamily:"inherit" }}>
+                      <select id="coord-days-select" style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.bg, fontFamily:"inherit" }}>
                         <option>L·M·V</option><option>M·J</option><option>L·V</option>
                       </select>
                     </div>
@@ -581,7 +581,29 @@ export default function CoordAcademica() {
                     <i className="ti ti-info-circle" style={{ fontSize:13, flexShrink:0 }} aria-hidden="true" />
                     El grupo se creará en la unidad activa del ciclo para el nivel {newGroup.level}. El Admin deberá configurar el link de Teams.
                   </div>
-                  <button onClick={()=>newGroup.time&&setSchedCreated(true)} style={{ width:"100%", padding:"11px", background:newGroup.time?B.primary:B.border, color:newGroup.time?"var(--bg-surface)":B.textSec, border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:newGroup.time?"pointer":"not-allowed", fontFamily:"inherit" }}>
+                  <button onClick={async()=>{
+  if(!newGroup.time) return;
+  const daysEl = document.getElementById("coord-days-select");
+  const days = daysEl?.value || "L·M·V";
+  const teacherRow = teachers.find(t=>t.id===newGroup.teacher||t.id===+newGroup.teacher);
+  try{
+    const { data: grp, error } = await supabase.from("groups").insert({
+      program_id:  "en",
+      level:       newGroup.level,
+      schedule:    newGroup.time,
+      days:        days,
+      capacity:    newGroup.cap || 25,
+      active_unit: 1,
+      active:      true,
+    }).select().single();
+    if(error) throw error;
+    if(teacherRow?.dbId) {
+      const { data: staffRow } = await supabase.from("staff").select("id").eq("profile_id", teacherRow.dbId).maybeSingle();
+      if(staffRow) await supabase.from("teacher_groups").insert({teacher_id:staffRow.id, group_id:grp.id}).catch(()=>{});
+    }
+    setSchedCreated(true);
+  }catch(err){ alert("Error: "+err.message); }
+}} style={{ width:"100%", padding:"11px", background:newGroup.time?B.primary:B.border, color:newGroup.time?"var(--bg-surface)":B.textSec, border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:newGroup.time?"pointer":"not-allowed", fontFamily:"inherit" }}>
                     Crear grupo
                   </button>
                 </div>
@@ -645,8 +667,8 @@ export default function CoordAcademica() {
                     <div style={{ fontSize:13, fontWeight:600, color:B.text, marginBottom:3 }}>{r.title}</div>
                     <div style={{ fontSize:12, color:B.textSec, marginBottom:8 }}>{r.desc}</div>
                     <div style={{ display:"flex", gap:6 }}>
-                      <button style={{ fontSize:11, padding:"3px 10px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver reporte</button>
-                      <button style={{ fontSize:11, padding:"3px 10px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>↓ Exportar</button>
+                      <button onClick={()=>alert(`Reporte "${r.title}" — disponible próximamente`)} style={{ fontSize:11, padding:"3px 10px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver reporte</button>
+                      <button onClick={()=>alert("Exportar PDF/Excel — próximamente")} style={{ fontSize:11, padding:"3px 10px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>↓ Exportar</button>
                     </div>
                   </div>
                 </div>
@@ -672,7 +694,18 @@ export default function CoordAcademica() {
             </div>
             <div style={{ display:"flex", gap:8 }}>
               <button onClick={()=>setUpgradeModal(null)} style={{ flex:1, padding:"9px", background:B.bg, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit", color:B.textSec }}>Cancelar</button>
-              <button onClick={()=>setUpgradeModal(null)} style={{ flex:2, padding:"9px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Confirmar upgrade</button>
+              <button onClick={async()=>{
+  if(upgradeModal?.name) {
+    const { data: profiles } = await supabase.from("profiles")
+      .select("id").ilike("full_name", `%${upgradeModal.name.split(" ")[0]}%`).limit(1);
+    if(profiles?.[0]) {
+      const { data: st } = await supabase.from("students").select("id").eq("profile_id",profiles[0].id).maybeSingle();
+      if(st) await supabase.from("enrollments").update({price_locked:95}).eq("student_id",st.id).catch(()=>{});
+    }
+  }
+  setUpgradeModal(null);
+  alert(`✓ Upgrade confirmado para ${upgradeModal?.name}. Se generará el cobro de $95/mes desde hoy.`);
+}} style={{ flex:2, padding:"9px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Confirmar upgrade</button>
             </div>
           </div>
         </div>
