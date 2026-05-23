@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect} from "react";
 import { useNavigate } from 'react-router-dom';
+import { toast } from "../lib/toast.jsx";
 import { supabase } from "../lib/supabase.js";
 
 const B = {
@@ -87,6 +88,11 @@ export default function CoordAcademica() {
   const [schedCreated, setSchedCreated] = useState(false);
   const [realDbGroups, setRealDbGroups] = useState([]);
   const [dataLoading,  setDataLoading]  = useState(false);
+  const [coordToast,   setCoordToast]   = useState(null);
+  function showToast(msg, color="#059669") {
+    setCoordToast({ msg, color });
+    setTimeout(() => setCoordToast(null), 3500);
+  }
   const [dataError,    setDataError]    = useState(null);
   const [filterLevel, setFilterLevel] = useState("all");
   const [filterType, setFilterType]   = useState("all");
@@ -646,7 +652,7 @@ export default function CoordAcademica() {
       if(staffRow) await supabase.from("teacher_groups").insert({teacher_id:staffRow.id, group_id:grp.id}).catch(()=>{});
     }
     setSchedCreated(true);
-  }catch(err){ alert("Error: "+err.message); }
+  }catch(err){ toast.error("Error: "+err.message); }
 }} style={{ width:"100%", padding:"11px", background:newGroup.time?B.primary:B.border, color:newGroup.time?"var(--bg-surface)":B.textSec, border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:newGroup.time?"pointer":"not-allowed", fontFamily:"inherit" }}>
                     Crear grupo
                   </button>
@@ -762,7 +768,7 @@ export default function CoordAcademica() {
     }
   }
   setUpgradeModal(null);
-  alert(`✓ Upgrade confirmado para ${upgradeModal?.name}. Se generará el cobro de $95/mes desde hoy.`);
+  toast.success(`✓ Upgrade confirmado para ${upgradeModal?.name}. Cobro de $95/mes desde hoy.`);
 }} style={{ flex:2, padding:"9px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Confirmar upgrade</button>
             </div>
           </div>
@@ -855,7 +861,7 @@ export default function CoordAcademica() {
                   <button onClick={()=>setTeacherModal(null)} style={{ padding:"10px 16px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit", color:"var(--text-secondary)" }}>Cancelar</button>
                   {teacherModal.mode==="edit"&&<button onClick={()=>setDeleteTeacher(teacherModal.data)} style={{ padding:"10px 16px", background:B.redDim, color:B.red, border:"none", borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Eliminar</button>}
                   <button onClick={async()=>{
-                    if(!teacherForm.name||!teacherForm.email){alert("Nombre y email requeridos");return;}
+                    if(!teacherForm.name||!teacherForm.email){ toast.error("Nombre y email son requeridos"); return; }
                     if(teacherModal.mode==="add"){
                       // Invite via Supabase - creates user profile as docente
                       try{

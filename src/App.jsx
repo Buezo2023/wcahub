@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { useGlobalSearch, GlobalSearchModal } from './lib/globalSearch.jsx';
+import { ToastContainer } from './lib/toast.jsx';
 import { Suspense, lazy, useState } from 'react';
 import { ThemeProvider, ThemeToggle, useTheme } from './ThemeContext.jsx';
 
@@ -283,6 +284,7 @@ function AppInner() {
   const search = useGlobalSearch();
   return (
     <>
+      <ToastContainer />
       <GlobalSearchModal search={search} />
       <Suspense fallback={<PageLoader />}>
         <Routes>

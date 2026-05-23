@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
 import { api } from "../lib/api.js";
+import { toast } from "../lib/toast.jsx";
+import { useConfirm } from "../lib/ConfirmModal.jsx";
 import { getAuditLog, getPrograms } from "../lib/db.js";
 
 const P = "#155266", PH = "#0f3d4d", PD = "#e8f3f6";
@@ -135,6 +137,7 @@ function Modal({ title, subtitle, onClose, children }) {
 export default function SuperAdmin() {
   const navigate = useNavigate();
   const [toast,      setToast]      = useState(null);
+  const [confirmDialog, ConfirmUI] = useConfirm();
   const [saving,     setSaving]     = useState(false);
   const [dbAudit,    setDbAudit]    = useState([]);
   const [realStats,  setRealStats]  = useState(null);   // from /api/admin/stats
@@ -391,6 +394,7 @@ export default function SuperAdmin() {
   }
 
   return (
+    <>
     <div style={{ display:"flex", minHeight:"100vh", background:"var(--bg-page)", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
 
       {/* SIDEBAR */}
@@ -452,14 +456,14 @@ export default function SuperAdmin() {
 
           {/* ── OVERVIEW ── */}
           {view==="overview" && <>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
-              <Stat label="MRR actual"           value={statsLoading ? "…" : totalMRR > 0 ? `$${totalMRR.toLocaleString()}` : "$0"} sub={totalMRR > 0 ? `+${mrrGrowth}% vs mes anterior` : "Sin pagos aún"} color={P}  icon="ti-trending-up"   up={parseFloat(mrrGrowth)>0}/>
-              <Stat label="Estudiantes activos"  value={statsLoading ? "…" : totalStudents} sub={activeEnrolls > 0 ? `${activeEnrolls} matrículas activas` : "Sin matrículas aún"} color={G}  icon="ti-users"         />
-              <Stat label="Personal activo"      value={statsLoading ? "…" : staffCount} sub={`${staff.filter(s=>s.role==="Docente"&&s.status==="active").length} docentes`} color={A} icon="ti-users-group"/>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginBottom:20 }}>
+              <Stat label="MRR actual"           value={statsLoading ? "—" : totalMRR > 0 ? `$${totalMRR.toLocaleString()}` : "$0"} sub={totalMRR > 0 ? `+${mrrGrowth}% vs mes anterior` : "Sin pagos aún"} color={P}  icon="ti-trending-up"   up={parseFloat(mrrGrowth)>0}/>
+              <Stat label="Estudiantes activos"  value={statsLoading ? "—" : totalStudents} sub={activeEnrolls > 0 ? `${activeEnrolls} matrículas activas` : "Sin matrículas aún"} color={G}  icon="ti-users"         />
+              <Stat label="Personal activo"      value={statsLoading ? "—" : staffCount} sub={`${staff.filter(s=>s.role==="Docente"&&s.status==="active").length} docentes`} color={A} icon="ti-users-group"/>
               <Stat label="Programas activos"    value={programs.filter(p=>p.active).length} sub={`${programs.filter(p=>!p.active).length} inactivos`} color="var(--text-secondary)" icon="ti-books"/>
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:20 }}>
-              <Stat label="ARR proyectado"       value={statsLoading ? "…" : annualRun > 0 ? `$${Math.round(annualRun).toLocaleString()}` : "$0"} sub="Proyectado anual"  color={G}  icon="ti-calendar"   up={annualRun>0}/>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginBottom:20 }}>
+              <Stat label="ARR proyectado"       value={statsLoading ? "—" : annualRun > 0 ? `$${Math.round(annualRun).toLocaleString()}` : "$0"} sub="Proyectado anual"  color={G}  icon="ti-calendar"   up={annualRun>0}/>
               <Stat label="Churn rate"           value={churnRate}        sub="Datos insuficientes" color="var(--text-secondary)" icon="ti-door-exit"  />
               <Stat label="ARPU"                 value={arpu > 0 ? `$${arpu}` : "—"} sub="Por alumno/mes"    color={P}  icon="ti-coin"       />
               <Stat label="Nómina mensual"       value={nomina > 0 ? `$${nomina.toLocaleString()}` : "—"} sub="USD total staff" color="var(--text-secondary)" icon="ti-receipt"/>
@@ -496,7 +500,7 @@ export default function SuperAdmin() {
               </div>
             </div>
 
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:14 }}>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Ingresos por programa</SectionTitle>
                 {programs.filter(p=>p.active).map(p=>{
@@ -539,13 +543,13 @@ export default function SuperAdmin() {
               <i className="ti ti-shield-check" style={{ fontSize:14, flexShrink:0 }} aria-hidden="true"/>
               Módulo exclusivo para Super Admin — acceso restringido.
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:16 }}>
-              <Stat label="MRR actual"    value={statsLoading ? "…" : totalMRR > 0 ? `$${totalMRR.toLocaleString()}` : "$0"} sub={totalMRR > 0 ? `+${mrrGrowth}% vs mes ant.` : "Sin pagos aún"} color={P} icon="ti-trending-up" up={parseFloat(mrrGrowth)>0}/>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginBottom:16 }}>
+              <Stat label="MRR actual"    value={statsLoading ? "—" : totalMRR > 0 ? `$${totalMRR.toLocaleString()}` : "$0"} sub={totalMRR > 0 ? `+${mrrGrowth}% vs mes ant.` : "Sin pagos aún"} color={P} icon="ti-trending-up" up={parseFloat(mrrGrowth)>0}/>
               <Stat label="ARR"           value={annualRun > 0 ? `$${Math.round(annualRun/1000)}k` : "—"}  sub="Proyectado"        color={G} icon="ti-calendar" up={annualRun>0}/>
               <Stat label="ARPU"          value={arpu > 0 ? `$${arpu}` : "—"} sub="Por alumno/mes" color={A} icon="ti-coin"/>
               <Stat label="LTV estimado"  value={ltv > 0 ? `$${ltv.toLocaleString()}` : "—"}  sub="Estimado" color="var(--text-secondary)" icon="ti-chart-pie"/>
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:14, marginBottom:14 }}>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:20, boxShadow:"var(--shadow-sm)" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>Evolución MRR anual</div>
@@ -632,7 +636,7 @@ export default function SuperAdmin() {
 
           {/* ── HR ── */}
           {view==="hr" && <>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:12, marginBottom:16 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginBottom:16 }}>
               <Stat label="Personal total"   value={staff.length}                                   sub={`${staff.filter(s=>s.status==="active").length} activos`} color={P}  icon="ti-users-group"/>
               <Stat label="Docentes"         value={staff.filter(s=>s.role==="Docente").length}     sub="Activos"            color={A} icon="ti-school"/>
               <Stat label="Personal admin"   value={staff.filter(s=>s.role!=="Docente").length}     sub="Roles internos"     color={G} icon="ti-briefcase"/>
@@ -780,7 +784,8 @@ export default function SuperAdmin() {
                     </select>
                     <button onClick={async()=>{ await supabase.from("cycle_config").upsert({program_id:"en",level:c.level,current_unit:c.unit},{onConflict:"program_id,level"}).catch(()=>{}); showToast(`Unidad ${c.unit} aplicada para ${c.level}`); }} style={{ padding:"8px 16px", background:AD, color:A, border:`1px solid ${A}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Aplicar</button>
                     <button onClick={async()=>{
-  if(!window.confirm(`¿Reiniciar ${c.level} a Unidad 1? Esto es irreversible.`)) return;
+  const ok = await confirmDialog({ title:`¿Reiniciar nivel ${c.level}?`, body:"Esto restablece la unidad activa a U1 para todos los estudiantes de este nivel. Es irreversible.", danger:true, confirmText:"Sí, reiniciar" });
+  if(!ok) return;
   await supabase.from("cycle_config").upsert({program_id:"en",level:c.level,current_unit:1},{onConflict:"program_id,level"}).catch(()=>{});
   showToast(`${c.level} reiniciado a U1`);
 }} style={{ padding:"8px 16px", background:RD, color:R, border:`1px solid ${R}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Reiniciar U1</button>
@@ -822,7 +827,7 @@ export default function SuperAdmin() {
 
           {/* ── GAMIFICATION ── */}
           {view==="gamification" && (
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:14 }}>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Puntos XP por acción</SectionTitle>
                 {XP_ACTIONS.map(a=>(
@@ -1033,7 +1038,7 @@ export default function SuperAdmin() {
             </div>
           ) : (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:10 }}>
                 <div style={{ gridColumn:"1/-1" }}><Field label="Nombre completo"><Input value={staffForm.name||""} onChange={v=>setStaffForm(f=>({...f,name:v}))} placeholder="Ana Torres"/></Field></div>
                 <Field label="Rol"><select value={staffForm.role||"Docente"} onChange={e=>setStaffForm(f=>({...f,role:e.target.value}))} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}>
                   {["Docente","Coordinadora","Admin","Gestor de Cobros","Ventas","Marketing","IT","Soporte","Contabilidad"].map(r=><option key={r}>{r}</option>)}
@@ -1073,7 +1078,7 @@ export default function SuperAdmin() {
 
       {progModal && (
         <Modal title={progModal.mode==="add"?"Nuevo programa":"Editar programa"} onClose={()=>setProgModal(null)}>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:10 }}>
             <div style={{ gridColumn:"1/-1" }}><Field label="Nombre"><Input value={progForm.name||""} onChange={v=>setProgForm(f=>({...f,name:v}))} placeholder="Inglés para Niños"/></Field></div>
             <Field label="Código"><Input value={progForm.code||""} onChange={v=>setProgForm(f=>({...f,code:v}))} placeholder="KIDS"/></Field>
             <Field label="Ícono"><Input value={progForm.icon||""} onChange={v=>setProgForm(f=>({...f,icon:v}))} placeholder="🧒"/></Field>
@@ -1103,5 +1108,7 @@ export default function SuperAdmin() {
         </Modal>
       )}
     </div>
+    {ConfirmUI}
+  </>
   );
 }

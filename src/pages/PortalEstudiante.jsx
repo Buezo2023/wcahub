@@ -4,6 +4,7 @@ import { supabase } from "../lib/supabase.js";
 import { useSession } from "../lib/useSession.js";
 import { notifySelf, Notifs } from "../lib/notify.js";
 import { api } from "../lib/api.js";
+import { toast } from "../lib/toast.jsx";
 import { generateCertificate } from "../lib/certificate.js";
 import { useNotifications } from "../lib/useNotifications.js";
 import { LEVELS, UNITS, SKILLS_BY_LEVEL } from "../data/englishContent.js";
@@ -888,7 +889,7 @@ export default function PortalEstudiante(){
                 <button onClick={()=>{
                   const link = enrollment?.teamsLink;
                   if(link && link !== "#" && link.startsWith("http")) window.open(link, "_blank");
-                  else alert("El link de Teams aún no está configurado. Consultá con tu coordinadora.");
+                  else toast.info("Link de Teams no configurado aún — consultá con tu coordinadora");
                 }} style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 22px",background:Y,color:PH,borderRadius:10,border:"none",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
                   <i className="ti ti-video" style={{fontSize:15}} aria-hidden="true"/>
                   {enrollment?.teamsLink && enrollment.teamsLink !== "#" ? "Unirme en Microsoft Teams" : "Link de clase no configurado aún"}
@@ -1022,8 +1023,8 @@ export default function PortalEstudiante(){
                         });
                         const data = await res.json();
                         if(data.data?.url) window.open(data.data.url, "_blank");
-                        else alert("Error al crear sesión de pago: " + (data.error||"Stripe no configurado"));
-                      }catch(e){alert("Error: "+e.message);}
+                        else toast.error("Error al iniciar pago: " + (data.error||"Stripe no configurado"));
+                      }catch(e){ toast.error("Error: "+e.message); }
                     }} style={{width:"100%",padding:"9px",background:P,color:"#fff",border:"none",borderRadius:9,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginTop:10}}>
                       💳 Pagar con Stripe
                     </button>
@@ -1161,7 +1162,7 @@ export default function PortalEstudiante(){
                       setUser(u=>({...u,name:profileForm.preferred_name||profileForm.full_name?.split(" ")[0]||u.name}));
                       setProfileSaved(true);
                       setTimeout(()=>setProfileSaved(false),4000);
-                    }catch(e){alert("Error: "+e.message);}
+                    }catch(e){ toast.error("Error: "+e.message); }
                     finally{setProfileSaving(false);}
                   }}
                   style={{width:"100%",padding:"11px",background:profileSaving?"var(--bg-surface-subtle)":P,color:profileSaving?"var(--text-secondary)":"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:profileSaving?"not-allowed":"pointer",fontFamily:"inherit"}}>

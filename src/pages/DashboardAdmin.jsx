@@ -2,6 +2,8 @@ import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getStudents, getGroups, getPayments, updateGroupTeamsLink, getPrograms } from "../lib/db.js";
 import { supabase } from "../lib/supabase.js";
+import { toast } from "../lib/toast.jsx";
+import { useConfirm } from "../lib/ConfirmModal.jsx";
 import { api } from "../lib/api.js";
 
 // ─── BRAND ───────────────────────────────────────────────────────────────────
@@ -151,13 +153,18 @@ function EnrollForm({ groups, onSubmit, onCancel }) {
 
   return (
     <div>
-      {[["Nombre completo","name","text","María Rodríguez"],["Email","email","email","m.rodriguez@correo.com"],["Teléfono","phone","tel","+504 XXXX-XXXX"]].map(([l,k,t,ph])=>(
+      {[["Nombre completo","name","text","María Rodríguez"],["Email","email","email","m.rodriguez@correo.com"],["Teléfono","phone","tel","+504 XXXX-XXXX"]].map(([l,k,t,ph])=>{
+        const required = k==="name"||k==="email";
+        const invalid  = required && saving && !form[k];
+        return (
         <div key={k} style={{ marginBottom:10 }}>
-          <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>{l}</label>
+          <label style={{ fontSize:12, color:invalid?"#dc2626":"var(--text-secondary)", display:"block", marginBottom:3 }}>{l}{required&&<span style={{color:"#dc2626"}}> *</span>}</label>
           <input type={t} value={form[k]} onChange={e=>set(k,e.target.value)} placeholder={ph}
-            style={{ width:"100%", padding:"8px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, color:"var(--text-primary)", background:"var(--bg-surface-subtle)", fontFamily:"inherit" }}/>
+            style={{ width:"100%", padding:"8px 12px", border:`1px solid ${invalid?"#dc2626":"var(--border)"}`, borderRadius:8, fontSize:13, color:"var(--text-primary)", background:invalid?"#fef2f2":"var(--bg-surface-subtle)", fontFamily:"inherit", outline:"none" }}/>
+          {invalid && <div style={{ fontSize:11, color:"#dc2626", marginTop:3 }}>Campo requerido</div>}
         </div>
-      ))}
+        );
+      })}
       <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
         <div>
           <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>Programa</label>
@@ -250,7 +257,7 @@ function B2BSection({ supabase, B, Badge, Stat }) {
       discount_pct:  Number(form.discount_pct) || 0,
       active:        true,
     }).select().single();
-    if (error) { alert("Error: " + error.message); return; }
+    if (error) { toast.error("Error: " + error.message); return; }
     setCompanies(cs => [data, ...cs]);
     setNewCoForm(null);
   }

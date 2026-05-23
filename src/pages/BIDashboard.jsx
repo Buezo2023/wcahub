@@ -272,7 +272,7 @@ export default function BIDashboard() {
           {view === "overview" && (
             <div>
               {/* KPI row */}
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:10, marginBottom:14 }}>
                 {[
                   { label:"MRR",          value:currentMRR, prefix:"$", suffix:"", color:B.primary, icon:"ti-trending-up", trend:`${mrrGrowth}%`, up:parseFloat(mrrGrowth)>0, sparkData:mrrHistory.length>=2?mrrHistory.map(m=>m.mrr):[] },
                   { label:"Estudiantes",  value:totalStudents, prefix:"", suffix:"", color:B.green, icon:"ti-users", trend:realStats?.newStudentsMonth ? `+${realStats.newStudentsMonth} este mes` : "+13 este mes", up:true, sparkData:[] },
@@ -415,7 +415,7 @@ export default function BIDashboard() {
           {/* ── REVENUE ── */}
           {view === "revenue" && (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:10, marginBottom:14 }}>
                 {[
                   { label:"MRR actual",    value:"$18,420", sub:`↑ ${mrrGrowth}% vs nov`, color:B.primary },
                   { label:"ARR proyectado",value:"$221k",   sub:"A ritmo actual",           color:B.green },
@@ -478,7 +478,7 @@ export default function BIDashboard() {
               </div>
 
               {/* Revenue breakdown */}
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:12 }}>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Ingresos por programa</div>
                   {[
@@ -662,7 +662,7 @@ export default function BIDashboard() {
           {/* ── ACADEMIC ── */}
           {view === "academic" && (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:10, marginBottom:14 }}>
                 {[
                   { label:"Asistencia promedio", value:"85%", sub:"Todos los grupos", color:B.green },
                   { label:"Tasa de aprobación", value:"78%", sub:"Exámenes de unidad", color:B.primary },
