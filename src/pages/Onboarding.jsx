@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
+import { api } from "../lib/api.js";
 
 const B = {
   primary:"#155266", dark:"#0f3d4d", primaryDim:"#e8f3f6",
@@ -532,6 +533,9 @@ export default function OnboardingWizard() {
           .from("profiles")
           .update({ onboarding_done: true })
           .eq("id", session.user.id);
+
+        // Send welcome email
+        api.emails.welcome().catch(e => console.error("Welcome email:", e));
       }
     } catch (e) {
       console.error("Error saving onboarding:", e);
