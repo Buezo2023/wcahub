@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
 import { useSession } from "../lib/useSession.js";
 import { notifySelf, Notifs } from "../lib/notify.js";
+import { api } from "../lib/api.js";
 import { generateCertificate } from "../lib/certificate.js";
 import { useNotifications } from "../lib/useNotifications.js";
 import { LEVELS, UNITS, SKILLS_BY_LEVEL } from "../data/englishContent.js";
@@ -1010,6 +1011,20 @@ export default function PortalEstudiante(){
                       </div>
                       <div style={{fontSize:10,padding:"3px 10px",background:GD,color:G,borderRadius:20,fontWeight:600}}>Activa</div>
                     </div>
+                    <button onClick={async()=>{
+                      try{
+                        const res = await fetch("/api/stripe/checkout", {
+                          method:"POST",
+                          headers:{"Content-Type":"application/json", Authorization:`Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`},
+                          body:JSON.stringify({programId:p.id, studentEmail:user.email, studentName:user.name}),
+                        });
+                        const data = await res.json();
+                        if(data.data?.url) window.open(data.data.url, "_blank");
+                        else alert("Error al crear sesión de pago: " + (data.error||"Stripe no configurado"));
+                      }catch(e){alert("Error: "+e.message);}
+                    }} style={{width:"100%",padding:"9px",background:P,color:"#fff",border:"none",borderRadius:9,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginTop:10}}>
+                      💳 Pagar con Stripe
+                    </button>
                   </div>
                 );
               })}

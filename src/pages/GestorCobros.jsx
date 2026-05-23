@@ -407,10 +407,28 @@ export default function GestorCobros() {
                     </div>
                   </div>
                   <div style={{ display:"flex", gap:7 }}>
-                    <button onClick={()=>{
-                      const phone = (o.contact||"").replace(/[^\d]/g,"");
-                      const msg = encodeURIComponent(`Hola ${o.student}, te contactamos de WCA Academy. Tu pago de $${o.amount} lleva ${o.days} días vencido. ¿Podemos ayudarte a regularizarlo? 🙏`);
-                      window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
+                    <button onClick={async()=>{
+                      const phone = (o.contact||"").replace(/[\s\-()]/g,"");
+                      // Try API first (Twilio), fallback to wa.me
+                      try {
+                        const { data: { session } } = await supabase.auth.getSession();
+                        const res = await fetch("/api/whatsapp/send", {
+                          method: "POST",
+                          headers: { "Content-Type":"application/json", Authorization:`Bearer ${session?.access_token}` },
+                          body: JSON.stringify({
+                            to: phone,
+                            templateId: "paymentOverdue",
+                            templateData: [o.student, o.amount, o.days],
+                          }),
+                        });
+                        const data = await res.json();
+                        if (data.data?.skipped || !res.ok) throw new Error("API not available");
+                        showToast("✓ WhatsApp enviado via Twilio");
+                      } catch {
+                        // Fallback to wa.me direct link
+                        const msg = encodeURIComponent(`Hola ${o.student}, tu pago de $${o.amount} lleva ${o.days} días vencido en WCA Academy. ¿Podemos ayudarte a regularizarlo? 🙏`);
+                        window.open(`https://wa.me/${phone.replace(/^\+/,"")}?text=${msg}`, "_blank");
+                      }
                     }} style={{ flex:1, fontSize:12, padding:"8px", background:"#ecfdf5", color:"#059669", border:"1px solid #059669", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>
                       <i className="ti ti-brand-whatsapp" style={{ fontSize:13, verticalAlign:-1, marginRight:4 }} aria-hidden="true" />
                       Contactar por WhatsApp

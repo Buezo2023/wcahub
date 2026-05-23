@@ -2,7 +2,7 @@
   "name": "wcahub",
   "version": "1.0.0",
   "private": true,
-  "description": "World Connect Academy — Platform Hub",
+  "description": "World Connect Academy \u2014 Platform Hub",
   "dependencies": {
     "@supabase/supabase-js": "^2.106.1",
     "react": "^18.3.1",
@@ -17,6 +17,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cap:build": "npm run build && npx cap copy",
+    "cap:android": "npm run cap:build && npx cap open android",
+    "cap:ios": "npm run cap:build && npx cap open ios",
+    "cap:sync": "npx cap sync"
   }
 }

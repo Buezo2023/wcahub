@@ -219,6 +219,196 @@ function EnrollForm({ groups, onSubmit, onCancel }) {
   );
 }
 
+
+// ─── B2B Section — full CRUD ─────────────────────────────────────
+function B2BSection({ supabase, B, Badge, Stat }) {
+  const [companies,  setCompanies]  = React.useState([]);
+  const [loading,    setLoading]    = React.useState(true);
+  const [selCompany, setSelCompany] = React.useState(null); // selected for employees view
+  const [employees,  setEmployees]  = React.useState([]);
+  const [newCoForm,  setNewCoForm]  = React.useState(null); // {name, contact_name, contact_email, contact_phone, seats_paid, discount_pct}
+
+  React.useEffect(() => {
+    supabase.from("b2b_companies")
+      .select("*")
+      .eq("active", true)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => { if (data) setCompanies(data); })
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function loadEmployees(company) {
+    setSelCompany(company);
+    const { data } = await supabase
+      .from("students")
+      .select("id, level, profiles(full_name, email)")
+      .eq("b2b_company", company.id)
+      .limit(50);
+    setEmployees(data || []);
+  }
+
+  async function exportInvoice(co) {
+    const month = new Date().toLocaleDateString("es-HN", { month: "long", year: "numeric" });
+    const rows  = [
+      ["Empresa", "Contacto", "Email", "Cupos pagados", "Descuento %", "Monto mes"],
+      [co.name, co.contact_name, co.contact_email, co.seats_paid, co.discount_pct || 0,
+       `$${Math.round(co.seats_paid * 95 * (1 - (co.discount_pct || 0) / 100))}`],
+    ];
+    const csv   = rows.map(r => r.map(v => `"${v}"`).join(",")).join("\n");
+    const a     = document.createElement("a");
+    a.href      = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+    a.download  = `Factura-B2B-${co.name.replace(/\s+/g, "-")}-${month}.csv`;
+    a.click();
+  }
+
+  async function saveCompany(form) {
+    const { data, error } = await supabase.from("b2b_companies").insert({
+      name:          form.name,
+      contact_name:  form.contact_name,
+      contact_email: form.contact_email,
+      contact_phone: form.contact_phone,
+      seats_paid:    Number(form.seats_paid) || 0,
+      discount_pct:  Number(form.discount_pct) || 0,
+      active:        true,
+    }).select().single();
+    if (error) { alert("Error: " + error.message); return; }
+    setCompanies(cs => [data, ...cs]);
+    setNewCoForm(null);
+  }
+
+  const totalRevenue = companies.reduce((a, co) =>
+    a + Math.round(co.seats_paid * 95 * (1 - (co.discount_pct || 0) / 100)), 0);
+
+  if (loading) return <div style={{ padding:20, color:B.textSec }}>Cargando empresas…</div>;
+
+  // Employee detail view
+  if (selCompany) return (
+    <div>
+      <button onClick={() => { setSelCompany(null); setEmployees([]); }}
+        style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, padding:"7px 14px",
+                 background:"transparent", border:`1px solid ${B.border}`, borderRadius:8,
+                 cursor:"pointer", color:B.textSec, fontFamily:"inherit", marginBottom:14 }}>
+        ← Volver a empresas
+      </button>
+      <div style={{ fontSize:18, fontWeight:700, color:B.text, marginBottom:4 }}>{selCompany.name}</div>
+      <div style={{ fontSize:13, color:B.textSec, marginBottom:16 }}>
+        Contacto: {selCompany.contact_name} · {selCompany.contact_email} · {selCompany.seats_paid} cupos
+      </div>
+      <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, overflow:"hidden" }}>
+        <div style={{ padding:"12px 16px", borderBottom:`1px solid ${B.border}`, fontSize:13, fontWeight:600, color:B.text }}>
+          Empleados matriculados ({employees.length})
+        </div>
+        {employees.length === 0 && (
+          <div style={{ padding:"24px 16px", textAlign:"center", fontSize:13, color:B.textSec }}>
+            Sin empleados registrados en esta empresa aún.
+          </div>
+        )}
+        {employees.map((e, i) => (
+          <div key={e.id} style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px",
+               borderTop:i>0?`1px solid ${B.border}`:"none" }}>
+            <div style={{ width:34, height:34, borderRadius:"50%", background:B.primaryDim,
+                          display:"flex", alignItems:"center", justifyContent:"center",
+                          fontSize:12, fontWeight:700, color:B.primary }}>
+              {(e.profiles?.full_name||"?").split(" ").map(n=>n[0]).join("").slice(0,2)}
+            </div>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:13, fontWeight:600, color:B.text }}>{e.profiles?.full_name}</div>
+              <div style={{ fontSize:12, color:B.textSec }}>{e.profiles?.email}</div>
+            </div>
+            <Badge text={`Nivel ${e.level || "A1"}`} bg={B.primaryDim} color={B.primary} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  return (
+    <div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:14 }}>
+        <Stat label="Empresas activas" value={companies.length} sub={`${companies.reduce((a,c)=>a+c.seats_paid,0)} cupos totales`} color={B.primary} icon="ti-building" />
+        <Stat label="Ingresos B2B (mes)" value={`$${totalRevenue.toLocaleString()}`} sub="Con descuentos aplicados" color={B.secondary} icon="ti-coin" />
+        <Stat label="Próxima factura" value="1 del mes" sub={`${companies.length} empresa${companies.length!==1?"s":""}`} color={B.green} icon="ti-receipt" />
+      </div>
+
+      {companies.map((co) => (
+        <div key={co.id} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16, marginBottom:10 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
+            <div>
+              <div style={{ fontSize:15, fontWeight:700, color:B.text }}>{co.name}</div>
+              <div style={{ fontSize:13, color:B.textSec }}>
+                {co.contact_name} · {co.contact_email}
+                {co.contact_phone ? ` · ${co.contact_phone}` : ""}
+              </div>
+              {co.discount_pct > 0 && (
+                <div style={{ fontSize:11, color:"#d97706", marginTop:3 }}>✓ Descuento B2B: {co.discount_pct}%</div>
+              )}
+            </div>
+            <div style={{ textAlign:"right" }}>
+              <div style={{ fontSize:16, fontWeight:700, color:B.primary }}>
+                ${Math.round(co.seats_paid * 95 * (1 - (co.discount_pct||0)/100))}/mes
+              </div>
+              <div style={{ fontSize:11, color:B.textSec }}>{co.seats_paid} cupos × $95</div>
+              <Badge text="Activa" bg={B.greenDim} color="#065f46" />
+            </div>
+          </div>
+          <div style={{ display:"flex", gap:8 }}>
+            <button onClick={() => loadEmployees(co)}
+              style={{ fontSize:12, padding:"5px 12px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:6, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>
+              Ver empleados
+            </button>
+            <button onClick={() => exportInvoice(co)}
+              style={{ fontSize:12, padding:"5px 12px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>
+              ↓ Factura CSV
+            </button>
+            <button onClick={async()=>{
+              if(window.confirm(`¿Desactivar ${co.name}?`)){
+                await supabase.from("b2b_companies").update({active:false}).eq("id",co.id);
+                setCompanies(cs=>cs.filter(c=>c.id!==co.id));
+              }
+            }} style={{ fontSize:12, padding:"5px 12px", background:"#fef2f2", color:"#dc2626", border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>
+              Desactivar
+            </button>
+          </div>
+        </div>
+      ))}
+
+      {newCoForm ? (
+        <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:18, marginTop:8 }}>
+          <div style={{ fontSize:14, fontWeight:700, color:B.text, marginBottom:14 }}>Nueva empresa B2B</div>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:12 }}>
+            {[["Nombre empresa","name","text","TechCorp HN"],["Contacto principal","contact_name","text","Juan Pérez"],
+              ["Email contacto","contact_email","email","juan@empresa.com"],["Teléfono","contact_phone","tel","+504 9900-0000"],
+              ["Cupos pagados","seats_paid","number","5"],["Descuento %","discount_pct","number","10"]
+            ].map(([label,key,type,ph])=>(
+              <div key={key} style={{gridColumn:key==="name"||key==="contact_email"?"1/-1":undefined}}>
+                <label style={{fontSize:12,color:B.textSec,display:"block",marginBottom:3}}>{label}</label>
+                <input type={type} value={newCoForm[key]||""} placeholder={ph}
+                  onChange={e=>setNewCoForm(f=>({...f,[key]:e.target.value}))}
+                  style={{width:"100%",padding:"8px 12px",border:`1px solid ${B.border}`,borderRadius:8,fontSize:13,background:B.bg,fontFamily:"inherit",color:B.text}}/>
+              </div>
+            ))}
+          </div>
+          <div style={{display:"flex",gap:8}}>
+            <button onClick={()=>setNewCoForm(null)}
+              style={{flex:1,padding:"9px",background:B.bg,border:`1px solid ${B.border}`,borderRadius:9,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:B.textSec}}>
+              Cancelar
+            </button>
+            <button onClick={()=>newCoForm.name&&newCoForm.contact_email&&saveCompany(newCoForm)}
+              style={{flex:2,padding:"9px",background:B.primary,color:"var(--bg-surface)",border:"none",borderRadius:9,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+              Crear empresa
+            </button>
+          </div>
+        </div>
+      ) : (
+        <button onClick={()=>setNewCoForm({name:"",contact_name:"",contact_email:"",contact_phone:"",seats_paid:"",discount_pct:""})}
+          style={{width:"100%",padding:"11px",background:B.primary,color:"var(--bg-surface)",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginTop:4}}>
+          + Crear cuenta empresa
+        </button>
+      )}
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
@@ -784,36 +974,7 @@ export default function AdminDashboard() {
 
           {/* ── B2B ── */}
           {view === "b2b" && (
-            <div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:14 }}>
-                <Stat label="Empresas activas" value="2" sub="3 empleados matriculados" color={B.primary} icon="ti-building" />
-                <Stat label="Ingresos B2B (mes)" value="$510" sub="3 empleados" color={B.secondary} icon="ti-coin" />
-                <Stat label="Próxima factura" value="1 Jul" sub="$510 · 2 empresas" color={B.green} icon="ti-receipt" />
-              </div>
-              {[
-                { name:"TechCorp Honduras", contact:"Rodrigo Paredes", employees:2, plan:"Inglés B2", amount:"$190 por mes", status:"active" },
-                { name:"Freelancers MX",    contact:"Diego Fuentes",   employees:1, plan:"Inglés B2", amount:"$95 por mes",  status:"active" },
-              ].map((co, i) => (
-                <div key={i} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16, marginBottom:10 }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:12 }}>
-                    <div>
-                      <div style={{ fontSize:15, fontWeight:700, color:B.text }}>{co.name}</div>
-                      <div style={{ fontSize:13, color:B.textSec }}>Contacto: {co.contact} · {co.employees} empleado{co.employees>1?"s":""}</div>
-                    </div>
-                    <div style={{ textAlign:"right" }}>
-                      <div style={{ fontSize:14, fontWeight:700, color:B.primary }}>{co.amount}</div>
-                      <Badge text="Activa" bg={B.greenDim} color="#065f46" />
-                    </div>
-                  </div>
-                  <div style={{ display:"flex", gap:8 }}>
-                    <button style={{ fontSize:12, padding:"5px 12px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:6, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Ver empleados</button>
-                    <button style={{ fontSize:12, padding:"5px 12px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>Generar factura</button>
-                    <button style={{ fontSize:12, padding:"5px 12px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>Reportes progreso</button>
-                  </div>
-                </div>
-              ))}
-              <button style={{ width:"100%", padding:"11px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", marginTop:4 }}>+ Crear cuenta empresa</button>
-            </div>
+            <B2BSection supabase={supabase} B={B} Badge={Badge} Stat={Stat} />
           )}
 
           {/* ── ENROLLMENTS ── */}
