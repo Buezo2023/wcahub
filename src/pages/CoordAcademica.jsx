@@ -120,12 +120,34 @@ export default function CoordAcademica() {
   const [filterType, setFilterType]   = useState("all");
   const [search, setSearch]           = useState("");
 
-  const filteredStudents = useMemo(() => STUDENTS.filter(s => {
+  const [realStudents, setRealStudents] = useState([]);
+  useEffect(() => {
+    supabase.from("enrollments")
+      .select("program_id, status, students!inner(id, level, scholarship, profiles!inner(full_name, email))")
+      .eq("status", "active").limit(300)
+      .then(({ data }) => {
+        if (data?.length) {
+          setRealStudents(data.map((e,i) => ({
+            id:         e.students.id,
+            name:       e.students.profiles.full_name || e.students.profiles.email,
+            level:      e.students.level || "A1",
+            group:      i % 9 + 1,
+            type:       e.students.scholarship ? "scholarship" : "regular",
+            attendance: 80, score: 75,
+            state:      "active",
+            scholarship: e.students.scholarship,
+          })));
+        }
+      }).catch(console.error);
+  }, []);
+
+  const sourceStudents = realStudents.length > 0 ? realStudents : STUDENTS;
+  const filteredStudents = useMemo(() => sourceStudents.filter(s => {
     const ms = !search || s.name.toLowerCase().includes(search.toLowerCase());
     const ml = filterLevel==="all" || s.level===filterLevel;
     const mt = filterType==="all" || s.type===filterType;
     return ms && ml && mt;
-  }), [search, filterLevel, filterType]);
+  }), [search, filterLevel, filterType, sourceStudents]);
 
   const teacherName = id => teachers.find(t=>t.id===id)?.name || "Sin asignar";
   const groupLabel  = id => { const g=GROUPS.find(g=>g.id===id); return g?`${g.level} · ${g.time}`:"—"; };
@@ -615,7 +637,11 @@ export default function CoordAcademica() {
           {view==="scholarships" && (
             <div>
               <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-                {SCHOLARSHIPS.map(s => (
+                {(realStudents.filter(s=>s.scholarship).length > 0
+                  ? realStudents.filter(s=>s.scholarship).map(s=>({
+                      ...s, eligible: s.attendance>=70, progress:`U${Math.ceil(s.score/10)}/12`, start:"2025"
+                    }))
+                  : SCHOLARSHIPS).map(s => (
                   <div key={s.id} style={{ background:B.white, border:`1px solid ${s.eligible?B.amber:B.border}`, borderRadius:12, padding:16 }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
                       <div>
@@ -667,8 +693,16 @@ export default function CoordAcademica() {
                     <div style={{ fontSize:13, fontWeight:600, color:B.text, marginBottom:3 }}>{r.title}</div>
                     <div style={{ fontSize:12, color:B.textSec, marginBottom:8 }}>{r.desc}</div>
                     <div style={{ display:"flex", gap:6 }}>
-                      <button onClick={()=>alert(`Reporte "${r.title}" — disponible próximamente`)} style={{ fontSize:11, padding:"3px 10px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver reporte</button>
-                      <button onClick={()=>alert("Exportar PDF/Excel — próximamente")} style={{ fontSize:11, padding:"3px 10px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>↓ Exportar</button>
+                      <button onClick={()=>setView("students")} style={{ fontSize:11, padding:"3px 10px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver reporte</button>
+                      <button onClick={()=>{
+                        const headers = ["Nombre","Nivel","Grupo","Tipo","Asistencia","Promedio","Estado"];
+                        const rows = STUDENTS.map(s=>[s.name,s.level,groupLabel(s.group),s.type,s.attendance+"%",s.score+"%",s.state]);
+                        const csv = [headers,...rows].map(row=>row.map(v=>`"${v}"`).join(",")).join("\n");
+                        const a = document.createElement("a");
+                        a.href = URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+                        a.download = `reporte-${r.icon?.replace(/[^a-z]/gi,"")}-${new Date().toISOString().slice(0,10)}.csv`;
+                        a.click();
+                      }} style={{ fontSize:11, padding:"3px 10px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>↓ Exportar CSV</button>
                     </div>
                   </div>
                 </div>

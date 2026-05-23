@@ -140,7 +140,9 @@ export default function TeacherPortal(){
         .select("group_id, groups(id, level, schedule, days, active_unit, program_id, teams_link)")
         .eq("teacher_id", staffRow.id);
       if (tgroups?.length) {
-        setRealGroups(tgroups.map(tg => tg.groups).filter(Boolean));
+        const gs = tgroups.map(tg => tg.groups).filter(Boolean);
+          setRealGroups(gs);
+          if (gs.length > 0) setSelGroup(gs[0].id);
         // Get students in those groups
         const groupIds = tgroups.map(tg => tg.group_id);
         const { data: enrollments } = await supabase
@@ -182,7 +184,7 @@ export default function TeacherPortal(){
     return () => subscription.unsubscribe();
   }, [navigate]);
   const [view,setView]=useState("home");
-  const [selGroup,setSelGroup]=useState(1);
+  const [selGroup,setSelGroup]=useState(null); // set after groups load
   const [selUnit,setSelUnit]=useState(null);
   const [extraModal,setExtraModal]=useState(null);
   const [recLinks,setRecLinks]=useState({});
@@ -190,12 +192,26 @@ export default function TeacherPortal(){
   const [pdfLinks,setPdfLinks]=useState(Object.fromEntries(UNITS.map(u=>[u.n,u.pdf])));
   const [backupLinks,setBackupLinks]=useState(Object.fromEntries(UNITS.map(u=>[u.n,""])));
 
+  const displayGroups   = realGroups.length > 0 ? realGroups.map((g,i) => ({
+    id:         g.id,
+    level:      g.level || "A1",
+    schedule:   g.schedule || "6:00 PM",
+    days:       g.days || "L·M·V",
+    students:   realStudents.filter(s => s.group === g.id).length,
+    activeUnit: g.active_unit || 9,
+    color:      i === 0 ? C.accent : "#1a7a9a",
+    teamsLink:  g.teams_link || null,
+    dbId:       g.id,
+  })) : GROUPS;
   const displayStudents = realStudents.length > 0 ? realStudents : STUDENTS;
-  const grpStudents=displayStudents.filter(s=>s.group===selGroup||s.group===1);
-  const allStudents=displayStudents.filter(s=>s.group===selGroup||s.group===1||s.group===2);
-  const atRisk=allStudents.filter(s=>s.flags.includes("at-risk"));
-  const blocked=allStudents.filter(s=>s.flags.includes("blocked"));
-  const group=GROUPS.find(g=>g.id===selGroup);
+  const selGroupId = typeof selGroup === "string" ? selGroup : displayGroups[0]?.id || 1;
+  const grpStudents = displayStudents.filter(s => String(s.group) === String(selGroupId));
+  const allStudents = realStudents.length > 0
+    ? displayStudents
+    : displayStudents.filter(s => s.group <= 2);
+  const atRisk  = allStudents.filter(s => s.flags?.includes("at-risk"));
+  const blocked = allStudents.filter(s => s.flags?.includes("blocked"));
+  const group   = displayGroups.find(g => String(g.id) === String(selGroupId)) || displayGroups[0];
 
   return(
     <div style={{display:"flex",minHeight: "100vh", height: "100vh",background:C.bg,overflow:"hidden",border:`1px solid ${C.border}`,fontFamily:"'DM Sans','Outfit','Segoe UI',sans-serif",position:"relative"}}>
@@ -272,7 +288,7 @@ export default function TeacherPortal(){
                 </div>
               )}
               <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
-                <Stat label="Mis grupos" value={GROUPS.length} sub="Nivel A1" color={C.accent}/>
+                <Stat label="Mis grupos" value={displayGroups.length} sub="Nivel A1" color={C.accent}/>
                 <Stat label="Estudiantes" value={allStudents.length} sub="Ambos horarios"/>
                 <Stat label="En riesgo" value={atRisk.length} sub="Necesitan apoyo" color={atRisk.length>0?C.amber:C.green}/>
                 <Stat label="Asistencia avg" value="82%" sub="Esta semana" color={C.green}/>
@@ -280,14 +296,14 @@ export default function TeacherPortal(){
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
                 <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
                   <div style={{fontSize:13,fontWeight:700,color:C.textPri,marginBottom:12}}>Clases hoy — Lun 16 Jun</div>
-                  {GROUPS.map(g=>(
+                  {displayGroups.map(g=>(
                     <div key={g.id} style={{display:"flex",gap:12,alignItems:"center",padding:"10px 12px",background:C.surfaceHigh,borderRadius:10,marginBottom:8}}>
                       <div style={{width:8,height:8,borderRadius:"50%",background:g.color,flexShrink:0}}/>
                       <div style={{flex:1}}>
                         <div style={{fontSize:13,fontWeight:600,color:C.textPri}}>{g.level} · {g.schedule}</div>
                         <div style={{fontSize:12,color:C.textSec,marginTop:2}}>U9: Comforts · {g.students} alumnos</div>
                       </div>
-                      <button style={{fontSize:12,padding:"5px 12px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}} onClick={()=>showToast("Abriendo Microsoft Teams...","#155266")}>▷ Teams</button>
+                      <button style={{fontSize:12,padding:"5px 12px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}} onClick={()=>{ const url=g.teamsLink||g.teams_link; if(url&&url!=="")window.open(url,"_blank"); else showToast("Link de Teams no configurado aún"); }}>▷ Teams</button>
                     </div>
                   ))}
                 </div>
@@ -344,7 +360,7 @@ export default function TeacherPortal(){
           {view==="grupos"&&(
             <div>
               <div style={{display:"flex",gap:8,marginBottom:14}}>
-                {GROUPS.map(g=>(
+                {displayGroups.map(g=>(
                   <button key={g.id} onClick={()=>setSelGroup(g.id)} style={{padding:"8px 16px",border:`1px solid ${selGroup===g.id?g.color:C.border}`,borderRadius:10,background:selGroup===g.id?`${g.color}15`:C.surface,color:selGroup===g.id?g.color:C.textSec,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{g.level} · {g.schedule}</button>
                 ))}
               </div>
@@ -354,7 +370,7 @@ export default function TeacherPortal(){
                     <div style={{fontSize:16,fontWeight:800,color:C.textPri,marginBottom:3}}>Nivel {group.level} · <span style={{color:C.accent}}>{group.schedule}</span></div>
                     <div style={{fontSize:13,color:C.textSec}}>{group.days} · {group.students} estudiantes · U{group.activeUnit} activa</div>
                   </div>
-                  <button style={{fontSize:13,padding:"7px 16px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:9,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}} onClick={()=>showToast("Abriendo Microsoft Teams...","#155266")}>▷ Abrir Teams</button>
+                  <button style={{fontSize:13,padding:"7px 16px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:9,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}} onClick={()=>{ const url=group?.teamsLink||group?.teams_link; if(url&&url!=="")window.open(url,"_blank"); else showToast("Link de Teams no configurado — pedile al Admin"); }}>▷ Abrir Teams</button>
                 </div>
               </div>
               <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
@@ -428,7 +444,7 @@ export default function TeacherPortal(){
     const today = new Date().toISOString().slice(0,10);
     const records = grpStudents.map(s=>({
       student_id:    s.id,
-      group_id:      typeof selGroup==="string" ? selGroup : null,
+      group_id:      group?.dbId || (typeof selGroup==="string" ? selGroup : null),
       date:          today,
       status:        attendanceMap[s.id] || "present",
       unit:          group?.active_unit || 9,

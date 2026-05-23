@@ -119,6 +119,7 @@ const NAV=[
   {id:"examen",  icon:"ti-writing",         label:"Examen"},
   {id:"progreso",icon:"ti-certificate",     label:"Mi progreso"},
   {id:"pagos",   icon:"ti-credit-card",     label:"Pagos"},
+  {id:"perfil",  icon:"ti-user-circle",     label:"Mi perfil"},
 ];
 
 // ─── UI helpers ───────────────────────────────────────────────────
@@ -480,14 +481,21 @@ export default function PortalEstudiante(){
       if (!session) { navigate("/", { replace: true }); return; }
       const uid = session.user.id;
       // Load profile
-      supabase.from("profiles").select("full_name, email, avatar_url")
+      supabase.from("profiles").select("full_name, email, avatar_url, phone, preferred_name")
         .eq("id", uid).single()
         .then(({ data }) => {
-          if (data) setUser({
-            name: data.full_name?.split(" ")[0] || data.email?.split("@")[0] || "Estudiante",
-            email: data.email || session.user.email || "",
-            avatar: data.avatar_url || null,
-          });
+          if (data) {
+            setUser({
+              name:   data.preferred_name || data.full_name?.split(" ")[0] || data.email?.split("@")[0] || "Estudiante",
+              email:  data.email || session.user.email || "",
+              avatar: data.avatar_url || null,
+            });
+            setProfileForm({
+              full_name:      data.full_name || "",
+              phone:          data.phone || "",
+              preferred_name: data.preferred_name || "",
+            });
+          }
         });
       // Load enrollments + group (teams_link, schedule, teacher)
       supabase.from("students").select("id, level")
@@ -534,6 +542,9 @@ export default function PortalEstudiante(){
   const [realEnrollments,  setRealEnrollments] = useState({});
   const [realPayments,     setRealPayments]    = useState([]);
   const [uploadState,      setUploadState]     = useState({ loading:false, done:false, error:null });
+  const [profileForm,      setProfileForm]     = useState({ full_name:"", phone:"", preferred_name:"" });
+  const [profileSaving,    setProfileSaving]   = useState(false);
+  const [profileSaved,     setProfileSaved]    = useState(false);
 
   const enrolledProgs = ALL_PROGRAMS.filter(p=>enrolled.includes(p.id));
   const unenrolledProgs = ALL_PROGRAMS.filter(p=>!enrolled.includes(p.id));
@@ -615,7 +626,7 @@ export default function PortalEstudiante(){
         {/* Topbar */}
         <div style={{height:60,background:"var(--bg-surface)",borderBottom:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 24px",flexShrink:0,boxShadow:"0 1px 4px rgba(0,0,0,.04)"}}>
           <div style={{fontSize:14,fontWeight:700,color:"var(--text-primary)"}}>
-            {{"inicio":"Inicio","practica":"Práctica 24/7","clases":"Clases en vivo","examen":"Examen","progreso":"Mi progreso","pagos":"Pagos"}[view]}
+            {{"inicio":"Inicio","practica":"Práctica 24/7","clases":"Clases en vivo","examen":"Examen","progreso":"Mi progreso","pagos":"Pagos","perfil":"Mi perfil"}[view]}
           </div>
           <div style={{display:"flex",gap:8,alignItems:"center",position:"relative"}}>
             <button onClick={()=>setShowNotifs(s=>!s)} aria-label="Notificaciones"
@@ -1044,6 +1055,86 @@ export default function PortalEstudiante(){
                     {uploadState.error && <div style={{fontSize:12,color:R,marginTop:8}}>⚠ {uploadState.error}</div>}
                   </div>
                 )}
+              </div>
+            </div>
+          )}
+
+          {/* ── PERFIL ── */}
+          {view==="perfil"&&(
+            <div style={{padding:24,maxWidth:500}}>
+              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:16,padding:24,marginBottom:14,boxShadow:"var(--shadow-sm)"}}>
+                <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
+                  <div style={{width:64,height:64,borderRadius:"50%",background:PD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,fontWeight:800,color:P,flexShrink:0}}>
+                    {user.avatar
+                      ? <img src={user.avatar} alt="" style={{width:"100%",height:"100%",borderRadius:"50%",objectFit:"cover"}}/>
+                      : (user.name||"E").slice(0,1).toUpperCase()}
+                  </div>
+                  <div>
+                    <div style={{fontSize:16,fontWeight:700,color:"var(--text-primary)"}}>{user.name}</div>
+                    <div style={{fontSize:12,color:"var(--text-secondary)"}}>{user.email}</div>
+                  </div>
+                </div>
+                {[
+                  {label:"Nombre completo", key:"full_name",      placeholder:"María Rodríguez", type:"text"},
+                  {label:"Nombre preferido", key:"preferred_name", placeholder:"María (como quieres que te llamen)", type:"text"},
+                  {label:"Teléfono / WhatsApp", key:"phone",      placeholder:"+504 9900-0000", type:"tel"},
+                ].map(f=>(
+                  <div key={f.key} style={{marginBottom:12}}>
+                    <label style={{fontSize:11,color:"var(--text-secondary)",display:"block",marginBottom:4,fontWeight:500}}>{f.label}</label>
+                    <input
+                      type={f.type}
+                      value={profileForm[f.key]||""}
+                      onChange={e=>setProfileForm(p=>({...p,[f.key]:e.target.value}))}
+                      placeholder={f.placeholder}
+                      style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}
+                    />
+                  </div>
+                ))}
+                {profileSaved && <div style={{background:GD,borderRadius:9,padding:"9px 12px",fontSize:12,color:"#065f46",fontWeight:600,marginBottom:12}}>✓ Perfil actualizado correctamente</div>}
+                <button
+                  disabled={profileSaving}
+                  onClick={async()=>{
+                    setProfileSaving(true);
+                    try{
+                      const {data:{session}} = await supabase.auth.getSession();
+                      if(!session) return;
+                      await supabase.from("profiles").update({
+                        full_name:      profileForm.full_name||undefined,
+                        phone:          profileForm.phone||undefined,
+                        preferred_name: profileForm.preferred_name||undefined,
+                      }).eq("id",session.user.id);
+                      setUser(u=>({...u,name:profileForm.preferred_name||profileForm.full_name?.split(" ")[0]||u.name}));
+                      setProfileSaved(true);
+                      setTimeout(()=>setProfileSaved(false),4000);
+                    }catch(e){alert("Error: "+e.message);}
+                    finally{setProfileSaving(false);}
+                  }}
+                  style={{width:"100%",padding:"11px",background:profileSaving?"var(--bg-surface-subtle)":P,color:profileSaving?"var(--text-secondary)":"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:profileSaving?"not-allowed":"pointer",fontFamily:"inherit"}}>
+                  {profileSaving?"Guardando…":"Guardar cambios"}
+                </button>
+              </div>
+              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,padding:18,boxShadow:"var(--shadow-sm)"}}>
+                <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:12}}>Mis certificados</div>
+                {enrolledProgs.map(p=>{
+                  const en2 = realEnrollments[p.id]||{};
+                  const pct = Math.round(((en2.unit||1)-1)/12*100);
+                  const complete = pct >= 100;
+                  return(
+                    <div key={p.id} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 0",borderBottom:"1px solid var(--border)"}}>
+                      <span style={{fontSize:22}}>{p.icon}</span>
+                      <div style={{flex:1}}>
+                        <div style={{fontSize:13,fontWeight:600,color:"var(--text-primary)"}}>{p.name}</div>
+                        <div style={{height:5,background:"var(--bg-surface-subtle)",borderRadius:4,marginTop:5}}>
+                          <div style={{height:"100%",width:`${pct}%`,background:p.color,borderRadius:4,transition:"width 1s"}}/>
+                        </div>
+                        <div style={{fontSize:11,color:"var(--text-secondary)",marginTop:3}}>{pct}% completado</div>
+                      </div>
+                      {complete
+                        ? <button style={{fontSize:11,padding:"6px 12px",background:GD,color:G,border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>⬇ Descargar</button>
+                        : <span style={{fontSize:11,color:"var(--text-tertiary)"}}>En progreso</span>}
+                    </div>
+                  );
+                })}
               </div>
             </div>
           )}
