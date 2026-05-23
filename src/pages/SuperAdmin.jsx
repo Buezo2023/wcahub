@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
 import { api } from "../lib/api.js";
-import { toast } from "../lib/toast.jsx";
+import { toast as globalToast } from "../lib/toast.jsx";
 import { useConfirm } from "../lib/ConfirmModal.jsx";
 import { getAuditLog, getPrograms } from "../lib/db.js";
 
@@ -130,11 +130,11 @@ export default function SuperAdmin() {
   const [statsLoading, setStatsLoading] = useState(true);
 
   function showToast(msg, color) {
-    if (!color || color === "#059669" || color === "green") toast.success(msg);
-    else if (color === "#dc2626" || color === "red" || color === "#ef4444") toast.error(msg);
-    else if (color === "#d97706" || color === "#f59e0b") toast.warn(msg);
-    else if (color === "#0369a1" || color === "blue") toast.info(msg);
-    else toast.success(msg);
+    if (!color || color === "#059669" || color === "green") globalToast.success(msg);
+    else if (color === "#dc2626" || color === "red" || color === "#ef4444") globalToast.error(msg);
+    else if (color === "#d97706" || color === "#f59e0b") globalToast.warn(msg);
+    else if (color === "#0369a1" || color === "blue") globalToast.info(msg);
+    else globalToast.success(msg);
   }
 
   // Load real stats, audit log, staff and programs from Supabase
@@ -416,12 +416,7 @@ export default function SuperAdmin() {
         </button>
       </aside>
 
-      {/* Toast */}
-      {toast && (
-        <div style={{ position:"fixed", top:20, right:24, zIndex:9999, background:toast.color||G, color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, boxShadow:`0 6px 20px ${toast.color||G}40`, display:"flex", gap:8, alignItems:"center", animation:"slideIn .3s ease", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
-          ✓ {toast.msg}
-        </div>
-      )}
+      {/* Toast: usa ToastContainer global en App.jsx */}
       {/* MAIN */}
       <main style={{ flex:1, display:"flex", flexDirection:"column", minHeight:"100vh" }}>
         <div style={{ height:60, background:"var(--bg-surface)", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 24px", flexShrink:0, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
