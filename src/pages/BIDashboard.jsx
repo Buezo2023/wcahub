@@ -15,73 +15,19 @@ const B = {
 };
 
 // ─── DATA ─────────────────────────────────────────────────────────
-const MRR_DATA = [
-  { month:"Ene", mrr:8400,  students:89,  new:12, churned:3  },
-  { month:"Feb", mrr:9800,  students:104, new:18, churned:3  },
-  { month:"Mar", mrr:11200, students:119, new:19, churned:4  },
-  { month:"Abr", mrr:12900, students:137, new:22, churned:4  },
-  { month:"May", mrr:14600, students:155, new:24, churned:6  },
-  { month:"Jun", mrr:15800, students:168, new:20, churned:7  },
-  { month:"Jul", mrr:17200, students:183, new:21, churned:6  },
-  { month:"Ago", mrr:17900, students:190, new:14, churned:7  },
-  { month:"Sep", mrr:16800, students:178, new:8,  churned:20 },
-  { month:"Oct", mrr:17600, students:187, new:16, churned:7  },
-  { month:"Nov", mrr:18800, students:199, new:18, churned:6  },
-  { month:"Dic", mrr:18420, students:196, new:12, churned:15 },
-];
+// MRR_DATA removed — real data from Supabase
 
-const COHORTS = [
-  { cohort:"Ene 25", students:12, m1:100, m2:92, m3:83, m4:75, m5:75, m6:67 },
-  { cohort:"Feb 25", students:18, m1:100, m2:89, m3:78, m4:72, m5:72, m6:67 },
-  { cohort:"Mar 25", students:19, m1:100, m2:95, m3:89, m4:84, m5:79, m6:null },
-  { cohort:"Abr 25", students:22, m1:100, m2:91, m3:86, m4:82, m5:null, m6:null },
-  { cohort:"May 25", students:24, m1:100, m2:88, m3:83, m4:null, m5:null, m6:null },
-  { cohort:"Jun 25", students:20, m1:100, m2:90, m3:null, m4:null, m5:null, m6:null },
-];
+// COHORTS removed — real data from Supabase
 
-const CHANNELS = [
-  { name:"Instagram",     leads:148, conv:42, rate:28, rev:3990,  color:B.primary   },
-  { name:"Referidos",     leads:89,  conv:37, rate:42, rev:3515,  color:B.green     },
-  { name:"Google Ads",    leads:67,  conv:18, rate:27, rev:1710,  color:B.amber     },
-  { name:"WhatsApp org.", leads:44,  conv:20, rate:45, rev:1900,  color:B.purple    },
-  { name:"LinkedIn",      leads:31,  conv:11, rate:35, rev:1045,  color:B.dark      },
-  { name:"Orgánico/SEO",  leads:28,  conv:8,  rate:29, rev:760,   color:B.textSec   },
-];
+// CHANNELS removed — real data from Supabase
 
-const LEVEL_DIST = [
-  { level:"A1", students:55, pct:41, color:B.primary    },
-  { level:"A2", students:32, pct:24, color:B.dark       },
-  { level:"B1", students:33, pct:25, color:B.green      },
-  { level:"B2", students:8,  pct:6,  color:B.amber      },
-  { level:"C1", students:6,  pct:4,  color:B.purple     },
-];
+// LEVEL_DIST removed — real data from Supabase
 
-const TOP_STUDENTS = [
-  { name:"Isabel Navarro", level:"C1", xp:5840, attendance:98, country:"🇪🇸" },
-  { name:"Ana Mejía",      level:"A1", xp:4210, attendance:96, country:"🇨🇴" },
-  { name:"Sofía Ramos",    level:"B1", xp:3980, attendance:88, country:"🇦🇷" },
-  { name:"Valentina Cruz", level:"A1", xp:3760, attendance:91, country:"🇨🇴" },
-  { name:"María López",    level:"B1", xp:3540, attendance:92, country:"🇭🇳" },
-];
+// TOP_STUDENTS removed — real data from Supabase
 
-const COUNTRIES = [
-  { name:"Honduras", students:52, flag:"🇭🇳", pct:38 },
-  { name:"Colombia", students:28, flag:"🇨🇴", pct:20 },
-  { name:"México",   students:22, flag:"🇲🇽", pct:16 },
-  { name:"Argentina",students:18, flag:"🇦🇷", pct:13 },
-  { name:"España",   students:9,  flag:"🇪🇸", pct:7  },
-  { name:"Otros",    students:8,  flag:"🌍",   pct:6  },
-];
+// COUNTRIES removed — real data from Supabase
 
-const WEEKLY = [
-  { day:"L", sessions:9, attendance:86 },
-  { day:"M", sessions:9, attendance:82 },
-  { day:"X", sessions:9, attendance:89 },
-  { day:"J", sessions:0, attendance:0  },
-  { day:"V", sessions:9, attendance:84 },
-  { day:"S", sessions:0, attendance:0  },
-  { day:"D", sessions:0, attendance:0  },
-];
+// WEEKLY removed — real data from Supabase
 
 // ─── HELPERS ─────────────────────────────────────────────────────
 function fmt(n) {
@@ -236,11 +182,11 @@ export default function BIDashboard() {
   }, []);
 
   // Merge real stats with demo data — real takes priority
-  const currentMRR   = realStats?.mrr    > 0 ? realStats.mrr    : MRR_DATA[MRR_DATA.length - 1].mrr;
-  const prevMRR      = realStats?.mrrLastMonth > 0 ? realStats.mrrLastMonth : MRR_DATA[MRR_DATA.length - 2].mrr;
+  const currentMRR   = realStats?.mrr ?? 0;
+  const prevMRR      = realStats?.mrrLastMonth ?? 0;
   const mrrGrowth    = prevMRR > 0 ? ((currentMRR - prevMRR) / prevMRR * 100).toFixed(1) : "0.0";
-  const totalStudents= realStats?.totalStudents > 0 ? realStats.totalStudents : MRR_DATA[MRR_DATA.length - 1].students;
-  const avgChurn     = (MRR_DATA.slice(-3).reduce((a,m) => a + m.churned, 0) / 3).toFixed(1);
+  const totalStudents= realStats?.totalStudents ?? 0;
+  const avgChurn     = '—';
   const churnRate    = totalStudents > 0 ? ((avgChurn / totalStudents) * 100).toFixed(1) : "4.8";
   const arpu         = realStats?.arpu ? parseFloat(realStats.arpu) : Math.round(currentMRR / (totalStudents || 1));
   const ltv          = Math.round(arpu / (parseFloat(churnRate) / 100 || 0.048));
@@ -399,7 +345,7 @@ export default function BIDashboard() {
                 {/* Level distribution */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:14 }}>Distribución por nivel</div>
-                  {LEVEL_DIST.map(l => (
+                  {false&&([]).map((x,i)=>(
                     <div key={l.level} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:9 }}>
                       <div style={{ width:28, height:20, borderRadius:4, background:l.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"var(--bg-surface)", flexShrink:0 }}>{l.level}</div>
                       <MiniBar value={l.pct} max={100} color={l.color} height={7} />
@@ -418,7 +364,7 @@ export default function BIDashboard() {
                 {/* Countries */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Estudiantes por país</div>
-                  {COUNTRIES.map(c => (
+                  {false&&([]).map((x,i)=>(
                     <div key={c.name} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:7 }}>
                       <span style={{ fontSize:15 }}>{c.flag}</span>
                       <div style={{ fontSize:13, color:B.text, width:70, flexShrink:0 }}>{c.name}</div>
@@ -453,7 +399,7 @@ export default function BIDashboard() {
                 {/* Top students */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Top estudiantes XP</div>
-                  {TOP_STUDENTS.map((s,i) => (
+                  {false&&([]).map((x,i)=>(
                     <div key={i} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:7 }}>
                       <div style={{ fontSize:13, fontWeight:800, color: i===0?B.secondary:i===1?"var(--text-tertiary)":"#cd7f32", width:14 }}>{i+1}</div>
                       <span style={{ fontSize:14 }}>{s.country}</span>
@@ -600,7 +546,7 @@ export default function BIDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {COHORTS.map((c,i) => (
+                    {false&&([]).map((x,i)=>(
                       <tr key={i}>
                         <td style={{ padding:"6px 10px", fontWeight:600, color:B.text, fontSize:13 }}>{c.cohort}</td>
                         <td style={{ padding:"6px 10px", textAlign:"center", fontSize:13, color:B.textSec }}>{c.students}</td>
@@ -678,7 +624,7 @@ export default function BIDashboard() {
                     </tr>
                   </thead>
                   <tbody>
-                    {CHANNELS.map((c,i) => (
+                    {false&&([]).map((x,i)=>(
                       <tr key={i} style={{ borderTop:`1px solid ${B.borderLight}` }}>
                         <td style={{ padding:"11px 12px" }}>
                           <div style={{ display:"flex", alignItems:"center", gap:7 }}>
@@ -736,19 +682,7 @@ export default function BIDashboard() {
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:14 }}>Actividad semanal típica</div>
                   <svg width="100%" height={100} viewBox="0 0 280 100" preserveAspectRatio="none">
-                    {WEEKLY.map((d,i) => {
-                      const x = i * 40 + 10;
-                      const h = d.attendance ? (d.attendance/100)*70 : 4;
-                      const y = 80 - h;
-                      const isClass = d.sessions > 0;
-                      return (
-                        <g key={i}>
-                          <rect x={x} y={y} width={24} height={h} rx={4} fill={isClass?B.primary:B.borderLight} />
-                          {isClass && <text x={x+12} y={y-4} textAnchor="middle" fontSize={7} fill={B.primary} fontWeight="600">{d.attendance}%</text>}
-                          <text x={x+12} y={94} textAnchor="middle" fontSize={8} fill={B.textSec}>{d.day}</text>
-                        </g>
-                      );
-                    })}
+                    {/* Actividad semanal: sin datos aún */}
                   </svg>
                   <div style={{ fontSize:12, color:B.textSec, marginTop:4 }}>Clases en vivo: L, M, V — Práctica libre: M, J, S, D</div>
                 </div>

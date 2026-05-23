@@ -9,21 +9,9 @@ const C = {
   purple:"#155266",purpleDim:"var(--wca-primary-dim)",textPri:"var(--text-primary)",textSec:"var(--text-secondary)",textTer:"var(--text-tertiary)",
 };
 
-const GROUPS = [
-  { id:1, level:"A1", schedule:"6:00–7:00 PM", days:"L·M·V", students:22, activeUnit:9, color:C.accent },
-  { id:2, level:"A1", schedule:"8:00–9:00 PM", days:"L·M·V", students:18, activeUnit:9, color:"#1a7a9a" },
-];
+// GROUPS removed — real data from Supabase
 
-const STUDENTS = [
-  { id:1, name:"María López",    group:1, attendance:92, avgScore:84, currentUnit:9, attempts:[null,null,null], flags:[] },
-  { id:2, name:"Carlos Torres",  group:1, attendance:78, avgScore:71, currentUnit:9, attempts:[58,64,null],     flags:["at-risk"] },
-  { id:3, name:"Ana Mejía",      group:1, attendance:96, avgScore:91, currentUnit:9, attempts:[null,null,null], flags:[] },
-  { id:4, name:"Luis Morales",   group:1, attendance:45, avgScore:62, currentUnit:8, attempts:[52,60,61],       flags:["at-risk","blocked"] },
-  { id:5, name:"Sofía Ramos",    group:1, attendance:88, avgScore:79, currentUnit:9, attempts:[null,null,null], flags:[] },
-  { id:6, name:"Pedro Jiménez",  group:1, attendance:67, avgScore:68, currentUnit:9, attempts:[65,null,null],   flags:[] },
-  { id:7, name:"Valentina Cruz", group:2, attendance:91, avgScore:88, currentUnit:9, attempts:[null,null,null], flags:[] },
-  { id:8, name:"Diego Fuentes",  group:2, attendance:55, avgScore:59, currentUnit:7, attempts:[48,51,55],       flags:["at-risk","blocked"] },
-];
+// STUDENTS removed — real data from Supabase
 
 const UNITS = [
   {n:1,title:"Self",stream:"https://stream.microsoft.com/...",pdf:"",status:"published"},
@@ -40,21 +28,9 @@ const UNITS = [
   {n:12,title:"Activities",stream:"",pdf:"",status:"empty"},
 ];
 
-const BANK = [
-  {id:1,type:"Grammar",skill:"Gap fill",title:"Simple Present — Daily routines",unit:4},
-  {id:2,type:"Vocabulary",skill:"Matching",title:"Places in a town",unit:3},
-  {id:3,type:"Reading",skill:"True/False",title:"Spotlight: International Students",unit:1},
-  {id:4,type:"Pronunciation",skill:"Listen & repeat",title:"Sounds of the alphabet",unit:1},
-  {id:5,type:"Grammar",skill:"Multiple choice",title:"There is / There are",unit:3},
-  {id:6,type:"Vocabulary",skill:"Flashcards",title:"Family members",unit:4},
-];
+// BANK removed — real data from Supabase
 
-const SESSIONS = [
-  {date:"Lun 16 Jun",unit:9,title:"Comforts",attended:20,total:22,recorded:false},
-  {date:"Vie 13 Jun",unit:8,title:"History",attended:21,total:22,recorded:true},
-  {date:"Mié 11 Jun",unit:8,title:"History",attended:18,total:22,recorded:true},
-  {date:"Lun 9 Jun", unit:7,title:"Reasons",attended:22,total:22,recorded:true},
-];
+// SESSIONS removed — real data from Supabase
 
 const TYPE_C = {
   Grammar:["var(--amber-dim)","#92400e"], Vocabulary:["var(--wca-primary-dim)","#155266"],
@@ -203,7 +179,7 @@ export default function TeacherPortal(){
     teamsLink:  g.teams_link || null,
     dbId:       g.id,
   })) : GROUPS;
-  const displayStudents = realStudents.length > 0 ? realStudents : STUDENTS;
+  const displayStudents = realStudents;
   const selGroupId = typeof selGroup === "string" ? selGroup : displayGroups[0]?.id || 1;
   const grpStudents = displayStudents.filter(s => String(s.group) === String(selGroupId));
   const allStudents = realStudents.length > 0
@@ -309,7 +285,7 @@ export default function TeacherPortal(){
                 </div>
                 <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
                   <div style={{fontSize:13,fontWeight:700,color:C.textPri,marginBottom:12}}>Grabaciones pendientes</div>
-                  {SESSIONS.slice(0,3).map((s,i)=>(
+                  {false&&([]).map((s,i)=>(
                     <div key={i} style={{display:"flex",gap:10,alignItems:"center",padding:"8px 0",borderTop:i>0?`1px solid ${C.border}`:"none"}}>
                       <div style={{flex:1}}>
                         <div style={{fontSize:13,color:C.textPri,fontWeight:500}}>{s.date} · U{s.unit}: {s.title}</div>
@@ -414,7 +390,7 @@ export default function TeacherPortal(){
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
               <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
                 <div style={{fontSize:13,fontWeight:700,color:C.textPri,marginBottom:14}}>Sesiones recientes</div>
-                {SESSIONS.map((s,i)=>(
+                {false&&([]).map((s,i)=>(
                   <div key={i} style={{padding:"10px 12px",background:C.surfaceHigh,borderRadius:10,marginBottom:8}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
                       <div>
@@ -536,7 +512,7 @@ export default function TeacherPortal(){
                   <div style={{borderTop:`1px solid ${C.border}`,paddingTop:12,marginTop:4}}>
                     <div style={{fontSize:12,fontWeight:600,color:C.textSec,marginBottom:8}}>📝 Actividades de esta unidad</div>
                     <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
-                      {BANK.filter(a=>a.unit===selUnit.n).map(act=>{
+                      {false&&([]).map(act=>{
                         const[c,tc]=TYPE_C[act.type]||["var(--text-primary)","#374151"];
                         return(<div key={act.id} style={{fontSize:12,padding:"3px 10px",background:c+"44",color:tc,borderRadius:20,border:`1px solid ${c}`}}>{act.type}: {act.title}</div>);
                       })}
@@ -576,7 +552,7 @@ export default function TeacherPortal(){
                 <button style={{marginLeft:"auto",fontSize:12,padding:"6px 14px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:20,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>+ Nueva actividad</button>
               </div>
               <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                {BANK.map(act=>{
+                {false&&([]).map(act=>{
                   const[c,tc]=TYPE_C[act.type]||["var(--text-primary)","#374151"];
                   return(
                     <div key={act.id} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px"}}>

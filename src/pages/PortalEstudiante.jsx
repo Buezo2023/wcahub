@@ -61,24 +61,9 @@ const ALL_PROGRAMS = [
 // ─── THIS STUDENT'S ENROLLMENTS ──────────────────────────────────
 // María está inscrita en Inglés (activo, B1) + VA General (activo, U6)
 // VA completado → puede hacer especializaciones
-const ENROLLMENTS = {
-  en: {
-    active:true, level:"B1", unit:9, unitTitle:"Future",
-    examScore:85, streak:8, xp:3540,
-    completedUnits:8, cycleProgress:Math.round(8/12*100),
-    nextClass:"Lunes 16 Jun · 6:00 PM", teacher:"Ana Torres",
-    teamsLink:"#",
-  },
-  va: {
-    active:true, level:"VA General", unit:6, unitTitle:"Gestión de proyectos",
-    examScore:91, streak:5, xp:1820,
-    completedUnits:5, cycleProgress:Math.round(5/12*100),
-    nextClass:"Martes 17 Jun · 7:00 PM", teacher:"Laura Mendoza",
-    teamsLink:"#",
-  },
-};
+// ENROLLMENTS: use realEnrollments state (loaded from Supabase)
 
-const COMPLETED_PREREQS = { va:true }; // VA General completado → puede hacer especializaciones
+const COMPLETED_PREREQS = {};  // computed from real enrollments // VA General completado → puede hacer especializaciones
 
 // ─── UNITS per program ────────────────────────────────────────────
 // PROGRAM_UNITS uses imported UNITS data
@@ -104,7 +89,7 @@ const SKILLS = {
 };
 
 const PROG_PROGRESS = (id)=>{
-  const en = ENROLLMENTS[id];
+  const en = realEnrollments[id] || {};
   if(!en) return {};
   const p = {};
   for(let i=1;i<=12;i++){
@@ -573,7 +558,7 @@ export default function PortalEstudiante(){
   const enrolledProgs = ALL_PROGRAMS.filter(p=>enrolled.includes(p.id));
   const unenrolledProgs = ALL_PROGRAMS.filter(p=>!enrolled.includes(p.id));
   const prog = ALL_PROGRAMS.find(p=>p.id===activeProg) || enrolledProgs[0];
-  const _baseEnroll = ENROLLMENTS[activeProg] || ENROLLMENTS[enrolled[0]] || {};
+  const _baseEnroll = realEnrollments[activeProg] || realEnrollments[enrolled[0]] || {};
   const _realPatch  = realEnrollments[activeProg] || realEnrollments[enrolled[0]] || {};
   const enrollment  = { ..._baseEnroll, ..._realPatch };
   const currentLevel = enrollment?.level || "B1";
@@ -737,7 +722,7 @@ export default function PortalEstudiante(){
                 <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:12}}>📚 Mis programas activos</div>
                 <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(enrolledProgs.length,2)},minmax(0,1fr))`,gap:12}}>
                   {enrolledProgs.map(p=>{
-                    const en = realEnrollments[p.id] || ENROLLMENTS[p.id];
+                    const en = realEnrollments[p.id] || realEnrollments[p.id];
                     if(!enrolled.includes(p.id)) return null;
                     const unit = en?.unit || 1;
                     const cyclePct = Math.round(((unit-1)/12)*100);
@@ -941,7 +926,7 @@ export default function PortalEstudiante(){
             <div style={{padding:24}}>
               <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(enrolledProgs.length,2)},minmax(0,1fr))`,gap:12,marginBottom:16}}>
                 {enrolledProgs.map(p=>{
-                  const en2     = realEnrollments[p.id] || ENROLLMENTS[p.id] || {};
+                  const en2     = realEnrollments[p.id] || realEnrollments[p.id] || {};
                   const prog2   = realProgress[p.id] || {};
                   const realUnit = en2.unit || 1;
                   const passedUnits = Object.values(prog2).filter(u=>u.passed).length;

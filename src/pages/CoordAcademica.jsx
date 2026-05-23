@@ -14,44 +14,13 @@ const B = {
 };
 
 // ─── DATA ──────────────────────────────────────────────────────────
-const TEACHERS = [
-  { id:1, name:"José Rodríguez",  groups:["A1·6PM","A1·7PM","A1·8PM"], levels:["A1"],      hours:9,  attendance:97, rating:4.8 },
-  { id:2, name:"Ana Torres",      groups:["B1·6PM","B1·8PM"],           levels:["B1"],      hours:6,  attendance:95, rating:4.9 },
-  { id:3, name:"María Paredes",   groups:["A2·7PM"],                    levels:["A2"],      hours:3,  attendance:92, rating:4.6 },
-  { id:4, name:"Luis Gutiérrez",  groups:["A2·9PM"],                    levels:["A2"],      hours:3,  attendance:88, rating:4.4 },
-  { id:5, name:"Carlos Medina",   groups:["B2·6PM"],                    levels:["B2"],      hours:3,  attendance:93, rating:4.7 },
-  { id:6, name:"Sofía Estrada",   groups:["C1·6PM"],                    levels:["C1"],      hours:3,  attendance:100,rating:4.9 },
-];
+// Teachers loaded from Supabase staff table
 
-const GROUPS = [
-  { id:1,  level:"A1", time:"6:00 PM",  teacher:1, students:22, cap:25, unit:9,  active:true  },
-  { id:2,  level:"A1", time:"7:00 PM",  teacher:1, students:18, cap:25, unit:9,  active:true  },
-  { id:3,  level:"A1", time:"8:00 PM",  teacher:1, students:15, cap:25, unit:9,  active:true  },
-  { id:4,  level:"A2", time:"7:00 PM",  teacher:3, students:20, cap:25, unit:6,  active:true  },
-  { id:5,  level:"A2", time:"9:00 PM",  teacher:4, students:12, cap:25, unit:6,  active:true  },
-  { id:6,  level:"B1", time:"6:00 PM",  teacher:2, students:19, cap:25, unit:9,  active:true  },
-  { id:7,  level:"B1", time:"8:00 PM",  teacher:2, students:14, cap:25, unit:9,  active:true  },
-  { id:8,  level:"B2", time:"6:00 PM",  teacher:5, students:8,  cap:20, unit:4,  active:true  },
-  { id:9,  level:"C1", time:"6:00 PM",  teacher:6, students:6,  cap:15, unit:7,  active:true  },
-];
+// Groups loaded from Supabase
 
-const STUDENTS = [
-  { id:1,  name:"María López",    level:"B1", group:6,  type:"regular",     attendance:92, score:84, state:"active",    scholarship:false },
-  { id:2,  name:"Carlos Torres",  level:"A1", group:1,  type:"regular",     attendance:78, score:71, state:"active",    scholarship:false },
-  { id:3,  name:"Ana Mejía",      level:"A1", group:3,  type:"regular",     attendance:96, score:91, state:"active",    scholarship:false },
-  { id:4,  name:"Luis Morales",   level:"A1", group:1,  type:"regular",     attendance:45, score:62, state:"suspended", scholarship:false },
-  { id:5,  name:"Pedro Jiménez",  level:"A2", group:4,  type:"scholarship", attendance:67, score:68, state:"active",    scholarship:true  },
-  { id:6,  name:"Jorge Ramírez",  level:"A1", group:2,  type:"scholarship", attendance:73, score:70, state:"active",    scholarship:true  },
-  { id:7,  name:"Isabel Navarro", level:"C1", group:9,  type:"regular",     attendance:98, score:95, state:"active",    scholarship:false },
-  { id:8,  name:"Diego Fuentes",  level:"B2", group:8,  type:"b2b",         attendance:55, score:59, state:"active",    scholarship:false },
-  { id:9,  name:"Valentina Cruz", level:"A1", group:3,  type:"regular",     attendance:91, score:88, state:"active",    scholarship:false },
-  { id:10, name:"Marcos Silva",   level:"B2", group:8,  type:"regular",     attendance:40, score:55, state:"suspended", scholarship:false },
-];
+// Students loaded from Supabase enrollments
 
-const SCHOLARSHIPS = [
-  { id:1, name:"Pedro Jiménez",  level:"A2", progress:"6/12 unidades completadas", attendance:67, start:"Ene 2025", program:"A1→B1", eligible:true  },
-  { id:2, name:"Jorge Ramírez",  level:"A1", progress:"9/12 unidades completadas", attendance:73, start:"Feb 2025", program:"A1→B1", eligible:false },
-];
+// Scholarships derived from real students with scholarship=true
 
 const AT_RISK = sourceStudents.filter(s => (s.attendance||0) < 70 || (s.score||0) < 65);
 
@@ -111,7 +80,7 @@ export default function CoordAcademica() {
   // Teacher CRUD state
   const [teacherModal, setTeacherModal] = useState(null); // {mode:'add'|'edit'|'view', data?}
   const [teacherForm, setTeacherForm]   = useState({});
-  const [teachers, setTeachers]         = useState(TEACHERS);
+  const [teachers, setTeachers]         = useState([]);
   const [deleteTeacher, setDeleteTeacher] = useState(null);
   const [transferModal, setTransferModal] = useState(null);
   const [newGroup, setNewGroup]       = useState({ level:"A1", time:"", days:"L·M·V", teacher:1, cap:25 });
@@ -126,6 +95,20 @@ export default function CoordAcademica() {
   const [realStudents, setRealStudents] = useState([]);
   useEffect(() => {
     setDataLoading(true);
+    // Load real teachers
+    supabase.from("staff")
+      .select("id, profiles(full_name, email), position")
+      .eq("active", true)
+      .then(({ data }) => {
+        const docentes = (data||[]).filter(s =>
+          s.profiles && ['docente','coordinadora'].includes(s.profiles.role || s.position?.toLowerCase())
+        );
+        if (docentes.length) setTeachers(docentes.map(s => ({
+          id: s.id,
+          name: s.profiles.full_name || s.profiles.email || "—",
+          email: s.profiles.email || "",
+        })));
+      }).catch(console.error);
     supabase.from("enrollments")
       .select("program_id, status, students!inner(id, level, scholarship, profiles!inner(full_name, email))")
       .eq("status", "active").limit(300)
@@ -162,7 +145,7 @@ export default function CoordAcademica() {
       }).catch(console.error);
   }, []);
 
-  const sourceStudents = realStudents.length > 0 ? realStudents : STUDENTS;
+  const sourceStudents = realStudents;
   const filteredStudents = useMemo(() => sourceStudents.filter(s => {
     const ms = !search || s.name.toLowerCase().includes(search.toLowerCase());
     const ml = filterLevel==="all" || s.level===filterLevel;
@@ -171,9 +154,9 @@ export default function CoordAcademica() {
   }), [search, filterLevel, filterType, sourceStudents]);
 
   const teacherName = id => teachers.find(t=>t.id===id)?.name || "Sin asignar";
-  const groupLabel  = id => { const g=GROUPS.find(g=>g.id===id); return g?`${g.level} · ${g.time}`:"—"; };
-  const totalStudents = GROUPS.reduce((a,g)=>a+g.students,0);
-  const avgAttendance = Math.round(STUDENTS.reduce((a,s)=>a+s.attendance,0)/STUDENTS.length);
+  const groupLabel  = id => { const g=realDbGroups.find(g=>g.id===id); return g?`${g.level} · ${g.time||"—"}`:"—"; };
+  const totalStudents = sourceStudents.length;
+  const avgAttendance = sourceStudents.length > 0 ? Math.round(sourceStudents.reduce((a,s)=>a+(s.attendance||0),0)/sourceStudents.length) : 0;
 
   return (
     <div style={{ display:"flex", minHeight: "100vh", height: "100vh", background:B.bg,  overflow:"hidden",  fontFamily:"'DM Sans','Segoe UI',sans-serif", position:"relative" }}>
@@ -198,7 +181,7 @@ export default function CoordAcademica() {
             {item.id==="atRisk" && AT_RISK.length>0 && (
               <span style={{ marginLeft:"auto", fontSize:11, background:B.red, color:"var(--bg-surface)", borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>{AT_RISK.length}</span>
             )}
-            {item.id==="scholarships" && SCHOLARSHIPS.some(s=>s.eligible) && (
+            {item.id==="scholarships" && realStudents.filter(s=>s.scholarship).some(s=>(s.attendance||0)>=70) && (
               <span style={{ marginLeft:"auto", fontSize:11, background:B.secondary, color:B.dark, borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>!</span>
             )}
           </button>
@@ -291,7 +274,7 @@ export default function CoordAcademica() {
                 {/* Docentes */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Docentes esta semana</div>
-                  {TEACHERS.map(t => (
+                  {teachers.map(t => (
                     <div key={t.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"7px 0", borderBottom:`1px solid ${B.borderLight}` }}>
                       <div style={{ width:30, height:30, borderRadius:"50%", background:B.primaryDim, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:B.primary, flexShrink:0 }}>
                         {t.name.split(" ").map(n=>n[0]).join("").slice(0,2)}
@@ -311,7 +294,7 @@ export default function CoordAcademica() {
                 {/* Becas upgrade */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Becados que pueden hacer upgrade</div>
-                  {SCHOLARSHIPS.filter(s=>s.eligible).map(s => (
+                  {realStudents.filter(s=>s.scholarship&&(s.attendance||0)>=70).map(s => (
                     <div key={s.id} style={{ background:B.secondaryDim, border:`1px solid ${B.amber}40`, borderRadius:10, padding:"12px 14px", marginBottom:8 }}>
                       <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:3 }}>{s.name}</div>
                       <div style={{ fontSize:12, color:B.textSec, marginBottom:8 }}>{s.level} · {s.progress} · Asistencia: {s.attendance}%</div>
@@ -403,7 +386,7 @@ export default function CoordAcademica() {
                       ))}
                     </div>
                     <div style={{ fontSize:13, fontWeight:600, color:B.textSec, textTransform:"uppercase", letterSpacing:.5, marginBottom:8 }}>Grupos asignados</div>
-                    {realDbGroups.filter(g => g.teacher === selTeacher?.name).map(g => (
+                    {realDbGroups.filter(g => g.teacher === selTeacher?.name || g.teacher === selTeacher?.id).map(g => (
                       <div key={g.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 10px", background:B.bg, borderRadius:8, marginBottom:6 }}>
                         <Badge text={g.level} bg={levelBg(g.level)} color={levelColor(g.level)} />
                         <span style={{ fontSize:13, color:B.text, flex:1 }}>{g.time} · {g.students} estudiantes</span>

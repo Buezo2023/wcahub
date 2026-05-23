@@ -14,34 +14,14 @@ const B = {
 };
 
 // ─── DATA ─────────────────────────────────────────────────────────
-const PENDING_TRANSFERS = [
-  { id:1, student:"María López",    level:"B1", program:"Inglés",    amount:95,  code:"WCA-B1-0821", method:"Transferencia", bank:"BAC Credomatic", date:"Hace 1h",    proof:true,  urgent:false },
-  { id:2, student:"Carlos Torres",  level:"A1", program:"Inglés+VA", amount:170, code:"WCA-A1-4492", method:"Transferencia", bank:"BI Honduras",    date:"Hace 4h",    proof:true,  urgent:false },
-  { id:3, student:"Ana Sofía Vega", level:"A2", program:"Inglés",    amount:95,  code:"WCA-A2-3301", method:"Transferencia", bank:"BAC Credomatic", date:"Hace 1 día", proof:false, urgent:true },
-];
+// PENDING_TRANSFERS removed — using real Supabase data
 
-const PAYMENT_HISTORY = [
-  { id:1,  student:"Isabel Navarro",  amount:95,  method:"Stripe",       status:"confirmed", date:"Hoy 09:14",    code:"pi_3Qx1••••",    action_by:"Sistema",   note:"" },
-  { id:2,  student:"Rodrigo Paredes", amount:170, method:"Transferencia", status:"confirmed", date:"Hoy 08:55",    code:"WCA-B2-8820",    action_by:"Gestor",    note:"Comprobante verificado en BAC" },
-  { id:3,  student:"Sofía Ramos",     amount:95,  method:"Stripe",       status:"confirmed", date:"Ayer 18:30",   code:"pi_3Qw9••••",    action_by:"Sistema",   note:"" },
-  { id:4,  student:"Diego Fuentes",   amount:95,  method:"Efectivo",     status:"confirmed", date:"Ayer 11:20",   code:"WCA-B2-7741",    action_by:"Gestor",    note:"Pagó en sede SPS" },
-  { id:5,  student:"Valentina Cruz",  amount:50,  method:"Transferencia", status:"confirmed", date:"Hace 2 días",  code:"WCA-BCK-2210",   action_by:"Gestor",    note:"Beca trimestral" },
-  { id:6,  student:"Luis Morales",    amount:95,  method:"Stripe",       status:"refunded",  date:"Hace 3 días",  code:"re_3Qv8••••",    action_by:"Gestor",    note:"Reembolso dentro de 7 días" },
-  { id:7,  student:"Pedro Jiménez",   amount:95,  method:"Transferencia", status:"failed",    date:"Hace 4 días",  code:"WCA-A2-6634",    action_by:"—",         note:"Sin respuesta del estudiante" },
-];
+// PAYMENT_HISTORY removed — using real Supabase data
 
-const OVERDUE = [
-  { student:"Luis Morales",  level:"A1", days:38, amount:95,  contact:"+504 9912-3344", lastContact:"Hace 5 días" },
-  { student:"Marcos Silva",  level:"B2", days:31, amount:95,  contact:"+55 11 9999-0000", lastContact:"Hace 8 días" },
-];
+// OVERDUE removed — using real Supabase data
 
 // AUDIT_LOG removed — usar datos reales de Supabase
-const AUDIT_LOG_UNUSED = [{ action:"Confirmó pago",    student:"Rodrigo Paredes", amount:"$170", time:"Hoy 08:55",   note:"Comprobante BAC verificado" },
-  { action:"Registró efectivo",student:"Diego Fuentes",   amount:"$95",  time:"Ayer 11:20",  note:"Pagó en sede" },
-  { action:"Anuló pago",       student:"Luis Morales",    amount:"$95",  time:"Hace 3 días", note:"Reembolso solicitado en 7 días" },
-  { action:"Emitió recibo",    student:"Sofía Ramos",     amount:"$95",  time:"Ayer 18:30",  note:"Recibo #2024-089" },
-  { action:"Marcó vencido",    student:"Marcos Silva",    amount:"$95",  time:"Hace 4 días", note:"Sin respuesta después de 3 intentos" },
-];
+// AUDIT_LOG_UNUSED removed — using real Supabase data
 
 const NAV = [
   { id:"home",      icon:"ti-layout-dashboard", label:"Inicio"        },
@@ -183,9 +163,9 @@ export default function GestorCobros() {
   }, []);
 
   // Merge: prefer real data, fallback to demo
-  const displayPending = realPending.length > 0 ? realPending : PENDING_TRANSFERS;
-  const displayHistory = realHistory.length > 0 ? realHistory : PAYMENT_HISTORY;
-  const displayOverdue = realOverdue.length > 0 ? realOverdue : OVERDUE;
+  const displayPending = realPending;
+  const displayHistory = realHistory;
+  const displayOverdue = realOverdue;
 
   const pending = displayPending.filter(t => !confirmed.includes(t.id));
   const filteredHist = useMemo(() => displayHistory.filter(p =>
@@ -538,7 +518,7 @@ export default function GestorCobros() {
           {view==="receipts" && (
             <div>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
-                {PAYMENT_HISTORY.filter(p=>p.status==="confirmed").map((p,i) => (
+                {displayHistory.filter(p=>p.status==="confirmed").slice(0,10).map((p,i) => (
                   <div key={i} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
                     <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
                       <div>

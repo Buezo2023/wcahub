@@ -19,38 +19,11 @@ const B = {
 };
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
-const STUDENTS = [
-  { id:1,  name:"María López",     email:"m.lopez@wca.edu.hn",    country:"🇭🇳", level:"B1", group:"B1·6PM", program:"Inglés",     type:"regular",     state:"active",    payment:"Al día",   attendance:92, score:84, enrolled:"Mar 2025" },
-  { id:2,  name:"Carlos Torres",   email:"c.torres@wca.edu.hn",   country:"🇭🇳", level:"A1", group:"A1·6PM", program:"Inglés+VA",  type:"regular",     state:"active",    payment:"Al día",   attendance:78, score:71, enrolled:"Abr 2025" },
-  { id:3,  name:"Ana Mejía",       email:"a.mejia@wca.edu.hn",    country:"🇨🇴", level:"A1", group:"A1·8PM", program:"Inglés",     type:"regular",     state:"active",    payment:"Al día",   attendance:96, score:91, enrolled:"Feb 2025" },
-  { id:4,  name:"Luis Morales",    email:"l.morales@wca.edu.hn",  country:"🇭🇳", level:"A1", group:"A1·6PM", program:"VA",         type:"regular",     state:"suspended", payment:"Vencido",  attendance:45, score:62, enrolled:"Ene 2025" },
-  { id:5,  name:"Sofía Ramos",     email:"s.ramos@wca.edu.hn",    country:"🇦🇷", level:"B1", group:"B1·8PM", program:"Inglés",     type:"regular",     state:"active",    payment:"Al día",   attendance:88, score:79, enrolled:"May 2025" },
-  { id:6,  name:"Pedro Jiménez",   email:"p.jimenez@wca.edu.hn",  country:"🇲🇽", level:"A2", group:"A2·7PM", program:"Inglés",     type:"scholarship", state:"active",    payment:"Beca",     attendance:67, score:68, enrolled:"Mar 2025" },
-  { id:7,  name:"Valentina Cruz",  email:"v.cruz@wca.edu.hn",     country:"🇨🇴", level:"A1", group:"A1·8PM", program:"Inglés+VA",  type:"regular",     state:"active",    payment:"Al día",   attendance:91, score:88, enrolled:"Jun 2025" },
-  { id:8,  name:"Diego Fuentes",   email:"d.fuentes@wca.edu.hn",  country:"🇲🇽", level:"B2", group:"B2·6PM", program:"Inglés",     type:"b2b",         state:"active",    payment:"B2B",      attendance:55, score:59, enrolled:"Abr 2025" },
-  { id:9,  name:"Camila Herrera",  email:"c.herrera@wca.edu.hn",  country:"🇨🇱", level:"A2", group:"A2·9PM", program:"Inglés",     type:"regular",     state:"active",    payment:"Al día",   attendance:85, score:77, enrolled:"May 2025" },
-  { id:10, name:"Jorge Ramírez",   email:"j.ramirez@wca.edu.hn",  country:"🇭🇳", level:"A1", group:"A1·7PM", program:"VA",         type:"scholarship", state:"active",    payment:"Beca",     attendance:73, score:70, enrolled:"Feb 2025" },
-  { id:11, name:"Isabel Navarro",  email:"i.navarro@wca.edu.hn",  country:"🇪🇸", level:"C1", group:"C1·6PM", program:"Inglés",     type:"regular",     state:"active",    payment:"Al día",   attendance:98, score:95, enrolled:"Ene 2025" },
-  { id:12, name:"Marcos Silva",    email:"m.silva@wca.edu.hn",    country:"🇧🇷", level:"B2", group:"B2·8PM", program:"Inglés",     type:"regular",     state:"suspended", payment:"Vencido",  attendance:40, score:55, enrolled:"Mar 2025" },
-];
+// Students loaded from Supabase only
 
-const GROUPS = [
-  { id:1, level:"A1", time:"6:00–7:00 PM", days:"L·M·V", teacher:"José R.", students:22, capacity:25, unit:9, teamsSet:true  },
-  { id:2, level:"A1", time:"7:00–8:00 PM", days:"L·M·V", teacher:"José R.", students:18, capacity:25, unit:9, teamsSet:true  },
-  { id:3, level:"A1", time:"8:00–9:00 PM", days:"L·M·V", teacher:"José R.", students:15, capacity:25, unit:9, teamsSet:true  },
-  { id:4, level:"A2", time:"7:00–8:00 PM", days:"L·M·V", teacher:"María P.", students:20, capacity:25, unit:6, teamsSet:true  },
-  { id:5, level:"A2", time:"9:00–10:00 PM",days:"L·M·V", teacher:"Luis G.", students:12, capacity:25, unit:6, teamsSet:false },
-  { id:6, level:"B1", time:"6:00–7:00 PM", days:"L·M·V", teacher:"Ana T.",  students:19, capacity:25, unit:9, teamsSet:true  },
-  { id:7, level:"B1", time:"8:00–9:00 PM", days:"L·M·V", teacher:"Ana T.",  students:14, capacity:25, unit:9, teamsSet:true  },
-  { id:8, level:"B2", time:"6:00–7:00 PM", days:"L·M·V", teacher:"Carlos M.",students:8, capacity:20, unit:4, teamsSet:true  },
-  { id:9, level:"C1", time:"6:00–7:00 PM", days:"L·M·V", teacher:"Sofía E.",students:6,  capacity:15, unit:7, teamsSet:true  },
-];
+// Groups loaded from Supabase only
 
-const PAYMENTS_PENDING = [
-  { id:1, student:"María López",   amount:"$95",  method:"Transferencia", date:"Hace 2h",    code:"WCA-B1-0821" },
-  { id:2, student:"Diego Fuentes", amount:"$170", method:"Transferencia", date:"Hace 5h",    code:"WCA-B2-4492" },
-  { id:3, student:"Ana Mejía",     amount:"$95",  method:"Transferencia", date:"Hace 1 día", code:"WCA-A1-3301" },
-];
+// Payments loaded from Supabase
 
 // Alerts are now dynamically generated from real data
 const ALERTS = [];  // populated from real Supabase data
@@ -90,18 +63,10 @@ function Stat({ label, value, sub, color, icon }) {
   );
 }
 // ─── AdminPrices component ────────────────────────────────────────
-const PROG_PRICES_INIT = [
-  { id:1, icon:"🇬🇧", name:"Inglés completo",      price:95,  interval:"mes",       students:110, color:"#155266" },
-  { id:2, icon:"💻",  name:"Asistente Virtual",    price:75,  interval:"mes",       students:28,  color:"#7c3aed" },
-  { id:3, icon:"⚡",  name:"Inglés + VA",           price:170, interval:"mes",       students:32,  color:"#0f3d4d" },
-  { id:4, icon:"🎓",  name:"Beca Inglés",           price:50,  interval:"trimestre", students:18,  color:"#059669" },
-  { id:5, icon:"📱",  name:"VA · Marketing Digital",price:95, interval:"3 meses",  students:0,   color:"#db2777" },
-  { id:6, icon:"⚖️",  name:"VA · Legal Assistant",  price:95, interval:"3 meses",  students:0,   color:"#0e7490" },
-  { id:7, icon:"🏥",  name:"VA · Cuidador Remoto",  price:95, interval:"3 meses",  students:0,   color:"#059669" },
-];
+// Programs loaded from Supabase only
 
 function AdminPrices() {
-  const [progs, setProgs] = useState(PROG_PRICES_INIT);
+  const [progs, setProgs] = useState([]);
   const [editing, setEditing] = useState(null);
   const [tmp, setTmp] = useState("");
   const [saved, setSaved] = useState(null);
@@ -538,7 +503,7 @@ export default function AdminDashboard() {
   const [teamsModal, setTeamsModal] = useState(null);
   const [teamsLink, setTeamsLink] = useState("");
 
-  const displayStudents = realStudents.length > 0 ? realStudents : STUDENTS;
+  const displayStudents = realStudents;
   const filtered = useMemo(() => displayStudents.filter(s => {
     const ms = !search || s.name.toLowerCase().includes(search.toLowerCase()) || (s.email||"").toLowerCase().includes(search.toLowerCase());
     const mst = filterState === "all" || s.state === filterState;
@@ -548,7 +513,7 @@ export default function AdminDashboard() {
 
   const suspended = displayStudents.filter(s => s.state === "suspended");
   const active    = displayStudents.filter(s => s.state === "active");
-  const displayGroups = realGroups.length > 0 ? realGroups : GROUPS;
+  const displayGroups = realGroups;
 
   return (
     <div style={{ display:"flex", minHeight: "100vh", height: "100vh", background:B.bg,  overflow:"hidden",  fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
@@ -641,7 +606,7 @@ export default function AdminDashboard() {
                 <Stat label="Estudiantes activos" value={active.length} sub="Este mes" color={B.primary} icon="ti-users" />
                 <Stat label="Ingresos (junio)" value="$18,420" sub="↑ 8% vs mayo" color={B.secondary} icon="ti-coin" />
                 <Stat label="Pagos pendientes" value={PAYMENTS_PENDING.length} sub="Transferencias" color={B.amber} icon="ti-clock" />
-                <Stat label="Grupos activos" value={displayGroups.length || GROUPS.length} sub="5 niveles" color={B.green} icon="ti-grid-dots" />
+                <Stat label="Grupos activos" value={displayGroups.length} sub="5 niveles" color={B.green} icon="ti-grid-dots" />
               </div>
 
               {/* Two columns */}

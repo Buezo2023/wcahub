@@ -28,31 +28,11 @@ const STAGES = [
 ];
 
 // ─── Data ─────────────────────────────────────────────────────────
-const LEADS_INIT = [
-  { id:1, name:"Carlos Mendoza",   email:"carlos.m@gmail.com",     phone:"+504 9812-3344",  country:"🇭🇳 Honduras",  source:"Instagram",   stage:"propuesta",  score:87, level:"A2",   program:"Inglés + VA",  date:"Hace 2 h",       tags:["Becas"],       notes:"Muy interesado en el programa de VA. Trabaja como freelancer. Prefiere horario nocturno.", lastMsg:"Perfecto, ¿cuándo puedo inscribirme?",         activity:[{type:"msg", text:"Respondió WhatsApp — interés confirmado",         time:"Hace 2 h"  },{type:"test",text:"Completó Placement Test — Nivel A2",time:"Hace 5 h"},{type:"call",text:"Primer contacto por WhatsApp",time:"Ayer"},{type:"lead",text:"Lead desde Instagram",time:"Ayer"}]},
-  { id:2, name:"Ana Sofía Reyes",  email:"ana.reyes@outlook.com",  phone:"+57 310 987 6543", country:"🇨🇴 Colombia", source:"Referido",    stage:"test",       score:72, level:null,   program:"Inglés",       date:"Hace 4 h",       tags:[],              notes:"La refirió María López (estudiante activa). Espera resultado del placement test.",          lastMsg:"Gracias, ya hice el test.",                    activity:[{type:"test",text:"Link del Placement Test enviado",                  time:"Hace 4 h"  },{type:"msg",text:"Contactada por WhatsApp",time:"Ayer"},{type:"lead",text:"Lead por referido de María López",time:"Hace 2 días"}]},
-  { id:3, name:"Diego Fuentes",    email:"diego.fuentes@proton.me",phone:"+52 55 1234 5678", country:"🇲🇽 México",   source:"Google Ads",  stage:"contactado", score:45, level:null,   program:null,           date:"Hace 1 día",     tags:["Seguimiento"], notes:"Contestó el primer mensaje pero no ha respondido desde ayer.",                             lastMsg:"Hola, me interesa saber más.",                 activity:[{type:"msg", text:"Envié información del programa, sin respuesta",    time:"Ayer"      },{type:"msg",text:"Primer contacto — respondió con interés",time:"Hace 1 día"},{type:"lead",text:"Lead desde Google Ads",time:"Hace 2 días"}]},
-  { id:4, name:"Valentina Cruz",   email:"val.cruz@gmail.com",     phone:"+54 11 5555 7777", country:"🇦🇷 Argentina",source:"WhatsApp",    stage:"nuevo",      score:60, level:null,   program:"Inglés",       date:"Hace 3 h",       tags:["Urgente"],     notes:"Escribió directo al WhatsApp de WCA. Quiere empezar lo antes posible.",                    lastMsg:"Quiero inscribirme ya, ¿cómo es el proceso?",  activity:[{type:"lead",text:"Lead entró por WhatsApp directo",                  time:"Hace 3 h"  }]},
-  { id:5, name:"Rodrigo Paredes",  email:"rparedes@empresa.hn",    phone:"+504 9944-2211",   country:"🇭🇳 Honduras",  source:"LinkedIn",    stage:"convertido", score:98, level:"B1",   program:"Inglés",       date:"Hace 2 días",    tags:["B2B"],         notes:"Empresa paga el curso. Quiere también inscribir a 2 compañeros.",                          lastMsg:"Listo, ya hice el pago. ¡Gracias!",            activity:[{type:"conv",text:"¡Convertido! Matrícula B1 activada",                time:"Hace 2 días"},{type:"msg",text:"Confirmó pago por transferencia",time:"Hace 3 días"},{type:"test",text:"Nivel B1 detectado",time:"Hace 4 días"},{type:"lead",text:"Lead desde LinkedIn",time:"Hace 5 días"}]},
-  { id:6, name:"Lucia Moreno",     email:"lucimoreno@gmail.com",   phone:"+34 612 345 678",  country:"🇪🇸 España",   source:"Instagram",   stage:"perdido",    score:20, level:"B2",   program:null,           date:"Hace 1 semana",  tags:[],              notes:"No contestó 3 seguimientos. Zona horaria difícil (madrugada HN).",                        lastMsg:"Gracias pero no puedo ahora.",                 activity:[{type:"lost",text:"Marcado como perdido — sin respuesta",             time:"Hace 1 sem"},{type:"msg",text:"3er intento sin respuesta",time:"Hace 8 días"},{type:"test",text:"Nivel B2 detectado",time:"Hace 9 días"}]},
-  { id:7, name:"Mariana Silva",    email:"mariana.silva@gmail.com",phone:"+55 11 9999-0000", country:"🇧🇷 Brasil",   source:"Instagram",   stage:"nuevo",      score:55, level:null,   program:"VA General",   date:"Hace 1 h",       tags:[],              notes:"Interesada en VA. Habla portugués e inglés básico.",                                       lastMsg:"Vi sus anuncios en Instagram, quiero más info.", activity:[{type:"lead",text:"Lead desde Instagram",                             time:"Hace 1 h"  }]},
-];
+// LEADS_INIT removed — loaded from Supabase
 
-const TASKS_INIT = [
-  { id:1, lead:"Carlos Mendoza", text:"Enviar link de inscripción y horarios",    due:"Hoy, 3:00 PM",      priority:"high",   done:false },
-  { id:2, lead:"Diego Fuentes",  text:"Segundo seguimiento por WhatsApp",         due:"Hoy, 5:00 PM",      priority:"medium", done:false },
-  { id:3, lead:"Ana Sofía Reyes",text:"Revisar resultado del placement test",     due:"Mañana, 10:00 AM",  priority:"high",   done:false },
-  { id:4, lead:"Valentina Cruz", text:"Primer contacto — responder WhatsApp",     due:"Urgente",           priority:"high",   done:false },
-  { id:5, lead:"Mariana Silva",  text:"Enviar info programas en español",         due:"Hoy, 6:00 PM",      priority:"medium", done:false },
-];
+// TASKS_INIT removed — loaded from Supabase
 
-const SOURCE_DATA = [
-  { label:"Instagram",  pct:38, count:14, color:"#db2777" },
-  { label:"Referidos",  pct:25, count:9,  color:G         },
-  { label:"Google Ads", pct:18, count:7,  color:"#2563eb" },
-  { label:"WhatsApp",   pct:12, count:4,  color:"#16a34a" },
-  { label:"LinkedIn",   pct:7,  count:3,  color:P         },
-];
+// SOURCE_DATA: computed from real leads
 
 const SCORE_COLOR = s => s>=80?G : s>=50?A : R;
 const SCORE_BG    = s => s>=80?GD : s>=50?AD : RD;
@@ -898,7 +878,7 @@ export default function CRM() {
                   {/* Sources */}
                   <div style={{ background:"#ffffff", border:"1px solid #e2e8f0", borderRadius:14, padding:20, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
                     <div style={{ fontSize:13, fontWeight:700, color:"#0f172a", marginBottom:16 }}>Canales de adquisición</div>
-                    {SOURCE_DATA.map(s=>(
+                    {(leads.reduce((acc,l)=>{const src=l.source||"Otro";acc[src]=(acc[src]||0)+1;return acc;},{}))&&Object.entries(leads.reduce((acc,l)=>{const src=l.source||"Otro";acc[src]=(acc[src]||0)+1;return acc;},{})).map(([src,count],i)=>(
                       <div key={s.label} style={{ display:"flex", alignItems:"center", gap:12, marginBottom:10 }}>
                         <div style={{ fontSize:12, width:90, flexShrink:0, color:"#475569" }}>{s.label}</div>
                         <MiniBar pct={s.pct} color={s.color}/>

@@ -25,65 +25,26 @@ const STAFF_INIT = [
   { id:12, name:"Daniela Vega",    role:"Marketing",        email:"d.vega@wca.edu.hn",      phone:"+504 9911-2222", country:"Honduras", status:"inactive",hired:"Mar 2024", salary:900,  levels:[] },
 ];
 
-const PROGRAMS_INIT = [
-  { id:1, name:"Inglés completo",   code:"EN",   levels:"A1-C1", price:95,  interval:"mes",       students:110, active:true,  color:P,         icon:"🇬🇧", desc:"Marco CEFR completo. Clases en vivo + práctica 24/7." },
-  { id:2, name:"Asistente Virtual", code:"VA",   levels:"N/A",   price:75,  interval:"mes",       students:28,  active:true,  color:"#7c3aed", icon:"💻", desc:"4 módulos de formación VA bilingüe." },
-  { id:3, name:"Inglés + VA",       code:"ENVA", levels:"A1-C1", price:170, interval:"mes",       students:32,  active:true,  color:PH,        icon:"⚡", desc:"Programa combinado. Progreso independiente." },
-  { id:4, name:"Beca Inglés",       code:"BCK",  levels:"A1-B1", price:50,  interval:"trimestre", students:18,  active:true,  color:G,         icon:"🎓", desc:"Solo clases en vivo. Cupos limitados." },
-  { id:5, name:"Inglés para Niños", code:"KIDS", levels:"A1-B1", price:80,  interval:"mes",       students:0,   active:false, color:"#f59e0b", icon:"🧒", desc:"Metodología adaptada 8-14 años." },
-  { id:6, name:"Francés",           code:"FR",   levels:"A1-C1", price:95,  interval:"mes",       students:0,   active:false, color:"#2563eb", icon:"🇫🇷", desc:"Programa francés DELF. Próximamente." },
-];
+// Programs loaded from Supabase only
 
-const MRR_DATA  = [8400,9800,11200,12900,14600,15800,17200,17900,16800,17600,18800,18420];
+const MRR_DATA = [];  // no demo data
 const MRR_MONTHS= ["E","F","M","A","M","J","J","A","S","O","N","D"];
 
-const ROLES_DEF = [
-  { name:"Super Admin",      users:1,  perms:["Control total"] },
-  { name:"Admin",            users:3,  perms:["Estudiantes","Grupos","Matrículas","Pagos"] },
-  { name:"Docente",          users:6,  perms:["Sus grupos","Asistencia","Exámenes","Contenido"] },
-  { name:"Coordinadora",     users:2,  perms:["Grupos","Horarios","Docentes","Becas","Programas"] },
-  { name:"Gestor de Cobros", users:3,  perms:["Pagos","Recibos","Vencidos"] },
-  { name:"Ventas",           users:4,  perms:["CRM","Leads","Placement Test"] },
-  { name:"Marketing",        users:2,  perms:["Métricas","Cupones","UTM"] },
-  { name:"IT",               users:2,  perms:["Config","Integraciones","Backups"] },
-  { name:"Soporte",          users:2,  perms:["Perfil estudiante","Reset password"] },
-  { name:"Contabilidad",     users:2,  perms:["Reportes financieros","Auditoría"] },
-  { name:"Estudiante",       users:0,  perms:["Su portal","Su contenido"] },
-];
+const ROLES_DEF = [];  // roles loaded from Supabase (profiles distinct roles)
 
 const INTEGRATIONS = [
-  { id:"stripe",    name:"Stripe",           status:"connected", icon:"💳", key:"sk_live_...1234" },
-  { id:"ms365",     name:"Microsoft 365",    status:"connected", icon:"🪟", key:"tenant: wca.edu.hn" },
-  { id:"google",    name:"Google OAuth",     status:"connected", icon:"🔑", key:"oauth2: wca-app" },
-  { id:"twilio",    name:"Twilio WhatsApp",  status:"connected", icon:"💬", key:"AC...ef92" },
-  { id:"sendgrid",  name:"SendGrid",         status:"connected", icon:"📧", key:"SG....zx81" },
-  { id:"bunny",     name:"Bunny.net",        status:"pending",   icon:"🎥", key:"Sin configurar" },
-  { id:"analytics", name:"Google Analytics", status:"pending",   icon:"📊", key:"Sin configurar" },
+  { id:"stripe",    name:"Stripe",           icon:"💳", key: typeof process !== "undefined" ? "Configurar en Vercel" : "—" },
+  { id:"ms365",     name:"Microsoft 365",    icon:"🪟", key:"Teams link por grupo" },
+  { id:"google",    name:"Google OAuth",     icon:"🔑", key:"oauth2: wca-app" },
+  { id:"twilio",    name:"Twilio WhatsApp",  icon:"💬", key:"Configurar TWILIO_* en Vercel" },
+  { id:"mailrelay", name:"Mailrelay",        icon:"📧", key:"Configurar MAILRELAY_* en Vercel" },
 ];
 
-const HOLIDAYS_INIT = [
-  { date:"15 Sep 2025", name:"Independencia de Honduras", affects:true },
-  { date:"12 Oct 2025", name:"Día de la Raza",            affects:true },
-  { date:"25 Dic 2025", name:"Navidad",                   affects:true },
-  { date:"1 Ene 2026",  name:"Año Nuevo",                 affects:true },
-];
+// Holidays loaded from Supabase
 
-const AUDIT_LOG = [
-  { user:"Super Admin",  action:"Programa creado",     detail:"Inglés para Niños",      time:"Hace 1h" },
-  { user:"Coordinadora", action:"Docente agregado",    detail:"Ana Torres → Nivel B1",  time:"Hace 3h" },
-  { user:"IT",           action:"Integración activa",  detail:"Google OAuth",           time:"Ayer"    },
-  { user:"Super Admin",  action:"Precio editado",      detail:"Inglés: $95",            time:"Hace 2d" },
-  { user:"Sistema",      action:"Ciclo avanzado",      detail:"Todos los niveles → U9", time:"Lun 9 Jun"},
-  { user:"Super Admin",  action:"Festivo creado",      detail:"15 Sep",                 time:"Hace 3d" },
-];
+// Audit log loaded from Supabase only
 
-const CYCLE_LEVELS = [
-  { level:"A1", unit:9, title:"Comforts",  students:55 },
-  { level:"A2", unit:6, title:"Places",    students:32 },
-  { level:"B1", unit:9, title:"Images",    students:33 },
-  { level:"B2", unit:4, title:"Processes", students:8  },
-  { level:"C1", unit:7, title:"Unit 7",    students:6  },
-];
+// Cycle levels loaded from cycle_config in Supabase
 
 const XP_ACTIONS = [
   { key:"attend_class",   label:"Asistir a clase",            xp:50  },
@@ -201,6 +162,24 @@ export default function SuperAdmin() {
       finally { setStatsLoading(false); }
     });
 
+    // Load cycle levels
+    supabase.from("cycle_config").select("level, current_unit, program_id")
+      .eq("program_id", "en").then(({ data: cyc }) => {
+        if (cyc?.length) setCycleLevels(cyc.map(r => ({
+          level: r.level, unit: r.current_unit,
+          title: `Unidad ${r.current_unit}`, students: 0
+        })));
+      }).catch(console.error);
+
+    // Load holidays
+    supabase.from("holidays").select("date, name, affects_cycle")
+      .order("date").then(({ data: hols }) => {
+        if (hols?.length) setHolidays(hols.map(h => ({
+          date: new Date(h.date).toLocaleDateString("es-HN", {day:"2-digit", month:"short", year:"numeric"}),
+          name: h.name, affects: h.affects_cycle
+        })));
+      }).catch(console.error);
+
     getAuditLog({ limit: 50 }).then(data => {
       if (data.length > 0) setDbAudit(data);
     }).catch(console.error);
@@ -257,9 +236,10 @@ export default function SuperAdmin() {
     return () => subscription.unsubscribe();
   }, [navigate]);
   const [view,       setView]       = useState("overview");
-  const [staff,      setStaff]      = useState(STAFF_INIT);
-  const [programs,   setPrograms]   = useState(PROGRAMS_INIT);
-  const [holidays,   setHolidays]   = useState(HOLIDAYS_INIT);
+  const [staff,      setStaff]      = useState([]);
+  const [programs,   setPrograms]   = useState([]);
+  const [holidays,   setHolidays]   = useState([]);
+  const [cycleLevels, setCycleLevels] = useState([]);
   const [xpVals,     setXpVals]     = useState(Object.fromEntries(XP_ACTIONS.map(a=>[a.key,a.xp])));
   const [leaderPct,  setLeaderPct]  = useState(15);
   const [newHoliday, setNewHoliday] = useState({ date:"", name:"", affects:true });
@@ -495,7 +475,7 @@ export default function SuperAdmin() {
                   <defs><linearGradient id="mrg2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor={P} stopOpacity={0.15}/><stop offset="100%" stopColor={P} stopOpacity={0}/></linearGradient></defs>
                   {(()=>{
                     const mx=20000,mn=6000;
-                    const pts=MRR_DATA.map((v,i)=>({ x:(i/(MRR_DATA.length-1))*488+6, y:100-((v-mn)/(mx-mn))*88+5 }));
+                    if(!MRR_DATA.length) return null; const pts=MRR_DATA.map((v,i)=>({ x:(i/(MRR_DATA.length-1))*488+6, y:100-((v-mn)/(mx-mn))*88+5 }));
                     const line=pts.map(p=>`${p.x},${p.y}`).join(" ");
                     const area=`M${pts[0].x},${pts[0].y} ${pts.slice(1).map(p=>`L${p.x},${p.y}`).join(" ")} L${pts[pts.length-1].x},105 L${pts[0].x},105 Z`;
                     return (<><path d={area} fill="url(#mrg2)"/><polyline points={line} fill="none" stroke={P} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>{pts.map((p,i)=>(<g key={i}><circle cx={p.x} cy={p.y} r={3} fill="var(--bg-surface)" stroke={P} strokeWidth={2}/><text x={p.x} y={108} textAnchor="middle" fontSize={7} fill="var(--text-tertiary)">{MRR_MONTHS[i]}</text></g>))}</>);
@@ -539,7 +519,7 @@ export default function SuperAdmin() {
                     action: a.action?.replace(/_/g," "),
                     detail: typeof a.metadata === "object" ? Object.values(a.metadata||{}).join(" · ") : (a.metadata||""),
                     time: new Date(a.created_at).toLocaleString("es-HN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}),
-                  })) : AUDIT_LOG).map((a,i)=>(
+                  })) : []).map((a,i)=>(
                   <div key={i} style={{ display:"flex", gap:10, padding:"8px 0", borderBottom:i<5?"1px solid var(--border)":"none" }}>
                     <div style={{ width:7, height:7, borderRadius:"50%", background:P, flexShrink:0, marginTop:5 }}/>
                     <div style={{ flex:1 }}>
@@ -575,7 +555,7 @@ export default function SuperAdmin() {
                   <defs><linearGradient id="big2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor={P} stopOpacity={0.2}/><stop offset="100%" stopColor={P} stopOpacity={0}/></linearGradient></defs>
                   {(()=>{
                     const mx=20000,mn=6000;
-                    const pts=MRR_DATA.map((v,i)=>({ x:(i/(MRR_DATA.length-1))*486+7, y:120-((v-mn)/(mx-mn))*108+5, v }));
+                    if(!MRR_DATA.length) return null; const pts=MRR_DATA.map((v,i)=>({ x:(i/(MRR_DATA.length-1))*486+7, y:120-((v-mn)/(mx-mn))*108+5, v }));
                     const line=pts.map(p=>`${p.x},${p.y}`).join(" ");
                     const area=`M${pts[0].x},${pts[0].y} ${pts.slice(1).map(p=>`L${p.x},${p.y}`).join(" ")} L${pts[pts.length-1].x},125 L${pts[0].x},125 Z`;
                     return (<><path d={area} fill="url(#big2)"/><polyline points={line} fill="none" stroke={P} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>{pts.map((p,i)=>(<g key={i}><circle cx={p.x} cy={p.y} r={3} fill="var(--bg-surface)" stroke={P} strokeWidth={2}/><text x={p.x} y={128} textAnchor="middle" fontSize={7} fill="var(--text-tertiary)">{MRR_MONTHS[i]}</text><text x={p.x} y={p.y-7} textAnchor="middle" fontSize={6.5} fill={P} fontWeight="600">${(p.v/1000).toFixed(1)}k</text></g>))}</>);
@@ -773,7 +753,7 @@ export default function SuperAdmin() {
               <div style={{ background:RD, border:`1px solid ${R}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:12, color:R, display:"flex", gap:8 }}>
                 <i className="ti ti-alert-triangle" style={{ fontSize:14 }} aria-hidden="true"/> Reiniciar es irreversible.
               </div>
-              {CYCLE_LEVELS.map(c=>(
+              {cycleLevels.map(c=>(
                 <div key={c.level} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, marginBottom:12, boxShadow:"var(--shadow-sm)" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:12 }}>
                     <div style={{ width:48, height:48, borderRadius:12, background:PD, display:"flex", alignItems:"center", justifyContent:"center", fontSize:17, fontWeight:800, color:P }}>{c.level}</div>
@@ -879,7 +859,7 @@ export default function SuperAdmin() {
                         <div style={{ fontSize:11, color:"var(--text-tertiary)", marginTop:2 }}>{int.key}</div>
                       </div>
                     </div>
-                    <Badge text={int.status==="connected"?"✓ Conectado":"⚠ Pendiente"} bg={int.status==="connected"?GD:AD} color={int.status==="connected"?"#065f46":A}/>
+                    <Badge text={int.id==="google"||int.id==="ms365" ? "✓ Activo" : "⚠ Configurar"} bg={int.status==="connected"?GD:AD} color={int.status==="connected"?"#065f46":A}/>
                   </div>
                   <div style={{ display:"flex", gap:7 }}>
                     <button onClick={()=>showToast(`${int.name} — contactá al equipo IT para reconfigurar`)} style={{ flex:1, fontSize:12, padding:"8px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>{int.status==="connected"?"Reconfigurar":"Conectar"}</button>
@@ -931,7 +911,7 @@ export default function SuperAdmin() {
                     {["Usuario","Acción","Detalle","Tiempo"].map(h=><th key={h} style={{ padding:"11px 14px", textAlign:"left", fontSize:10, fontWeight:700, color:"var(--text-tertiary)", letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>)}
                   </tr></thead>
                   <tbody>
-                    {(dbAudit.length > 0 ? dbAudit : AUDIT_LOG).map((row,i)=>{
+                    {dbAudit.map((row,i)=>{
                     const isReal = !!row.created_at;
                     const a = isReal ? {
                       user:   row.actor_id ? "Staff" : "Sistema",
