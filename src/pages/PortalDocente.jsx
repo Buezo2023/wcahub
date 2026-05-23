@@ -105,8 +105,10 @@ const NAV=[
   {id:"banco",icon:"◈",label:"Banco actividades"},
 ];
 
-function AttendanceRow({student}){
-  const [present,setPresent]=useState(true);
+function AttendanceRow({student, status, onToggle}){
+  const present = status !== "absent";
+  const setPresent = (val) => onToggle(student.id, val ? "present" : "absent");
+  const _unused=useState(true);
   return(
     <div style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",background:C.surfaceHigh,borderRadius:8,marginBottom:6}}>
       <div style={{flex:1,fontSize:13,color:C.textPri,fontWeight:500}}>{student.name}</div>
@@ -119,13 +121,48 @@ function AttendanceRow({student}){
 }
 
 export default function TeacherPortal(){
-  // Load teacher's real groups from Supabase
+  const [realGroups,    setRealGroups]    = useState([]);
+  const [realStudents,  setRealStudents]  = useState([]);
+  const [attendanceMap, setAttendanceMap] = useState({}); // {studentId: "present"|"absent"|"late"}
+
   useEffect(() => {
     async function loadTeacherData() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
-      // Groups will be loaded once teacher_groups is populated
-      // For now: uses demo data as fallback
+      const uid = session.user.id;
+      // Get teacher's staff record
+      const { data: staffRow } = await supabase
+        .from("staff").select("id").eq("profile_id", uid).maybeSingle();
+      if (!staffRow) return;
+      // Get assigned groups
+      const { data: tgroups } = await supabase
+        .from("teacher_groups")
+        .select("group_id, groups(id, level, schedule, days, active_unit, program_id, teams_link)")
+        .eq("teacher_id", staffRow.id);
+      if (tgroups?.length) {
+        setRealGroups(tgroups.map(tg => tg.groups).filter(Boolean));
+        // Get students in those groups
+        const groupIds = tgroups.map(tg => tg.group_id);
+        const { data: enrollments } = await supabase
+          .from("enrollments")
+          .select("student_id, group_id, students(id, level, profiles(full_name, email))")
+          .in("group_id", groupIds)
+          .eq("status", "active");
+        if (enrollments?.length) {
+          const students = enrollments.map(e => ({
+            id:         e.students?.id,
+            name:       e.students?.profiles?.full_name || e.students?.profiles?.email || "Estudiante",
+            email:      e.students?.profiles?.email,
+            group:      e.group_id,
+            attendance: 85,
+            avgScore:   80,
+            currentUnit: 9,
+            attempts:   [null, null, null],
+            flags:      [],
+          })).filter(s => s.id);
+          setRealStudents(students);
+        }
+      }
     }
     loadTeacherData();
   }, []);
@@ -153,8 +190,9 @@ export default function TeacherPortal(){
   const [pdfLinks,setPdfLinks]=useState(Object.fromEntries(UNITS.map(u=>[u.n,u.pdf])));
   const [backupLinks,setBackupLinks]=useState(Object.fromEntries(UNITS.map(u=>[u.n,""])));
 
-  const grpStudents=STUDENTS.filter(s=>s.group===selGroup);
-  const allStudents=STUDENTS.filter(s=>s.group<=2);
+  const displayStudents = realStudents.length > 0 ? realStudents : STUDENTS;
+  const grpStudents=displayStudents.filter(s=>s.group===selGroup||s.group===1);
+  const allStudents=displayStudents.filter(s=>s.group===selGroup||s.group===1||s.group===2);
   const atRisk=allStudents.filter(s=>s.flags.includes("at-risk"));
   const blocked=allStudents.filter(s=>s.flags.includes("blocked"));
   const group=GROUPS.find(g=>g.id===selGroup);
@@ -382,8 +420,26 @@ export default function TeacherPortal(){
               <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
                 <div style={{fontSize:13,fontWeight:700,color:C.textPri,marginBottom:4}}>Tomar asistencia — Hoy</div>
                 <div style={{fontSize:12,color:C.textSec,marginBottom:14}}>A1 · 6:00 PM · U9: Comforts</div>
-                {grpStudents.map(s=><AttendanceRow key={s.id} student={s}/>)}
-                <button style={{marginTop:8,width:"100%",padding:"9px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}} onClick={()=>showToast("✓ Asistencia guardada correctamente")}>Guardar asistencia</button>
+                {grpStudents.map(s=><AttendanceRow key={s.id} student={s}
+  status={attendanceMap[s.id]||"present"}
+  onToggle={(id,val)=>setAttendanceMap(m=>({...m,[id]:val}))}/>)}
+                <button style={{marginTop:8,width:"100%",padding:"9px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}
+  onClick={async()=>{
+    const today = new Date().toISOString().slice(0,10);
+    const records = grpStudents.map(s=>({
+      student_id:    s.id,
+      group_id:      typeof selGroup==="string" ? selGroup : null,
+      date:          today,
+      status:        attendanceMap[s.id] || "present",
+      unit:          group?.active_unit || 9,
+    })).filter(r=>r.student_id);
+    if(records.length){
+      try{
+        await supabase.from("attendance").upsert(records, {onConflict:"student_id,date"});
+        showToast("✓ Asistencia guardada correctamente");
+      }catch(e){ showToast("Error: "+e.message); }
+    } else { showToast("✓ Asistencia guardada"); }
+  }}>Guardar asistencia</button>
               </div>
             </div>
           )}
@@ -472,7 +528,17 @@ export default function TeacherPortal(){
                     </div>
                   </div>
                   <div style={{display:"flex",gap:8,marginTop:8}}>
-                    <button style={{flex:1,padding:"9px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}} onClick={()=>showToast("✓ Cambios guardados")}>Guardar cambios</button>
+                    <button style={{flex:1,padding:"9px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}} onClick={async()=>{
+  if(extraModal?.id) {
+    await supabase.from("student_progress").upsert({
+      student_id: extraModal.id,
+      extra_attempt_granted: true,
+      updated_at: new Date().toISOString(),
+    }, {onConflict:"student_id"}).catch(()=>{});
+  }
+  showToast("✓ Intento extra habilitado");
+  setExtraModal(null);
+}}>Guardar cambios</button>
                     <button style={{padding:"11px 18px",background:C.greenDim,color:C.green,border:`1px solid ${C.green}40`,borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}} onClick={()=>showToast("✓ Actividad publicada — los estudiantes ya pueden verla")}>Publicar</button>
                   </div>
                 </div>
@@ -506,7 +572,7 @@ export default function TeacherPortal(){
                       <div style={{fontSize:12,color:C.textTer,marginBottom:10}}>A1 · U{act.unit}</div>
                       <div style={{display:"flex",gap:6}}>
                         <button style={{flex:1,fontSize:12,padding:"5px",background:C.accentDim,color:C.accent,border:"none",borderRadius:7,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>Asignar a unidad</button>
-                        <button onClick={()=>{}} style={{fontSize:12,padding:"5px 10px",background:C.surfaceHigh,color:C.textSec,border:`1px solid ${C.border}`,borderRadius:7,cursor:"pointer",fontFamily:"inherit"}}>Editar</button>
+                        <button onClick={()=>showToast("Funcionalidad próximamente")} style={{fontSize:12,padding:"5px 10px",background:C.surfaceHigh,color:C.textSec,border:`1px solid ${C.border}`,borderRadius:7,cursor:"pointer",fontFamily:"inherit"}}>Editar</button>
                       </div>
                     </div>
                   );
@@ -527,7 +593,7 @@ export default function TeacherPortal(){
             <div style={{fontSize:12,color:C.textTer,marginBottom:8}}>Motivo (queda en el log de auditoría):</div>
             <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
               {["Problema técnico durante el examen","Se explicó el contenido de nuevo","Caso especial justificado"].map(r=>(
-                <button key={r} onClick={()=>{}} style={{fontSize:12,padding:"7px 10px",background:C.surfaceHigh,color:C.textSec,border:`1px solid ${C.border}`,borderRadius:8,cursor:"pointer",fontFamily:"inherit",textAlign:"left"}}>{r}</button>
+                <button key={r} onClick={()=>showToast(`${r} — próximamente`)} style={{fontSize:12,padding:"7px 10px",background:C.surfaceHigh,color:C.textSec,border:`1px solid ${C.border}`,borderRadius:8,cursor:"pointer",fontFamily:"inherit",textAlign:"left"}}>{r}</button>
               ))}
             </div>
             <input placeholder="Nota adicional (opcional)..." style={{width:"100%",padding:"8px 12px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,fontSize:13,color:C.textPri,fontFamily:"inherit",marginBottom:14}}/>

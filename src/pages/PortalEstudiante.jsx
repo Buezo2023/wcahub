@@ -283,8 +283,10 @@ export default function PortalEstudiante(){
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) { navigate("/", { replace: true }); return; }
+      const uid = session.user.id;
+      // Load profile
       supabase.from("profiles").select("full_name, email, avatar_url")
-        .eq("id", session.user.id).single()
+        .eq("id", uid).single()
         .then(({ data }) => {
           if (data) setUser({
             name: data.full_name?.split(" ")[0] || data.email?.split("@")[0] || "Estudiante",
@@ -292,14 +294,56 @@ export default function PortalEstudiante(){
             avatar: data.avatar_url || null,
           });
         });
+      // Load enrollments + group (teams_link, schedule, teacher)
+      supabase.from("students").select("id, level")
+        .eq("profile_id", uid).maybeSingle()
+        .then(async ({ data: student }) => {
+          if (!student) return;
+          const { data: enrolls } = await supabase
+            .from("enrollments")
+            .select("program_id, current_unit, exam_score, status, group_id, groups(teams_link, schedule, days, level, teacher_groups(staff(profiles(full_name))))")
+            .eq("student_id", student.id)
+            .eq("status", "active");
+          if (enrolls?.length) {
+            const patch = {};
+            enrolls.forEach(e => {
+              const grp = e.groups;
+              const teacherName = grp?.teacher_groups?.[0]?.staff?.profiles?.full_name || null;
+              const link = grp?.teams_link || null;
+              const schedule = grp?.schedule ? `${grp.days || "L·M·V"} · ${grp.schedule}` : null;
+              patch[e.program_id] = {
+                unit: e.current_unit || 1,
+                examScore: e.exam_score || 0,
+                teamsLink: link || "#",
+                nextClass: schedule || "Consulta con tu coordinadora",
+                teacher: teacherName || "Docente asignado",
+              };
+            });
+            setRealEnrollments(patch);
+            setEnrolled(enrolls.map(e => e.program_id));
+          }
+          // Load payment history
+          const { data: pays } = await supabase
+            .from("payments")
+            .select("amount, created_at, method, status, programs(name)")
+            .eq("student_id", student.id)
+            .order("created_at", { ascending: false })
+            .limit(10);
+          if (pays?.length) setRealPayments(pays);
+        });
     });
   }, [navigate]);
   const [showEnrollSuccess, setEnrollSuccess] = useState(null);
+  const [realEnrollments,  setRealEnrollments] = useState({});
+  const [realPayments,     setRealPayments]    = useState([]);
+  const [uploadState,      setUploadState]     = useState({ loading:false, done:false, error:null });
 
   const enrolledProgs = ALL_PROGRAMS.filter(p=>enrolled.includes(p.id));
   const unenrolledProgs = ALL_PROGRAMS.filter(p=>!enrolled.includes(p.id));
   const prog = ALL_PROGRAMS.find(p=>p.id===activeProg) || enrolledProgs[0];
-  const enrollment = ENROLLMENTS[activeProg] || ENROLLMENTS[enrolled[0]];
+  const _baseEnroll = ENROLLMENTS[activeProg] || ENROLLMENTS[enrolled[0]] || {};
+  const _realPatch  = realEnrollments[activeProg] || realEnrollments[enrolled[0]] || {};
+  const enrollment  = { ..._baseEnroll, ..._realPatch };
   const currentLevel = enrollment?.level || "B1";
   const units = activeProg === "en"
     ? (UNITS[currentLevel] || UNITS["B1"] || [])
@@ -719,13 +763,82 @@ export default function PortalEstudiante(){
               })}
               <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,overflow:"hidden",boxShadow:"var(--shadow-sm)"}}>
                 <div style={{padding:"13px 18px",borderBottom:"1px solid var(--border)",fontSize:12,fontWeight:700,color:"var(--text-primary)"}}>Historial de pagos</div>
-                {[["16 Jun","Inglés","$95","Stripe ···4242"],["16 Jun","VA General","$75","Stripe ···4242"],["16 May","Inglés","$95","Stripe ···4242"],["16 May","VA General","$75","Transferencia BAC"]].map(([d,prog3,a,m],i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:14,padding:"12px 18px",borderBottom:"1px solid var(--border)"}}>
-                    <div style={{flex:1}}><div style={{fontSize:13,color:"var(--text-primary)",fontWeight:500}}>{d} · {prog3}</div><div style={{fontSize:11,color:"var(--text-secondary)"}}>{m}</div></div>
-                    <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>{a}</div>
-                    <div style={{fontSize:10,padding:"3px 9px",background:GD,color:G,borderRadius:20,fontWeight:600}}>✓</div>
+                {realPayments.length > 0 ? realPayments.map((p,i)=>{
+                  const fecha = new Date(p.created_at).toLocaleDateString("es-HN",{day:"2-digit",month:"short"});
+                  const prog3 = p.programs?.name || "Programa";
+                  const statusColor = p.status==="confirmed"?G:p.status==="pending"?A:R;
+                  const statusBg    = p.status==="confirmed"?GD:p.status==="pending"?AD:RD;
+                  const statusText  = p.status==="confirmed"?"✓ Confirmado":p.status==="pending"?"Pendiente":"Rechazado";
+                  return(
+                  <div key={p.id||i} style={{display:"flex",alignItems:"center",gap:14,padding:"12px 18px",borderBottom:"1px solid var(--border)"}}>
+                    <div style={{flex:1}}><div style={{fontSize:13,color:"var(--text-primary)",fontWeight:500}}>{fecha} · {prog3}</div><div style={{fontSize:11,color:"var(--text-secondary)"}}>{p.method||"Transferencia"}</div></div>
+                    <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>${Number(p.amount).toFixed(2)}</div>
+                    <div style={{fontSize:10,padding:"3px 9px",background:statusBg,color:statusColor,borderRadius:20,fontWeight:600}}>{statusText}</div>
+                  </div>);
+                }) : (
+                  <div style={{padding:"18px",fontSize:12,color:"var(--text-secondary)",textAlign:"center"}}>
+                    No hay pagos registrados aún.
                   </div>
-                ))}
+                )}
+              </div>
+              {/* ── Subida de comprobante ── */}
+              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,padding:18,marginTop:12,boxShadow:"var(--shadow-sm)"}}>
+                <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:4}}>Subir comprobante de pago</div>
+                <div style={{fontSize:12,color:"var(--text-secondary)",marginBottom:14}}>Si pagaste por transferencia bancaria, sube la foto o captura del comprobante para que el equipo lo confirme.</div>
+                {uploadState.done ? (
+                  <div style={{background:GD,borderRadius:10,padding:"12px 14px",fontSize:13,color:"#065f46",fontWeight:600}}>✓ Comprobante enviado correctamente. Te confirmamos en 24h.</div>
+                ) : (
+                  <div>
+                    <label style={{display:"block",cursor:"pointer"}}>
+                      <input type="file" accept="image/*,.pdf" style={{display:"none"}}
+                        onChange={async(e)=>{
+                          const file = e.target.files?.[0];
+                          if(!file) return;
+                          setUploadState({loading:true,done:false,error:null});
+                          try{
+                            const { data:{ session } } = await supabase.auth.getSession();
+                            const uid = session?.user?.id;
+                            const ext = file.name.split(".").pop();
+                            const path = `comprobantes/${uid}/${Date.now()}.${ext}`;
+                            const { error } = await supabase.storage
+                              .from("comprobantes")
+                              .upload(path, file, { upsert:true });
+                            if(error) throw error;
+                            const { data:{ publicUrl } } = supabase.storage.from("comprobantes").getPublicUrl(path);
+                            // Record payment pending confirmation
+                            if(uid){
+                              const { data:st } = await supabase.from("students").select("id").eq("profile_id",uid).maybeSingle();
+                              if(st) await supabase.from("payments").insert({
+                                student_id:st.id,
+                                amount:0,
+                                method:"Transferencia bancaria",
+                                status:"pending",
+                                receipt_url:publicUrl,
+                              });
+                            }
+                            setUploadState({loading:false,done:true,error:null});
+                          }catch(err){
+                            setUploadState({loading:false,done:false,error:err.message||"Error al subir"});
+                          }
+                        }}
+                      />
+                      <div style={{border:`2px dashed ${uploadState.error?R:"var(--border)"}`,borderRadius:12,padding:"20px",textAlign:"center",cursor:"pointer",background:"var(--bg-surface-subtle)",transition:"all .2s"}}
+                        onMouseEnter={e=>e.currentTarget.style.borderColor=P}
+                        onMouseLeave={e=>e.currentTarget.style.borderColor=uploadState.error?R:"var(--border)"}>
+                        {uploadState.loading ? (
+                          <div style={{fontSize:13,color:"var(--text-secondary)"}}>Subiendo...</div>
+                        ) : (
+                          <>
+                            <i className="ti ti-upload" style={{fontSize:28,color:"var(--text-tertiary)",display:"block",marginBottom:8}} aria-hidden="true"/>
+                            <div style={{fontSize:13,fontWeight:600,color:"var(--text-primary)",marginBottom:2}}>Haz clic para seleccionar el comprobante</div>
+                            <div style={{fontSize:11,color:"var(--text-secondary)"}}>JPG, PNG o PDF · Máx. 5 MB</div>
+                          </>
+                        )}
+                      </div>
+                    </label>
+                    {uploadState.error && <div style={{fontSize:12,color:R,marginTop:8}}>⚠ {uploadState.error}</div>}
+                  </div>
+                )}
               </div>
             </div>
           )}

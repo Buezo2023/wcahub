@@ -301,14 +301,48 @@ function NewLeadModal({ onSave, onClose }) {
           </div>
           <div style={{ gridColumn:"1/-1" }}>
             <label style={{ fontSize:11, color:"#64748b", display:"block", marginBottom:5, fontWeight:500 }}>Nota inicial</label>
-            <textarea placeholder="Cómo llegó, qué busca, detalles relevantes..." rows={3} style={{ width:"100%", padding:"10px 13px", border:"1px solid #e2e8f0", borderRadius:9, fontSize:13, fontFamily:"inherit", color:"#0f172a", background:"#f8fafc", resize:"vertical", outline:"none" }}
+            <textarea id="crm-new-lead-note" placeholder="Cómo llegó, qué busca, detalles relevantes..." rows={3} style={{ width:"100%", padding:"10px 13px", border:"1px solid #e2e8f0", borderRadius:9, fontSize:13, fontFamily:"inherit", color:"#0f172a", background:"#f8fafc", resize:"vertical", outline:"none" }}
               onFocus={e=>{e.target.style.borderColor=P;}} onBlur={e=>{e.target.style.borderColor="#e2e8f0";}}/>
           </div>
         </div>
 
         <div style={{ display:"flex", gap:10, marginTop:20 }}>
           <button onClick={onClose} style={{ flex:1, padding:"11px", background:"#f1f5f9", color:"#64748b", border:"none", borderRadius:10, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
-          <button onClick={()=>{ if(valid){ onSave({...form,id:Date.now(),score:50,tags:[],activity:[{type:"lead",text:`Lead creado manualmente · ${form.source}`,time:"Ahora"}],date:"Ahora",lastMsg:""}); onClose(); }}} style={{ flex:2, padding:"11px", background:valid?P:"#e2e8f0", color:valid?"#fff":"#94a3b8", border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:valid?"pointer":"not-allowed", fontFamily:"inherit" }}>
+          <button onClick={async()=>{
+            if(!valid) return;
+            const note = document.querySelector("#crm-new-lead-note")?.value || "";
+            try {
+              const saved = await createLead({
+                name:    form.name,
+                email:   form.email,
+                phone:   form.phone || null,
+                country: form.country || null,
+                source:  form.source,
+                program: form.program || null,
+                notes:   note || null,
+              });
+              onSave({
+                ...(saved || {}),
+                id:       saved?.id || Date.now(),
+                name:     form.name,
+                email:    form.email,
+                phone:    form.phone,
+                country:  form.country,
+                source:   form.source,
+                program:  form.program,
+                stage:    "nuevo",
+                score:    50,
+                tags:     [],
+                date:     "Ahora",
+                lastMsg:  "",
+                notes:    note,
+                activity: [{type:"lead",text:`Lead creado manualmente · ${form.source}`,time:"Ahora"}],
+              });
+              onClose();
+            } catch(err) {
+              alert("Error al guardar: " + err.message);
+            }
+          }} style={{ flex:2, padding:"11px", background:valid?P:"#e2e8f0", color:valid?"#fff":"#94a3b8", border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:valid?"pointer":"not-allowed", fontFamily:"inherit" }}>
             Crear lead
           </button>
         </div>
@@ -356,6 +390,10 @@ export default function CRM() {
 
   function convertLead(id) {
     setLeads(ls => ls.map(l => l.id===id ? {...l,stage:"convertido",score:98} : l));
+    // Persist stage change
+    if(typeof id === "string" && id.length > 10) {
+      updateLeadStage(id, "convertido").catch(console.error);
+    }
     showToast("🎉 ¡Lead convertido! Se creó la matrícula.", G);
     if (selLead?.id===id) setSelLead(l => ({...l,stage:"convertido",score:98}));
   }
@@ -572,14 +610,21 @@ export default function CRM() {
                 <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                   {tasks.map((t,i)=>(
                     <div key={t.id} style={{ display:"flex", gap:12, alignItems:"center", background:"#ffffff", border:`1px solid ${t.done?"#e2e8f0":t.priority==="high"?`${R}30`:"#e2e8f0"}`, borderRadius:12, padding:"14px 18px", boxShadow:"0 1px 4px rgba(0,0,0,.04)", opacity:t.done?.5:1 }}>
-                      <input type="checkbox" checked={t.done} onChange={()=>setTasks(ts=>ts.map(x=>x.id===t.id?{...x,done:!x.done}:x))} style={{ width:18, height:18, cursor:"pointer", accentColor:P, flexShrink:0 }}/>
+                      <input type="checkbox" checked={t.done} onChange={async()=>{
+  setTasks(ts=>ts.map(x=>x.id===t.id?{...x,done:!x.done}:x));
+  if(t.id && typeof t.id === "string" && t.id.length > 10) {
+    try { await toggleTask(t.id); } catch(e) { console.error(e); }
+  }
+}} style={{ width:18, height:18, cursor:"pointer", accentColor:P, flexShrink:0 }}/>
                       <div style={{ flex:1 }}>
                         <div style={{ fontSize:13, fontWeight:500, color:t.done?"#94a3b8":"#0f172a", textDecoration:t.done?"line-through":"none" }}>{t.text}</div>
                         <div style={{ fontSize:11, color:"#94a3b8", marginTop:3 }}>Lead: <strong style={{ color:"#475569" }}>{t.lead}</strong> · {t.due}</div>
                       </div>
                       {!t.done && t.priority==="high" && <span style={{ fontSize:10, padding:"3px 9px", borderRadius:20, background:RD, color:R, fontWeight:600 }}>Urgente</span>}
                       {!t.done && t.priority==="medium" && <span style={{ fontSize:10, padding:"3px 9px", borderRadius:20, background:AD, color:A, fontWeight:600 }}>Normal</span>}
-                      <button onClick={()=>setTasks(ts=>ts.filter(x=>x.id!==t.id))} style={{ fontSize:12, padding:"5px 10px", background:"#f1f5f9", color:"#94a3b8", border:"none", borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>✕</button>
+                      <button onClick={async()=>{
+  setTasks(ts=>ts.filter(x=>x.id!==t.id));
+}} style={{ fontSize:12, padding:"5px 10px", background:"#f1f5f9", color:"#94a3b8", border:"none", borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>✕</button>
                     </div>
                   ))}
                   {pendingTasks===0 && (
