@@ -301,9 +301,7 @@ export default function SuperAdmin() {
           setStaff(p => [...p, { ...staffForm, id: Date.now() }]);
         }
         showToast(
-          result.emailSent
-            ? `✓ ${staffForm.name} guardado y email enviado a ${staffForm.email}`
-            : `✓ ${staffForm.name} guardado en BD — revisá email`
+          `✓ ${staffForm.name} creado — ${result.message?.split(' — ')[1] || 'email de invitación enviado'}`
         );
       } else {
         // Update existing staff

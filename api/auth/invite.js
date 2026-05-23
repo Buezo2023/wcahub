@@ -117,21 +117,40 @@ async function handleStaff(req, actor) {
   const { data: existing } = await admin.from('profiles').select('id, role').eq('email', email).maybeSingle();
   let userId, isNew = false;
 
+  let supabaseInviteSent = false;
+
   if (existing) {
     userId = existing.id;
-    if (existing.role !== supabaseRole) await admin.from('profiles').update({ role: supabaseRole, active: true }).eq('id', userId);
+    if (existing.role !== supabaseRole)
+      await admin.from('profiles').update({ role: supabaseRole, active: true }).eq('id', userId);
   } else {
-    const { data: newUser, error } = await admin.auth.admin.createUser({ email, email_confirm: true, user_metadata: { full_name: fullName } });
-    if (error) {
-      if (error.message?.includes('already registered')) {
+    // Use inviteUserByEmail → Supabase sends the invite email automatically
+    // (magic link to the right portal). Works without a custom email domain.
+    const { data: invited, error: invErr } = await admin.auth.admin.inviteUserByEmail(email, {
+      redirectTo: `https://wcahub.vercel.app${PORTAL_MAP[supabaseRole] || '/portal'}`,
+      data: { full_name: fullName, role: supabaseRole },
+    });
+
+    if (invErr) {
+      // User already exists in Auth but not in profiles — look them up
+      if (invErr.message?.includes('already been registered') || invErr.status === 422) {
         const { data: { users } } = await admin.auth.admin.listUsers();
         const found = users.find(u => u.email === email);
-        if (found) userId = found.id; else throw error;
-      } else throw error;
-    } else { userId = newUser.user.id; isNew = true; }
+        if (found) { userId = found.id; }
+        else throw invErr;
+      } else throw invErr;
+    } else {
+      userId = invited.user.id;
+      isNew = true;
+      supabaseInviteSent = true; // Supabase sent the invite email
+    }
   }
 
-  await admin.from('profiles').upsert({ id: userId, email, full_name: fullName, role: supabaseRole, active: true }, { onConflict: 'id' });
+  await admin.from('profiles').upsert(
+    { id: userId, email, full_name: fullName, role: supabaseRole, active: true },
+    { onConflict: 'id' }
+  );
+
   const { data: staffRow } = await admin.from('staff').upsert({
     profile_id: userId, position: role,
     department: role === 'Docente' ? 'Académico' : 'Administrativo',
@@ -142,14 +161,29 @@ async function handleStaff(req, actor) {
 
   try { await admin.from('audit_log').insert({ actor_id: actor.id, action: 'invited_staff', entity: 'staff', entity_id: staffRow?.id || userId, metadata: { email, role, fullName } }); } catch(_) {}
 
-  let emailSent = false;
+  // ALSO send the custom branded email via Resend if configured
+  // (works once a custom domain is verified in Resend)
+  let resendSent = false;
   try {
     const { subject, html } = staffEmailHtml({ name: fullName, role, portalUrl, email });
     await sendEmail({ to: email, toName: fullName, subject, html });
-    emailSent = true;
-  } catch(e) { console.error('Staff email:', e.message); }
+    resendSent = true;
+  } catch(e) {
+    console.log('Resend email skipped (no verified domain yet):', e.message);
+  }
 
-  return { message: `${fullName} agregado/a como ${role}${emailSent ? ' — email enviado' : ' (Mailrelay no configurado)'}`, userId, role: supabaseRole, emailSent, isNew };
+  const emailSent = supabaseInviteSent || resendSent;
+  const emailNote = resendSent
+    ? 'email de bienvenida enviado via Resend'
+    : supabaseInviteSent
+      ? 'email de invitación enviado via Supabase (revisá bandeja + spam)'
+      : 'usuario creado — reenviar invitación desde RRHH';
+
+  return {
+    message: `${fullName} agregado/a como ${role} — ${emailNote}`,
+    userId, role: supabaseRole, emailSent, isNew,
+    supabaseInviteSent, resendSent,
+  };
 }
 
 async function handleResend(req, actor) {
