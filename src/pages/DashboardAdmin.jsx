@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { getStudents, getGroups, getPayments, updateGroupTeamsLink, getPrograms } from "../lib/db.js";
 import { supabase } from "../lib/supabase.js";
 import { toast } from "../lib/toast.jsx";
-import { useConfirm } from "../lib/ConfirmModal.jsx";
 import { api } from "../lib/api.js";
 
 // ─── BRAND ───────────────────────────────────────────────────────────────────
@@ -347,9 +346,10 @@ function B2BSection({ supabase, B, Badge, Stat }) {
               ↓ Factura CSV
             </button>
             <button onClick={async()=>{
-              if(window.confirm(`¿Desactivar ${co.name}?`)){
+              {
                 await supabase.from("b2b_companies").update({active:false}).eq("id",co.id);
                 setCompanies(cs=>cs.filter(c=>c.id!==co.id));
+                toast.success(`${co.name} desactivada`);
               }
             }} style={{ fontSize:12, padding:"5px 12px", background:"#fef2f2", color:"#dc2626", border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>
               Desactivar
@@ -1186,7 +1186,7 @@ export default function AdminDashboard() {
               <button onClick={()=>{ setTeamsModal(null); setTeamsLink(""); }} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
               <button onClick={async()=>{
   if(teamsModal?.dbId && teamsLink) {
-    await supabase.from("groups").update({teams_link:teamsLink}).eq("id",teamsModal.dbId).catch(console.error);
+    await supabase.from("groups").update({teams_link:teamsLink}).eq("id",teamsModal.dbId);
     setRealGroups(gs => gs.map(g => g.id===teamsModal.dbId ? {...g,teamsSet:true,teamsLink} : g));
   }
   setTeamsModal(null); setTeamsLink(""); setActionDone("✓ Link de Teams guardado"); setTimeout(()=>setActionDone(null),3000);

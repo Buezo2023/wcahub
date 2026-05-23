@@ -114,7 +114,7 @@ export default function CoordAcademica() {
           name: s.profiles.full_name || s.profiles.email || "—",
           email: s.profiles.email || "",
         })));
-      }).catch(console.error);
+      });
     supabase.from("enrollments")
       .select("program_id, status, students!inner(id, level, scholarship, profiles!inner(full_name, email))")
       .eq("status", "active").limit(300)
@@ -148,7 +148,7 @@ export default function CoordAcademica() {
           unit: g.active_unit,
           teamsSet: !!g.teams_link,
         })));
-      }).catch(console.error);
+      });
   }, []);
 
   const sourceStudents = realStudents;
@@ -649,7 +649,7 @@ export default function CoordAcademica() {
     if(error) throw error;
     if(teacherRow?.dbId) {
       const { data: staffRow } = await supabase.from("staff").select("id").eq("profile_id", teacherRow.dbId).maybeSingle();
-      if(staffRow) await supabase.from("teacher_groups").insert({teacher_id:staffRow.id, group_id:grp.id}).catch(()=>{});
+      if(staffRow){ try{ await supabase.from("teacher_groups").insert({teacher_id:staffRow.id, group_id:grp.id}); }catch(_){} }
     }
     setSchedCreated(true);
   }catch(err){ toast.error("Error: "+err.message); }
@@ -764,7 +764,7 @@ export default function CoordAcademica() {
       .select("id").ilike("full_name", `%${upgradeModal.name.split(" ")[0]}%`).limit(1);
     if(profiles?.[0]) {
       const { data: st } = await supabase.from("students").select("id").eq("profile_id",profiles[0].id).maybeSingle();
-      if(st) await supabase.from("enrollments").update({price_locked:95}).eq("student_id",st.id).catch(()=>{});
+      if(st){ try{ await supabase.from("enrollments").update({price_locked:95}).eq("student_id",st.id); }catch(_){} }
     }
   }
   setUpgradeModal(null);
@@ -868,7 +868,7 @@ export default function CoordAcademica() {
                         await supabase.from("profiles").select("id").eq("email",teacherForm.email).maybeSingle()
                           .then(async({data:existing})=>{
                             if(!existing){
-                              await supabase.auth.admin?.createUser?.({email:teacherForm.email,email_confirm:true,user_metadata:{full_name:teacherForm.name}}).catch(()=>{});
+                              await supabase.auth.admin?.createUser?.({email:teacherForm.email,email_confirm:true,user_metadata:{full_name:teacherForm.name}});
                             }
                             const {data:prof} = await supabase.from("profiles").select("id").eq("email",teacherForm.email).maybeSingle();
                             if(prof){

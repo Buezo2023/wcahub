@@ -1,5 +1,6 @@
 import { useState, useEffect} from "react";
 import { useNavigate } from 'react-router-dom';
+import { toast } from "../lib/toast.jsx";
 import { supabase } from "../lib/supabase.js";
 
 const C = {

@@ -12,20 +12,6 @@ const G = "#059669", GD = "#ecfdf5";
 const R = "#dc2626", RD = "#fef2f2";
 const A = "#d97706", AD = "#fffbeb";
 
-const STAFF_INIT = [
-  { id:1,  name:"José Rodríguez",  role:"Docente",          email:"j.rodriguez@wca.edu.hn", phone:"+504 9900-1111", country:"Honduras", status:"active",  hired:"Ene 2024", salary:850,  levels:["A1"] },
-  { id:2,  name:"Ana Torres",      role:"Docente",          email:"a.torres@wca.edu.hn",    phone:"+504 9900-2222", country:"Honduras", status:"active",  hired:"Feb 2024", salary:850,  levels:["B1"] },
-  { id:3,  name:"María Paredes",   role:"Docente",          email:"m.paredes@wca.edu.hn",   phone:"+504 9900-3333", country:"Honduras", status:"active",  hired:"Mar 2024", salary:850,  levels:["A2"] },
-  { id:4,  name:"Luis Gutiérrez",  role:"Docente",          email:"l.gutierrez@wca.edu.hn", phone:"+504 9900-4444", country:"Honduras", status:"active",  hired:"Mar 2024", salary:850,  levels:["A2"] },
-  { id:5,  name:"Carlos Medina",   role:"Docente",          email:"c.medina@wca.edu.hn",    phone:"+504 9900-5555", country:"Honduras", status:"active",  hired:"Abr 2024", salary:850,  levels:["B2"] },
-  { id:6,  name:"Sofía Estrada",   role:"Docente",          email:"s.estrada@wca.edu.hn",   phone:"+504 9900-6666", country:"Honduras", status:"active",  hired:"Ene 2024", salary:850,  levels:["C1"] },
-  { id:7,  name:"Laura Mendoza",   role:"Coordinadora",     email:"l.mendoza@wca.edu.hn",   phone:"+504 9900-7777", country:"Honduras", status:"active",  hired:"Ene 2023", salary:1200, levels:[] },
-  { id:8,  name:"Karla Reyes",     role:"Admin",            email:"k.reyes@wca.edu.hn",     phone:"+504 9900-8888", country:"Honduras", status:"active",  hired:"Feb 2023", salary:1100, levels:[] },
-  { id:9,  name:"David Castro",    role:"Gestor de Cobros", email:"d.castro@wca.edu.hn",    phone:"+504 9900-9999", country:"Honduras", status:"active",  hired:"Jun 2023", salary:900,  levels:[] },
-  { id:10, name:"Paola Núñez",     role:"Ventas",           email:"p.nunez@wca.edu.hn",     phone:"+504 9911-0000", country:"Honduras", status:"active",  hired:"Sep 2023", salary:800,  levels:[] },
-  { id:11, name:"Rodrigo Soto",    role:"IT",               email:"r.soto@wca.edu.hn",      phone:"+504 9911-1111", country:"Honduras", status:"active",  hired:"Ene 2023", salary:1300, levels:[] },
-  { id:12, name:"Daniela Vega",    role:"Marketing",        email:"d.vega@wca.edu.hn",      phone:"+504 9911-2222", country:"Honduras", status:"inactive",hired:"Mar 2024", salary:900,  levels:[] },
-];
 
 // Programs loaded from Supabase only
 
@@ -172,7 +158,7 @@ export default function SuperAdmin() {
           level: r.level, unit: r.current_unit,
           title: `Unidad ${r.current_unit}`, students: 0
         })));
-      }).catch(console.error);
+      });
 
     // Load holidays
     supabase.from("holidays").select("date, name, affects_cycle")
@@ -181,11 +167,11 @@ export default function SuperAdmin() {
           date: new Date(h.date).toLocaleDateString("es-HN", {day:"2-digit", month:"short", year:"numeric"}),
           name: h.name, affects: h.affects_cycle
         })));
-      }).catch(console.error);
+      });
 
     getAuditLog({ limit: 50 }).then(data => {
       if (data.length > 0) setDbAudit(data);
-    }).catch(console.error);
+    });
 
     // Load real staff
     import("../lib/db.js").then(({ getStaff }) =>
@@ -205,7 +191,7 @@ export default function SuperAdmin() {
             levels:  [],
           })));
         }
-      }).catch(console.error)
+      })
     );
 
     getPrograms().then(data => {
@@ -223,7 +209,7 @@ export default function SuperAdmin() {
           desc: p.name,
         })));
       }
-    }).catch(console.error);
+    });
   }, []);
 
   // Session guard — redirect on expiry
@@ -802,12 +788,11 @@ export default function SuperAdmin() {
                     <select style={{ flex:1, padding:"8px 10px", border:"1px solid var(--border)", borderRadius:8, fontSize:12, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}>
                       {Array.from({length:12},(_,i)=><option key={i} selected={i+1===c.unit}>Unidad {i+1}</option>)}
                     </select>
-                    <button onClick={async()=>{ await supabase.from("cycle_config").upsert({program_id:"en",level:c.level,current_unit:c.unit},{onConflict:"program_id,level"}).catch(()=>{}); showToast(`Unidad ${c.unit} aplicada para ${c.level}`); }} style={{ padding:"8px 16px", background:AD, color:A, border:`1px solid ${A}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Aplicar</button>
+                    <button onClick={async()=>{ try{ await supabase.from("cycle_config").upsert({program_id:"en",level:c.level,current_unit:c.unit},{onConflict:"program_id,level"}); showToast(`Unidad ${c.unit} aplicada para ${c.level}`); }catch(e){showToast("Error: "+e.message, R);} }} style={{ padding:"8px 16px", background:AD, color:A, border:`1px solid ${A}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Aplicar</button>
                     <button onClick={async()=>{
   const ok = await confirmDialog({ title:`¿Reiniciar nivel ${c.level}?`, body:"Esto restablece la unidad activa a U1 para todos los estudiantes de este nivel. Es irreversible.", danger:true, confirmText:"Sí, reiniciar" });
   if(!ok) return;
-  await supabase.from("cycle_config").upsert({program_id:"en",level:c.level,current_unit:1},{onConflict:"program_id,level"}).catch(()=>{});
-  showToast(`${c.level} reiniciado a U1`);
+  try{ await supabase.from("cycle_config").upsert({program_id:"en",level:c.level,current_unit:1},{onConflict:"program_id,level"}); showToast(`${c.level} reiniciado a U1`); }catch(e){showToast("Error: "+e.message,R);}
 }} style={{ padding:"8px 16px", background:RD, color:R, border:`1px solid ${R}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Reiniciar U1</button>
                   </div>
                 </div>
@@ -1024,7 +1009,7 @@ export default function SuperAdmin() {
                   const inputs = document.querySelectorAll("[data-bank]");
                   const [nombre, cuenta, titular] = [...inputs].map(i=>i.value);
                   if(!nombre||!cuenta) return showToast("Nombre y cuenta son requeridos",R);
-                  await supabase.from("audit_log").insert({actor_id:null,action:"added_bank",entity:"bank",metadata:{nombre,cuenta,titular}}).catch(()=>{});
+                  try{ await supabase.from("audit_log").insert({actor_id:null,action:"added_bank",entity:"bank",metadata:{nombre,cuenta,titular}}); }catch(_){}
                   showToast("Banco agregado correctamente");
                   inputs.forEach(i=>i.value="");
                 }} style={{ width:"100%", marginTop:4 }}>Agregar banco</BtnPrimary>

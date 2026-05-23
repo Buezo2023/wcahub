@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect} from "react";
 import { useNavigate } from 'react-router-dom';
+import { toast } from "../lib/toast.jsx";
 import { supabase } from "../lib/supabase.js";
 import { notify, Notifs } from "../lib/notify.js";
 
@@ -495,7 +496,7 @@ export default function GestorCobros() {
                         });
                         const data = await res.json();
                         if (data.data?.skipped || !res.ok) throw new Error("API not available");
-                        showToast("✓ WhatsApp enviado via Twilio");
+                        toast.success("✓ WhatsApp enviado via Twilio");
                       } catch {
                         // Fallback to wa.me direct link
                         const msg = encodeURIComponent(`Hola ${o.student}, tu pago de $${o.amount} lleva ${o.days} días vencido en WCA Academy. ¿Podemos ayudarte a regularizarlo? 🙏`);
