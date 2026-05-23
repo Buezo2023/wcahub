@@ -117,8 +117,15 @@ export default function BIDashboard() {
 
   // Session guard — redirect on expiry
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) navigate("/", { replace: true });
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) { navigate("/", { replace: true }); return; }
+      // Verificar rol — solo directivo, admin o super_admin
+      const { data: profile } = await supabase.from("profiles").select("role").eq("id", session.user.id).maybeSingle();
+      const allowed = ["directivo","admin","super_admin"];
+      if (!profile || !allowed.includes(profile.role)) {
+        navigate("/", { replace: true });
+        return;
+      }
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       if (event === "SIGNED_OUT" || (!s && event !== "INITIAL_SESSION")) {

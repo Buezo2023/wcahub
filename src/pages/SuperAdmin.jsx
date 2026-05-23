@@ -122,16 +122,19 @@ function Modal({ title, subtitle, onClose, children }) {
 
 export default function SuperAdmin() {
   const navigate = useNavigate();
-  const [toast,      setToast]      = useState(null);
+  // toast: usa el sistema global de ../lib/toast.jsx
   const [confirmDialog, ConfirmUI] = useConfirm();
   const [saving,     setSaving]     = useState(false);
   const [dbAudit,    setDbAudit]    = useState([]);
   const [realStats,  setRealStats]  = useState(null);   // from /api/admin/stats
   const [statsLoading, setStatsLoading] = useState(true);
 
-  function showToast(msg, color = "#059669") {
-    setToast({ msg, color });
-    setTimeout(() => setToast(null), 3000);
+  function showToast(msg, color) {
+    if (!color || color === "#059669" || color === "green") toast.success(msg);
+    else if (color === "#dc2626" || color === "red" || color === "#ef4444") toast.error(msg);
+    else if (color === "#d97706" || color === "#f59e0b") toast.warn(msg);
+    else if (color === "#0369a1" || color === "blue") toast.info(msg);
+    else toast.success(msg);
   }
 
   // Load real stats, audit log, staff and programs from Supabase
@@ -1009,7 +1012,7 @@ export default function SuperAdmin() {
                   const inputs = document.querySelectorAll("[data-bank]");
                   const [nombre, cuenta, titular] = [...inputs].map(i=>i.value);
                   if(!nombre||!cuenta) return showToast("Nombre y cuenta son requeridos",R);
-                  try{ await supabase.from("audit_log").insert({actor_id:null,action:"added_bank",entity:"bank",metadata:{nombre,cuenta,titular}}); }catch(_){}
+                  try{ const {data:{session:bs}} = await supabase.auth.getSession(); await supabase.from("audit_log").insert({actor_id:bs?.user?.id||null,action:"added_bank",entity:"bank",metadata:{nombre,cuenta,titular}}); }catch(_){}
                   showToast("Banco agregado correctamente");
                   inputs.forEach(i=>i.value="");
                 }} style={{ width:"100%", marginTop:4 }}>Agregar banco</BtnPrimary>

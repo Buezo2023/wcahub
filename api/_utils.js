@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 // ─── Supabase Admin Client ────────────────────────────────────────
 export function getSupabaseAdmin() {
-  const url = process.env.VITE_SUPABASE_URL;
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!url || !key) throw new Error("Supabase admin env vars missing");
   return createClient(url, key, {
@@ -51,8 +51,8 @@ export async function requireAuth(req) {
   if (!token) throw { status: 401, message: "No autorizado" };
 
   const anon = createClient(
-    process.env.VITE_SUPABASE_URL,
-    process.env.VITE_SUPABASE_ANON_KEY
+    process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+    process.env.SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY
   );
 
   const { data: { user }, error } = await anon.auth.getUser(token);
@@ -79,10 +79,11 @@ export function requireRole(profile, ...roles) {
 }
 
 // ─── CORS — fixed to production domain ───────────────────────────
+const isProd = process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production";
 const ALLOWED_ORIGINS = [
   "https://wcahub.vercel.app",
   "https://wcahub.com",
-  "http://localhost:5173",
+  ...(isProd ? [] : ["http://localhost:5173", "http://localhost:5174"]),
 ];
 
 export function setCORS(req, res) {

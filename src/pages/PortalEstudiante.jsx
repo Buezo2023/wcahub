@@ -85,18 +85,21 @@ const PROGRAM_UNITS = {
 };
 
 const SKILLS = {
-  en:[{name:"Listening",total:48,done:32,score:89,color:"#6b21a8"},{name:"Reading",total:23,done:17,score:85,color:"#4d7c0f"},{name:"Speaking",total:12,done:8,score:82,color:"#be185d"},{name:"Pronunciation",total:12,done:8,score:78,color:"#c2410c"},{name:"English For Real",total:36,done:24,score:91,color:"#0e7490"},{name:"Writing",total:12,done:8,score:80,color:"#b91c1c"},{name:"Vocabulary",total:53,done:36,score:87,color:"#166534"},{name:"Grammar",total:60,done:40,score:84,color:"#1e40af"}],
-  va:[{name:"Comunicación",total:24,done:14,score:92,color:"#7c3aed"},{name:"Herramientas",total:18,done:10,score:88,color:"#0e7490"},{name:"Inglés profesional",total:20,done:12,score:85,color:"#166534"},{name:"Productividad",total:16,done:9,score:90,color:"#c2410c"},{name:"Clientes",total:14,done:7,score:87,color:"#be185d"},{name:"Proyectos",total:12,done:5,score:83,color:"#1e40af"}],
+  en:[{name:"Listening",total:48,done:0,score:0,color:"#6b21a8"},{name:"Reading",total:23,done:0,score:0,color:"#4d7c0f"},{name:"Speaking",total:12,done:0,score:0,color:"#be185d"},{name:"Pronunciation",total:12,done:0,score:0,color:"#c2410c"},{name:"English For Real",total:36,done:0,score:0,color:"#0e7490"},{name:"Writing",total:12,done:0,score:0,color:"#b91c1c"},{name:"Vocabulary",total:53,done:0,score:0,color:"#166534"},{name:"Grammar",total:60,done:0,score:0,color:"#1e40af"}],
+  va:[{name:"Comunicación",total:24,done:0,score:0,color:"#7c3aed"},{name:"Herramientas",total:18,done:0,score:0,color:"#0e7490"},{name:"Inglés profesional",total:20,done:0,score:0,color:"#166534"},{name:"Productividad",total:16,done:0,score:0,color:"#c2410c"},{name:"Clientes",total:14,done:0,score:0,color:"#be185d"},{name:"Proyectos",total:12,done:0,score:0,color:"#1e40af"}],
 };
 
 const PROG_PROGRESS = (id)=>{
+  // Returns zeros for all units — real progress loads from student_progress table in Supabase
+  // Units completed are tracked via ExamModule component which writes to student_progress
   const en = realEnrollments[id] || {};
   if(!en) return {};
   const p = {};
   for(let i=1;i<=12;i++){
-    if(i<en.unit) p[i]={actsDone:20,testDone:3,score:85+Math.floor(Math.random()*10)};
-    else if(i===en.unit) p[i]={actsDone:Math.floor(en.unit*0.6),testDone:0,score:0};
-    else p[i]={actsDone:0,testDone:0,score:0};
+    // Only mark previous units as "done" based on current_unit from Supabase (no fake scores)
+    if(i<(en.unit||1)) p[i]={actsDone:20,testDone:3,score:0}; // done but score loads from DB
+    else if(i===(en.unit||1)) p[i]={actsDone:0,testDone:0,score:0}; // current unit — in progress
+    else p[i]={actsDone:0,testDone:0,score:0}; // future unit — locked
   }
   return p;
 };
@@ -1016,6 +1019,8 @@ export default function PortalEstudiante(){
                     </div>
                     <button onClick={async()=>{
                       try{
+                        toast.info("Pagos en línea próximamente — por ahora coordiná con tu asesor");
+                        return;
                         const res = await fetch("/api/stripe/checkout", {
                           method:"POST",
                           headers:{"Content-Type":"application/json", Authorization:`Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`},

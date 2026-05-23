@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
 import { useGlobalSearch, GlobalSearchModal } from './lib/globalSearch.jsx';
 import { ToastContainer } from './lib/toast.jsx';
@@ -17,6 +18,44 @@ const BIDashboard     = lazy(() => import('./pages/BIDashboard.jsx'));
 const AuthCallback    = lazy(() => import('./pages/AuthCallback.jsx'));
 const PlatformPreview = lazy(() => import('./pages/PlatformPreview.jsx'));
 const PlacementTestPublic = lazy(() => import('./pages/PlacementTest.jsx'));
+
+// ── PrivateRoute — verifica sesión + rol ─────────────────────────
+const ROLE_PORTALS = {
+  estudiante:    '/portal',
+  docente:       '/docente',
+  admin:         '/admin',
+  super_admin:   '/super',
+  asesor_ventas: '/crm',
+  cobros:        '/cobros',
+  coordinadora:  '/coordinacion',
+  directivo:     '/bi',
+};
+
+function PrivateRoute({ element, allowedRoles }) {
+  const [state, setState] = React.useState({ loading: true, session: null, profile: null });
+  const navigate = useNavigate ? useNavigate() : null;
+
+  React.useEffect(() => {
+    import('./lib/supabase.js').then(({ supabase }) => {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) { setState({ loading: false, session: null, profile: null }); return; }
+        supabase.from('profiles').select('id, role, active').eq('id', session.user.id).maybeSingle()
+          .then(({ data: profile }) => setState({ loading: false, session, profile }));
+      });
+    });
+  }, []);
+
+  if (state.loading) return <div style={{ display:'flex', alignItems:'center', justifyContent:'center', minHeight:'100vh', fontFamily:'inherit', color:'var(--text-secondary,#64748b)', fontSize:14 }}>Verificando acceso…</div>;
+
+  if (!state.session) return <Navigate to="/" replace />;
+
+  if (allowedRoles && !allowedRoles.includes(state.profile?.role)) {
+    const correct = ROLE_PORTALS[state.profile?.role] || '/';
+    return <Navigate to={correct} replace />;
+  }
+
+  return element;
+}
 
 const PORTALS = [
   { path:'/portal',       icon:'👨‍🎓', label:'Portal Estudiante',      role:'Estudiante',   color:'#155266' },
@@ -290,18 +329,18 @@ function AppInner() {
         <Routes>
             <Route path="/hub"          element={<NavHub />} />
             <Route path="/"             element={<Landing />} />
-            <Route path="/portal"       element={<PortalEstudiante />} />
-            <Route path="/onboarding"   element={<Onboarding />} />
-            <Route path="/docente"      element={<PortalDocente />} />
-            <Route path="/admin"        element={<DashboardAdmin />} />
-            <Route path="/super"        element={<SuperAdmin />} />
-            <Route path="/crm"          element={<CRM />} />
-            <Route path="/cobros"       element={<GestorCobros />} />
-            <Route path="/coordinacion" element={<CoordAcademica />} />
-            <Route path="/bi"           element={<BIDashboard />} />
-            <Route path="/preview"      element={<PlatformPreview />} />
             <Route path="/test"         element={<PlacementTestPublic />} />
+            <Route path="/preview"      element={<PlatformPreview />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
+            <Route path="/onboarding"   element={<PrivateRoute element={<Onboarding />} allowedRoles={['estudiante']} />} />
+            <Route path="/portal"       element={<PrivateRoute element={<PortalEstudiante />} allowedRoles={['estudiante']} />} />
+            <Route path="/docente"      element={<PrivateRoute element={<PortalDocente />} allowedRoles={['docente']} />} />
+            <Route path="/admin"        element={<PrivateRoute element={<DashboardAdmin />} allowedRoles={['admin','super_admin']} />} />
+            <Route path="/super"        element={<PrivateRoute element={<SuperAdmin />} allowedRoles={['super_admin']} />} />
+            <Route path="/crm"          element={<PrivateRoute element={<CRM />} allowedRoles={['asesor_ventas','admin','super_admin']} />} />
+            <Route path="/cobros"       element={<PrivateRoute element={<GestorCobros />} allowedRoles={['cobros','admin','super_admin']} />} />
+            <Route path="/coordinacion" element={<PrivateRoute element={<CoordAcademica />} allowedRoles={['coordinadora','admin','super_admin']} />} />
+            <Route path="/bi"           element={<PrivateRoute element={<BIDashboard />} allowedRoles={['directivo','admin','super_admin']} />} />
             <Route path="*"             element={<Navigate to="/" replace />} />
           </Routes>
       </Suspense>
