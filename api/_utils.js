@@ -111,47 +111,46 @@ export function err(res, error) {
   return res.status(status).json({ ok: false, error: message });
 }
 
-// ─── Mailrelay ────────────────────────────────────────────────────
-const MAILRELAY_DOMAIN = process.env.MAILRELAY_DOMAIN || "";
-const FROM_EMAIL = process.env.MAILRELAY_FROM_EMAIL || "no-reply@worldconnectacademy.com";
-const FROM_NAME  = process.env.MAILRELAY_FROM_NAME  || "WCA Academy";
+// ─── Email via Resend (resend.com) ───────────────────────────────
+// Resend está diseñado para emails transaccionales en serverless.
+// Configurar: RESEND_API_KEY en Vercel → obtener en resend.com/api-keys
+// FROM_EMAIL debe ser un dominio verificado en Resend (worldconnectacademy.com)
+//
+// Mientras no esté configurado, los emails se envían via Mailrelay SMTP
+// o se saltan con un console.warn.
+
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL
+  || process.env.MAILRELAY_FROM_EMAIL
+  || "no-reply@worldconnectacademy.com";
+const FROM_NAME  = process.env.MAILRELAY_FROM_NAME || "WCA Academy";
 
 export async function sendEmail({ to, toName, subject, html }) {
-  if (!process.env.MAILRELAY_API_KEY || !MAILRELAY_DOMAIN) {
-    console.warn("Mailrelay not configured — email skipped");
+  const resendKey = process.env.RESEND_API_KEY;
+
+  if (!resendKey) {
+    console.warn("RESEND_API_KEY not set — email skipped. Ver: resend.com/api-keys");
     return null;
   }
 
-  const apiKey = process.env.MAILRELAY_API_KEY;
-  // Try the correct Mailrelay transactional endpoint (singular, not plural)
-  const url = `https://${MAILRELAY_DOMAIN}/api/v1/send_emails`;
-
-  const body = {
-    from_name:  FROM_NAME,
-    from_email: FROM_EMAIL,
-    to:         [{ email: to, name: toName || to }],
-    subject,
-    html,
-  };
-
-  const res = await fetch(url, {
+  const res = await fetch("https://api.resend.com/emails", {
     method:  "POST",
     headers: {
-      "X-AUTH-TOKEN":  apiKey,
-      "X-Auth-Token":  apiKey,
-      "x-auth-token":  apiKey,
-      "Authorization": `Bearer ${apiKey}`,
+      "Authorization": `Bearer ${resendKey}`,
       "Content-Type":  "application/json",
-      "Accept":        "application/json",
     },
-    body: JSON.stringify(body),
+    body: JSON.stringify({
+      from:    `${FROM_NAME} <${FROM_EMAIL}>`,
+      to:      [toName ? `${toName} <${to}>` : to],
+      subject,
+      html,
+    }),
   });
 
-  const responseText = await res.text().catch(() => "");
+  const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(`Mailrelay ${res.status} (${url}): ${responseText.slice(0, 300)}`);
+    throw new Error(`Resend ${res.status}: ${data.message || data.name || JSON.stringify(data).slice(0, 200)}`);
   }
-  try { return JSON.parse(responseText); } catch { return { ok: true }; }
+  return data;
 }
 
 // ─── Email templates (inputs sanitized) ──────────────────────────

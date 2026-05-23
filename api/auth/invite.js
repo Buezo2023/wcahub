@@ -201,58 +201,41 @@ async function handleTestEmail(req, actor) {
     return { error: 'Mailrelay no configurado', domain, keyConfigured: false };
   }
 
-  // Endpoint confirmed: send_emails. Now try different auth formats.
-  const url = `https://${domain}/api/v1/send_emails`;
-  const baseBody = {
-    from_name:  fromName,
-    from_email: fromEmail,
-    to:         [{ email: target, name: target }],
-    subject:    'Test WCA Hub',
-    html:       '<p>Email de prueba desde WCA Hub.</p>',
-  };
+  // Test Resend API (replaced Mailrelay)
+  const resendKey = process.env.RESEND_API_KEY;
+  const fromEmail = process.env.RESEND_FROM_EMAIL || process.env.MAILRELAY_FROM_EMAIL || "no-reply@worldconnectacademy.com";
+  const fromName  = process.env.MAILRELAY_FROM_NAME || "WCA Academy";
 
-  const authFormats = [
-    { label: 'X-AUTH-TOKEN',  headers: { 'X-AUTH-TOKEN': apiKey } },
-    { label: 'X-Auth-Token',  headers: { 'X-Auth-Token': apiKey } },
-    { label: 'Authorization Bearer', headers: { 'Authorization': `Bearer ${apiKey}` } },
-    { label: 'Authorization Token',  headers: { 'Authorization': `Token ${apiKey}` } },
-    { label: 'api_key query', headers: {} },   // query string variant below
-  ];
-
-  const results = {};
-  for (const fmt of authFormats) {
-    const fetchUrl = fmt.label === 'api_key query'
-      ? `${url}?api_key=${encodeURIComponent(apiKey)}`
-      : url;
-    try {
-      const r = await fetch(fetchUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', ...fmt.headers },
-        body: JSON.stringify(baseBody),
-      });
-      const text = await r.text();
-      let json = null; try { json = JSON.parse(text); } catch {}
-      results[fmt.label] = { status: r.status, ok: r.ok, response: json || text.slice(0, 100) };
-      if (r.ok || r.status !== 401) break;  // stop when we get past auth
-    } catch(e) {
-      results[fmt.label] = { error: e.message };
-    }
+  if (!resendKey) {
+    return {
+      target,
+      configured: false,
+      summary: "RESEND_API_KEY no configurada — agregala en Vercel. Obtener en: resend.com/api-keys (gratis)",
+    };
   }
 
-  const working = Object.entries(results).find(([, v]) => v.ok);
-  const nonAuth  = Object.entries(results).find(([, v]) => v.status && v.status !== 401 && v.status !== 403);
-
-  return {
-    target, domain, url, keyConfigured: apiKey.length > 10,
-    keyPreview: `${apiKey.slice(0,6)}...${apiKey.slice(-4)}`,
-    results,
-    workingAuth: working?.[0] || null,
-    summary: working
-      ? `✓ Email enviado — auth: ${working[0]}`
-      : nonAuth
-        ? `Auth OK (${nonAuth[0]}) pero error: ${JSON.stringify(nonAuth[1].response).slice(0,80)}`
-        : `401 en todos los formatos — verificar API key en Mailrelay dashboard`,
-  };
+  try {
+    const r = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: { "Authorization": `Bearer ${resendKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        from:    `${fromName} <${fromEmail}>`,
+        to:      [target],
+        subject: "✅ Test WCA Hub — email de diagnóstico",
+        html:    `<h2>Email de prueba</h2><p>Resend funcionando correctamente.</p><p>Para: ${target}</p>`,
+      }),
+    });
+    const data = await r.json().catch(() => ({}));
+    return {
+      target, configured: true, status: r.status, ok: r.ok,
+      response: data,
+      summary: r.ok
+        ? `✓ Email enviado a ${target} via Resend`
+        : `Error Resend ${r.status}: ${data.message || data.name || JSON.stringify(data).slice(0,100)}`,
+    };
+  } catch(e) {
+    return { target, configured: true, error: e.message, summary: "Error de red: " + e.message };
+  }
 }
 
 // ── Main handler ───────────────────────────────────────────────────

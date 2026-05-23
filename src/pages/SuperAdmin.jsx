@@ -34,7 +34,7 @@ const ROLES_DEF = [];  // roles loaded from Supabase (profiles distinct roles)
 
 const INTEGRATIONS = [
   { id:"google",    name:"Google OAuth",    icon:"🔑", configured:true,  key:"Activo — login con Google funciona",        hint:"" },
-  { id:"mailrelay", name:"Mailrelay Email", icon:"📧", configured:true,  key:"Variables MAILRELAY_* configuradas en Vercel", hint:"Probá el envío abajo" },
+  { id:"mailrelay", name:"Email (Resend)", icon:"📧", configured:true,  key:"Agregar RESEND_API_KEY en Vercel → resend.com/api-keys", hint:"Free tier: 100 emails/día" },
   { id:"ms365",     name:"Microsoft 365",  icon:"🪟", configured:true,  key:"Teams link se configura por grupo en Coordinación", hint:"" },
   { id:"stripe",    name:"Stripe",         icon:"💳", configured:false, key:"Falta STRIPE_SECRET_KEY y STRIPE_WEBHOOK_SECRET",   hint:"Agregar en Vercel" },
   { id:"twilio",    name:"Twilio WhatsApp",icon:"💬", configured:false, key:"Falta TWILIO_ACCOUNT_SID, AUTH_TOKEN y FROM",       hint:"Agregar en Vercel" },
@@ -865,10 +865,10 @@ export default function SuperAdmin() {
                         });
                         const d = await r.json();
                         const data = d.data || {};
-                        if (data.workingAuth) {
-                          showToast(`✓ ${data.summary} — revisá tu bandeja`);
+                        if (data.ok) {
+                          showToast(data.summary || "✓ Email enviado — revisá tu bandeja");
                         } else {
-                          showToast(data.summary || "Sin respuesta", R);
+                          showToast(data.summary || "Error al enviar", R);
                         }
                       } catch(e){showToast("Error: "+e.message, R);}
                     }} style={{ fontSize:12, padding:"8px 16px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit", flexShrink:0, whiteSpace:"nowrap" }}>
