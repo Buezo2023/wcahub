@@ -658,7 +658,7 @@ export default function SuperAdmin() {
                           <button title="Reenviar email de acceso" onClick={async()=>{
                             try {
                               const {data:{session}} = await supabase.auth.getSession();
-                              const r = await fetch("/api/auth/resend-invite",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${session?.access_token}`},body:JSON.stringify({email:s.email})});
+                              const r = await fetch("/api/auth/invite",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${session?.access_token}`},body:JSON.stringify({action:"resend",email:s.email})});
                               const d = await r.json();
                               showToast(d.data?.message || "✉ Email reenviado");
                             } catch(e){showToast("Error al reenviar: "+e.message,R);}
