@@ -194,7 +194,7 @@ export async function updateGroupTeamsLink(groupId, teamsLink) {
 }
 
 // ─── STAFF ────────────────────────────────────────────────────────
-export async function getStaff({ active = true } = {}) {
+export async function getStaff({ active = true, all = false } = {}) {
   let query = supabase
     .from('staff')
     .select(`
@@ -203,10 +203,13 @@ export async function getStaff({ active = true } = {}) {
     `)
     .order('hire_date', { ascending: false });
 
-  if (active !== null) query = query.eq('active', active);
+  // active=true → solo activos, active=false → solo inactivos, all=true → todos
+  if (!all && active !== undefined && active !== null) {
+    query = query.eq('active', active);
+  }
 
   const { data, error } = await query;
-  if (error) { console.error('getStaff:', error); return []; }
+  if (error) { console.error('getStaff error:', error.message, error.code); return []; }
   return data || [];
 }
 

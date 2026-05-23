@@ -173,26 +173,27 @@ export default function SuperAdmin() {
       if (data.length > 0) setDbAudit(data);
     });
 
-    // Load real staff
-    import("../lib/db.js").then(({ getStaff }) =>
-      getStaff({ active: null }).then(rows => {
-        if (rows.length > 0) {
-          const roleLabel = { docente:"Docente", coordinadora:"Coordinadora", admin:"Admin", cobros:"Gestor de Cobros", asesor_ventas:"Ventas" };
-          setStaff(rows.map(r => ({
-            id:      r.id,
-            name:    r.profile?.full_name || r.profile?.email || "Sin nombre",
-            role:    roleLabel[r.profile?.role] || r.position || "Staff",
-            email:   r.profile?.email || "",
-            phone:   r.profile?.phone || "—",
-            country: "Honduras",
-            salary:  r.salary || 0,
-            hired:   r.hire_date ? new Date(r.hire_date).toLocaleDateString("es-HN",{month:"short",year:"numeric"}) : "—",
-            status:  r.active ? "active" : "inactive",
-            levels:  [],
-          })));
-        }
-      })
-    );
+    // Load real staff — all:true trae activos e inactivos
+    const loadStaff = async () => {
+      try {
+        const { getStaff } = await import("../lib/db.js");
+        const rows = await getStaff({ all: true });
+        const roleLabel = { docente:"Docente", coordinadora:"Coordinadora", admin:"Admin", cobros:"Gestor de Cobros", asesor_ventas:"Ventas" };
+        setStaff(rows.map(r => ({
+          id:      r.id,
+          name:    r.profile?.full_name || r.profile?.email || "Sin nombre",
+          role:    roleLabel[r.profile?.role] || r.position || "Staff",
+          email:   r.profile?.email || "",
+          phone:   r.profile?.phone || "—",
+          country: "Honduras",
+          salary:  r.salary || 0,
+          hired:   r.hire_date ? new Date(r.hire_date).toLocaleDateString("es-HN",{month:"short",year:"numeric"}) : "—",
+          status:  r.active ? "active" : "inactive",
+          levels:  [],
+        })));
+      } catch(e) { console.error("loadStaff:", e.message); }
+    };
+    loadStaff();
 
     getPrograms().then(data => {
       if (data.length > 0) {
@@ -284,22 +285,17 @@ export default function SuperAdmin() {
         });
         // Reload from Supabase to confirm it was saved (no optimistic update)
         const { getStaff } = await import("../lib/db.js");
-        const rows = await getStaff({ active: null });
-        if (rows.length > 0) {
-          const roleLabel = { docente:"Docente", coordinadora:"Coordinadora", admin:"Admin", cobros:"Gestor de Cobros", asesor_ventas:"Ventas" };
-          setStaff(rows.map(r => ({
-            id: r.id, name: r.profile?.full_name || r.profile?.email || staffForm.name,
-            role: roleLabel[r.profile?.role] || r.position || staffForm.role,
-            email: r.profile?.email || staffForm.email,
-            phone: r.profile?.phone || "—", country: "Honduras",
-            salary: r.salary || 0,
-            hired: r.hire_date ? new Date(r.hire_date).toLocaleDateString("es-HN",{month:"short",year:"numeric"}) : "—",
-            status: r.active ? "active" : "inactive", levels: [],
-          })));
-        } else {
-          // Fallback: show locally if Supabase read fails (RLS may need fix)
-          setStaff(p => [...p, { ...staffForm, id: Date.now() }]);
-        }
+        const rows = await getStaff({ all: true });
+        const roleLabel2 = { docente:"Docente", coordinadora:"Coordinadora", admin:"Admin", cobros:"Gestor de Cobros", asesor_ventas:"Ventas" };
+        setStaff(rows.map(r => ({
+          id: r.id, name: r.profile?.full_name || r.profile?.email || staffForm.name,
+          role: roleLabel2[r.profile?.role] || r.position || staffForm.role,
+          email: r.profile?.email || staffForm.email,
+          phone: r.profile?.phone || "—", country: "Honduras",
+          salary: r.salary || 0,
+          hired: r.hire_date ? new Date(r.hire_date).toLocaleDateString("es-HN",{month:"short",year:"numeric"}) : "—",
+          status: r.active ? "active" : "inactive", levels: [],
+        })));
         showToast(
           `✓ ${staffForm.name} creado — ${result.message?.split(' — ')[1] || 'email de invitación enviado'}`
         );
