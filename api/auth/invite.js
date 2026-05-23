@@ -201,36 +201,54 @@ async function handleTestEmail(req, actor) {
     return { error: 'Mailrelay no configurado', domain, keyConfigured: false };
   }
 
-  const url = `https://${domain}/api/v1/send_email`;
-  const body = {
+  // Try all known Mailrelay endpoints to find the correct one
+  const endpoints = [
+    'send_email', 'send_emails', 'push_emails', 'push_mailing',
+    'send_mailing', 'transactional', 'messages', 'email',
+  ];
+
+  const baseBody = {
     from_name:  fromName,
     from_email: fromEmail,
     to:         [{ email: target, name: target }],
-    subject:    '✅ Test WCA Hub — email de diagnóstico',
-    html:       `<h2>Email de prueba</h2><p>Si ves esto, Mailrelay funciona correctamente.</p><p>Dominio: ${domain} · Para: ${target}</p>`,
+    subject:    'Test WCA Hub',
+    html:       '<p>Email de prueba desde WCA Hub.</p>',
   };
 
-  let status, responseText, jsonResp;
-  try {
-    const r = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'X-Auth-Token': apiKey, 'x-auth-token': apiKey,
-        'Content-Type': 'application/json', 'Accept': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-    status = r.status;
-    responseText = await r.text();
-    try { jsonResp = JSON.parse(responseText); } catch { jsonResp = null; }
-    return {
-      target, domain, fromEmail, keyConfigured: apiKey.length > 10, url,
-      status, ok: r.ok,
-      response: jsonResp || responseText.slice(0, 200),
-    };
-  } catch(e) {
-    return { target, domain, url, error: e.message, keyConfigured: apiKey.length > 10 };
+  const headers = {
+    'X-Auth-Token': apiKey, 'x-auth-token': apiKey,
+    'Content-Type': 'application/json', 'Accept': 'application/json',
+  };
+
+  const results = {};
+  for (const ep of endpoints) {
+    const url = `https://${domain}/api/v1/${ep}`;
+    try {
+      const r = await fetch(url, { method: 'POST', headers, body: JSON.stringify(baseBody) });
+      const text = await r.text();
+      let json = null; try { json = JSON.parse(text); } catch {}
+      results[ep] = { status: r.status, ok: r.ok, response: json || text.slice(0, 100) };
+      // Stop if we get a non-404 response (even an error like 422 means endpoint exists)
+      if (r.status !== 404) break;
+    } catch(e) {
+      results[ep] = { error: e.message };
+    }
   }
+
+  const working = Object.entries(results).find(([, v]) => v.ok);
+  const nonNotFound = Object.entries(results).find(([, v]) => v.status && v.status !== 404);
+
+  return {
+    target, domain, keyConfigured: apiKey.length > 10,
+    results,
+    workingEndpoint: working?.[0] || null,
+    bestEndpoint:    nonNotFound?.[0] || null,
+    summary: working
+      ? `✓ Email enviado via ${working[0]}`
+      : nonNotFound
+        ? `Endpoint encontrado: ${nonNotFound[0]} (status ${nonNotFound[1].status})`
+        : 'Todos los endpoints devuelven 404 — verificar dominio o plan de Mailrelay',
+  };
 }
 
 // ── Main handler ───────────────────────────────────────────────────

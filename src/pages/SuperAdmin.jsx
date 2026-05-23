@@ -865,15 +865,14 @@ export default function SuperAdmin() {
                         });
                         const d = await r.json();
                         const data = d.data || {};
-                        if (data.ok) {
-                          showToast(`✓ Email enviado a ${data.target} — revisá tu bandeja`);
+                        if (data.workingEndpoint) {
+                          showToast(`✓ ${data.summary} — revisá tu bandeja`);
+                        } else if (data.bestEndpoint) {
+                          showToast(`Endpoint: ${data.bestEndpoint} — ${JSON.stringify(data.results[data.bestEndpoint]).slice(0,80)}`, R);
                         } else if (data.error) {
-                          showToast("Error de red: " + data.error, R);
+                          showToast("Error red: " + data.error, R);
                         } else {
-                          const detail = data.response
-                            ? (typeof data.response === "string" ? data.response : JSON.stringify(data.response))
-                            : `HTTP ${data.status||"?"} — ${data.url||""}`;
-                          showToast("Error Mailrelay: " + detail.slice(0,120), R);
+                          showToast(data.summary || "Sin respuesta de Mailrelay", R);
                         }
                       } catch(e){showToast("Error: "+e.message, R);}
                     }} style={{ fontSize:12, padding:"8px 16px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit", flexShrink:0, whiteSpace:"nowrap" }}>
