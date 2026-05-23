@@ -1,0 +1,22 @@
+{
+  "name": "WCA Hub — World Connect Academy",
+  "short_name": "WCA Hub",
+  "description": "Plataforma de aprendizaje de inglés y formación VA de World Connect Academy",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f3d4d",
+  "theme_color": "#155266",
+  "orientation": "portrait-primary",
+  "lang": "es",
+  "icons": [
+    { "src": "/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" },
+    { "src": "/favicon.svg",  "sizes": "any",      "type": "image/svg+xml" }
+  ],
+  "screenshots": [],
+  "categories": ["education"],
+  "shortcuts": [
+    { "name": "Mi portal", "url": "/portal", "icons": [{ "src": "/favicon.svg", "sizes": "any" }] },
+    { "name": "Mis clases", "url": "/portal", "icons": [{ "src": "/favicon.svg", "sizes": "any" }] }
+  ]
+}

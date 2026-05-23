@@ -497,7 +497,7 @@ export default function PortalEstudiante(){
             });
           }
         });
-      // Load enrollments + group (teams_link, schedule, teacher)
+      // Load enrollments + group + student_progress
       supabase.from("students").select("id, level")
         .eq("profile_id", uid).maybeSingle()
         .then(async ({ data: student }) => {
@@ -525,6 +525,20 @@ export default function PortalEstudiante(){
             setRealEnrollments(patch);
             setEnrolled(enrolls.map(e => e.program_id));
           }
+          // Load real student_progress (exam history per unit)
+          const { data: progress } = await supabase
+            .from("student_progress")
+            .select("program_id, unit, exam_score, passed, updated_at")
+            .eq("student_id", student.id)
+            .order("unit", { ascending: true });
+          if (progress?.length) {
+            const byProg = {};
+            progress.forEach(p => {
+              if (!byProg[p.program_id]) byProg[p.program_id] = {};
+              byProg[p.program_id][p.unit] = { score: p.exam_score, passed: p.passed };
+            });
+            setRealProgress(byProg);
+          }
           // Load payment history
           const { data: pays } = await supabase
             .from("payments")
@@ -542,6 +556,7 @@ export default function PortalEstudiante(){
   const [realEnrollments,  setRealEnrollments] = useState({});
   const [realPayments,     setRealPayments]    = useState([]);
   const [uploadState,      setUploadState]     = useState({ loading:false, done:false, error:null });
+  const [realProgress,     setRealProgress]     = useState({}); // {programId: {unit: {score, passed}}}
   const [profileForm,      setProfileForm]     = useState({ full_name:"", phone:"", preferred_name:"" });
   const [profileSaving,    setProfileSaving]   = useState(false);
   const [profileSaved,     setProfileSaved]    = useState(false);
@@ -900,29 +915,42 @@ export default function PortalEstudiante(){
             <div style={{padding:24}}>
               <div style={{display:"grid",gridTemplateColumns:`repeat(${enrolledProgs.length},1fr)`,gap:12,marginBottom:16}}>
                 {enrolledProgs.map(p=>{
-                  const en2=ENROLLMENTS[p.id];
-                  if(!en2) return null;
+                  const en2     = realEnrollments[p.id] || ENROLLMENTS[p.id] || {};
+                  const prog2   = realProgress[p.id] || {};
+                  const realUnit = en2.unit || 1;
+                  const passedUnits = Object.values(prog2).filter(u=>u.passed).length;
+                  const hasProg = Object.keys(prog2).length > 0;
+                  const avgScore = hasProg
+                    ? Math.round(Object.values(prog2).reduce((a,u)=>a+(u.score||0),0)/Object.keys(prog2).length)
+                    : (en2.examScore || 0);
+                  const cyclePct = Math.round(((realUnit-1)/12)*100);
+                  if (!enrolled.includes(p.id)) return null;
                   return(
                     <div key={p.id} style={{background:"var(--bg-surface)",border:`1.5px solid ${p.color}40`,borderRadius:14,padding:18,boxShadow:"var(--shadow-sm)"}}>
                       <div style={{display:"flex",gap:12,alignItems:"center",marginBottom:14}}>
                         <div style={{width:42,height:42,borderRadius:11,background:p.colorLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{p.icon}</div>
                         <div>
                           <div style={{fontSize:14,fontWeight:700,color:"var(--text-primary)"}}>{p.shortName}</div>
-                          <div style={{fontSize:11,color:"var(--text-secondary)"}}>{en2.completedUnits}/12 unidades</div>
+                          <div style={{fontSize:11,color:"var(--text-secondary)"}}>{passedUnits||0}/12 unidades aprobadas</div>
                         </div>
-                        <Ring pct={en2.cycleProgress} size={44} stroke={4} color={p.color} bg={p.colorLight}/>
+                        <Ring pct={cyclePct} size={44} stroke={4} color={p.color} bg={p.colorLight}/>
                       </div>
                       <div style={{display:"flex",gap:3,marginBottom:10}}>
-                        {Array.from({length:12},(_,i)=><div key={i} style={{flex:1,height:6,borderRadius:3,background:i+1<en2.unit?p.color:i+1===en2.unit?Y:"var(--bg-surface-subtle)"}}/>)}
+                        {Array.from({length:12},(_,i)=>{
+                          const ud=prog2[i+1];
+                          return <div key={i} style={{flex:1,height:6,borderRadius:3,
+                            background:ud?.passed?p.color:i+1===realUnit?Y:"var(--bg-surface-subtle)"
+                          }}/>;
+                        })}
                       </div>
                       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                         <div style={{background:"var(--bg-surface-subtle)",borderRadius:8,padding:"8px 10px",textAlign:"center"}}>
-                          <div style={{fontSize:18,fontWeight:800,color:p.color}}>{en2.xp.toLocaleString()}</div>
-                          <div style={{fontSize:10,color:"var(--text-tertiary)"}}>XP</div>
+                          <div style={{fontSize:18,fontWeight:800,color:p.color}}>U{realUnit}</div>
+                          <div style={{fontSize:10,color:"var(--text-tertiary)"}}>Unidad actual</div>
                         </div>
                         <div style={{background:"var(--bg-surface-subtle)",borderRadius:8,padding:"8px 10px",textAlign:"center"}}>
-                          <div style={{fontSize:18,fontWeight:800,color:G}}>{en2.examScore}%</div>
-                          <div style={{fontSize:10,color:"var(--text-tertiary)"}}>Promedio</div>
+                          <div style={{fontSize:18,fontWeight:800,color:avgScore>=70?G:A}}>{avgScore}%</div>
+                          <div style={{fontSize:10,color:"var(--text-tertiary)"}}>Promedio exámenes</div>
                         </div>
                       </div>
                     </div>

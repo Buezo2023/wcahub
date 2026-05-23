@@ -351,6 +351,177 @@ function NewLeadModal({ onSave, onClose }) {
   );
 }
 
+
+// ─── PLACEMENT TEST QUESTIONS ────────────────────────────────────
+const PT_QUESTIONS = [
+  // A1 — absoluto principiante
+  { id:1, level:"A1", q:"What is your name?", opts:["My name is María","I am have María","Name I María","Have name María"], ans:0 },
+  { id:2, level:"A1", q:"___ is she? She is my sister.", opts:["Who","What","Where","How"], ans:0 },
+  { id:3, level:"A1", q:"They ___ students.", opts:["are","is","am","be"], ans:0 },
+  // A2 — básico
+  { id:4, level:"A2", q:"I ___ to the store yesterday.", opts:["went","go","goes","going"], ans:0 },
+  { id:5, level:"A2", q:"She has lived here ___ five years.", opts:["for","since","during","from"], ans:0 },
+  { id:6, level:"A2", q:"___ you ever been to Mexico?", opts:["Have","Has","Had","Did"], ans:0 },
+  // B1 — intermedio
+  { id:7, level:"B1", q:"If I ___ you, I would apologize.", opts:["were","was","am","be"], ans:0 },
+  { id:8, level:"B1", q:"The report ___ by the team last week.", opts:["was written","is written","wrote","writes"], ans:0 },
+  { id:9, level:"B1", q:"By the time she arrived, we ___ waiting for two hours.", opts:["had been","have been","were","was"], ans:0 },
+  // B2 — intermedio alto
+  { id:10, level:"B2", q:"___ he study harder, he might pass the exam.", opts:["Should","Would","Could","Shall"], ans:0 },
+  { id:11, level:"B2", q:"The phenomenon, ___ was first observed in 1985, remains poorly understood.", opts:["which","that","what","who"], ans:0 },
+  { id:12, level:"B2", q:"She insisted that he ___ the documents immediately.", opts:["sign","signed","signs","signing"], ans:0 },
+];
+
+const PT_LEVEL_MAP = score => {
+  if (score <= 2)  return { level:"A1", label:"Principiante",     color:"#059669" };
+  if (score <= 5)  return { level:"A2", label:"Básico",           color:"#0e7490" };
+  if (score <= 8)  return { level:"B1", label:"Intermedio",       color:"#7c3aed" };
+  if (score <= 10) return { level:"B2", label:"Intermedio alto",  color:"#d97706" };
+  return               { level:"C1", label:"Avanzado",            color:"#dc2626" };
+};
+
+function PlacementTestModal({ lead, onClose, onSave }) {
+  const [phase,    setPhase]    = useState("intro");   // intro | test | result
+  const [answers,  setAnswers]  = useState({});
+  const [result,   setResult]   = useState(null);
+  const [saving,   setSaving]   = useState(false);
+
+  const answered  = Object.keys(answers).length;
+  const total     = PT_QUESTIONS.length;
+  const allDone   = answered === total;
+  const pct       = Math.round((answered / total) * 100);
+
+  async function submitTest() {
+    const correct = PT_QUESTIONS.filter((q,i) => answers[i] === q.ans).length;
+    const res = PT_LEVEL_MAP(correct);
+    setResult({ correct, score: Math.round((correct/total)*100), ...res });
+    setPhase("result");
+    setSaving(true);
+    try {
+      if (lead?.id && typeof lead.id === "string" && lead.id.length > 10) {
+        const { supabase } = await import("../lib/supabase.js");
+        await supabase.from("leads").update({
+          test_score:       Math.round((correct/total)*100),
+          level_interest:   res.level,
+          stage:            "test",
+        }).eq("id", lead.id);
+      }
+      onSave?.({ score: Math.round((correct/total)*100), level: res.level });
+    } catch(e) { console.error("PT save:", e); }
+    finally { setSaving(false); }
+  }
+
+  const P = "#155266";
+
+  return (
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000, padding:16 }}
+      onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
+      <div style={{ background:"#fff", borderRadius:20, padding:28, width:520, maxWidth:"100%", maxHeight:"90vh", overflowY:"auto", boxShadow:"0 24px 60px rgba(0,0,0,.2)" }}>
+
+        {/* Header */}
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+          <div>
+            <div style={{ fontSize:16, fontWeight:700, color:"#0f172a" }}>Placement Test</div>
+            {lead && <div style={{ fontSize:12, color:"#64748b", marginTop:2 }}>Lead: {lead.name}</div>}
+          </div>
+          <button onClick={onClose} style={{ background:"none", border:"none", fontSize:20, cursor:"pointer", color:"#94a3b8" }}>✕</button>
+        </div>
+
+        {/* INTRO */}
+        {phase === "intro" && (
+          <div>
+            <div style={{ background:"#f0f9ff", borderRadius:12, padding:16, marginBottom:20, fontSize:13, color:"#0369a1", lineHeight:1.7 }}>
+              <strong>12 preguntas</strong> de gramática y vocabulario en inglés.<br/>
+              El sistema detecta el nivel automáticamente: A1, A2, B1, B2 o C1.<br/>
+              Tiempo estimado: <strong>5–8 minutos</strong>.
+            </div>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8, marginBottom:20 }}>
+              {[["📝","12 preguntas","A1 → C1"],["⏱","Sin límite de tiempo","A tu ritmo"],["🎯","Resultado inmediato","Nivel sugerido"]].map(([ic,t,s],i)=>(
+                <div key={i} style={{ background:"#f8fafc", borderRadius:10, padding:12, textAlign:"center" }}>
+                  <div style={{ fontSize:22, marginBottom:4 }}>{ic}</div>
+                  <div style={{ fontSize:12, fontWeight:600, color:"#0f172a" }}>{t}</div>
+                  <div style={{ fontSize:11, color:"#64748b" }}>{s}</div>
+                </div>
+              ))}
+            </div>
+            <button onClick={()=>setPhase("test")} style={{ width:"100%", padding:"13px", background:P, color:"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer" }}>
+              Comenzar test
+            </button>
+          </div>
+        )}
+
+        {/* TEST */}
+        {phase === "test" && (
+          <div>
+            {/* Progress bar */}
+            <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#64748b", marginBottom:6 }}>
+              <span>{answered}/{total} respondidas</span>
+              <span>{pct}%</span>
+            </div>
+            <div style={{ height:5, background:"#e2e8f0", borderRadius:4, marginBottom:20, overflow:"hidden" }}>
+              <div style={{ height:"100%", width:`${pct}%`, background:P, borderRadius:4, transition:"width .3s" }}/>
+            </div>
+
+            <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
+              {PT_QUESTIONS.map((q,qi)=>(
+                <div key={q.id} style={{ border:`1.5px solid ${answers[qi]!==undefined?"#155266":"#e2e8f0"}`, borderRadius:12, padding:16 }}>
+                  <div style={{ fontSize:12, color:"#94a3b8", fontWeight:600, marginBottom:4 }}>Pregunta {qi+1} · {q.level}</div>
+                  <div style={{ fontSize:14, fontWeight:600, color:"#0f172a", marginBottom:12 }}>{q.q}</div>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7 }}>
+                    {q.opts.map((opt,oi)=>{
+                      const sel = answers[qi]===oi;
+                      return (
+                        <button key={oi} onClick={()=>setAnswers(a=>({...a,[qi]:oi}))}
+                          style={{ padding:"9px 12px", background:sel?"#e8f3f6":"#f8fafc", border:`1.5px solid ${sel?"#155266":"#e2e8f0"}`, borderRadius:8, fontSize:13, cursor:"pointer", textAlign:"left", color:sel?"#155266":"#475569", fontWeight:sel?600:400, fontFamily:"inherit", transition:"all .15s" }}>
+                          {opt}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button disabled={!allDone} onClick={submitTest}
+              style={{ width:"100%", marginTop:20, padding:"13px", background:allDone?P:"#e2e8f0", color:allDone?"#fff":"#94a3b8", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:allDone?"pointer":"not-allowed" }}>
+              {allDone ? "Ver resultado" : `Respondé las ${total-answered} restantes`}
+            </button>
+          </div>
+        )}
+
+        {/* RESULT */}
+        {phase === "result" && result && (
+          <div style={{ textAlign:"center" }}>
+            <div style={{ fontSize:56, marginBottom:8 }}>🎯</div>
+            <div style={{ fontSize:13, color:"#64748b", marginBottom:4 }}>Nivel detectado</div>
+            <div style={{ fontSize:40, fontWeight:800, color:result.color, marginBottom:4 }}>{result.level}</div>
+            <div style={{ fontSize:18, fontWeight:600, color:"#0f172a", marginBottom:16 }}>{result.label}</div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, maxWidth:280, margin:"0 auto 20px" }}>
+              <div style={{ background:"#f8fafc", borderRadius:10, padding:12 }}>
+                <div style={{ fontSize:22, fontWeight:800, color:P }}>{result.correct}/{total}</div>
+                <div style={{ fontSize:11, color:"#64748b" }}>correctas</div>
+              </div>
+              <div style={{ background:"#f8fafc", borderRadius:10, padding:12 }}>
+                <div style={{ fontSize:22, fontWeight:800, color:result.color }}>{result.score}%</div>
+                <div style={{ fontSize:11, color:"#64748b" }}>puntaje</div>
+              </div>
+            </div>
+            <div style={{ background:"#ecfdf5", border:"1px solid #d1fae5", borderRadius:10, padding:12, marginBottom:16, fontSize:13, color:"#065f46" }}>
+              {saving ? "Guardando resultado…" : "✓ Resultado guardado en el perfil del lead"}
+            </div>
+            <div style={{ display:"flex", gap:8 }}>
+              <button onClick={onClose} style={{ flex:1, padding:"11px", background:"#f1f5f9", color:"#475569", border:"none", borderRadius:10, fontSize:13, cursor:"pointer" }}>Cerrar</button>
+              <button onClick={()=>{ onClose(); }} style={{ flex:2, padding:"11px", background:P, color:"#fff", border:"none", borderRadius:10, fontSize:14, fontWeight:700, cursor:"pointer" }}>
+                Continuar con el lead
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── MAIN ─────────────────────────────────────────────────────────
 export default function CRM() {
   const navigate = useNavigate();
@@ -418,6 +589,7 @@ export default function CRM() {
   const [search, setSearch]     = useState("");
   const [filterStage, setFilterStage] = useState("all");
   const [toast, setToast]       = useState(null);
+  const [ptLead,  setPtLead]    = useState(null); // placement test active lead
 
   function showToast(msg, color=G) {
     setToast({ msg, color });
@@ -460,6 +632,7 @@ export default function CRM() {
   const pendingTasks   = tasks.filter(t=>!t.done).length;
 
   return (
+    <>
     <div style={{ display:"flex", minHeight:"100vh", background:"#f8fafc", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
 
       {/* SIDEBAR */}
@@ -790,5 +963,17 @@ export default function CRM() {
         </div>
       )}
     </div>
+    {ptLead && (
+      <PlacementTestModal
+        lead={ptLead}
+        onClose={()=>setPtLead(null)}
+        onSave={({score,level})=>{
+          setLeads(ls=>ls.map(l=>l.id===ptLead.id?{...l,score,level,stage:"test"}:l));
+          if(selLead?.id===ptLead.id) setSelLead(l=>({...l,score,level,stage:"test"}));
+          showToast(`✓ Nivel ${level} detectado — ${score}% de aciertos`);
+        }}
+      />
+    )}
+    </>
   );
 }

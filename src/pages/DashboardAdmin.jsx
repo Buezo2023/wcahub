@@ -160,6 +160,65 @@ function AdminPrices() {
   );
 }
 
+
+// ─── ENROLL FORM — complete enrollment with group ────────────────
+function EnrollForm({ groups, onSubmit, onCancel }) {
+  const [form, setForm] = React.useState({ name:"", email:"", phone:"", programId:"en", level:"A1", groupId:"", price:95 });
+  const [saving, setSaving] = React.useState(false);
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+  const valid = form.name && form.email;
+  const PROG_MAP = { en:"Inglés Completo", va:"Asistente Virtual", va_mkt:"VA·Marketing", va_legal:"VA·Legal", va_care:"VA·Cuidador" };
+  const filteredGroups = groups.filter(g=>g.level===form.level);
+
+  return (
+    <div>
+      {[["Nombre completo","name","text","María Rodríguez"],["Email","email","email","m.rodriguez@correo.com"],["Teléfono","phone","tel","+504 XXXX-XXXX"]].map(([l,k,t,ph])=>(
+        <div key={k} style={{ marginBottom:10 }}>
+          <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>{l}</label>
+          <input type={t} value={form[k]} onChange={e=>set(k,e.target.value)} placeholder={ph}
+            style={{ width:"100%", padding:"8px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, color:"var(--text-primary)", background:"var(--bg-surface-subtle)", fontFamily:"inherit" }}/>
+        </div>
+      ))}
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
+        <div>
+          <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>Programa</label>
+          <select value={form.programId} onChange={e=>set("programId",e.target.value)}
+            style={{ width:"100%", padding:"8px 10px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", fontFamily:"inherit" }}>
+            {Object.entries(PROG_MAP).map(([id,n])=><option key={id} value={id}>{n}</option>)}
+          </select>
+        </div>
+        <div>
+          <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>Nivel inicial</label>
+          <select value={form.level} onChange={e=>{ set("level",e.target.value); set("groupId",""); }}
+            style={{ width:"100%", padding:"8px 10px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", fontFamily:"inherit" }}>
+            {["A1","A2","B1","B2","C1"].map(l=><option key={l}>{l}</option>)}
+          </select>
+        </div>
+      </div>
+      <div style={{ marginBottom:10 }}>
+        <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>Grupo / Horario</label>
+        <select value={form.groupId} onChange={e=>set("groupId",e.target.value)}
+          style={{ width:"100%", padding:"8px 10px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", fontFamily:"inherit" }}>
+          <option value="">Sin grupo asignado</option>
+          {filteredGroups.map(g=><option key={g.id} value={g.dbId||g.id}>{g.level} · {g.time} · {g.days} ({g.teacher})</option>)}
+        </select>
+      </div>
+      <div style={{ marginBottom:14 }}>
+        <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>Precio mensual (USD)</label>
+        <input type="number" value={form.price} onChange={e=>set("price",+e.target.value)}
+          style={{ width:"100%", padding:"8px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, color:"var(--text-primary)", background:"var(--bg-surface-subtle)", fontFamily:"inherit" }}/>
+      </div>
+      <div style={{ display:"flex", gap:8 }}>
+        <button onClick={onCancel} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
+        <button disabled={!valid||saving} onClick={async()=>{ setSaving(true); await onSubmit(form); setSaving(false); }}
+          style={{ flex:2, padding:"10px", background:valid?"#155266":"var(--bg-surface-subtle)", color:valid?"#fff":"var(--text-tertiary)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:valid?"pointer":"not-allowed", fontFamily:"inherit" }}>
+          {saving?"Matriculando…":"Crear matrícula"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
@@ -940,28 +999,7 @@ export default function AdminDashboard() {
               </div>
             </div></div>
             <div style={{ display:"flex", gap:8 }}>
-              <button onClick={()=>setEnrollModal(false)} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
-              <button onClick={async()=>{
-  const inputs = document.querySelectorAll("#enroll-modal-form input, #enroll-modal-form select");
-  const [nombre, email, telefono] = inputs;
-  const programa = document.getElementById("enroll-programa");
-  const nivel    = document.getElementById("enroll-nivel");
-  if(!nombre?.value || !email?.value) { alert("Nombre y email son requeridos"); return; }
-  try {
-    await api.auth.invite({
-      email:     email.value.trim(),
-      fullName:  nombre.value.trim(),
-      programId: { "Inglés":"en","VA":"va","Inglés + VA":"en","Beca":"en" }[programa?.value] || "en",
-      level:     nivel?.value || "A1",
-      price:     0,
-    });
-    setEnrollModal(false);
-    setActionDone("✓ Estudiante invitado — recibirá el email de acceso en minutos");
-    setTimeout(()=>setActionDone(null),5000);
-  } catch(err) {
-    alert("Error: " + err.message);
-  }
-}} style={{ flex:2, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Crear matrícula</button>
+
             </div>
           </div>
         </div>
