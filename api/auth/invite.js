@@ -190,58 +190,43 @@ async function handleResend(req, actor) {
 }
 
 async function handleTestEmail(req, actor) {
-  const { to } = req.body;
-  const target   = to || actor.email;
-  const domain   = process.env.MAILRELAY_DOMAIN   || '(NO CONFIGURADO)';
-  const apiKey   = process.env.MAILRELAY_API_KEY  || '';
-  const fromEmail= process.env.MAILRELAY_FROM_EMAIL || 'no-reply@worldconnectacademy.com';
-  const fromName = process.env.MAILRELAY_FROM_NAME  || 'WCA Academy';
-
-  if (!apiKey || !domain || domain === '(NO CONFIGURADO)') {
-    return { error: 'Mailrelay no configurado', domain, keyConfigured: false };
-  }
-
-  // Test Resend API (replaced Mailrelay)
+  const { to }    = req.body;
+  const target    = to || actor.email;
   const resendKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
   const fromName  = process.env.MAILRELAY_FROM_NAME || "WCA Academy";
 
   if (!resendKey) {
     return {
-      target,
-      configured: false,
-      summary: "RESEND_API_KEY no configurada — agregala en Vercel. Obtener en: resend.com/api-keys (gratis)",
+      target, configured: false, ok: false,
+      summary: "RESEND_API_KEY no configurada en Vercel",
     };
   }
 
   try {
     const r = await fetch("https://api.resend.com/emails", {
-      method: "POST",
+      method:  "POST",
       headers: { "Authorization": `Bearer ${resendKey}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from:    `${fromName} <${fromEmail}>`,
         to:      [target],
-        subject: "✅ Test WCA Hub — email de diagnóstico",
-        html:    `<h2>Email de prueba</h2><p>Resend funcionando. Para: ${target}</p>`,
+        subject: "✅ Test WCA Hub",
+        html:    `<p>Resend funcionando correctamente. Para: ${target}</p>`,
       }),
     });
-    const rawText = await r.text();
-    let data = {};
-    try { data = JSON.parse(rawText); } catch { data = { raw: rawText.slice(0, 200) }; }
+    const raw = await r.text();
+    let data  = {};
+    try { data = JSON.parse(raw); } catch { data = { raw: raw.slice(0, 200) }; }
 
     if (r.ok) {
       return { target, configured: true, status: r.status, ok: true,
-        summary: `✓ Email enviado a ${target} — revisá tu bandeja` };
+               summary: `✓ Email enviado a ${target} — revisá tu bandeja` };
     }
-    // Not ok — show status + raw response for debugging
-    return {
-      target, configured: true, status: r.status, ok: false,
-      raw: rawText.slice(0, 300),
-      summary: `Error Resend HTTP ${r.status}: ${data.message || data.name || data.raw || rawText.slice(0,100)}`,
-    };
+    return { target, configured: true, status: r.status, ok: false,
+             summary: `Error Resend ${r.status}: ${data.message || data.name || raw.slice(0, 100)}` };
   } catch(e) {
-    return { target, configured: true, ok: false, error: e.message,
-      summary: "Error de red al llamar Resend: " + e.message };
+    return { target, configured: true, ok: false,
+             summary: "Error de red: " + e.message };
   }
 }
 
