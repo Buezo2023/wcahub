@@ -266,6 +266,7 @@ export default function SuperAdmin() {
   const filteredStaff = staffFilter==="all" ? staff : staff.filter(s=>s.role===staffFilter);
 
   function openAddStaff() {
+    setSaving(false); // Reset in case previous attempt left saving=true
     setStaffForm({ name:"", role:"Docente", email:"", phone:"", country:"Honduras", salary:"", hired:"", status:"active", levels:[] });
     setStaffModal({ mode:"add" });
   }
@@ -278,7 +279,7 @@ export default function SuperAdmin() {
     setSaving(true);
     try {
       if (staffModal.mode === "add") {
-        // Use dedicated staff invite endpoint — sets role + sends correct email
+        showToast("Creando usuario…", "#0369a1");
         const result = await api.auth.inviteStaff({
           email:     staffForm.email,
           fullName:  staffForm.name,
@@ -1072,7 +1073,7 @@ export default function SuperAdmin() {
               <div style={{ display:"flex", gap:8, marginTop:18 }}>
                 <BtnGhost onClick={()=>setStaffModal(null)}>Cancelar</BtnGhost>
                 {staffModal.mode==="edit" && <button onClick={()=>setDeleteConfirm(staffModal.data)} style={{ padding:"10px 16px", background:RD, color:R, border:"none", borderRadius:10, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Eliminar</button>}
-                <BtnPrimary onClick={saving?undefined:saveStaff} style={{ flex:1, opacity:saving?.6:1 }}>{saving?"Guardando…":staffModal.mode==="add"?"Crear empleado":"Guardar"}</BtnPrimary>
+                <BtnPrimary onClick={saving ? undefined : saveStaff} style={{ flex:1, opacity:saving?0.6:1, cursor:saving?"not-allowed":"pointer" }}>{saving?"Guardando…":staffModal.mode==="add"?"Crear empleado":"Guardar"}</BtnPrimary>
               </div>
             </div>
           )}
