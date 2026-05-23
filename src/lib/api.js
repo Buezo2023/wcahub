@@ -29,7 +29,10 @@ async function request(method, path, body) {
 // ─── Auth ─────────────────────────────────────────────────────────
 export const api = {
   auth: {
-    invite: (body) => request('POST', '/auth/invite', body),
+    invite:      (body)  => request('POST', '/auth/invite', { action:'student', ...body }),
+    inviteStaff: (body)  => request('POST', '/auth/invite', { action:'staff',   ...body }),
+    resendInvite:(email) => request('POST', '/auth/invite', { action:'resend',   email }),
+    testEmail:   (to)    => request('POST', '/auth/invite', { action:'test-email', to }),
     setRole: (userId, role) => request('PATCH', '/auth/role', { userId, role }),
   },
 
