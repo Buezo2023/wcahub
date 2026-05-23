@@ -275,49 +275,39 @@ export default function SuperAdmin() {
   async function saveStaff() {
     const nombre = (staffForm.name || "").trim();
     const correo = (staffForm.email || "").trim();
+    // Validation with visible feedback regardless of toast
     if (!nombre || !correo) {
-      globalToast.error("Nombre y email son requeridos");
+      alert("Nombre y email son requeridos");
       return;
     }
-    if (saving) return;
+    // Show immediate feedback
+    const modoActual = staffModal?.mode;
+    setStaffModal(null);
     setSaving(true);
-    setStaffModal(null); // Cerrar modal inmediatamente para dar feedback visual
     try {
-      if (staffModal.mode === "add") {
-        globalToast.info("Creando usuario…");
+      if (modoActual === "add") {
         const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { alert("Sesión expirada — recargá la página"); setSaving(false); return; }
         const res = await fetch("/api/auth/invite", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${session?.access_token}`,
-          },
-          body: JSON.stringify({
-            action:   "staff",
-            email:    correo,
-            fullName: nombre,
-            role:     staffForm.role || "Docente",
-            salary:   staffForm.salary || null,
-            hireDate: new Date().toISOString().slice(0, 10),
-          }),
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
+          body: JSON.stringify({ action:"staff", email:correo, fullName:nombre, role:staffForm.role||"Docente", salary:staffForm.salary||null, hireDate:new Date().toISOString().slice(0,10) }),
         });
-        const json = await res.json();
+        const json = await res.json().catch(()=>({}));
         if (!res.ok || !json.ok) {
-          globalToast.error("Error: " + (json.error || json.message || `HTTP ${res.status}`));
+          alert("Error al crear: " + (json.error || json.message || `HTTP ${res.status}`));
         } else {
           globalToast.success(`✓ ${nombre} creado — invitación enviada a ${correo}`);
-          // Reload staff from Supabase
           const { getStaff } = await import("../lib/db.js");
           const rows = await getStaff({ all: true });
           const rl = { docente:"Docente", coordinadora:"Coordinadora", admin:"Admin", cobros:"Gestor de Cobros", asesor_ventas:"Ventas" };
           setStaff(rows.map(r => ({
-            id: r.id, name: r.profile?.full_name || r.profile?.email || nombre,
-            role: rl[r.profile?.role] || r.position || staffForm.role,
-            email: r.profile?.email || correo,
-            phone: r.profile?.phone || "—", country: "Honduras",
-            salary: r.salary || 0,
-            hired: r.hire_date ? new Date(r.hire_date).toLocaleDateString("es-HN",{month:"short",year:"numeric"}) : "—",
-            status: r.active ? "active" : "inactive", levels: [],
+            id:r.id, name:r.profile?.full_name||r.profile?.email||nombre,
+            role:rl[r.profile?.role]||r.position||staffForm.role,
+            email:r.profile?.email||correo, phone:r.profile?.phone||"—",
+            country:"Honduras", salary:r.salary||0,
+            hired:r.hire_date?new Date(r.hire_date).toLocaleDateString("es-HN",{month:"short",year:"numeric"}):"—",
+            status:r.active?"active":"inactive", levels:[],
           })));
         }
       } else {
