@@ -222,19 +222,26 @@ async function handleTestEmail(req, actor) {
         from:    `${fromName} <${fromEmail}>`,
         to:      [target],
         subject: "✅ Test WCA Hub — email de diagnóstico",
-        html:    `<h2>Email de prueba</h2><p>Resend funcionando correctamente.</p><p>Para: ${target}</p>`,
+        html:    `<h2>Email de prueba</h2><p>Resend funcionando. Para: ${target}</p>`,
       }),
     });
-    const data = await r.json().catch(() => ({}));
+    const rawText = await r.text();
+    let data = {};
+    try { data = JSON.parse(rawText); } catch { data = { raw: rawText.slice(0, 200) }; }
+
+    if (r.ok) {
+      return { target, configured: true, status: r.status, ok: true,
+        summary: `✓ Email enviado a ${target} — revisá tu bandeja` };
+    }
+    // Not ok — show status + raw response for debugging
     return {
-      target, configured: true, status: r.status, ok: r.ok,
-      response: data,
-      summary: r.ok
-        ? `✓ Email enviado a ${target} via Resend`
-        : `Error Resend ${r.status}: ${data.message || data.name || JSON.stringify(data).slice(0,100)}`,
+      target, configured: true, status: r.status, ok: false,
+      raw: rawText.slice(0, 300),
+      summary: `Error Resend HTTP ${r.status}: ${data.message || data.name || data.raw || rawText.slice(0,100)}`,
     };
   } catch(e) {
-    return { target, configured: true, error: e.message, summary: "Error de red: " + e.message };
+    return { target, configured: true, ok: false, error: e.message,
+      summary: "Error de red al llamar Resend: " + e.message };
   }
 }
 
