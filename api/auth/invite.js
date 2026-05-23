@@ -140,7 +140,7 @@ async function handleStaff(req, actor) {
     active: true,
   }, { onConflict: 'profile_id' }).select().single();
 
-  await admin.from('audit_log').insert({ actor_id: actor.id, action: 'invited_staff', entity: 'staff', entity_id: staffRow?.id || userId, metadata: { email, role, fullName } }).catch(() => {});
+  try { await admin.from('audit_log').insert({ actor_id: actor.id, action: 'invited_staff', entity: 'staff', entity_id: staffRow?.id || userId, metadata: { email, role, fullName } }); } catch(_) {}
 
   let emailSent = false;
   try {
