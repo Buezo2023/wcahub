@@ -858,10 +858,10 @@ export default function SuperAdmin() {
                       try {
                         const {data:{session}} = await supabase.auth.getSession();
                         showToast("Enviando email de prueba…", "#0369a1");
-                        const r = await fetch("/api/test-email",{
+                        const r = await fetch("/api/auth/invite",{
                           method:"POST",
                           headers:{"Content-Type":"application/json",Authorization:`Bearer ${session?.access_token}`},
-                          body:JSON.stringify({ to: session?.user?.email }),
+                          body:JSON.stringify({ action:"test-email", to: session?.user?.email }),
                         });
                         const d = await r.json();
                         const results = d.data?.results||{};
