@@ -15,6 +15,7 @@ const CoordAcademica  = lazy(() => import('./pages/CoordAcademica.jsx'));
 const BIDashboard     = lazy(() => import('./pages/BIDashboard.jsx'));
 const AuthCallback    = lazy(() => import('./pages/AuthCallback.jsx'));
 const PlatformPreview = lazy(() => import('./pages/PlatformPreview.jsx'));
+const PlacementTestPublic = lazy(() => import('./pages/PlacementTest.jsx'));
 
 const PORTALS = [
   { path:'/portal',       icon:'👨‍🎓', label:'Portal Estudiante',      role:'Estudiante',   color:'#155266' },
@@ -297,6 +298,7 @@ function AppInner() {
             <Route path="/coordinacion" element={<CoordAcademica />} />
             <Route path="/bi"           element={<BIDashboard />} />
             <Route path="/preview"      element={<PlatformPreview />} />
+            <Route path="/test"         element={<PlacementTestPublic />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="*"             element={<Navigate to="/" replace />} />
           </Routes>

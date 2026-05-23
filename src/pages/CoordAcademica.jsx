@@ -116,12 +116,16 @@ export default function CoordAcademica() {
   const [transferModal, setTransferModal] = useState(null);
   const [newGroup, setNewGroup]       = useState({ level:"A1", time:"", days:"L·M·V", teacher:1, cap:25 });
   const [schedCreated, setSchedCreated] = useState(false);
+  const [realDbGroups, setRealDbGroups] = useState([]);
+  const [dataLoading,  setDataLoading]  = useState(false);
+  const [dataError,    setDataError]    = useState(null);
   const [filterLevel, setFilterLevel] = useState("all");
   const [filterType, setFilterType]   = useState("all");
   const [search, setSearch]           = useState("");
 
   const [realStudents, setRealStudents] = useState([]);
   useEffect(() => {
+    setDataLoading(true);
     supabase.from("enrollments")
       .select("program_id, status, students!inner(id, level, scholarship, profiles!inner(full_name, email))")
       .eq("status", "active").limit(300)
@@ -138,6 +142,23 @@ export default function CoordAcademica() {
             scholarship: e.students.scholarship,
           })));
         }
+      }).catch(e => setDataError(e.message)).finally(() => setDataLoading(false));
+
+    // Load real groups
+    supabase.from("groups")
+      .select("id, level, schedule, days, capacity, active_unit, teams_link, teacher_groups(staff(profiles(full_name)))")
+      .eq("active", true)
+      .order("level")
+      .then(({ data }) => {
+        if (data?.length) setRealDbGroups(data.map(g => ({
+          id: g.id, level: g.level,
+          time: g.schedule || "—",
+          days: g.days || "L·M·V",
+          students: 0, capacity: g.capacity,
+          teacher: g.teacher_groups?.[0]?.staff?.profiles?.full_name || "Sin asignar",
+          unit: g.active_unit,
+          teamsSet: !!g.teams_link,
+        })));
       }).catch(console.error);
   }, []);
 
@@ -561,6 +582,24 @@ export default function CoordAcademica() {
           {/* SCHEDULE */}
           {view==="schedule" && (
             <div style={{ maxWidth:500 }}>
+              {/* Real groups list */}
+              {realDbGroups.length > 0 && !schedCreated && (
+                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16, marginBottom:14 }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Grupos activos ({realDbGroups.length})</div>
+                  {realDbGroups.map(g => (
+                    <div key={g.id} style={{ display:"flex", alignItems:"center", gap:12, padding:"8px 0", borderBottom:`1px solid ${B.border}` }}>
+                      <div style={{ width:34, height:34, borderRadius:8, background:B.primaryDim, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:B.primary, flexShrink:0 }}>{g.level}</div>
+                      <div style={{ flex:1 }}>
+                        <div style={{ fontSize:12, fontWeight:600, color:B.text }}>{g.level} · {g.time} · {g.days}</div>
+                        <div style={{ fontSize:11, color:B.textSec }}>Docente: {g.teacher} · Capacidad: {g.capacity} · U{g.unit}</div>
+                      </div>
+                      <span style={{ fontSize:10, padding:"2px 8px", borderRadius:20, background:g.teamsSet?B.greenDim:B.redDim, color:g.teamsSet?"#065f46":B.red, fontWeight:600 }}>
+                        {g.teamsSet ? "✓ Teams" : "Sin Teams"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
               {schedCreated ? (
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:32, textAlign:"center" }}>
                   <div style={{ fontSize:40, marginBottom:12 }}>✅</div>

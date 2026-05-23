@@ -95,10 +95,102 @@ export default function GestorCobros() {
   const [searchHist, setSearchHist] = useState("");
   const [proofModal, setProofModal] = useState(null);
 
-  const pending = PENDING_TRANSFERS.filter(t => !confirmed.includes(t.id));
-  const filteredHist = useMemo(() => PAYMENT_HISTORY.filter(p =>
-    !searchHist || p.student.toLowerCase().includes(searchHist.toLowerCase()) || p.code.toLowerCase().includes(searchHist.toLowerCase())
-  ), [searchHist]);
+  // Real data from Supabase
+  const [realPending,  setRealPending]  = useState([]);
+  const [realHistory,  setRealHistory]  = useState([]);
+  const [realOverdue,  setRealOverdue]  = useState([]);
+  const [dataLoading,  setDataLoading]  = useState(true);
+  const [dataError,    setDataError]    = useState(null);
+
+  useEffect(() => {
+    async function loadPayments() {
+      try {
+        setDataLoading(true);
+        // Load pending comprobantes (status='pending')
+        const { data: pends } = await supabase
+          .from("payments")
+          .select("id, amount, method, status, receipt_url, created_at, students(id, profiles(full_name, email, phone)), enrollments(program_id)")
+          .eq("status", "pending")
+          .order("created_at", { ascending: false })
+          .limit(50);
+
+        if (pends?.length) {
+          setRealPending(pends.map(p => ({
+            id:       p.id,
+            _dbId:    p.id,
+            student:  p.students?.profiles?.full_name || p.students?.profiles?.email || "Estudiante",
+            level:    "—",
+            program:  { en:"Inglés", va:"VA", va_mkt:"VA·Mkt" }[p.enrollments?.program_id] || "—",
+            amount:   Number(p.amount),
+            code:     p.id.slice(0,8).toUpperCase(),
+            method:   p.method || "Transferencia",
+            bank:     "—",
+            date:     new Date(p.created_at).toLocaleString("es-HN", { day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit" }),
+            proof:    !!p.receipt_url,
+            proofUrl: p.receipt_url,
+            urgent:   false,
+            studentId: p.students?.id,
+            contact:   p.students?.profiles?.phone || "",
+          })));
+        }
+
+        // Load confirmed/history
+        const { data: hist } = await supabase
+          .from("payments")
+          .select("id, amount, method, status, created_at, stripe_id, students(profiles(full_name, email))")
+          .in("status", ["confirmed", "refunded", "failed"])
+          .order("created_at", { ascending: false })
+          .limit(100);
+
+        if (hist?.length) {
+          setRealHistory(hist.map(p => ({
+            id:        p.id,
+            student:   p.students?.profiles?.full_name || p.students?.profiles?.email || "—",
+            amount:    Number(p.amount),
+            method:    p.method || "Transferencia",
+            status:    p.status,
+            date:      new Date(p.created_at).toLocaleString("es-HN", { day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit" }),
+            code:      p.stripe_id || p.id.slice(0,8).toUpperCase(),
+            action_by: p.method === "stripe" ? "Sistema" : "Gestor",
+            note:      "",
+          })));
+        }
+
+        // Load overdue (enrollments suspended + no recent payment)
+        const { data: susp } = await supabase
+          .from("enrollments")
+          .select("id, students(id, profiles(full_name, phone)), groups(level)")
+          .eq("status", "suspended")
+          .limit(20);
+
+        if (susp?.length) {
+          setRealOverdue(susp.map(e => ({
+            student: e.students?.profiles?.full_name || "—",
+            level:   e.groups?.level || "—",
+            days:    30,
+            amount:  95,
+            contact: e.students?.profiles?.phone || "",
+            lastContact: "Sin datos",
+          })));
+        }
+      } catch(e) {
+        setDataError("Error cargando datos: " + e.message);
+      } finally {
+        setDataLoading(false);
+      }
+    }
+    loadPayments();
+  }, []);
+
+  // Merge: prefer real data, fallback to demo
+  const displayPending = realPending.length > 0 ? realPending : PENDING_TRANSFERS;
+  const displayHistory = realHistory.length > 0 ? realHistory : PAYMENT_HISTORY;
+  const displayOverdue = realOverdue.length > 0 ? realOverdue : OVERDUE;
+
+  const pending = displayPending.filter(t => !confirmed.includes(t.id));
+  const filteredHist = useMemo(() => displayHistory.filter(p =>
+    !searchHist || (p.student||"").toLowerCase().includes(searchHist.toLowerCase()) || (p.code||"").toLowerCase().includes(searchHist.toLowerCase())
+  ), [searchHist, displayHistory]);
 
   async function confirmTransfer(id) {
     setConfirmed(c => [...c, id]);
@@ -151,7 +243,7 @@ export default function GestorCobros() {
             {item.id==="pending" && pending.length > 0 && (
               <span style={{ marginLeft:"auto", fontSize:11, background:B.secondary, color:B.dark, borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>{pending.length}</span>
             )}
-            {item.id==="overdue" && OVERDUE.length > 0 && (
+            {item.id==="overdue" && displayOverdue.length > 0 && (
               <span style={{ marginLeft:"auto", fontSize:11, background:B.red, color:"var(--bg-surface)", borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>{OVERDUE.length}</span>
             )}
           </button>
@@ -394,7 +486,7 @@ export default function GestorCobros() {
                 <i className="ti ti-alert-circle" style={{ fontSize:14, flexShrink:0, marginTop:1 }} aria-hidden="true" />
                 Estudiantes con pago vencido más de 30 días. Sus cuentas están suspendidas. Contáctalos para gestionar la regularización.
               </div>
-              {OVERDUE.map((o,i) => (
+              {displayOverdue.map((o,i) => (
                 <div key={i} style={{ background:B.white, border:`1px solid ${B.red}40`, borderRadius:12, padding:16, marginBottom:10 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
                     <div>
@@ -566,13 +658,31 @@ export default function GestorCobros() {
           <div style={{ background:B.white, borderRadius:16, padding:24, width:380, border:`1px solid ${B.border}` }}>
             <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Comprobante de transferencia</div>
             <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>{proofModal.student} · ${proofModal.amount} · {proofModal.code}</div>
-            <div style={{ background:B.bg, borderRadius:10, height:160, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14, border:`1px solid ${B.border}` }}>
-              <div style={{ textAlign:"center", color:B.textSec }}>
-                <i className="ti ti-file-description" style={{ fontSize:36, display:"block", marginBottom:8 }} aria-hidden="true" />
-                <div style={{ fontSize:13 }}>Imagen del comprobante</div>
-                <div style={{ fontSize:12 }}>Banco: {proofModal.bank}</div>
+            {proofModal?.proofUrl ? (
+              <div style={{ marginBottom:14 }}>
+                <img src={proofModal.proofUrl} alt="Comprobante de pago"
+                  style={{ width:"100%", maxHeight:320, objectFit:"contain", borderRadius:10, border:`1px solid ${B.border}` }}
+                  onError={e=>{ e.target.style.display="none"; e.target.nextSibling.style.display="flex"; }}
+                />
+                <div style={{ display:"none", background:B.bg, borderRadius:10, height:80, alignItems:"center", justifyContent:"center", color:B.textSec, fontSize:12 }}>
+                  No se pudo cargar la imagen
+                </div>
+                <div style={{ display:"flex", gap:8, marginTop:8 }}>
+                  <a href={proofModal.proofUrl} target="_blank" rel="noopener noreferrer"
+                    style={{ fontSize:11, padding:"4px 10px", background:B.primaryDim, color:B.primary, borderRadius:6, textDecoration:"none", fontWeight:600 }}>
+                    ↗ Abrir original
+                  </a>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div style={{ background:B.bg, borderRadius:10, height:120, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14, border:`1px solid ${B.border}` }}>
+                <div style={{ textAlign:"center", color:B.textSec }}>
+                  <i className="ti ti-file-off" style={{ fontSize:28, display:"block", marginBottom:6 }} aria-hidden="true" />
+                  <div style={{ fontSize:12 }}>Sin comprobante adjunto</div>
+                  <div style={{ fontSize:11, color:B.textSec, marginTop:2 }}>El estudiante no subió imagen</div>
+                </div>
+              </div>
+            )}
             <div style={{ display:"flex", gap:8 }}>
               <button onClick={() => setProofModal(null)} style={{ flex:1, padding:"9px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cerrar</button>
               <button onClick={() => { confirmTransfer(proofModal.id); setProofModal(null); }} style={{ flex:2, padding:"9px", background:B.green, color:"var(--bg-surface)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Confirmar pago</button>

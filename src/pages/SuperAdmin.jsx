@@ -697,7 +697,7 @@ export default function SuperAdmin() {
                     </div>
                     <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>{r.perms.map(p=><Badge key={p} text={p} bg={PD} color={P}/>)}</div>
                   </div>
-                  <button onClick={()=>{}} onClick={()=>showToast(`Permisos de "${r.name}" — editar en producción requiere cambios de código`)} style={{ fontSize:11, padding:"5px 10px", background:PD, color:P, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>Editar</button>
+                  <button onClick={()=>showToast(`Permisos de "${r.name}" — editar en producción requiere cambios de código`)} style={{ fontSize:11, padding:"5px 10px", background:PD, color:P, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>Editar</button>
                 </div>);
               })}
             </div>
@@ -859,7 +859,7 @@ export default function SuperAdmin() {
                     <Badge text={int.status==="connected"?"✓ Conectado":"⚠ Pendiente"} bg={int.status==="connected"?GD:AD} color={int.status==="connected"?"#065f46":A}/>
                   </div>
                   <div style={{ display:"flex", gap:7 }}>
-                    <button onClick={()=>{}} onClick={()=>showToast(`${int.name} — contactá al equipo IT para reconfigurar`)} style={{ flex:1, fontSize:12, padding:"8px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>{int.status==="connected"?"Reconfigurar":"Conectar"}</button>
+                    <button onClick={()=>showToast(`${int.name} — contactá al equipo IT para reconfigurar`)} style={{ flex:1, fontSize:12, padding:"8px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>{int.status==="connected"?"Reconfigurar":"Conectar"}</button>
                     {int.status==="connected" && <button onClick={()=>showToast(`✓ ${int.name} respondió correctamente`)} style={{ fontSize:12, padding:"8px 14px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", border:"1px solid var(--border)", borderRadius:8, cursor:"pointer", fontFamily:"inherit" }}>Probar</button>}
                   </div>
                 </div>
@@ -884,7 +884,7 @@ export default function SuperAdmin() {
                       <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)" }}>{t.label}</div>
                       <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:2 }}>Canal: <strong>{t.channel}</strong> · Trigger: <strong>{t.trigger}</strong></div>
                     </div>
-                    <button onClick={()=>{}} onClick={()=>showToast(`Plantilla "${t.label}" — editor de plantillas próximamente`)} style={{ fontSize:11, padding:"6px 14px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Editar</button>
+                    <button onClick={()=>showToast(`Plantilla "${t.label}" — editor de plantillas próximamente`)} style={{ fontSize:11, padding:"6px 14px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Editar</button>
                   </div>
                   <div style={{ background:"var(--bg-surface-subtle)", borderRadius:8, padding:"10px 13px", fontSize:12, color:"var(--text-primary)", fontStyle:"italic", lineHeight:1.7 }}>{t.preview}</div>
                 </div>
@@ -944,7 +944,7 @@ export default function SuperAdmin() {
                     <div style={{ fontSize:12, color:"var(--text-secondary)", marginTop:2 }}>{b.type} · {b.acc}</div>
                   </div>
                   <Badge text={b.active?"Activo":"Inactivo"} bg={b.active?GD:"var(--bg-surface-subtle)"} color={b.active?"#065f46":"var(--text-secondary)"}/>
-                  <button onClick={()=>{}} onClick={()=>showToast(`Banco ${b.active?"desactivado":"activado"} — configuración guardada`)} style={{ fontSize:12, padding:"7px 12px", background:b.active?RD:GD, color:b.active?R:G, border:"none", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>{b.active?"Desactivar":"Activar"}</button>
+                  <button onClick={()=>showToast(`Banco ${b.active?"desactivado":"activado"} — configuración guardada`)} style={{ fontSize:12, padding:"7px 12px", background:b.active?RD:GD, color:b.active?R:G, border:"none", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>{b.active?"Desactivar":"Activar"}</button>
                 </div>
               ))}
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>

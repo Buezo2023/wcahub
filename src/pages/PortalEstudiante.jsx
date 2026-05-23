@@ -596,6 +596,15 @@ export default function PortalEstudiante(){
 
   return(
     <div style={{display:"flex",minHeight:"100vh",background:"var(--bg-page)",fontFamily:"'DM Sans','Segoe UI',sans-serif"}}>
+      <style>{`
+        @media (max-width:400px) {
+          .wca-sidebar { display: none !important; }
+          .wca-mobile-only { display: flex !important; }
+        }
+        @media (min-width:401px) {
+          .wca-mobile-only { display: none !important; }
+        }
+      `}</style>
 
       {/* SIDEBAR */}
       <aside style={{width:200,background:P,display:"flex",flexDirection:"column",padding:"0 0 16px",flexShrink:0,minHeight:"100vh",position:"sticky",top:0}}>
@@ -726,10 +735,13 @@ export default function PortalEstudiante(){
               {/* Active programs dashboard */}
               <div style={{marginBottom:20}}>
                 <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:12}}>📚 Mis programas activos</div>
-                <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(enrolledProgs.length,3)},1fr)`,gap:12}}>
+                <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(enrolledProgs.length,2)},minmax(0,1fr))`,gap:12}}>
                   {enrolledProgs.map(p=>{
-                    const en=ENROLLMENTS[p.id];
-                    if(!en) return null;
+                    const en = realEnrollments[p.id] || ENROLLMENTS[p.id];
+                    if(!enrolled.includes(p.id)) return null;
+                    const unit = en?.unit || 1;
+                    const cyclePct = Math.round(((unit-1)/12)*100);
+                    const nextClassStr = en?.nextClass || (en?.teamsLink ? "Clase en vivo disponible" : "Consulta tu horario");
                     return(
                       <div key={p.id} onClick={()=>{setActiveProg(p.id);setView("practica");}} style={{background:"var(--bg-surface)",border:`1.5px solid ${p.color}40`,borderRadius:16,padding:18,cursor:"pointer",boxShadow:"var(--shadow-sm)",transition:"all .2s"}}
                         onMouseEnter={e=>{e.currentTarget.style.boxShadow=`0 6px 20px ${p.color}25`;e.currentTarget.style.transform="translateY(-2px)";}}
@@ -739,18 +751,18 @@ export default function PortalEstudiante(){
                             <div style={{width:42,height:42,borderRadius:11,background:p.colorLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{p.icon}</div>
                             <div>
                               <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)"}}>{p.shortName}</div>
-                              <div style={{fontSize:11,color:"var(--text-secondary)"}}>U{en.unit}: {en.unitTitle}</div>
+                              <div style={{fontSize:11,color:"var(--text-secondary)"}}>U{unit} · {nextClassStr}</div>
                             </div>
                           </div>
-                          <Ring pct={en.cycleProgress} size={44} stroke={4} color={p.color} bg={p.colorLight}/>
+                          <Ring pct={cyclePct} size={44} stroke={4} color={p.color} bg={p.colorLight}/>
                         </div>
                         <div style={{display:"flex",gap:3,marginBottom:8}}>
                           {Array.from({length:12},(_,i)=>(
-                            <div key={i} style={{flex:1,height:5,borderRadius:3,background:i+1<en.unit?p.color:i+1===en.unit?Y:"var(--bg-surface-subtle)"}}/>
+                            <div key={i} style={{flex:1,height:5,borderRadius:3,background:i+1<unit?p.color:i+1===unit?Y:"var(--bg-surface-subtle)"}}/>
                           ))}
                         </div>
                         <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"var(--text-secondary)"}}>
-                          <span>U{en.unit}/12 · {en.cycleProgress}% completado</span>
+                          <span>U{unit}/12 · {cyclePct}% completado</span>
                           <span style={{color:p.color,fontWeight:600}}>Continuar →</span>
                         </div>
                       </div>
@@ -767,7 +779,7 @@ export default function PortalEstudiante(){
                     <div style={{fontSize:12,fontWeight:600,color:"var(--text-secondary)",padding:"0 10px",whiteSpace:"nowrap"}}>🚀 Amplía tu perfil profesional</div>
                     <div style={{flex:1,height:1,background:"var(--border)"}}/>
                   </div>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12}}>
+                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))",gap:12}}>
                     {unenrolledProgs.map(p=>(
                       <UpsellBanner key={p.id} prog={p}
                         canEnroll={!p.prereq||COMPLETED_PREREQS[p.prereq]||enrolled.includes(p.prereq)}
@@ -888,9 +900,14 @@ export default function PortalEstudiante(){
                 <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginBottom:4}}>Próxima clase en vivo · {prog?.shortName}</div>
                 <div style={{fontSize:22,fontWeight:800,marginBottom:4}}>{enrollment?.nextClass}</div>
                 <div style={{fontSize:13,color:"rgba(255,255,255,.7)",marginBottom:18}}>Docente: {enrollment?.teacher} · U{enrollment?.unit}: {enrollment?.unitTitle}</div>
-                <a href={enrollment?.teamsLink} style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 22px",background:Y,color:PH,borderRadius:10,textDecoration:"none",fontSize:13,fontWeight:700}}>
-                  <i className="ti ti-video" style={{fontSize:15}} aria-hidden="true"/> Unirme en Microsoft Teams
-                </a>
+                <button onClick={()=>{
+                  const link = enrollment?.teamsLink;
+                  if(link && link !== "#" && link.startsWith("http")) window.open(link, "_blank");
+                  else alert("El link de Teams aún no está configurado. Consultá con tu coordinadora.");
+                }} style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 22px",background:Y,color:PH,borderRadius:10,border:"none",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                  <i className="ti ti-video" style={{fontSize:15}} aria-hidden="true"/>
+                  {enrollment?.teamsLink && enrollment.teamsLink !== "#" ? "Unirme en Microsoft Teams" : "Link de clase no configurado aún"}
+                </button>
               </div>
               <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,overflow:"hidden",boxShadow:"var(--shadow-sm)"}}>
                 <div style={{padding:"14px 18px",borderBottom:"1px solid var(--border)",fontSize:13,fontWeight:700,color:"var(--text-primary)"}}>Grabaciones disponibles</div>
@@ -922,7 +939,7 @@ export default function PortalEstudiante(){
           {/* ── PROGRESO ── */}
           {view==="progreso"&&(
             <div style={{padding:24}}>
-              <div style={{display:"grid",gridTemplateColumns:`repeat(${enrolledProgs.length},1fr)`,gap:12,marginBottom:16}}>
+              <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(enrolledProgs.length,2)},minmax(0,1fr))`,gap:12,marginBottom:16}}>
                 {enrolledProgs.map(p=>{
                   const en2     = realEnrollments[p.id] || ENROLLMENTS[p.id] || {};
                   const prog2   = realProgress[p.id] || {};

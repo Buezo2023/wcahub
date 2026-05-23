@@ -162,6 +162,29 @@ function AdminPrices() {
 
 
 // ─── ENROLL FORM — complete enrollment with group ────────────────
+
+// ─── Shared loading/error UI ──────────────────────────────────
+function LoadingBar({ label = "Cargando datos…" }) {
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:10, padding:"16px 0", color:"var(--text-secondary)", fontSize:13 }}>
+      <div style={{ width:16, height:16, border:"2px solid var(--border)", borderTopColor:"#155266",
+                    borderRadius:"50%", animation:"spin .7s linear infinite", flexShrink:0 }}/>
+      {label}
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
+}
+function ErrorBanner({ msg }) {
+  return (
+    <div style={{ background:"#fef2f2", border:"1px solid #fca5a5", borderRadius:10,
+                  padding:"10px 14px", fontSize:13, color:"#dc2626", marginBottom:12,
+                  display:"flex", gap:8, alignItems:"center" }}>
+      <i className="ti ti-alert-circle" style={{ fontSize:15, flexShrink:0 }} aria-hidden="true"/>
+      {msg}
+    </div>
+  );
+}
+
 function EnrollForm({ groups, onSubmit, onCancel }) {
   const [form, setForm] = React.useState({ name:"", email:"", phone:"", programId:"en", level:"A1", groupId:"", price:95 });
   const [saving, setSaving] = React.useState(false);
@@ -598,6 +621,7 @@ export default function AdminDashboard() {
         <div style={{ flex:1, overflow:"auto", padding:20 }}>
 
           {/* ── HOME ── */}
+          {loadingData && <LoadingBar label="Cargando estudiantes y grupos…" />}
           {view === "home" && (
             <div>
               {/* Alerts */}
