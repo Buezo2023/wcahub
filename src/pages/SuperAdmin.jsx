@@ -850,7 +850,7 @@ export default function SuperAdmin() {
                         <div style={{ fontSize:11, color:"var(--text-tertiary)", marginTop:2 }}>{int.key}</div>
                       </div>
                     </div>
-                    <Badge text={int.id==="google"||int.id==="ms365" ? "✓ Activo" : "⚠ Configurar"} bg={int.status==="connected"?GD:AD} color={int.status==="connected"?"#065f46":A}/>
+                    <Badge text={int.id==="google"||int.id==="ms365"||int.id==="mailrelay" ? "✓ Configurado" : "⚠ Pendiente"} bg={int.status==="connected"?GD:AD} color={int.status==="connected"?"#065f46":A}/>
                   </div>
                   <div style={{ display:"flex", gap:7 }}>
                     <button onClick={()=>showToast(`${int.name} — contactá al equipo IT para reconfigurar`)} style={{ flex:1, fontSize:12, padding:"8px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>{int.status==="connected"?"Reconfigurar":"Conectar"}</button>
