@@ -285,37 +285,20 @@ export default function SuperAdmin() {
     setSaving(true);
     try {
       if (staffModal.mode === "add") {
-        // Invite via API — creates user + profile
-        await api.auth.invite({
+        // Use dedicated staff invite endpoint — sets role + sends correct email
+        const result = await api.auth.inviteStaff({
           email:     staffForm.email,
           fullName:  staffForm.name,
-          programId: "va", // staff don't have a program, used for email only
-          level:     "B1",
-          price:     0,
+          role:      staffForm.role,
+          salary:    staffForm.salary || null,
+          hireDate:  new Date().toISOString().slice(0, 10),
         });
-        // Set their role
-        const { data: profile } = await supabase
-          .from("profiles").select("id").eq("email", staffForm.email).maybeSingle();
-        if (profile) {
-          const roleMap = {
-            "Docente":"docente","Coordinadora":"coordinadora","Admin":"admin",
-            "Gestor de Cobros":"cobros","Ventas":"asesor_ventas",
-            "Marketing":"asesor_ventas","IT":"admin","Soporte":"admin",
-            "Contabilidad":"cobros",
-          };
-          await supabase.from("profiles").update({ role: roleMap[staffForm.role] || "docente" }).eq("id", profile.id);
-          // Create staff record
-          await supabase.from("staff").insert({
-            profile_id: profile.id,
-            position:   staffForm.role,
-            department: staffForm.role === "Docente" ? "Académico" : "Administrativo",
-            salary:     Number(staffForm.salary) || null,
-            hire_date:  new Date().toISOString().slice(0, 10),
-            active:     staffForm.status === "active",
-          });
-        }
         setStaff(p => [...p, { ...staffForm, id: Date.now() }]);
-        showToast(`${staffForm.name} invitado correctamente — recibirá el email de acceso`);
+        showToast(
+          result.emailSent
+            ? `✓ ${staffForm.name} invitado — email enviado a ${staffForm.email}`
+            : `✓ ${staffForm.name} creado — configurá Mailrelay para enviar emails`
+        );
       } else {
         // Update existing staff
         const roleMap = {
@@ -672,6 +655,14 @@ export default function SuperAdmin() {
                         <div style={{ display:"flex", gap:5 }}>
                           <button onClick={()=>openViewStaff(s)} style={{ fontSize:11, padding:"5px 10px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", border:"1px solid var(--border)", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>Ver</button>
                           <button onClick={()=>openEditStaff(s)} style={{ fontSize:11, padding:"5px 10px", background:PD, color:P, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>Editar</button>
+                          <button title="Reenviar email de acceso" onClick={async()=>{
+                            try {
+                              const {data:{session}} = await supabase.auth.getSession();
+                              const r = await fetch("/api/auth/resend-invite",{method:"POST",headers:{"Content-Type":"application/json",Authorization:`Bearer ${session?.access_token}`},body:JSON.stringify({email:s.email})});
+                              const d = await r.json();
+                              showToast(d.data?.message || "✉ Email reenviado");
+                            } catch(e){showToast("Error al reenviar: "+e.message,R);}
+                          }} style={{ fontSize:11, padding:"5px 10px", background:"#e8f3f6", color:P, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>✉</button>
                           <button onClick={()=>setDeleteConfirm(s)} style={{ fontSize:11, padding:"5px 10px", background:RD, color:R, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>🗑</button>
                         </div>
                       </td>
