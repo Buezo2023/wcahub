@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getStudents, getGroups, getPayments, updateGroupTeamsLink, getPrograms } from "../lib/db.js";
 import { supabase } from "../lib/supabase.js";
+import { api } from "../lib/api.js";
 
 // ─── BRAND ───────────────────────────────────────────────────────────────────
 const B = {
@@ -175,6 +176,74 @@ export default function AdminDashboard() {
     return () => subscription.unsubscribe();
   }, [navigate]);
   const [view, setView] = useState("home");
+  const [realStudents, setRealStudents] = useState([]);
+  const [realGroups,   setRealGroups]   = useState([]);
+  const [loadingData,  setLoadingData]  = useState(true);
+
+  // Load real students + groups from Supabase
+  useEffect(() => {
+    async function loadData() {
+      try {
+        // Students
+        const { data: enrolls } = await supabase
+          .from("enrollments")
+          .select(`
+            id, program_id, status, current_unit,
+            group_id,
+            students!inner(
+              id, level, scholarship,
+              profiles!inner(full_name, email, avatar_url, active)
+            ),
+            groups(level, schedule, days)
+          `)
+          .eq("status", "active")
+          .limit(200);
+        if (enrolls?.length) {
+          const mapped = enrolls.map(e => ({
+            id:        e.students.id,
+            name:      e.students.profiles.full_name || e.students.profiles.email,
+            email:     e.students.profiles.email,
+            country:   "🌎",
+            level:     e.students.level || e.groups?.level || "A1",
+            group:     e.groups ? `${e.groups.level}·${e.groups.schedule?.split("–")[0] || ""}` : "Sin grupo",
+            program:   { en:"Inglés", va:"VA", va_mkt:"VA·Mkt", va_legal:"VA·Legal", va_care:"VA·Cuidador" }[e.program_id] || e.program_id,
+            type:      e.students.scholarship ? "scholarship" : "regular",
+            state:     "active",
+            payment:   "Al día",
+            attendance: 80,
+            score:     75,
+            enrolled:  new Date(e.students.created_at||Date.now()).toLocaleDateString("es-HN",{month:"short",year:"numeric"}),
+            enrollId:  e.id,
+            profileId: e.students.profiles.id,
+          }));
+          setRealStudents(mapped);
+        }
+        // Groups
+        const { data: grps } = await supabase
+          .from("groups")
+          .select("id, level, schedule, days, capacity, active_unit, teams_link, teacher_groups(staff(profiles(full_name)))")
+          .eq("active", true);
+        if (grps?.length) {
+          const mappedG = grps.map(g => ({
+            id:       g.id,
+            level:    g.level,
+            time:     g.schedule,
+            days:     g.days,
+            teacher:  g.teacher_groups?.[0]?.staff?.profiles?.full_name || "Sin asignar",
+            students: 0,
+            capacity: g.capacity,
+            unit:     g.active_unit,
+            teamsSet: !!g.teams_link,
+            teamsLink: g.teams_link,
+            dbId:     g.id,
+          }));
+          setRealGroups(mappedG);
+        }
+      } catch(e) { console.error("Admin data load:", e); }
+      finally { setLoadingData(false); }
+    }
+    loadData();
+  }, []);
   const [actionModal, setActionModal] = useState(null); // {type, student, group}
   const [actionNote, setActionNote] = useState("");
   const [actionDone, setActionDone] = useState(null);
@@ -194,15 +263,17 @@ export default function AdminDashboard() {
   const [teamsModal, setTeamsModal] = useState(null);
   const [teamsLink, setTeamsLink] = useState("");
 
-  const filtered = useMemo(() => STUDENTS.filter(s => {
-    const ms = !search || s.name.toLowerCase().includes(search.toLowerCase()) || s.email.toLowerCase().includes(search.toLowerCase());
+  const displayStudents = realStudents.length > 0 ? realStudents : STUDENTS;
+  const filtered = useMemo(() => displayStudents.filter(s => {
+    const ms = !search || s.name.toLowerCase().includes(search.toLowerCase()) || (s.email||"").toLowerCase().includes(search.toLowerCase());
     const mst = filterState === "all" || s.state === filterState;
     const ml = filterLevel === "all" || s.level === filterLevel;
     return ms && mst && ml;
-  }), [search, filterState, filterLevel]);
+  }), [search, filterState, filterLevel, displayStudents]);
 
-  const suspended = STUDENTS.filter(s => s.state === "suspended");
-  const active    = STUDENTS.filter(s => s.state === "active");
+  const suspended = displayStudents.filter(s => s.state === "suspended");
+  const active    = displayStudents.filter(s => s.state === "active");
+  const displayGroups = realGroups.length > 0 ? realGroups : GROUPS;
 
   return (
     <div style={{ display:"flex", minHeight: "100vh", height: "100vh", background:B.bg,  overflow:"hidden",  fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
@@ -294,7 +365,7 @@ export default function AdminDashboard() {
                 <Stat label="Estudiantes activos" value={active.length} sub="Este mes" color={B.primary} icon="ti-users" />
                 <Stat label="Ingresos (junio)" value="$18,420" sub="↑ 8% vs mayo" color={B.secondary} icon="ti-coin" />
                 <Stat label="Pagos pendientes" value={PAYMENTS_PENDING.length} sub="Transferencias" color={B.amber} icon="ti-clock" />
-                <Stat label="Grupos activos" value={GROUPS.length} sub="5 niveles" color={B.green} icon="ti-grid-dots" />
+                <Stat label="Grupos activos" value={displayGroups.length || GROUPS.length} sub="5 niveles" color={B.green} icon="ti-grid-dots" />
               </div>
 
               {/* Two columns */}
@@ -498,16 +569,16 @@ export default function AdminDashboard() {
           {/* ── GROUPS ── */}
           {view === "groups" && (
             <div>
-              {GROUPS.filter(g=>!g.teamsSet).length > 0 && (
+              {displayGroups.filter(g=>!g.teamsSet).length > 0 && (
                 <div style={{ background:B.redDim, border:`1px solid ${B.red}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, display:"flex", gap:10, alignItems:"center" }}>
                   <i className="ti ti-alert-circle" style={{ color:B.red, fontSize:16, flexShrink:0 }} aria-hidden="true" />
                   <div style={{ flex:1, fontSize:13, color:B.text }}>
-                    <strong>{GROUPS.filter(g=>!g.teamsSet).length} grupo(s)</strong> sin link de Teams configurado. Los estudiantes no pueden unirse a clase.
+                    <strong>{displayGroups.filter(g=>!g.teamsSet).length} grupo(s)</strong> sin link de Teams configurado. Los estudiantes no pueden unirse a clase.
                   </div>
                 </div>
               )}
               <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10 }}>
-                {GROUPS.map(g => (
+                {displayGroups.map(g => (
                   <div key={g.id} style={{ background:B.white, border:`1px solid ${g.teamsSet?B.border:B.red}`, borderRadius:12, padding:14 }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
                       <div>
@@ -633,7 +704,17 @@ export default function AdminDashboard() {
                       <div style={{ fontSize:12, color:B.textSec, lineHeight:1.5, marginBottom:8 }}>{r.desc}</div>
                       <div style={{ display:"flex", gap:6 }}>
                         <button style={{ fontSize:11, padding:"3px 10px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Ver reporte</button>
-                        <button style={{ fontSize:11, padding:"3px 10px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>↓ Exportar Excel</button>
+                        <button onClick={()=>{
+  const rows = filtered;
+  const headers = ["Nombre","Email","Nivel","Grupo","Programa","Estado","Matrícula"];
+  const csv = [headers, ...rows.map(r=>[r.name,r.email,r.level,r.group,r.program,r.state,r.enrolled])]
+    .map(row=>row.map(v=>`"${String(v||"").replace(/"/g,'""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], {type:"text/csv"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `estudiantes-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}} style={{ fontSize:11, padding:"3px 10px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>↓ Exportar Excel</button>
                       </div>
                     </div>
                   </div>
@@ -834,7 +915,7 @@ export default function AdminDashboard() {
               <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>Nuevo estudiante</div>
               <button onClick={()=>setEnrollModal(false)} aria-label="Cerrar" style={{ background:"none", border:"none", cursor:"pointer", color:"var(--text-secondary)", fontSize:18 }}>✕</button>
             </div>
-            {[
+            <div id="enroll-modal-form">{[
               {label:"Nombre completo", ph:"María Rodríguez", type:"text"},
               {label:"Email", ph:"m.rodriguez@correo.com", type:"email"},
               {label:"Teléfono / WhatsApp", ph:"+504 XXXX-XXXX", type:"tel"},
@@ -857,14 +938,29 @@ export default function AdminDashboard() {
                   {["A1","A2","B1","B2","C1"].map(l => <option key={l}>{l}</option>)}
                 </select>
               </div>
-            </div>
+            </div></div>
             <div style={{ display:"flex", gap:8 }}>
               <button onClick={()=>setEnrollModal(false)} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
               <button onClick={async()=>{
-  const form = document.querySelectorAll('[data-enroll]');
-  setEnrollModal(false);
-  setActionDone("Matrícula creada — el estudiante recibirá el email");
-  setTimeout(()=>setActionDone(null),3000);
+  const inputs = document.querySelectorAll("#enroll-modal-form input, #enroll-modal-form select");
+  const [nombre, email, telefono] = inputs;
+  const programa = document.getElementById("enroll-programa");
+  const nivel    = document.getElementById("enroll-nivel");
+  if(!nombre?.value || !email?.value) { alert("Nombre y email son requeridos"); return; }
+  try {
+    await api.auth.invite({
+      email:     email.value.trim(),
+      fullName:  nombre.value.trim(),
+      programId: { "Inglés":"en","VA":"va","Inglés + VA":"en","Beca":"en" }[programa?.value] || "en",
+      level:     nivel?.value || "A1",
+      price:     0,
+    });
+    setEnrollModal(false);
+    setActionDone("✓ Estudiante invitado — recibirá el email de acceso en minutos");
+    setTimeout(()=>setActionDone(null),5000);
+  } catch(err) {
+    alert("Error: " + err.message);
+  }
 }} style={{ flex:2, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Crear matrícula</button>
             </div>
           </div>
@@ -890,7 +986,13 @@ export default function AdminDashboard() {
               style={{ width:"100%", padding:"9px 12px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit", marginBottom:14 }} />
             <div style={{ display:"flex", gap:8 }}>
               <button onClick={()=>{ setTeamsModal(null); setTeamsLink(""); }} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
-              <button onClick={()=>{ setTeamsModal(null); setTeamsLink(""); setActionDone("Link de Teams guardado"); setTimeout(()=>setActionDone(null),3000); }} style={{ flex:2, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Guardar link</button>
+              <button onClick={async()=>{
+  if(teamsModal?.dbId && teamsLink) {
+    await supabase.from("groups").update({teams_link:teamsLink}).eq("id",teamsModal.dbId).catch(console.error);
+    setRealGroups(gs => gs.map(g => g.id===teamsModal.dbId ? {...g,teamsSet:true,teamsLink} : g));
+  }
+  setTeamsModal(null); setTeamsLink(""); setActionDone("✓ Link de Teams guardado"); setTimeout(()=>setActionDone(null),3000);
+}} style={{ flex:2, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Guardar link</button>
             </div>
           </div>
         </div>

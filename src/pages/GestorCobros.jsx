@@ -317,7 +317,17 @@ export default function GestorCobros() {
                   <i className="ti ti-search" style={{ color:B.textSec, fontSize:15 }} aria-hidden="true" />
                   <input value={searchHist} onChange={e=>setSearchHist(e.target.value)} placeholder="Buscar por estudiante o código..." style={{ border:"none", outline:"none", fontSize:13, background:"transparent", flex:1, fontFamily:"inherit", color:B.text }} />
                 </div>
-                <button style={{ padding:"7px 14px", background:B.white, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", color:B.textSec, fontFamily:"inherit" }}>↓ Excel</button>
+                <button onClick={()=>{
+                  const rows = filteredHist;
+                  const headers = ["Estudiante","Monto","Método","Código","Estado","Fecha"];
+                  const csv = [headers, ...rows.map(r=>[r.student,r.amount,r.method,r.code,r.status,r.date])]
+                    .map(row=>row.map(v=>`"${String(v||"").replace(/"/g,'""')}"`).join(",")).join("\n");
+                  const blob = new Blob([csv], {type:"text/csv"});
+                  const a = document.createElement("a");
+                  a.href = URL.createObjectURL(blob);
+                  a.download = `cobros-${new Date().toISOString().slice(0,10)}.csv`;
+                  a.click();
+                }} style={{ padding:"7px 14px", background:B.white, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", color:B.textSec, fontFamily:"inherit" }}>↓ Excel</button>
               </div>
               <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, overflow:"hidden" }}>
                 <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
@@ -377,7 +387,11 @@ export default function GestorCobros() {
                     </div>
                   </div>
                   <div style={{ display:"flex", gap:7 }}>
-                    <button style={{ flex:1, fontSize:12, padding:"8px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:8, cursor:"pointer", fontFamily:"inherit" }}>
+                    <button onClick={()=>{
+                      const phone = (o.contact||"").replace(/[^\d]/g,"");
+                      const msg = encodeURIComponent(`Hola ${o.student}, te contactamos de WCA Academy. Tu pago de $${o.amount} lleva ${o.days} días vencido. ¿Podemos ayudarte a regularizarlo? 🙏`);
+                      window.open(`https://wa.me/${phone}?text=${msg}`, "_blank");
+                    }} style={{ flex:1, fontSize:12, padding:"8px", background:"#ecfdf5", color:"#059669", border:"1px solid #059669", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>
                       <i className="ti ti-brand-whatsapp" style={{ fontSize:13, verticalAlign:-1, marginRight:4 }} aria-hidden="true" />
                       Contactar por WhatsApp
                     </button>
