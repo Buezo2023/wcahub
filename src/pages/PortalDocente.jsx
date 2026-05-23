@@ -118,6 +118,17 @@ function AttendanceRow({student}){
 }
 
 export default function TeacherPortal(){
+  // Load teacher's real groups from Supabase
+  useEffect(() => {
+    async function loadTeacherData() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+      // Groups will be loaded once teacher_groups is populated
+      // For now: uses demo data as fallback
+    }
+    loadTeacherData();
+  }, []);
+
   const navigate = useNavigate();
   const [view,setView]=useState("home");
   const [selGroup,setSelGroup]=useState(1);

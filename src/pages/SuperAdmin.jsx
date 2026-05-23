@@ -228,6 +228,7 @@ export default function SuperAdmin() {
     <div style={{ display:"flex", minHeight:"100vh", background:"var(--bg-page)", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
 
       {/* SIDEBAR */}
+      {ToastEl}
       <aside style={{ width:218, background:PH, display:"flex", flexDirection:"column", padding:"0 0 16px", flexShrink:0, minHeight:"100vh", position:"sticky", top:0 }}>
         <div style={{ padding:"22px 18px 18px", borderBottom:"1px solid rgba(255,255,255,.08)", marginBottom:8 }}>
           <div style={{ fontSize:10, color:Y, fontWeight:700, letterSpacing:2, textTransform:"uppercase", marginBottom:5 }}>World Connect Academy</div>

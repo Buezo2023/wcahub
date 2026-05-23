@@ -122,6 +122,7 @@ export default function CoordAcademica() {
     <div style={{ display:"flex", minHeight: "100vh", height: "100vh", background:B.bg,  overflow:"hidden",  fontFamily:"'DM Sans','Segoe UI',sans-serif", position:"relative" }}>
 
       {/* SIDEBAR */}
+      {ToastEl}
       <aside style={{ width:196, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0 }}>
         <div style={{ padding:"18px 16px 16px", borderBottom:"1px solid rgba(255,255,255,.1)", marginBottom:8 }}>
           <div style={{ fontSize:16, fontWeight:800, color:"var(--bg-surface)" }}>WCA <span style={{ color:B.secondary }}>Hub</span></div>

@@ -1,5 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { getStudents, getGroups, getPayments, updateGroupTeamsLink, getPrograms } from "../lib/db.js";
+import { useToast } from "../lib/hooks.jsx";
+import { supabase } from "../lib/supabase.js";
 
 // ─── BRAND ───────────────────────────────────────────────────────────────────
 const B = {
@@ -727,6 +730,7 @@ export default function AdminDashboard() {
         </div>
       </main>
 
+      {ToastEl}
       {/* Action toast */}
       {actionDone && (
         <div style={{ position:"fixed", top:20, right:90, background:"#059669", color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:9999, boxShadow:"0 6px 20px rgba(5,150,105,.3)", display:"flex", gap:8, animation:"slideIn .3s ease" }}>
