@@ -24,7 +24,7 @@
       "headers": [
         {
           "key": "Access-Control-Allow-Origin",
-          "value": "https://hub.wcahn.com"
+          "value": "https://wcahub.vercel.app"
         },
         {
           "key": "Access-Control-Allow-Methods",

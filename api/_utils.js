@@ -81,7 +81,7 @@ export function requireRole(profile, ...roles) {
 // ─── CORS — fixed to production domain ───────────────────────────
 const isProd = process.env.NODE_ENV === "production" || process.env.VERCEL_ENV === "production";
 const ALLOWED_ORIGINS = [
-  "https://hub.wcahn.com",
+  "https://wcahub.vercel.app",
   "https://wcahub.com",
   ...(isProd ? [] : ["http://localhost:5173", "http://localhost:5174"]),
 ];
@@ -168,7 +168,7 @@ const wrap = (content) => `<!DOCTYPE html>
   <div style="background:#f8fafc;padding:20px 32px;border-top:1px solid #e2e8f0;text-align:center;">
     <div style="font-size:11px;color:#94a3b8;line-height:1.8;">
       World Connect Academy · Honduras<br>
-      <a href="https://hub.wcahn.com" style="color:#155266;text-decoration:none;">hub.wcahn.com</a>
+      <a href="https://wcahub.vercel.app" style="color:#155266;text-decoration:none;">wcahub.vercel.app</a>
       &nbsp;·&nbsp;
       <a href="mailto:info@worldconnectacademy.com" style="color:#155266;text-decoration:none;">info@worldconnectacademy.com</a>
     </div>
@@ -185,7 +185,7 @@ export const EmailTemplates = {
         <p style="color:#475569;font-size:14px;line-height:1.7;margin:0 0 20px;">
           Tu matrícula en <strong>${p}</strong> fue creada. Hacé clic para acceder con tu cuenta de Google o Microsoft.
         </p>
-        <a href="https://hub.wcahn.com" style="display:inline-block;background:#155266;color:#fff;text-decoration:none;padding:13px 28px;border-radius:10px;font-weight:700;font-size:14px;">
+        <a href="https://wcahub.vercel.app" style="display:inline-block;background:#155266;color:#fff;text-decoration:none;padding:13px 28px;border-radius:10px;font-weight:700;font-size:14px;">
           Acceder a WCA Hub →
         </a>
         <p style="font-size:12px;color:#94a3b8;margin-top:20px;">
@@ -206,7 +206,7 @@ export const EmailTemplates = {
           <div style="background:#155266;padding:12px 16px;color:#fff;font-weight:700;font-size:14px;">${p}</div>
           ${rows.map(([k,v]) => `<div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #f1f5f9;"><span style="font-size:12px;color:#64748b;">${k}</span><span style="font-size:13px;color:#0f172a;font-weight:600;">${sanitize(String(v))}</span></div>`).join("")}
         </div>
-        <a href="https://hub.wcahn.com" style="display:inline-block;background:#155266;color:#fff;text-decoration:none;padding:13px 28px;border-radius:10px;font-weight:700;font-size:14px;">Ir a mi portal →</a>`),
+        <a href="https://wcahub.vercel.app" style="display:inline-block;background:#155266;color:#fff;text-decoration:none;padding:13px 28px;border-radius:10px;font-weight:700;font-size:14px;">Ir a mi portal →</a>`),
     };
   },
 
@@ -222,7 +222,7 @@ export const EmailTemplates = {
           <div style="font-size:13px;color:#065f46;">${p} · ${sanitize(period)}</div>
           ${c ? `<div style="font-size:11px;color:#6ee7b7;margin-top:8px;font-family:monospace;">Ref: ${c}</div>` : ""}
         </div>
-        <a href="https://hub.wcahn.com" style="display:inline-block;background:#155266;color:#fff;text-decoration:none;padding:13px 28px;border-radius:10px;font-weight:700;font-size:14px;">Ir a mi portal →</a>`),
+        <a href="https://wcahub.vercel.app" style="display:inline-block;background:#155266;color:#fff;text-decoration:none;padding:13px 28px;border-radius:10px;font-weight:700;font-size:14px;">Ir a mi portal →</a>`),
     };
   },
 
@@ -252,7 +252,7 @@ export const EmailTemplates = {
         <p style="color:#475569;font-size:14px;margin:0 0 20px;">Completaste el onboarding y ya estás listo para <strong>${p}</strong>.</p>
         ${nextClass ? `<div style="background:#e8f3f6;border-radius:10px;padding:16px 20px;margin-bottom:20px;"><div style="font-size:12px;color:#155266;font-weight:700;margin-bottom:4px;">📅 PRÓXIMA CLASE</div><div style="font-size:15px;color:#0f172a;font-weight:700;">${sanitize(nextClass)}</div></div>` : ""}
         ${teamsLink && teamsLink !== "#" ? `<a href="${sanitize(teamsLink)}" style="display:inline-block;background:#0078d4;color:#fff;text-decoration:none;padding:13px 28px;border-radius:10px;font-weight:700;font-size:14px;margin-bottom:12px;">Unirme a Microsoft Teams →</a><br>` : ""}
-        <a href="https://hub.wcahn.com" style="display:inline-block;background:#155266;color:#fff;text-decoration:none;padding:13px 28px;border-radius:10px;font-weight:700;font-size:14px;">Ver mi portal →</a>`),
+        <a href="https://wcahub.vercel.app" style="display:inline-block;background:#155266;color:#fff;text-decoration:none;padding:13px 28px;border-radius:10px;font-weight:700;font-size:14px;">Ver mi portal →</a>`),
     };
   },
 };

@@ -53,7 +53,7 @@ function staffEmailHtml({ name, role, portalUrl, email }) {
     </div>
   </div>
   <div style="padding:16px 32px;border-top:1px solid #f1f5f9;text-align:center;font-size:11px;color:#94a3b8;">
-    World Connect Academy · hub.wcahn.com
+    World Connect Academy · wcahub.vercel.app
   </div>
 </div></body></html>`,
   };
@@ -79,7 +79,7 @@ async function handleStudent(req, actor) {
     userId = newUser.user.id;
     isNewUser = true;
     await admin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: 'https://hub.wcahn.com/auth/callback',
+      redirectTo: 'https://wcahub.vercel.app/auth/callback',
       data: { full_name: fullName },
     }).catch(e => console.warn('Magic link:', e.message));
   }
@@ -111,7 +111,7 @@ async function handleStaff(req, actor) {
   if (!email || !fullName) return { status: 400, message: 'email y fullName son requeridos' };
 
   const supabaseRole = ROLE_MAP[role] || 'docente';
-  const portalUrl    = `https://hub.wcahn.com${PORTAL_MAP[supabaseRole] || '/portal'}`;
+  const portalUrl    = `https://wcahub.vercel.app${PORTAL_MAP[supabaseRole] || '/portal'}`;
   const admin        = getSupabaseAdmin();
 
   const { data: existing } = await admin.from('profiles').select('id, role').eq('email', email).maybeSingle();
@@ -127,7 +127,7 @@ async function handleStaff(req, actor) {
     // Use inviteUserByEmail → Supabase sends the invite email automatically
     // (magic link to the right portal). Works without a custom email domain.
     const { data: invited, error: invErr } = await admin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: `https://hub.wcahn.com${PORTAL_MAP[supabaseRole] || '/portal'}`,
+      redirectTo: `https://wcahub.vercel.app${PORTAL_MAP[supabaseRole] || '/portal'}`,
       data: { full_name: fullName, role: supabaseRole },
     });
 
@@ -195,7 +195,7 @@ async function handleResend(req, actor) {
   if (!profile) return { status: 404, message: 'Usuario no encontrado' };
 
   const role       = profile.role || 'estudiante';
-  const portalUrl  = `https://hub.wcahn.com${PORTAL_MAP[role] || '/portal'}`;
+  const portalUrl  = `https://wcahub.vercel.app${PORTAL_MAP[role] || '/portal'}`;
   const firstName  = (profile.full_name || email).split(' ')[0];
   const roleLabel  = { docente:'Docente', coordinadora:'Coordinadora', admin:'Admin', cobros:'Gestor de Cobros', asesor_ventas:'Ventas', estudiante:'Estudiante' }[role] || role;
   const isStaff    = role !== 'estudiante';
@@ -286,7 +286,7 @@ async function handleResendSupabase(req, actor) {
   const portalPath = PORTAL_MAP_LOCAL[profile.role] || '/portal';
 
   const { error } = await admin.auth.admin.inviteUserByEmail(email, {
-    redirectTo: `https://hub.wcahn.com${portalPath}`,
+    redirectTo: `https://wcahub.vercel.app${portalPath}`,
     data: { full_name: profile.full_name, role: profile.role },
   });
 

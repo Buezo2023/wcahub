@@ -7,15 +7,15 @@ import { requireAuth, requireRole, ok, err, setCORS, checkRateLimit } from '../_
 
 export const TEMPLATES = {
   paymentDue: (name, amount, days) =>
-    `Hola ${name}! Tu pago de *$${amount}* vence en *${days} dia${days!==1?'s':''}*.\n\nSubi tu comprobante en hub.wcahn.com > Pagos para mantener tu acceso. \n\n_World Connect Academy_`,
+    `Hola ${name}! Tu pago de *$${amount}* vence en *${days} dia${days!==1?'s':''}*.\n\nSubi tu comprobante en wcahub.vercel.app > Pagos para mantener tu acceso. \n\n_World Connect Academy_`,
   paymentOverdue: (name, amount, days) =>
-    `Hola ${name}, tu pago de *$${amount}* lleva *${days} dias vencido*.\n\nTu acceso esta suspendido. Contactanos o subi el comprobante en hub.wcahn.com\n\n_World Connect Academy_`,
+    `Hola ${name}, tu pago de *$${amount}* lleva *${days} dias vencido*.\n\nTu acceso esta suspendido. Contactanos o subi el comprobante en wcahub.vercel.app\n\n_World Connect Academy_`,
   paymentConfirmed: (name, amount) =>
     `Confirmado ${name}! Tu pago de *$${amount}* fue procesado. Tu matricula esta al dia. Segui aprendiendo!\n\n_World Connect Academy_`,
   welcome: (name, program, firstClass) =>
-    `Bienvenido/a a WCA, ${name}!\n\nEstas en *${program}*.\n\nPrimera clase: *${firstClass}*\nAccede en: hub.wcahn.com\n\n_World Connect Academy_`,
+    `Bienvenido/a a WCA, ${name}!\n\nEstas en *${program}*.\n\nPrimera clase: *${firstClass}*\nAccede en: wcahub.vercel.app\n\n_World Connect Academy_`,
   newUnit: (name, unit, title) =>
-    `Hola ${name}! Esta semana empieza *U${unit}: ${title}*.\n\nEntra a hub.wcahn.com a practicar!\n\n_World Connect Academy_`,
+    `Hola ${name}! Esta semana empieza *U${unit}: ${title}*.\n\nEntra a wcahub.vercel.app a practicar!\n\n_World Connect Academy_`,
   examResult: (name, unit, score, passed) => passed
     ? `Felicitaciones ${name}! Aprobaste U${unit} con *${score}%*.\n\n_World Connect Academy_`
     : `Hola ${name}, tu resultado en U${unit} fue ${score}%. Necesitas 70%. Tienes mas intentos!\n\n_World Connect Academy_`,

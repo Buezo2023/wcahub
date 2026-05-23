@@ -29,7 +29,7 @@ export default async function handler(req, res) {
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key) return err(res, { status: 503, message: 'Stripe no configurado' });
 
-    const base = successUrl ? '' : 'https://hub.wcahn.com';
+    const base = successUrl ? '' : 'https://wcahub.vercel.app';
 
     // Create Stripe Checkout Session
     const params = new URLSearchParams({
