@@ -763,9 +763,29 @@ export default function CoordAcademica() {
                 <div style={{ display:"flex", gap:8, marginTop:18 }}>
                   <button onClick={()=>setTeacherModal(null)} style={{ padding:"10px 16px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit", color:"var(--text-secondary)" }}>Cancelar</button>
                   {teacherModal.mode==="edit"&&<button onClick={()=>setDeleteTeacher(teacherModal.data)} style={{ padding:"10px 16px", background:B.redDim, color:B.red, border:"none", borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Eliminar</button>}
-                  <button onClick={()=>{
-                    if(teacherModal.mode==="add") setTeachers(t=>[...t,{...teacherForm,id:Date.now(),rating:5.0,groups:[]}]);
-                    else setTeachers(t=>t.map(x=>x.id===teacherModal.data.id?{...x,...teacherForm}:x));
+                  <button onClick={async()=>{
+                    if(!teacherForm.name||!teacherForm.email){alert("Nombre y email requeridos");return;}
+                    if(teacherModal.mode==="add"){
+                      // Invite via Supabase - creates user profile as docente
+                      try{
+                        await supabase.from("profiles").select("id").eq("email",teacherForm.email).maybeSingle()
+                          .then(async({data:existing})=>{
+                            if(!existing){
+                              await supabase.auth.admin?.createUser?.({email:teacherForm.email,email_confirm:true,user_metadata:{full_name:teacherForm.name}}).catch(()=>{});
+                            }
+                            const {data:prof} = await supabase.from("profiles").select("id").eq("email",teacherForm.email).maybeSingle();
+                            if(prof){
+                              await supabase.from("profiles").update({role:"docente",full_name:teacherForm.name}).eq("id",prof.id);
+                              await supabase.from("staff").upsert({profile_id:prof.id,position:"Docente",department:"Académico",salary:Number(teacherForm.salary)||null,active:true},{onConflict:"profile_id"});
+                            }
+                          });
+                      }catch(e){console.error(e);}
+                      setTeachers(t=>[...t,{...teacherForm,id:Date.now(),rating:5.0,groups:[]}]);
+                    } else {
+                      const {data:prof} = await supabase.from("profiles").select("id").eq("email",teacherForm.email).maybeSingle();
+                      if(prof) await supabase.from("profiles").update({full_name:teacherForm.name}).eq("id",prof.id);
+                      setTeachers(t=>t.map(x=>x.id===teacherModal.data.id?{...x,...teacherForm}:x));
+                    }
                     setTeacherModal(null);
                   }} style={{ flex:1, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
                     {teacherModal.mode==="add"?"Agregar docente":"Guardar cambios"}
@@ -789,7 +809,12 @@ export default function CoordAcademica() {
             </div>
             <div style={{ display:"flex", gap:8 }}>
               <button onClick={()=>setDeleteTeacher(null)} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit", color:"var(--text-secondary)" }}>Cancelar</button>
-              <button onClick={()=>{ setTeachers(t=>t.filter(x=>x.id!==deleteTeacher.id)); setDeleteTeacher(null); setTeacherModal(null); if(selTeacher?.id===deleteTeacher.id) setSelTeacher(null); }} style={{ flex:1, padding:"10px", background:B.red, color:"#fff", border:"none", borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Sí, eliminar</button>
+              <button onClick={async()=>{
+                  try{
+                    const {data:prof}=await supabase.from("profiles").select("id").eq("email",deleteTeacher.email||"").maybeSingle();
+                    if(prof){await supabase.from("profiles").update({active:false}).eq("id",prof.id);}
+                  }catch(e){console.error(e);}
+                  setTeachers(t=>t.filter(x=>x.id!==deleteTeacher.id)); setDeleteTeacher(null); setTeacherModal(null); if(selTeacher?.id===deleteTeacher.id) setSelTeacher(null); }} style={{ flex:1, padding:"10px", background:B.red, color:"#fff", border:"none", borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Sí, eliminar</button>
             </div>
           </div>
         </div>

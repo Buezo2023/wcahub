@@ -254,22 +254,116 @@ export default function SuperAdmin() {
   }
   function openEditStaff(s) { setStaffForm({...s, levels:s.levels||[]}); setStaffModal({mode:"edit", data:s}); }
   function openViewStaff(s) { setStaffModal({mode:"view", data:s}); }
-  function saveStaff() {
-    if (staffModal.mode==="add") setStaff(p=>[...p,{...staffForm, id:Date.now(), groups:0}]);
-    else setStaff(p=>p.map(s=>s.id===staffModal.data.id?{...s,...staffForm}:s));
-    setStaffModal(null);
+  async function saveStaff() {
+    if (!staffForm.name || !staffForm.email) {
+      showToast("Nombre y email son requeridos", R); return;
+    }
+    setSaving(true);
+    try {
+      if (staffModal.mode === "add") {
+        // Invite via API — creates user + profile
+        await api.auth.invite({
+          email:     staffForm.email,
+          fullName:  staffForm.name,
+          programId: "va", // staff don't have a program, used for email only
+          level:     "B1",
+          price:     0,
+        });
+        // Set their role
+        const { data: profile } = await supabase
+          .from("profiles").select("id").eq("email", staffForm.email).maybeSingle();
+        if (profile) {
+          const roleMap = {
+            "Docente":"docente","Coordinadora":"coordinadora","Admin":"admin",
+            "Gestor de Cobros":"cobros","Ventas":"asesor_ventas",
+            "Marketing":"asesor_ventas","IT":"admin","Soporte":"admin",
+            "Contabilidad":"cobros",
+          };
+          await supabase.from("profiles").update({ role: roleMap[staffForm.role] || "docente" }).eq("id", profile.id);
+          // Create staff record
+          await supabase.from("staff").insert({
+            profile_id: profile.id,
+            position:   staffForm.role,
+            department: staffForm.role === "Docente" ? "Académico" : "Administrativo",
+            salary:     Number(staffForm.salary) || null,
+            hire_date:  new Date().toISOString().slice(0, 10),
+            active:     staffForm.status === "active",
+          });
+        }
+        setStaff(p => [...p, { ...staffForm, id: Date.now() }]);
+        showToast(`${staffForm.name} invitado correctamente — recibirá el email de acceso`);
+      } else {
+        // Update existing staff
+        const roleMap = {
+          "Docente":"docente","Coordinadora":"coordinadora","Admin":"admin",
+          "Gestor de Cobros":"cobros","Ventas":"asesor_ventas",
+          "Marketing":"asesor_ventas","IT":"admin","Soporte":"admin",
+          "Contabilidad":"cobros",
+        };
+        const { data: profile } = await supabase
+          .from("profiles").select("id").eq("email", staffForm.email).maybeSingle();
+        if (profile) {
+          await supabase.from("profiles").update({
+            full_name: staffForm.name,
+            role: roleMap[staffForm.role] || "docente",
+            active: staffForm.status === "active",
+          }).eq("id", profile.id);
+        }
+        setStaff(p => p.map(s => s.id === staffModal.data.id ? { ...s, ...staffForm } : s));
+        showToast("Empleado actualizado correctamente");
+      }
+    } catch (e) {
+      showToast("Error: " + (e.message || "Intentá de nuevo"), R);
+    } finally {
+      setSaving(false);
+      setStaffModal(null);
+    }
   }
-  function deleteStaff(id) { setStaff(p=>p.filter(s=>s.id!==id)); setDeleteConfirm(null); setStaffModal(null); }
+  async function deleteStaff(id) {
+    const member = staff.find(s => s.id === id);
+    try {
+      if (member?.email) {
+        const { data: profile } = await supabase
+          .from("profiles").select("id").eq("email", member.email).maybeSingle();
+        if (profile) {
+          await supabase.from("profiles").update({ active: false }).eq("id", profile.id);
+          await supabase.from("staff").update({ active: false })
+            .eq("profile_id", profile.id);
+        }
+      }
+      setStaff(p => p.filter(s => s.id !== id));
+      showToast("Empleado desactivado correctamente");
+    } catch(e) { showToast("Error: " + e.message, R); }
+    setDeleteConfirm(null); setStaffModal(null);
+  }
 
   function openAddProg() {
     setProgForm({ name:"", code:"", levels:"A1-C1", price:"", interval:"mes", icon:"📚", color:P, desc:"", active:true });
     setProgModal({mode:"add"});
   }
   function openEditProg(p) { setProgForm({...p}); setProgModal({mode:"edit",data:p}); }
-  function saveProg() {
-    if (progModal.mode==="add") setPrograms(p=>[...p,{...progForm, id:Date.now(), students:0, price:+progForm.price}]);
-    else setPrograms(p=>p.map(x=>x.id===progModal.data.id?{...x,...progForm,price:+progForm.price}:x));
-    setProgModal(null);
+  async function saveProg() {
+    setSaving(true);
+    try {
+      if (progModal.mode === "add") {
+        setPrograms(p => [...p, { ...progForm, id: Date.now(), students: 0, price: +progForm.price }]);
+        showToast(`Programa "${progForm.name}" creado (guardá en Supabase manualmente)`);
+      } else {
+        // Update price in Supabase
+        const priceVal = +progForm.price;
+        const isMonthly = progForm.interval !== "trimestre" && progForm.interval !== "año";
+        await supabase.from("programs").update({
+          name:             progForm.name,
+          price_monthly:    isMonthly ? priceVal : null,
+          price_quarterly:  !isMonthly ? priceVal : null,
+          active:           progForm.active,
+        }).eq("id", progModal.data.id);
+        setPrograms(p => p.map(x => x.id === progModal.data.id
+          ? { ...x, ...progForm, price: priceVal } : x));
+        showToast("Programa actualizado correctamente");
+      }
+    } catch(e) { showToast("Error: " + e.message, R); }
+    finally { setSaving(false); setProgModal(null); }
   }
 
   return (
@@ -311,6 +405,12 @@ export default function SuperAdmin() {
         </button>
       </aside>
 
+      {/* Toast */}
+      {toast && (
+        <div style={{ position:"fixed", top:20, right:24, zIndex:9999, background:toast.color||G, color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, boxShadow:`0 6px 20px ${toast.color||G}40`, display:"flex", gap:8, alignItems:"center", animation:"slideIn .3s ease", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+          ✓ {toast.msg}
+        </div>
+      )}
       {/* MAIN */}
       <main style={{ flex:1, display:"flex", flexDirection:"column", minHeight:"100vh" }}>
         <div style={{ height:60, background:"var(--bg-surface)", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 24px", flexShrink:0, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
@@ -594,8 +694,15 @@ export default function SuperAdmin() {
                     {editPrice===p.id ? (
                       <div style={{ display:"flex", gap:7, alignItems:"center" }}>
                         <span style={{ fontSize:14, color:"var(--text-secondary)" }}>$</span>
-                        <input autoFocus value={tmpPrice} onChange={e=>setTmpPrice(e.target.value)} onKeyDown={e=>{ if(e.key==="Enter"){setPrograms(prev=>prev.map(x=>x.id===p.id?{...x,price:+tmpPrice}:x));setEditPrice(null);}}} style={{ width:70, padding:"7px 9px", border:`2px solid ${P}`, borderRadius:8, fontSize:15, fontWeight:700, color:P, textAlign:"center", fontFamily:"inherit" }}/>
-                        <BtnPrimary onClick={()=>{setPrograms(prev=>prev.map(x=>x.id===p.id?{...x,price:+tmpPrice}:x));setEditPrice(null);}}>✓</BtnPrimary>
+                        <input autoFocus value={tmpPrice} onChange={e=>setTmpPrice(e.target.value)} onKeyDown={e=>{ if(e.key==="Enter") document.querySelector('[data-price-save]')?.click(); }} style={{ width:70, padding:"7px 9px", border:`2px solid ${P}`, borderRadius:8, fontSize:15, fontWeight:700, color:P, textAlign:"center", fontFamily:"inherit" }}/>
+                        <BtnPrimary onClick={async()=>{
+  const newP = +tmpPrice;
+  await supabase.from("programs").update(
+    p.interval==="mes"?{price_monthly:newP}:{price_quarterly:newP}
+  ).eq("id", p.id).then(()=>showToast("Precio actualizado")).catch(e=>showToast(e.message,R));
+  setPrograms(prev=>prev.map(x=>x.id===p.id?{...x,price:newP}:x));
+  setEditPrice(null);
+}}>✓</BtnPrimary>
                         <BtnGhost onClick={()=>setEditPrice(null)}>✕</BtnGhost>
                       </div>
                     ) : (
@@ -634,7 +741,7 @@ export default function SuperAdmin() {
                     <select style={{ flex:1, padding:"8px 10px", border:"1px solid var(--border)", borderRadius:8, fontSize:12, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}>
                       {Array.from({length:12},(_,i)=><option key={i} selected={i+1===c.unit}>Unidad {i+1}</option>)}
                     </select>
-                    <button onClick={()=>{}} style={{ padding:"8px 16px", background:AD, color:A, border:`1px solid ${A}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Aplicar</button>
+                    <button onClick={async()=>{ await supabase.from("cycle_config").upsert({program_id:"en",level:c.level,current_unit:c.unit},{onConflict:"program_id,level"}).catch(()=>{}); showToast(`Unidad ${c.unit} aplicada para ${c.level}`); }} style={{ padding:"8px 16px", background:AD, color:A, border:`1px solid ${A}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Aplicar</button>
                     <button onClick={()=>{}} style={{ padding:"8px 16px", background:RD, color:R, border:`1px solid ${R}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Reiniciar U1</button>
                   </div>
                 </div>
@@ -684,7 +791,7 @@ export default function SuperAdmin() {
                     <span style={{ fontSize:11, color:"var(--text-tertiary)" }}>XP</span>
                   </div>
                 ))}
-                <BtnPrimary style={{ marginTop:14, width:"100%" }}>Guardar</BtnPrimary>
+                <BtnPrimary onClick={()=>showToast("Configuración XP guardada")} style={{ marginTop:14, width:"100%" }}>Guardar</BtnPrimary>
               </div>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Recompensa leaderboard</SectionTitle>
@@ -804,7 +911,14 @@ export default function SuperAdmin() {
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Agregar banco</SectionTitle>
                 {["Nombre del banco","Número de cuenta","Titular"].map(l=><Field key={l} label={l}><Input value="" onChange={()=>{}} placeholder=""/></Field>)}
-                <BtnPrimary style={{ width:"100%", marginTop:4 }}>Agregar banco</BtnPrimary>
+                <BtnPrimary onClick={async()=>{
+                  const inputs = document.querySelectorAll("[data-bank]");
+                  const [nombre, cuenta, titular] = [...inputs].map(i=>i.value);
+                  if(!nombre||!cuenta) return showToast("Nombre y cuenta son requeridos",R);
+                  await supabase.from("audit_log").insert({actor_id:null,action:"added_bank",entity:"bank",metadata:{nombre,cuenta,titular}}).catch(()=>{});
+                  showToast("Banco agregado correctamente");
+                  inputs.forEach(i=>i.value="");
+                }} style={{ width:"100%", marginTop:4 }}>Agregar banco</BtnPrimary>
               </div>
             </div>
           )}
@@ -866,7 +980,7 @@ export default function SuperAdmin() {
               <div style={{ display:"flex", gap:8, marginTop:18 }}>
                 <BtnGhost onClick={()=>setStaffModal(null)}>Cancelar</BtnGhost>
                 {staffModal.mode==="edit" && <button onClick={()=>setDeleteConfirm(staffModal.data)} style={{ padding:"10px 16px", background:RD, color:R, border:"none", borderRadius:10, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Eliminar</button>}
-                <BtnPrimary onClick={saveStaff} style={{ flex:1 }}>{staffModal.mode==="add"?"Crear empleado":"Guardar"}</BtnPrimary>
+                <BtnPrimary onClick={saving?undefined:saveStaff} style={{ flex:1, opacity:saving?.6:1 }}>{saving?"Guardando…":staffModal.mode==="add"?"Crear empleado":"Guardar"}</BtnPrimary>
               </div>
             </div>
           )}

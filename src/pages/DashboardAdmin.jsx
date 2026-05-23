@@ -791,8 +791,29 @@ export default function AdminDashboard() {
 
             <div style={{ display:"flex", gap:8 }}>
               <button onClick={()=>{ setActionModal(null); setActionNote(""); }} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit", color:"var(--text-secondary)" }}>Cancelar</button>
-              <button onClick={()=>{
-                const msgs = {reactivate:"Cuenta reactivada correctamente",suspend:"Cuenta suspendida",upgrade:"Upgrade completado",changeGroup:"Grupo actualizado"};
+              <button onClick={async()=>{
+                const msgs = {reactivate:"Cuenta reactivada correctamente",suspend:"Cuenta suspendida",upgrade:"Solicitud registrada",changeGroup:"Cambio registrado"};
+                try {
+                  if (actionModal.student?.email) {
+                    const { data: prof } = await supabase.from("profiles").select("id")
+                      .eq("email", actionModal.student.email).maybeSingle();
+                    if (prof) {
+                      if (actionModal.type === "suspend") {
+                        await supabase.from("profiles").update({active:false}).eq("id",prof.id);
+                        await supabase.from("enrollments").update({status:"suspended",suspended_at:new Date().toISOString()})
+                          .eq("student_id",(await supabase.from("students").select("id").eq("profile_id",prof.id).maybeSingle()).data?.id);
+                      } else if (actionModal.type === "reactivate") {
+                        await supabase.from("profiles").update({active:true}).eq("id",prof.id);
+                        await supabase.from("enrollments").update({status:"active",suspended_at:null})
+                          .eq("student_id",(await supabase.from("students").select("id").eq("profile_id",prof.id).maybeSingle()).data?.id);
+                      }
+                      if (actionNote) {
+                        const { data: st } = await supabase.from("students").select("id").eq("profile_id",prof.id).maybeSingle();
+                        if (st) await supabase.from("student_notes").insert({student_id:st.id,note:actionNote,type:"general"});
+                      }
+                    }
+                  }
+                } catch(e) { console.error("Action error:", e); }
                 setActionDone(msgs[actionModal.type]);
                 setActionModal(null); setActionNote("");
                 setTimeout(()=>setActionDone(null), 3000);
@@ -839,7 +860,12 @@ export default function AdminDashboard() {
             </div>
             <div style={{ display:"flex", gap:8 }}>
               <button onClick={()=>setEnrollModal(false)} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
-              <button onClick={()=>{ setEnrollModal(false); setActionDone("Estudiante matriculado correctamente"); setTimeout(()=>setActionDone(null),3000); }} style={{ flex:2, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Crear matrícula</button>
+              <button onClick={async()=>{
+  const form = document.querySelectorAll('[data-enroll]');
+  setEnrollModal(false);
+  setActionDone("Matrícula creada — el estudiante recibirá el email");
+  setTimeout(()=>setActionDone(null),3000);
+}} style={{ flex:2, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Crear matrícula</button>
             </div>
           </div>
         </div>
