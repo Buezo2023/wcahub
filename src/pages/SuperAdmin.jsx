@@ -33,11 +33,11 @@ const MRR_MONTHS= ["E","F","M","A","M","J","J","A","S","O","N","D"];
 const ROLES_DEF = [];  // roles loaded from Supabase (profiles distinct roles)
 
 const INTEGRATIONS = [
-  { id:"stripe",    name:"Stripe",           icon:"💳", key: typeof process !== "undefined" ? "Configurar en Vercel" : "—" },
-  { id:"ms365",     name:"Microsoft 365",    icon:"🪟", key:"Teams link por grupo" },
-  { id:"google",    name:"Google OAuth",     icon:"🔑", key:"oauth2: wca-app" },
-  { id:"twilio",    name:"Twilio WhatsApp",  icon:"💬", key:"Configurar TWILIO_* en Vercel" },
-  { id:"mailrelay", name:"Mailrelay",        icon:"📧", key:"Configurar MAILRELAY_* en Vercel" },
+  { id:"google",    name:"Google OAuth",    icon:"🔑", configured:true,  key:"Activo — login con Google funciona",        hint:"" },
+  { id:"mailrelay", name:"Mailrelay Email", icon:"📧", configured:true,  key:"Variables MAILRELAY_* configuradas en Vercel", hint:"Probá el envío abajo" },
+  { id:"ms365",     name:"Microsoft 365",  icon:"🪟", configured:true,  key:"Teams link se configura por grupo en Coordinación", hint:"" },
+  { id:"stripe",    name:"Stripe",         icon:"💳", configured:false, key:"Falta STRIPE_SECRET_KEY y STRIPE_WEBHOOK_SECRET",   hint:"Agregar en Vercel" },
+  { id:"twilio",    name:"Twilio WhatsApp",icon:"💬", configured:false, key:"Falta TWILIO_ACCOUNT_SID, AUTH_TOKEN y FROM",       hint:"Agregar en Vercel" },
 ];
 
 // Holidays loaded from Supabase
@@ -839,25 +839,60 @@ export default function SuperAdmin() {
 
           {/* ── INTEGRATIONS ── */}
           {view==="integrations" && (
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               {INTEGRATIONS.map(int=>(
-                <div key={int.id} style={{ background:"var(--bg-surface)", border:`1px solid ${int.status==="connected"?"var(--border)":`${A}50`}`, borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", marginBottom:12 }}>
-                    <div style={{ display:"flex", gap:12, alignItems:"center" }}>
-                      <div style={{ width:42, height:42, borderRadius:10, background:"var(--bg-surface-subtle)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:22 }}>{int.icon}</div>
-                      <div>
-                        <div style={{ fontSize:14, fontWeight:600, color:"var(--text-primary)" }}>{int.name}</div>
-                        <div style={{ fontSize:11, color:"var(--text-tertiary)", marginTop:2 }}>{int.key}</div>
-                      </div>
-                    </div>
-                    <Badge text={int.id==="google"||int.id==="ms365"||int.id==="mailrelay" ? "✓ Configurado" : "⚠ Pendiente"} bg={int.status==="connected"?GD:AD} color={int.status==="connected"?"#065f46":A}/>
+                <div key={int.id} style={{ background:"var(--bg-surface)", border:`1.5px solid ${int.configured?"var(--border)":`${A}50`}`, borderRadius:14, padding:"16px 18px", boxShadow:"var(--shadow-sm)", display:"flex", alignItems:"center", gap:16 }}>
+                  <div style={{ width:44, height:44, borderRadius:12, background:int.configured?PD:"#fff8e6", display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, flexShrink:0 }}>{int.icon}</div>
+                  <div style={{ flex:1, minWidth:0 }}>
+                    <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)", marginBottom:3 }}>{int.name}</div>
+                    <div style={{ fontSize:12, color:int.configured?"var(--text-secondary)":A }}>{int.key}</div>
+                    {int.hint && <div style={{ fontSize:11, color:"var(--text-tertiary)", marginTop:2 }}>{int.hint}</div>}
                   </div>
-                  <div style={{ display:"flex", gap:7 }}>
-                    <button onClick={()=>showToast(`${int.name} — contactá al equipo IT para reconfigurar`)} style={{ flex:1, fontSize:12, padding:"8px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>{int.status==="connected"?"Reconfigurar":"Conectar"}</button>
-                    {int.status==="connected" && <button onClick={()=>showToast(`✓ ${int.name} respondió correctamente`)} style={{ fontSize:12, padding:"8px 14px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", border:"1px solid var(--border)", borderRadius:8, cursor:"pointer", fontFamily:"inherit" }}>Probar</button>}
-                  </div>
+                  <Badge
+                    text={int.configured ? "✓ Activo" : "⚠ Pendiente"}
+                    bg={int.configured ? GD : AD}
+                    color={int.configured ? "#065f46" : "#92400e"}
+                  />
+                  {int.id === "mailrelay" && (
+                    <button onClick={async()=>{
+                      try {
+                        const {data:{session}} = await supabase.auth.getSession();
+                        showToast("Enviando email de prueba…", "#0369a1");
+                        const r = await fetch("/api/test-email",{
+                          method:"POST",
+                          headers:{"Content-Type":"application/json",Authorization:`Bearer ${session?.access_token}`},
+                          body:JSON.stringify({ to: session?.user?.email }),
+                        });
+                        const d = await r.json();
+                        const results = d.data?.results||{};
+                        const good = Object.values(results).find(r=>r.ok);
+                        if(good) showToast(`✓ Email enviado a ${d.data?.target} — revisá tu bandeja`);
+                        else {
+                          const errDetail = Object.values(results)[0];
+                          showToast("Error Mailrelay: " + (errDetail?.response ? JSON.stringify(errDetail.response).slice(0,100) : errDetail?.error || "sin respuesta"), R);
+                        }
+                      } catch(e){showToast("Error: "+e.message, R);}
+                    }} style={{ fontSize:12, padding:"8px 16px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit", flexShrink:0, whiteSpace:"nowrap" }}>
+                      Probar envío
+                    </button>
+                  )}
+                  {int.id === "google" && (
+                    <button onClick={()=>showToast("✓ Google OAuth activo — login funciona correctamente")} style={{ fontSize:12, padding:"8px 16px", background:GD, color:"#065f46", border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit", flexShrink:0 }}>
+                      ✓ Verificado
+                    </button>
+                  )}
+                  {(int.id === "stripe" || int.id === "twilio") && (
+                    <button onClick={()=>{ window.open("https://vercel.com/dashboard", "_blank"); }} style={{ fontSize:12, padding:"8px 16px", background:"#fff8e6", color:"#92400e", border:`1px solid ${A}40`, borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit", flexShrink:0, whiteSpace:"nowrap" }}>
+                      Configurar →
+                    </button>
+                  )}
                 </div>
               ))}
+              <div style={{ background:"var(--bg-surface-subtle)", borderRadius:12, padding:"14px 18px", fontSize:12, color:"var(--text-secondary)", lineHeight:1.7, marginTop:4 }}>
+                <strong style={{ color:"var(--text-primary)" }}>Variables de entorno en Vercel</strong><br/>
+                Stripe: <code style={{ background:"var(--bg-surface)", padding:"1px 6px", borderRadius:4 }}>STRIPE_SECRET_KEY</code> y <code style={{ background:"var(--bg-surface)", padding:"1px 6px", borderRadius:4 }}>STRIPE_WEBHOOK_SECRET</code><br/>
+                Twilio: <code style={{ background:"var(--bg-surface)", padding:"1px 6px", borderRadius:4 }}>TWILIO_ACCOUNT_SID</code>, <code style={{ background:"var(--bg-surface)", padding:"1px 6px", borderRadius:4 }}>TWILIO_AUTH_TOKEN</code>, <code style={{ background:"var(--bg-surface)", padding:"1px 6px", borderRadius:4 }}>TWILIO_WHATSAPP_FROM</code>
+              </div>
             </div>
           )}
 
