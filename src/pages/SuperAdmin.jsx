@@ -696,24 +696,44 @@ export default function SuperAdmin() {
 
           {/* ── ROLES ── */}
           {view==="roles" && (
-            <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
-              <div style={{ padding:"14px 18px", borderBottom:"1px solid var(--border)", display:"flex", justifyContent:"space-between" }}>
-                <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>Roles ({ROLES_DEF.length})</div>
-                <BtnPrimary style={{ fontSize:11, padding:"7px 14px" }}>+ Nuevo rol</BtnPrimary>
+            <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:"14px 18px", display:"flex", justifyContent:"space-between", alignItems:"center", boxShadow:"var(--shadow-sm)" }}>
+                <div>
+                  <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>Roles del sistema ({ROLES_DEF.length})</div>
+                  <div style={{ fontSize:12, color:"var(--text-secondary)", marginTop:2 }}>Para crear usuarios con cada rol usá RRHH & Personal → Agregar empleado</div>
+                </div>
+                <button onClick={()=>{ setView("hr"); setTimeout(()=>setStaffModal({mode:"add"}),100); }} style={{ fontSize:12, padding:"9px 18px", background:PD, color:P, border:"none", borderRadius:9, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>
+                  + Nuevo usuario
+                </button>
               </div>
               {ROLES_DEF.map((r,i)=>{
                 const [rc,tc]=ROLE_COLORS[r.name]||["var(--bg-surface-subtle)","var(--text-secondary)"];
-                return (<div key={i} style={{ display:"flex", alignItems:"flex-start", gap:14, padding:"14px 18px", borderBottom:"1px solid var(--border)" }}>
-                  <div style={{ width:38, height:38, borderRadius:"50%", background:rc, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:tc, flexShrink:0 }}>{r.name.slice(0,2).toUpperCase()}</div>
-                  <div style={{ flex:1 }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:6 }}>
-                      <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)" }}>{r.name}</div>
-                      <Badge text={r.name==="Estudiante" ? `${totalStudents} usuarios` : r.name==="Admin"?`${staffCount} staff`:`${r.users} usuarios`} bg="var(--bg-surface-subtle)" color="var(--text-secondary)"/>
+                // Count real users from staff array by role
+                const roleKeyMap = { "Super Admin":"Super Admin", "Admin":"Admin", "Coordinadora":"Coordinadora", "Docente":"Docente", "Gestor de Cobros":"Gestor de Cobros", "Ventas / Asesor":"Ventas", "Marketing":"Marketing", "IT":"IT", "Contabilidad":"Contabilidad" };
+                const matchLabel = roleKeyMap[r.name] || r.name;
+                const count = r.name==="Super Admin" ? 1 : staff.filter(s=>s.role===matchLabel||s.role===r.name).length;
+                return (
+                  <div key={i} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:"16px 18px", boxShadow:"var(--shadow-sm)", display:"flex", alignItems:"flex-start", gap:14 }}>
+                    <div style={{ width:44, height:44, borderRadius:12, background:rc||PD, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, flexShrink:0 }}>
+                      <i className={`ti ${r.icon}`} style={{ color:tc||P }} aria-hidden="true"/>
                     </div>
-                    <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>{r.perms.map(p=><Badge key={p} text={p} bg={PD} color={P}/>)}</div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
+                        <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>{r.name}</div>
+                        <Badge text={count===1&&r.name==="Super Admin"?"1 usuario":`${count} ${count===1?"usuario":"usuarios"}`} bg="var(--bg-surface-subtle)" color="var(--text-secondary)"/>
+                        <Badge text={`Portal: ${r.portal}`} bg={PD} color={P}/>
+                      </div>
+                      <div style={{ fontSize:12, color:"var(--text-secondary)", marginBottom:8 }}>{r.description}</div>
+                      <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
+                        {r.perms.map(p=><span key={p} style={{ fontSize:11, padding:"2px 8px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", borderRadius:6, border:"1px solid var(--border)" }}>{p}</span>)}
+                      </div>
+                    </div>
+                    <button onClick={()=>{ setStaffForm(f=>({...f, role: r.name==="Ventas / Asesor"?"Ventas":r.name==="Gestor de Cobros"?"Gestor de Cobros":r.name })); setView("hr"); setTimeout(()=>setStaffModal({mode:"add"}),100); }}
+                      style={{ fontSize:11, padding:"7px 14px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit", flexShrink:0, whiteSpace:"nowrap" }}>
+                      Agregar usuario
+                    </button>
                   </div>
-                  <button onClick={()=>showToast(`Permisos de "${r.name}" — editar en producción requiere cambios de código`)} style={{ fontSize:11, padding:"5px 10px", background:PD, color:P, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>Editar</button>
-                </div>);
+                );
               })}
             </div>
           )}
