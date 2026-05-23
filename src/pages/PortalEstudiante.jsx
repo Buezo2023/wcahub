@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
 import { useSession } from "../lib/useSession.js";
+import { notifySelf, Notifs } from "../lib/notify.js";
+import { generateCertificate } from "../lib/certificate.js";
 import { useNotifications } from "../lib/useNotifications.js";
 import { LEVELS, UNITS, SKILLS_BY_LEVEL } from "../data/englishContent.js";
 
@@ -340,6 +342,12 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
               entity: "enrollment",
               metadata: { program: activeProg, unit, score: pct },
             }).catch(() => {});
+            // Notify student
+            const n = Notifs.examPassed("nivel siguiente", unit, pct);
+            await notifySelf(n.type, n.title, n.body, n.link).catch(() => {});
+          } else {
+            const n = Notifs.examFailed(unit, pct, MAX_ATTEMPTS - (attempts + 1));
+            await notifySelf(n.type, n.title, n.body, n.link).catch(() => {});
           }
         }
       }
@@ -1061,6 +1069,8 @@ export default function PortalEstudiante(){
                               });
                             }
                             setUploadState({loading:false,done:true,error:null});
+                            // Notify student that comprobante was received
+                            await notifySelf("payment", "Comprobante recibido", "Revisaremos tu pago en las próximas 24 horas.", "/portal").catch(()=>{});
                           }catch(err){
                             setUploadState({loading:false,done:false,error:err.message||"Error al subir"});
                           }
@@ -1158,7 +1168,12 @@ export default function PortalEstudiante(){
                         <div style={{fontSize:11,color:"var(--text-secondary)",marginTop:3}}>{pct}% completado</div>
                       </div>
                       {complete
-                        ? <button style={{fontSize:11,padding:"6px 12px",background:GD,color:G,border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>⬇ Descargar</button>
+                        ? <button onClick={()=>generateCertificate({
+  name:    user.name || "Estudiante WCA",
+  level:   realEnrollments[p.id]?.level || "B1",
+  program: p.name,
+  date:    new Date().toLocaleDateString("es-HN",{day:"2-digit",month:"long",year:"numeric"}),
+})} style={{fontSize:11,padding:"6px 12px",background:GD,color:G,border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>⬇ Descargar</button>
                         : <span style={{fontSize:11,color:"var(--text-tertiary)"}}>En progreso</span>}
                     </div>
                   );

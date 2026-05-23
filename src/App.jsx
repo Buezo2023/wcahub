@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { useGlobalSearch, GlobalSearchModal } from './lib/globalSearch.jsx';
 import { Suspense, lazy, useState } from 'react';
 import { ThemeProvider, ThemeToggle, useTheme } from './ThemeContext.jsx';
 
@@ -277,12 +278,13 @@ function NavHub() {
 }
 
 // ─── APP ──────────────────────────────────────────────────────────
-export default function App() {
+function AppInner() {
+  const search = useGlobalSearch();
   return (
-    <ThemeProvider>
-      <BrowserRouter>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
+    <>
+      <GlobalSearchModal search={search} />
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
             <Route path="/hub"          element={<NavHub />} />
             <Route path="/"             element={<Landing />} />
             <Route path="/portal"       element={<PortalEstudiante />} />
@@ -298,7 +300,16 @@ export default function App() {
             <Route path="/auth/callback" element={<AuthCallback />} />
             <Route path="*"             element={<Navigate to="/" replace />} />
           </Routes>
-        </Suspense>
+      </Suspense>
+    </>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <BrowserRouter>
+        <AppInner />
       </BrowserRouter>
     </ThemeProvider>
   );

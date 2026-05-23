@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect} from "react";
 import { useNavigate } from 'react-router-dom';
 import { supabase } from "../lib/supabase.js";
+import { notify, Notifs } from "../lib/notify.js";
 
 const B = {
   primary:"#155266", dark:"#0f3d4d", primaryDim:"var(--wca-primary-dim)",
@@ -99,9 +100,28 @@ export default function GestorCobros() {
     !searchHist || p.student.toLowerCase().includes(searchHist.toLowerCase()) || p.code.toLowerCase().includes(searchHist.toLowerCase())
   ), [searchHist]);
 
-  function confirmTransfer(id) {
+  async function confirmTransfer(id) {
     setConfirmed(c => [...c, id]);
     setSelTransfer(null);
+    // Find the transfer to get student info
+    const transfer = [...(pending||[]), ...(transfers||[])].find(t => t.id === id);
+    if (transfer?._dbPaymentId) {
+      // Update payment status in Supabase
+      await supabase.from("payments")
+        .update({ status: "confirmed" })
+        .eq("id", transfer._dbPaymentId)
+        .catch(console.error);
+    }
+    // Find student profile to notify
+    if (transfer?.studentId || transfer?.student) {
+      const name = transfer.student || "";
+      const { data: prof } = await supabase.from("profiles")
+        .select("id").ilike("full_name", `%${name.split(" ")[0]}%`).limit(1);
+      if (prof?.[0]) {
+        const n = Notifs.paymentConfirmed(transfer.amount || "—");
+        await notify(prof[0].id, n.type, n.title, n.body, n.link).catch(() => {});
+      }
+    }
   }
 
   const methodColor = m => m==="Stripe"?[B.primaryDim,B.primary]:m==="Transferencia"?[B.amberDim,"#92400e"]:[B.greenDim,"#065f46"];

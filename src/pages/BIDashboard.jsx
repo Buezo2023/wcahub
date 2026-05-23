@@ -184,8 +184,9 @@ export default function BIDashboard() {
   const [view, setView]       = useState("overview");
   const [period, setPeriod]   = useState("12m");
   const [animate, setAnimate] = useState(true);
-  const [realStats, setRealStats] = useState(null);
-  const [statsLoading, setStatsLoading] = useState(true);
+  const [realStats,   setRealStats]   = useState(null);
+  const [statsLoading,setStatsLoading] = useState(true);
+  const [mrrHistory,  setMrrHistory]  = useState([]);
 
   useEffect(() => { setAnimate(false); setTimeout(() => setAnimate(true), 50); }, [view]);
 
@@ -201,6 +202,32 @@ export default function BIDashboard() {
         if (res.ok) {
           const json = await res.json();
           setRealStats(json);
+        }
+        // Load MRR history — group confirmed payments by month
+        const { data: pays } = await supabase
+          .from("payments")
+          .select("amount, created_at")
+          .eq("status", "confirmed")
+          .order("created_at", { ascending: true });
+        if (pays?.length) {
+          const byMonth = {};
+          pays.forEach(p => {
+            const d = new Date(p.created_at);
+            const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+            if (!byMonth[key]) byMonth[key] = { mrr:0, students:0, new:0, churned:0 };
+            byMonth[key].mrr += Number(p.amount || 0);
+          });
+          const months = Object.entries(byMonth)
+            .sort(([a],[b]) => a.localeCompare(b))
+            .slice(-12)
+            .map(([key,v]) => ({
+              month: new Date(key+"-01").toLocaleDateString("es-HN",{month:"short"}),
+              mrr:   Math.round(v.mrr),
+              students: v.students || 0,
+              new: v.new || 0,
+              churned: v.churned || 0,
+            }));
+          if (months.length >= 2) setMrrHistory(months);
         }
       } catch(e) { console.error("BI stats:", e); }
       finally { setStatsLoading(false); }
@@ -340,9 +367,10 @@ export default function BIDashboard() {
                       </linearGradient>
                     </defs>
                     {(() => {
-                      const max = Math.max(...MRR_DATA.map(m=>m.mrr));
-                      const pts = MRR_DATA.map((m,i) => {
-                        const x = (i/(MRR_DATA.length-1))*388+6;
+                      const chartData = mrrHistory.length >= 2 ? mrrHistory : MRR_DATA;
+                      const max = Math.max(...chartData.map(m=>m.mrr), 1);
+                      const pts = chartData.map((m,i) => {
+                        const x = (i/(chartData.length-1))*388+6;
                         const y = 100 - (m.mrr/max)*88 + 6;
                         return `${x},${y}`;
                       });
@@ -352,7 +380,7 @@ export default function BIDashboard() {
                         <>
                           <path d={areaPath} fill="url(#mrrGrad)" />
                           <path d={linePath} fill="none" stroke={B.primary} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" />
-                          {MRR_DATA.map((m,i) => {
+                          {chartData.map((m,i) => {
                             const [x,y] = pts[i].split(",").map(Number);
                             return (
                               <g key={i}>
