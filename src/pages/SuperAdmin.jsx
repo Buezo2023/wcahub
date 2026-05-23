@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
+import { api } from "../lib/api.js";
+import { getAuditLog, getPrograms } from "../lib/db.js";
 
 const P = "#155266", PH = "#0f3d4d", PD = "#e8f3f6";
 const Y = "#ffbb23", YD = "#fff8e6";
@@ -171,6 +173,38 @@ function Modal({ title, subtitle, onClose, children }) {
 
 export default function SuperAdmin() {
   const navigate = useNavigate();
+  const [toast,   setToast]   = useState(null);
+  const [saving,  setSaving]  = useState(false);
+  const [dbAudit, setDbAudit] = useState([]);
+
+  function showToast(msg, color = "#059669") {
+    setToast({ msg, color });
+    setTimeout(() => setToast(null), 3000);
+  }
+
+  // Load real audit log and programs from Supabase
+  useEffect(() => {
+    getAuditLog({ limit: 50 }).then(data => {
+      if (data.length > 0) setDbAudit(data);
+    }).catch(console.error);
+
+    getPrograms().then(data => {
+      if (data.length > 0) {
+        setPrograms(data.map(p => ({
+          id: p.id, name: p.name,
+          code: p.id.toUpperCase(),
+          levels: "A1-C1",
+          price: p.price_monthly || p.price_quarterly || 0,
+          interval: p.price_monthly ? "mes" : "trimestre",
+          students: 0,
+          active: p.active,
+          color: { en:"#155266", va:"#7c3aed", va_mkt:"#d97706", va_legal:"#059669", va_care:"#dc2626" }[p.id] || "#155266",
+          icon: { en:"🇬🇧", va:"💻", va_mkt:"📱", va_legal:"⚖️", va_care:"🏥" }[p.id] || "📚",
+          desc: p.name,
+        })));
+      }
+    }).catch(console.error);
+  }, []);
 
   // Session guard — redirect on expiry
   useEffect(() => {

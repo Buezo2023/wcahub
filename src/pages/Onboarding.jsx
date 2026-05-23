@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
-import { api } from "../lib/api.js";
 
 const B = {
   primary:"#155266", dark:"#0f3d4d", primaryDim:"#e8f3f6",
@@ -11,64 +10,38 @@ const B = {
   red:"#dc2626", redDim:"#fee2e2",
 };
 
-// ─── STUDENT DATA ────────────────────────────────────────────────
-const STUDENT = {
-  name: "María",
-  level: "B1",
-  levelName: "Intermedio",
-  program: "Inglés",
-  group: "B1 · 6:00–7:00 PM",
-  teacher: "Ana Torres",
-  unit: 9,
-  unitTitle: "Comforts",
-  nextClass: "Lunes 16 Jun · 6:00 PM",
-  teamsLink: "#",
-  daysUntilClass: 3,
-  cycleProgress: Math.round((9/12)*100),
-};
-
-// ─── STEP CONFIGS ────────────────────────────────────────────────
 const STEPS = [
-  { id:"welcome",   label:"Bienvenida"  },
-  { id:"level",     label:"Tu nivel"    },
-  { id:"how",       label:"Cómo funciona"},
-  { id:"schedule",  label:"Tu clase"    },
-  { id:"platform",  label:"Tu portal"   },
-  { id:"ready",     label:"¡Listo!"     },
+  { id:"welcome",   label:"Bienvenida"    },
+  { id:"program",   label:"Tu programa"   },
+  { id:"placement", label:"Nivelación"    },
+  { id:"how",       label:"Cómo funciona" },
+  { id:"nextsteps", label:"Próximos pasos"},
+  { id:"ready",     label:"¡Listo!"       },
 ];
 
 // ─── UTILS ───────────────────────────────────────────────────────
-function useTypewriter(text, speed = 28, start = true) {
-  const [displayed, setDisplayed] = useState("");
+function useTypewriter(text, speed = 32, start = true) {
+  const [d, setD] = useState("");
   useEffect(() => {
     if (!start) return;
-    setDisplayed("");
-    let i = 0;
-    const timer = setInterval(() => {
-      setDisplayed(text.slice(0, ++i));
-      if (i >= text.length) clearInterval(timer);
-    }, speed);
-    return () => clearInterval(timer);
+    setD(""); let i = 0;
+    const t = setInterval(() => { setD(text.slice(0, ++i)); if (i >= text.length) clearInterval(t); }, speed);
+    return () => clearInterval(t);
   }, [text, start]);
-  return displayed;
-}
-
-function useMount() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setMounted(true), 80); return () => clearTimeout(t); }, []);
-  return mounted;
+  return d;
 }
 
 // ─── SHARED COMPONENTS ───────────────────────────────────────────
-function PrimaryBtn({ children, onClick, style = {} }) {
+function PrimaryBtn({ children, onClick, style = {}, disabled = false }) {
   return (
-    <button onClick={onClick} style={{
-      padding:"13px 32px", background:B.primary, color:"#fff", border:"none",
-      borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer",
-      fontFamily:"inherit", transition:"background .15s", ...style,
+    <button onClick={onClick} disabled={disabled} style={{
+      padding:"13px 32px", background: disabled ? "#94a3b8" : B.primary,
+      color:"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700,
+      cursor: disabled ? "not-allowed" : "pointer", fontFamily:"inherit",
+      transition:"background .15s", ...style,
     }}
-    onMouseEnter={e=>e.target.style.background=B.dark}
-    onMouseLeave={e=>e.target.style.background=B.primary}>
+    onMouseEnter={e=>{ if(!disabled) e.currentTarget.style.background=B.dark; }}
+    onMouseLeave={e=>{ if(!disabled) e.currentTarget.style.background=B.primary; }}>
       {children}
     </button>
   );
@@ -97,81 +70,66 @@ function StepDots({ current, total, onGoTo }) {
   );
 }
 
-function FadeSlide({ children, key: k }) {
-  const [visible, setVisible] = useState(false);
-  useEffect(() => { const t = setTimeout(() => setVisible(true), 60); return () => clearTimeout(t); }, [k]);
+function FadeSlide({ children }) {
+  const [v, setV] = useState(false);
+  useEffect(() => { const t = setTimeout(() => setV(true), 60); return () => clearTimeout(t); }, []);
   return (
-    <div style={{ opacity:visible?1:0, transform:visible?"translateY(0)":"translateY(12px)", transition:"all .4s ease", height:"100%" }}>
+    <div style={{ opacity:v?1:0, transform:v?"translateY(0)":"translateY(12px)", transition:"all .35s ease", height:"100%" }}>
       {children}
     </div>
   );
 }
 
-// ─── CONFETTI ────────────────────────────────────────────────────
 function Confetti() {
-  const pieces = Array.from({length:28}, (_,i) => ({
-    x: 10 + (i * 3.5) % 88,
-    delay: (i * 0.08).toFixed(2),
-    color: [B.secondary, B.primary, B.accent, B.green, "#a78bfa", "#f87171"][i%6],
-    size: 5 + (i%3)*3,
-    drift: ((i%7)-3)*12,
+  const pieces = Array.from({length:24}, (_,i) => ({
+    x: 10+(i*4)%85, delay:(i*.09).toFixed(2),
+    color:[B.secondary,B.primary,B.accent,B.green,"#a78bfa","#f87171"][i%6],
+    size:5+(i%3)*3, drift:((i%7)-3)*12,
   }));
   return (
     <div style={{ position:"absolute", inset:0, pointerEvents:"none", overflow:"hidden" }}>
-      <style>{`
-        @keyframes fall { from{transform:translateY(-20px) rotate(0deg);opacity:1} to{transform:translateY(120%) rotate(var(--d));opacity:0} }
-      `}</style>
+      <style>{`@keyframes fall{from{transform:translateY(-20px) rotate(0);opacity:1}to{transform:translateY(120%) rotate(var(--d));opacity:0}}`}</style>
       {pieces.map((p,i) => (
-        <div key={i} style={{
-          position:"absolute", left:`${p.x}%`, top:0,
-          width:p.size, height:p.size, borderRadius:i%3===0?0:"50%",
-          background:p.color,
-          animation:`fall 1.8s ${p.delay}s ease-in forwards`,
-          ["--d"]: `${p.drift}deg`,
-        }}/>
+        <div key={i} style={{ position:"absolute", left:`${p.x}%`, top:0, width:p.size, height:p.size, borderRadius:i%3===0?0:"50%", background:p.color, animation:`fall 1.8s ${p.delay}s ease-in forwards`, ["--d"]:`${p.drift}deg` }}/>
       ))}
     </div>
   );
 }
 
-// ─── STEPS ───────────────────────────────────────────────────────
-
-// STEP 0 — Welcome
-function StepWelcome({ student, onNext }) {
-  const greeting = useTypewriter(`¡Hola, ${student.name}!`, 45);
-  const mounted = useMount();
+// ─── STEP 0 — Bienvenida (sin datos de nivel/programa) ───────────
+function StepWelcome({ name, onNext }) {
+  const greeting = useTypewriter(`¡Bienvenido${name ? ", " + name : ""}!`, 42);
   return (
     <div style={{ textAlign:"center", padding:"32px 24px 24px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
       <div>
-        {/* Logo */}
-        <div style={{ fontSize:13, fontWeight:700, color:B.primary, letterSpacing:1, marginBottom:28, opacity:mounted?1:0, transition:"opacity .5s" }}>
+        <div style={{ fontSize:13, fontWeight:700, color:B.primary, letterSpacing:1, marginBottom:28 }}>
           WCA <span style={{ color:B.secondary }}>HUB</span>
         </div>
 
         {/* Avatar */}
-        <div style={{ position:"relative", width:96, height:96, margin:"0 auto 24px" }}>
-          <div style={{ width:96, height:96, borderRadius:"50%", background:`linear-gradient(135deg, ${B.primary}, ${B.dark})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:32, fontWeight:800, color:"#fff" }}>
-            {student.name[0]}
+        <div style={{ position:"relative", width:88, height:88, margin:"0 auto 20px" }}>
+          <div style={{ width:88, height:88, borderRadius:"50%", background:`linear-gradient(135deg, ${B.primary}, ${B.dark})`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:30, fontWeight:800, color:"#fff" }}>
+            {name ? name[0].toUpperCase() : "🎓"}
           </div>
-          <div style={{ position:"absolute", bottom:2, right:2, width:24, height:24, borderRadius:"50%", background:B.secondary, display:"flex", alignItems:"center", justifyContent:"center", border:`2px solid ${B.white}` }}>
-            <i className="ti ti-check" style={{ fontSize:12, color:B.dark }} aria-hidden="true" />
+          <div style={{ position:"absolute", bottom:2, right:2, width:22, height:22, borderRadius:"50%", background:B.green, display:"flex", alignItems:"center", justifyContent:"center", border:`2px solid ${B.white}` }}>
+            <i className="ti ti-check" style={{ fontSize:11, color:"#fff" }} aria-hidden="true" />
           </div>
         </div>
 
-        <h1 style={{ fontSize:32, fontWeight:800, color:B.text, marginBottom:8, minHeight:44, letterSpacing:-0.5 }}>{greeting}</h1>
-        <p style={{ fontSize:15, color:B.textSec, lineHeight:1.7, maxWidth:360, margin:"0 auto" }}>
-          Tu cuenta está activa y tu primera clase te espera. En los próximos minutos te mostramos todo lo que necesitas saber.
+        <h1 style={{ fontSize:30, fontWeight:800, color:B.text, marginBottom:10, minHeight:40, letterSpacing:-0.5 }}>{greeting}</h1>
+        <p style={{ fontSize:14, color:B.textSec, lineHeight:1.75, maxWidth:340, margin:"0 auto 20px" }}>
+          Tu cuenta en World Connect Academy está lista.<br/>
+          En los próximos <strong style={{ color:B.primary }}>2 minutos</strong> te guiamos para elegir tu programa y conocer cómo funciona WCA.
         </p>
 
-        {/* Quick badges */}
-        <div style={{ display:"flex", gap:10, justifyContent:"center", marginTop:24, flexWrap:"wrap" }}>
+        <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap" }}>
           {[
-            { icon:"ti-language", text:`Nivel ${student.level}`, color:B.primary, bg:B.primaryDim },
-            { icon:"ti-video",    text:student.group,             color:B.dark,    bg:B.bg },
-            { icon:"ti-book",     text:student.program,           color:B.green,   bg:B.greenDim },
+            { icon:"ti-school", text:"Academia VA bilingüe", color:B.primary, bg:B.primaryDim },
+            { icon:"ti-world",  text:"20+ países",           color:B.green,   bg:B.greenDim  },
+            { icon:"ti-clock",  text:"~2 minutos",           color:"#7c3aed", bg:"#ede9fe"   },
           ].map((b,i) => (
-            <div key={i} style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", background:b.bg, borderRadius:20, border:`1px solid ${b.color}30` }}>
-              <i className={`ti ${b.icon}`} style={{ fontSize:13, color:b.color }} aria-hidden="true" />
+            <div key={i} style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", background:b.bg, borderRadius:20, border:`1px solid ${b.color}20` }}>
+              <i className={`ti ${b.icon}`} style={{ fontSize:12, color:b.color }} aria-hidden="true" />
               <span style={{ fontSize:11, fontWeight:600, color:b.color }}>{b.text}</span>
             </div>
           ))}
@@ -180,116 +138,268 @@ function StepWelcome({ student, onNext }) {
 
       <div>
         <PrimaryBtn onClick={onNext} style={{ width:"100%", padding:"14px" }}>
-          Empezar tour &nbsp;→
+          Comenzar →
         </PrimaryBtn>
-        <div style={{ fontSize:11, color:B.textSec, marginTop:10 }}>~2 minutos · puedes saltar en cualquier momento</div>
+        <div style={{ fontSize:11, color:B.textSec, marginTop:10 }}>Podés saltar el tour en cualquier momento</div>
       </div>
     </div>
   );
 }
 
-// STEP 1 — Level
-function StepLevel({ student, onNext, onPrev }) {
-  const levels = ["A1","A2","B1","B2","C1"];
-  const idx = levels.indexOf(student.level);
-  const descs = {
-    A1:"Empiezas desde cero y construyes una base sólida en inglés cotidiano.",
-    A2:"Puedes comunicarte en situaciones básicas y amplías tu vocabulario.",
-    B1:"Te desenvuelves en conversaciones comunes y trabajas tu fluidez.",
-    B2:"Manejas inglés con soltura y te enfocas en comunicación profesional.",
-    C1:"Perfeccionas el uso en contextos académicos e internacionales.",
-  };
+// ─── STEP 1 — Elegir programa ─────────────────────────────────────
+function StepProgram({ selectedProgram, onSelect, onNext, onPrev }) {
+  const PROGRAMS = [
+    {
+      id:"en", icon:"🇬🇧", title:"Inglés Completo",
+      sub:"Marco CEFR A1 → C1", price:"$95/mes",
+      desc:"Clases en vivo 3x por semana + práctica digital 24/7. Incluye examen de placement para detectar tu nivel.",
+      color:B.primary, bg:B.primaryDim,
+    },
+    {
+      id:"va", icon:"💻", title:"Asistente Virtual",
+      sub:"Formación VA bilingüe", price:"$75/mes",
+      desc:"Aprende a trabajar remotamente para clientes en EE.UU. Herramientas, comunicación y habilidades digitales.",
+      color:"#7c3aed", bg:"#ede9fe",
+    },
+    {
+      id:"en_va", icon:"⚡", title:"Inglés + VA",
+      sub:"Programa combinado", price:"$170/mes",
+      desc:"La combinación más completa. Inglés CEFR + formación VA en paralelo. Progreso independiente en cada programa.",
+      color:B.dark, bg:"#e8f3f6",
+    },
+  ];
+
   return (
-    <div style={{ padding:"28px 24px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+    <div style={{ padding:"24px 20px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
       <div>
-        <div style={{ fontSize:11, fontWeight:700, color:B.secondary, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>Tu nivel</div>
-        <h2 style={{ fontSize:26, fontWeight:800, color:B.text, marginBottom:4, letterSpacing:-0.5 }}>
-          {student.level} — {student.levelName}
-        </h2>
-        <p style={{ fontSize:13, color:B.textSec, lineHeight:1.7, marginBottom:24 }}>
-          {descs[student.level]}
+        <div style={{ fontSize:11, fontWeight:700, color:B.secondary, letterSpacing:1.5, textTransform:"uppercase", marginBottom:6 }}>Paso 1 de 2</div>
+        <h2 style={{ fontSize:22, fontWeight:800, color:B.text, marginBottom:4, letterSpacing:-0.5 }}>¿Qué querés estudiar?</h2>
+        <p style={{ fontSize:12, color:B.textSec, marginBottom:18, lineHeight:1.6 }}>
+          Elegí el programa que más se adapta a tus metas. Podés cambiar después hablando con tu coordinadora.
         </p>
 
-        {/* Level path */}
-        <div style={{ display:"flex", alignItems:"center", gap:0, marginBottom:24, overflow:"hidden", borderRadius:10, border:`1px solid ${B.border}` }}>
-          {levels.map((l,i) => (
-            <div key={l} style={{ flex:1, padding:"10px 6px", textAlign:"center", background:i<idx?B.greenDim:i===idx?B.primary:B.bg, borderRight:i<4?`1px solid ${B.border}`:"none", transition:"all .3s .1s" }}>
-              <div style={{ fontSize:13, fontWeight:800, color:i<idx?B.green:i===idx?"#fff":"#ccc" }}>{l}</div>
-              <div style={{ fontSize:9, marginTop:3, color:i<idx?"#065f46":i===idx?"rgba(255,255,255,.6)":"#bbb" }}>
-                {i<idx?"✓":i===idx?"← aquí":""}
+        <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
+          {PROGRAMS.map(p => (
+            <button key={p.id} onClick={() => onSelect(p.id)}
+              style={{
+                display:"flex", gap:14, alignItems:"flex-start", padding:"14px 16px",
+                background: selectedProgram===p.id ? p.bg : B.white,
+                border:`2px solid ${selectedProgram===p.id ? p.color : B.border}`,
+                borderRadius:14, cursor:"pointer", textAlign:"left", fontFamily:"inherit",
+                transition:"all .18s",
+              }}>
+              <div style={{ fontSize:28, flexShrink:0, marginTop:2 }}>{p.icon}</div>
+              <div style={{ flex:1 }}>
+                <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:2 }}>
+                  <div style={{ fontSize:14, fontWeight:700, color:selectedProgram===p.id ? p.color : B.text }}>{p.title}</div>
+                  <span style={{ fontSize:10, padding:"2px 8px", borderRadius:20, background:selectedProgram===p.id?p.color:"#f1f5f9", color:selectedProgram===p.id?"#fff":B.textSec, fontWeight:600 }}>{p.price}</span>
+                </div>
+                <div style={{ fontSize:11, color:B.textSec, marginBottom:4, fontWeight:500 }}>{p.sub}</div>
+                <div style={{ fontSize:11, color:B.textSec, lineHeight:1.6 }}>{p.desc}</div>
               </div>
-            </div>
-          ))}
-        </div>
-
-        {/* What you'll learn */}
-        <div style={{ background:B.primaryDim, borderRadius:12, padding:16 }}>
-          <div style={{ fontSize:11, fontWeight:700, color:B.primary, marginBottom:10, textTransform:"uppercase", letterSpacing:.5 }}>En este nivel aprenderás</div>
-          {([
-            { A1:["Saludos e introducciones","Vocabulario cotidiano","Verbos básicos en presente"],
-              A2:["Conversación en situaciones reales","Gramática de uso diario","Descripción de personas y lugares"],
-              B1:["Expresión escrita formal e informal","Gramática avanzada intermedia","Comprensión de textos auténticos"],
-              B2:["Comunicación profesional","Condicionales y voz pasiva","Vocabulario académico"],
-              C1:["Matices y expresiones idiomáticas","Gramática avanzada","Discurso académico y formal"],
-            }[student.level]].flat()).map((item,i) => (
-            <div key={i} style={{ display:"flex", gap:8, alignItems:"center", fontSize:12, color:B.primary, marginBottom:6 }}>
-              <i className="ti ti-check" style={{ fontSize:13, color:B.green, flexShrink:0 }} aria-hidden="true" />
-              {item}
-            </div>
+              <div style={{ width:20, height:20, borderRadius:"50%", border:`2px solid ${selectedProgram===p.id?p.color:B.border}`, background:selectedProgram===p.id?p.color:"transparent", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
+                {selectedProgram===p.id && <i className="ti ti-check" style={{ fontSize:11, color:"#fff" }} aria-hidden="true" />}
+              </div>
+            </button>
           ))}
         </div>
       </div>
 
-      <div style={{ display:"flex", gap:8 }}>
+      <div style={{ display:"flex", gap:8, marginTop:16 }}>
         <GhostBtn onClick={onPrev}>← Atrás</GhostBtn>
-        <PrimaryBtn onClick={onNext} style={{ flex:1 }}>Continuar →</PrimaryBtn>
+        <PrimaryBtn onClick={onNext} disabled={!selectedProgram} style={{ flex:1 }}>
+          {selectedProgram ? "Continuar →" : "Elegí un programa"}
+        </PrimaryBtn>
       </div>
     </div>
   );
 }
 
-// STEP 2 — How it works
+// ─── STEP 2 — Placement test / nivelación ─────────────────────────
+function StepPlacement({ program, selectedLevel, onSelect, onNext, onPrev }) {
+  const [mode, setMode] = useState(null); // "test" | "coordinator"
+
+  const LEVELS = [
+    { id:"A1", label:"A1 · Principiante", desc:"No tengo conocimiento previo de inglés" },
+    { id:"A2", label:"A2 · Básico",       desc:"Entiendo frases simples y me comunico básico" },
+    { id:"B1", label:"B1 · Intermedio",   desc:"Me desenvuelvo en conversaciones cotidianas" },
+    { id:"B2", label:"B2 · Avanzado",     desc:"Hablo con soltura en la mayoría de situaciones" },
+    { id:"C1", label:"C1 · Avanzado+",    desc:"Me comunico con fluidez y precisión" },
+  ];
+
+  // For VA program, no placement test needed
+  if (program === "va") {
+    return (
+      <div style={{ padding:"24px 20px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+        <div>
+          <div style={{ fontSize:11, fontWeight:700, color:B.secondary, letterSpacing:1.5, textTransform:"uppercase", marginBottom:6 }}>Paso 2 de 2</div>
+          <h2 style={{ fontSize:22, fontWeight:800, color:B.text, marginBottom:8, letterSpacing:-0.5 }}>Programa VA — sin nivelación</h2>
+          <p style={{ fontSize:13, color:B.textSec, lineHeight:1.7, marginBottom:20 }}>
+            El programa de Asistente Virtual no requiere un examen de nivelación. Todos los estudiantes inician desde el Módulo 1.
+          </p>
+          <div style={{ background:B.primaryDim, borderRadius:12, padding:16 }}>
+            {[
+              "Módulo 1: Introducción al trabajo remoto",
+              "Módulo 2: Herramientas digitales esenciales",
+              "Módulo 3: Comunicación con clientes",
+              "Módulo 4: Gestión de proyectos y productividad",
+            ].map((m,i) => (
+              <div key={i} style={{ display:"flex", gap:10, alignItems:"center", padding:"8px 0", borderBottom:i<3?`1px solid ${B.border}`:"none" }}>
+                <div style={{ width:24, height:24, borderRadius:"50%", background:B.primary, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"#fff", flexShrink:0 }}>{i+1}</div>
+                <div style={{ fontSize:12, color:B.text }}>{m}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div style={{ display:"flex", gap:8, marginTop:16 }}>
+          <GhostBtn onClick={onPrev}>← Atrás</GhostBtn>
+          <PrimaryBtn onClick={onNext} style={{ flex:1 }}>Continuar →</PrimaryBtn>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ padding:"24px 20px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+      <div>
+        <div style={{ fontSize:11, fontWeight:700, color:B.secondary, letterSpacing:1.5, textTransform:"uppercase", marginBottom:6 }}>Paso 2 de 2</div>
+        <h2 style={{ fontSize:22, fontWeight:800, color:B.text, marginBottom:4, letterSpacing:-0.5 }}>¿Cuál es tu nivel de inglés?</h2>
+        <p style={{ fontSize:12, color:B.textSec, marginBottom:16, lineHeight:1.6 }}>
+          Seleccioná el nivel que mejor describe tu inglés actual. Tu coordinadora académica lo confirmará antes de asignarte un grupo.
+        </p>
+
+        <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
+          {LEVELS.map(l => (
+            <button key={l.id} onClick={() => onSelect(l.id)}
+              style={{
+                display:"flex", alignItems:"center", gap:12, padding:"12px 14px",
+                background: selectedLevel===l.id ? B.primaryDim : B.white,
+                border:`1.5px solid ${selectedLevel===l.id ? B.primary : B.border}`,
+                borderRadius:12, cursor:"pointer", textAlign:"left", fontFamily:"inherit",
+                transition:"all .15s",
+              }}>
+              <div style={{ width:36, height:36, borderRadius:10, background:selectedLevel===l.id?B.primary:"#f1f5f9", display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:800, color:selectedLevel===l.id?"#fff":B.textSec, flexShrink:0, transition:"all .15s" }}>
+                {l.id}
+              </div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:13, fontWeight:600, color:selectedLevel===l.id?B.primary:B.text }}>{l.label}</div>
+                <div style={{ fontSize:11, color:B.textSec, marginTop:2 }}>{l.desc}</div>
+              </div>
+              {selectedLevel===l.id && <i className="ti ti-check" style={{ fontSize:16, color:B.primary }} aria-hidden="true" />}
+            </button>
+          ))}
+        </div>
+
+        <div style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"10px 12px", background:B.secondaryDim, borderRadius:10, marginTop:12, border:`1px solid ${B.accent}30` }}>
+          <i className="ti ti-bulb" style={{ fontSize:14, color:"#92400e", flexShrink:0, marginTop:1 }} aria-hidden="true" />
+          <div style={{ fontSize:11, color:"#92400e", lineHeight:1.6 }}>
+            <strong>¿No sabés cuál elegir?</strong> Seleccioná A1 si tenés dudas. Tu coordinadora hará una evaluación rápida antes de asignarte el grupo definitivo.
+          </div>
+        </div>
+      </div>
+
+      <div style={{ display:"flex", gap:8, marginTop:16 }}>
+        <GhostBtn onClick={onPrev}>← Atrás</GhostBtn>
+        <PrimaryBtn onClick={onNext} disabled={!selectedLevel} style={{ flex:1 }}>
+          {selectedLevel ? "Continuar →" : "Elegí tu nivel"}
+        </PrimaryBtn>
+      </div>
+    </div>
+  );
+}
+
+// ─── STEP 3 — Cómo funciona ───────────────────────────────────────
 function StepHow({ onNext, onPrev }) {
-  const [activeStep, setActiveStep] = useState(0);
+  const [active, setActive] = useState(0);
   const HOW = [
-    { icon:"ti-video", color:"#fff", bg:B.primary, title:"Clase en vivo", desc:"Lunes, miércoles y viernes tu docente imparte la clase en Microsoft Teams. Todos los grupos del mismo nivel ven la misma unidad esa semana.", tag:"3x por semana" },
-    { icon:"ti-device-laptop", color:"#fff", bg:B.dark, title:"Práctica 24/7", desc:"Después de clase accedes a videos, ejercicios, flashcards y actividades en la plataforma. A cualquier hora, desde cualquier dispositivo.", tag:"Sin restricción" },
-    { icon:"ti-writing", color:"#fff", bg:B.secondary === "#ffbb23" ? "#92400e" : B.dark, title:"Examen de unidad", desc:"Tienes hasta 3 intentos para aprobar con 70% o más. El examen tiene temporizador y preguntas en orden aleatorio.", tag:"≥70% para aprobar" },
-    { icon:"ti-lock-open", color:"#fff", bg:B.green, title:"Desbloqueo automático", desc:"Al aprobar, la siguiente unidad se desbloquea automáticamente. Sin esperar a nadie. El sistema lo hace en segundos.", tag:"Instantáneo" },
+    { icon:"ti-video",          bg:B.primary, title:"Clase en vivo",         tag:"3x por semana",    desc:"Lunes, miércoles y viernes tu docente imparte la clase en Microsoft Teams. Todos los estudiantes del mismo nivel ven la misma unidad esa semana." },
+    { icon:"ti-device-laptop",  bg:B.dark,    title:"Práctica 24/7",         tag:"Sin restricción",  desc:"Después de clase accedés a videos, ejercicios y actividades en la plataforma. A cualquier hora, desde cualquier dispositivo." },
+    { icon:"ti-writing",        bg:"#7c3aed", title:"Examen de unidad",      tag:"≥70% para aprobar",desc:"Tenés hasta 3 intentos para aprobar con 70% o más. Al aprobar, la siguiente unidad se desbloquea automáticamente." },
+    { icon:"ti-certificate",    bg:B.green,   title:"Certificación por nivel",tag:"A1 → C1",          desc:"Al completar los 5 niveles CEFR obtenés tu certificado WCA Academy avalado internacionalmente." },
   ];
   return (
-    <div style={{ padding:"28px 24px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+    <div style={{ padding:"24px 20px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
       <div>
-        <div style={{ fontSize:11, fontWeight:700, color:B.secondary, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>Cómo funciona</div>
-        <h2 style={{ fontSize:24, fontWeight:800, color:B.text, marginBottom:20, letterSpacing:-0.5 }}>El ciclo semanal de WCA</h2>
-
-        {/* Steps */}
+        <div style={{ fontSize:11, fontWeight:700, color:B.secondary, letterSpacing:1.5, textTransform:"uppercase", marginBottom:6 }}>Cómo funciona</div>
+        <h2 style={{ fontSize:22, fontWeight:800, color:B.text, marginBottom:20, letterSpacing:-0.5 }}>El ciclo semanal de WCA</h2>
         <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
-          {HOW.map((h, i) => (
-            <div key={i} onClick={() => setActiveStep(i)} style={{ display:"flex", gap:14, padding:"12px 0", cursor:"pointer", position:"relative" }}>
-              {i < HOW.length-1 && <div style={{ position:"absolute", left:18, top:44, bottom:0, width:2, background:i===activeStep?B.primary:B.border, transition:"background .3s" }}/>}
-              <div style={{ width:36, height:36, borderRadius:"50%", background:i===activeStep?h.bg:B.bg, border:`2px solid ${i===activeStep?h.bg:B.border}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all .25s", zIndex:1 }}>
-                <i className={`ti ${h.icon}`} style={{ fontSize:16, color:i===activeStep?h.color:B.textSec, transition:"color .25s" }} aria-hidden="true" />
+          {HOW.map((h,i) => (
+            <div key={i} onClick={() => setActive(i)} style={{ display:"flex", gap:14, padding:"12px 0", cursor:"pointer", position:"relative" }}>
+              {i < HOW.length-1 && <div style={{ position:"absolute", left:18, top:44, bottom:0, width:2, background:i===active?B.primary:B.border, transition:"background .3s" }}/>}
+              <div style={{ width:36, height:36, borderRadius:"50%", background:i===active?h.bg:"#f1f5f9", border:`2px solid ${i===active?h.bg:B.border}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all .25s", zIndex:1 }}>
+                <i className={`ti ${h.icon}`} style={{ fontSize:16, color:i===active?"#fff":B.textSec, transition:"color .25s" }} aria-hidden="true" />
               </div>
               <div style={{ flex:1 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:2 }}>
-                  <div style={{ fontSize:13, fontWeight:700, color:i===activeStep?B.text:B.textSec }}>{h.title}</div>
-                  {i===activeStep && <span style={{ fontSize:9, padding:"2px 8px", borderRadius:20, background:B.secondaryDim, color:"#92400e", fontWeight:600 }}>{h.tag}</span>}
+                  <div style={{ fontSize:13, fontWeight:700, color:i===active?B.text:B.textSec }}>{h.title}</div>
+                  {i===active && <span style={{ fontSize:9, padding:"2px 8px", borderRadius:20, background:B.secondaryDim, color:"#92400e", fontWeight:600 }}>{h.tag}</span>}
                 </div>
-                {i===activeStep && (
-                  <div style={{ fontSize:12, color:B.textSec, lineHeight:1.7, animation:"fadeIn .2s ease" }}>
-                    {h.desc}
-                  </div>
-                )}
+                {i===active && <div style={{ fontSize:12, color:B.textSec, lineHeight:1.7 }}>{h.desc}</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+      <div style={{ display:"flex", gap:8 }}>
+        <GhostBtn onClick={onPrev}>← Atrás</GhostBtn>
+        <PrimaryBtn onClick={onNext} style={{ flex:1 }}>Continuar →</PrimaryBtn>
+      </div>
+    </div>
+  );
+}
+
+// ─── STEP 4 — Próximos pasos (qué pasa DESPUÉS del onboarding) ────
+function StepNextSteps({ program, level, onNext, onPrev }) {
+  const programNames = { en:"Inglés Completo", va:"Asistente Virtual", en_va:"Inglés + VA" };
+  const progName = programNames[program] || "tu programa";
+
+  const steps = program === "va" ? [
+    { icon:"ti-user-check",   color:"#7c3aed", title:"Coordinadora te contacta",  desc:"En las próximas 24-48 horas, tu coordinadora académica te escribe por WhatsApp para confirmar tu matrícula." },
+    { icon:"ti-calendar",     color:B.primary, title:"Asignación de grupo",        desc:"Se te asigna un grupo con horario fijo: Lunes, Miércoles y Viernes. Recibirás el link de Microsoft Teams." },
+    { icon:"ti-credit-card",  color:B.green,   title:"Primer pago",                desc:"Tu coordinadora te indica cómo realizar el primer pago para activar el acceso completo." },
+    { icon:"ti-rocket",       color:B.secondary==="#ffbb23"?"#92400e":B.dark, title:"Primera clase", desc:"¡Listo! Accedés a tu primera clase en vivo y a toda la plataforma." },
+  ] : [
+    { icon:"ti-user-check",   color:B.primary, title:"Coordinadora te contacta",   desc:"En las próximas 24-48 horas, tu coordinadora académica te escribe por WhatsApp para confirmar tu nivel y responder preguntas." },
+    { icon:"ti-clipboard-check", color:"#7c3aed", title:"Confirmación de nivel",   desc:`Tu selección de nivel (${level || "por confirmar"}) será validada. Si es necesario, harán una evaluación rápida de 5 minutos.` },
+    { icon:"ti-calendar",     color:B.green,   title:"Asignación de grupo y horario", desc:"Se te asigna un grupo con horario fijo. Recibirás el link de Microsoft Teams para unirte a las clases." },
+    { icon:"ti-credit-card",  color:B.accent==="#fab82c"?"#92400e":B.dark, title:"Primer pago", desc:"Tu coordinadora te indica cómo realizar el primer pago para activar el acceso completo a la plataforma." },
+  ];
+
+  return (
+    <div style={{ padding:"24px 20px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
+      <div>
+        <div style={{ fontSize:11, fontWeight:700, color:B.secondary, letterSpacing:1.5, textTransform:"uppercase", marginBottom:6 }}>¿Qué sigue?</div>
+        <h2 style={{ fontSize:22, fontWeight:800, color:B.text, marginBottom:4, letterSpacing:-0.5 }}>Tus próximos pasos</h2>
+        <p style={{ fontSize:12, color:B.textSec, marginBottom:20, lineHeight:1.6 }}>
+          Registraste tu interés en <strong style={{ color:B.primary }}>{progName}</strong>. Esto es lo que pasa a continuación:
+        </p>
+
+        <div style={{ position:"relative" }}>
+          {steps.map((s, i) => (
+            <div key={i} style={{ display:"flex", gap:14, marginBottom:16, position:"relative" }}>
+              {i < steps.length-1 && (
+                <div style={{ position:"absolute", left:19, top:40, bottom:-16, width:2, background:B.border }} />
+              )}
+              <div style={{ width:40, height:40, borderRadius:"50%", background:`${s.color}15`, border:`2px solid ${s.color}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:1 }}>
+                <i className={`ti ${s.icon}`} style={{ fontSize:16, color:s.color }} aria-hidden="true" />
+              </div>
+              <div style={{ flex:1, paddingTop:4 }}>
+                <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:3 }}>{s.title}</div>
+                <div style={{ fontSize:12, color:B.textSec, lineHeight:1.6 }}>{s.desc}</div>
               </div>
             </div>
           ))}
         </div>
 
-        <style>{`@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}`}</style>
+        <div style={{ display:"flex", alignItems:"flex-start", gap:8, padding:"10px 12px", background:B.greenDim, borderRadius:10, border:`1px solid ${B.green}30`, marginTop:4 }}>
+          <i className="ti ti-phone" style={{ fontSize:14, color:B.green, flexShrink:0, marginTop:1 }} aria-hidden="true" />
+          <div style={{ fontSize:11, color:"#065f46", lineHeight:1.6 }}>
+            <strong>¿Tenés preguntas?</strong> Escribinos por WhatsApp o al email <strong>info@worldconnectacademy.com</strong> — respondemos en menos de 24 horas.
+          </div>
+        </div>
       </div>
 
-      <div style={{ display:"flex", gap:8 }}>
+      <div style={{ display:"flex", gap:8, marginTop:16 }}>
         <GhostBtn onClick={onPrev}>← Atrás</GhostBtn>
         <PrimaryBtn onClick={onNext} style={{ flex:1 }}>Continuar →</PrimaryBtn>
       </div>
@@ -297,229 +407,94 @@ function StepHow({ onNext, onPrev }) {
   );
 }
 
-// STEP 3 — Schedule & Class
-function StepSchedule({ student, onNext, onPrev }) {
-  const [calExpanded, setCalExpanded] = useState(false);
-  const days = ["Lun","Mar","Mié","Jue","Vie","Sáb","Dom"];
-  const classDays = [1, 3, 5]; // Mon, Wed, Fri (0-indexed)
-  return (
-    <div style={{ padding:"28px 24px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
-      <div>
-        <div style={{ fontSize:11, fontWeight:700, color:B.secondary, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>Tu clase en vivo</div>
-        <h2 style={{ fontSize:24, fontWeight:800, color:B.text, marginBottom:20, letterSpacing:-0.5 }}>¿Cuándo nos vemos?</h2>
-
-        {/* Next class card */}
-        <div style={{ background:B.primary, borderRadius:16, padding:"20px", marginBottom:16, position:"relative", overflow:"hidden" }}>
-          <div style={{ position:"absolute", top:-20, right:-20, width:100, height:100, borderRadius:"50%", background:"rgba(255,255,255,.06)" }}/>
-          <div style={{ fontSize:10, color:"rgba(255,255,255,.55)", letterSpacing:1, textTransform:"uppercase", marginBottom:6 }}>Próxima clase</div>
-          <div style={{ fontSize:20, fontWeight:800, color:"#fff", marginBottom:4 }}>{student.nextClass}</div>
-          <div style={{ fontSize:12, color:"rgba(255,255,255,.65)", marginBottom:16 }}>
-            Docente: {student.teacher} · Unidad {student.unit}: {student.unitTitle}
-          </div>
-          <div style={{ display:"flex", gap:8 }}>
-            <a href={student.teamsLink} style={{ display:"flex", alignItems:"center", gap:6, padding:"8px 16px", background:"rgba(255,255,255,.15)", borderRadius:8, textDecoration:"none", color:"#fff", fontSize:12, fontWeight:600, border:"1px solid rgba(255,255,255,.2)" }}>
-              <i className="ti ti-video" style={{ fontSize:14 }} aria-hidden="true" />
-              Unirme en Teams
-            </a>
-            <div style={{ display:"flex", alignItems:"center", gap:5, padding:"8px 14px", background:B.secondary, borderRadius:8, fontSize:11, fontWeight:700, color:B.dark }}>
-              <i className="ti ti-clock" style={{ fontSize:13 }} aria-hidden="true" />
-              En {student.daysUntilClass} días
-            </div>
-          </div>
-        </div>
-
-        {/* Mini calendar */}
-        <button onClick={() => setCalExpanded(!calExpanded)} style={{ width:"100%", display:"flex", justifyContent:"space-between", alignItems:"center", padding:"10px 14px", background:B.bg, border:`1px solid ${B.border}`, borderRadius:10, cursor:"pointer", fontFamily:"inherit", marginBottom:6 }}>
-          <span style={{ fontSize:12, fontWeight:600, color:B.text }}>Ver horario semanal</span>
-          <i className={`ti ti-chevron-${calExpanded?"up":"down"}`} style={{ fontSize:14, color:B.textSec }} aria-hidden="true" />
-        </button>
-        {calExpanded && (
-          <div style={{ background:B.bg, borderRadius:10, padding:12, border:`1px solid ${B.border}`, animation:"fadeIn .2s" }}>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(7,1fr)", gap:4 }}>
-              {days.map((d,i) => (
-                <div key={d} style={{ textAlign:"center" }}>
-                  <div style={{ fontSize:9, color:B.textSec, marginBottom:4 }}>{d}</div>
-                  <div style={{ width:32, height:32, borderRadius:8, background:classDays.includes(i)?B.primary:B.white, border:`1px solid ${classDays.includes(i)?B.primary:B.border}`, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto", flexDirection:"column" }}>
-                    {classDays.includes(i) && <i className="ti ti-video" style={{ fontSize:12, color:"#fff" }} aria-hidden="true" />}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div style={{ fontSize:10, color:B.textSec, marginTop:8, textAlign:"center" }}>
-              Clases: lunes, miércoles y viernes · Práctica 24/7 los demás días
-            </div>
-          </div>
-        )}
-
-        {/* Tip */}
-        <div style={{ display:"flex", gap:8, padding:"10px 12px", background:B.secondaryDim, borderRadius:10, marginTop:10, border:`1px solid ${B.accent}30` }}>
-          <i className="ti ti-bulb" style={{ fontSize:14, color:"#92400e", flexShrink:0, marginTop:1 }} aria-hidden="true" />
-          <div style={{ fontSize:11, color:"#92400e", lineHeight:1.6 }}>
-            Si faltas a clase, la grabación queda disponible <strong>7 días</strong> en tu portal. Nunca perderás el contenido.
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display:"flex", gap:8 }}>
-        <GhostBtn onClick={onPrev}>← Atrás</GhostBtn>
-        <PrimaryBtn onClick={onNext} style={{ flex:1 }}>Continuar →</PrimaryBtn>
-      </div>
-    </div>
-  );
-}
-
-// STEP 4 — Platform tour
-function StepPlatform({ student, onNext, onPrev }) {
-  const [active, setActive] = useState(0);
-  const SECTIONS = [
-    { icon:"ti-layout-dashboard", label:"Inicio", desc:"Tu resumen diario: unidad activa, próxima clase, progreso del ciclo y métricas de la semana.", color:B.primary },
-    { icon:"ti-book",             label:"Mi programa", desc:"Las 12 unidades del ciclo con tu progreso, notas y estado de cada una. Completas las verdes, la azul es tu unidad activa.", color:B.dark },
-    { icon:"ti-device-laptop",   label:"Práctica 24/7", desc:"Videos de clase, ejercicios, flashcards y actividades de la unidad activa. Disponible a cualquier hora.", color:B.green },
-    { icon:"ti-writing",         label:"Examen", desc:"Tu examen de la unidad activa con el temporizador y tus intentos disponibles. Aprueba con 70% para desbloquear la siguiente.", color:"#155266" },
-    { icon:"ti-certificate",     label:"Mi progreso", desc:"Tu ruta de niveles A1→C1, badges ganados, XP acumulado y certificados descargables.", color:B.secondary === "#ffbb23" ? "#92400e" : B.dark },
-  ];
-  return (
-    <div style={{ padding:"28px 24px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
-      <div>
-        <div style={{ fontSize:11, fontWeight:700, color:B.secondary, letterSpacing:1.5, textTransform:"uppercase", marginBottom:8 }}>Tu portal</div>
-        <h2 style={{ fontSize:24, fontWeight:800, color:B.text, marginBottom:20, letterSpacing:-0.5 }}>Todo lo que necesitas, en un lugar</h2>
-
-        {/* Mini portal mockup */}
-        <div style={{ background:B.white, borderRadius:12, border:`1px solid ${B.border}`, overflow:"hidden", marginBottom:14 }}>
-          {/* Fake topbar */}
-          <div style={{ background:B.primary, padding:"8px 12px", display:"flex", alignItems:"center", gap:8 }}>
-            <div style={{ fontSize:11, fontWeight:700, color:"#fff" }}>WCA Hub</div>
-            <div style={{ marginLeft:"auto", display:"flex", gap:6 }}>
-              <div style={{ width:20, height:20, borderRadius:"50%", background:"rgba(255,255,255,.15)", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                <i className="ti ti-bell" style={{ fontSize:10, color:"#fff" }} aria-hidden="true" />
-              </div>
-              <div style={{ width:20, height:20, borderRadius:"50%", background:B.secondary, display:"flex", alignItems:"center", justifyContent:"center", fontSize:8, fontWeight:700, color:B.dark }}>MR</div>
-            </div>
-          </div>
-          {/* Fake nav */}
-          <div style={{ display:"flex", borderBottom:`1px solid ${B.border}` }}>
-            {SECTIONS.map((s,i) => (
-              <button key={i} onClick={() => setActive(i)} style={{
-                flex:1, padding:"8px 4px", border:"none",
-                background: active===i ? B.primaryDim : "transparent",
-                borderBottom: `2px solid ${active===i ? B.primary : "transparent"}`,
-                cursor:"pointer", transition:"all .15s",
-              }}>
-                <i className={`ti ${s.icon}`} style={{ fontSize:14, color:active===i?B.primary:B.textSec, display:"block", margin:"0 auto" }} aria-hidden="true" />
-                <div style={{ fontSize:8, color:active===i?B.primary:B.textSec, marginTop:2, fontWeight:active===i?600:400 }}>{s.label}</div>
-              </button>
-            ))}
-          </div>
-          {/* Content preview */}
-          <div style={{ padding:"12px", minHeight:70, background:B.bg }}>
-            <div style={{ fontSize:11, fontWeight:600, color:SECTIONS[active].color, marginBottom:3 }}>{SECTIONS[active].label}</div>
-            <div style={{ fontSize:10, color:B.textSec, lineHeight:1.6 }}>{SECTIONS[active].desc}</div>
-          </div>
-        </div>
-
-        {/* Cycle bar */}
-        <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:10, padding:"12px 14px" }}>
-          <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
-            <div style={{ fontSize:11, fontWeight:600, color:B.text }}>Tu ciclo actual — {student.level}</div>
-            <div style={{ fontSize:11, color:B.primary, fontWeight:600 }}>U{student.unit}/12</div>
-          </div>
-          <div style={{ display:"flex", gap:3 }}>
-            {Array.from({length:12},(_,i)=>(
-              <div key={i} style={{ flex:1, height:6, borderRadius:3, background: i+1<student.unit?B.green:i+1===student.unit?B.secondary:B.bg, transition:"background .3s" }}/>
-            ))}
-          </div>
-          <div style={{ fontSize:9, color:B.textSec, marginTop:5 }}>Unidad activa: U{student.unit} — {student.unitTitle}</div>
-        </div>
-      </div>
-
-      <div style={{ display:"flex", gap:8 }}>
-        <GhostBtn onClick={onPrev}>← Atrás</GhostBtn>
-        <PrimaryBtn onClick={onNext} style={{ flex:1 }}>¡Casi listo! →</PrimaryBtn>
-      </div>
-    </div>
-  );
-}
-
-// STEP 5 — Ready!
-function StepReady({ student, onFinish, saving = false }) {
+// ─── STEP 5 — ¡Listo! (sin datos hardcodeados de nivel/horario) ───
+function StepReady({ name, program, level, onFinish, saving }) {
   const [show, setShow] = useState(false);
   useEffect(() => { const t = setTimeout(() => setShow(true), 100); return () => clearTimeout(t); }, []);
+  const programNames = { en:"Inglés Completo", va:"Asistente Virtual", en_va:"Inglés + VA" };
+  const progName = programNames[program] || "WCA Academy";
 
   return (
     <div style={{ padding:"28px 24px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"space-between", textAlign:"center", position:"relative", overflow:"hidden" }}>
       {show && <Confetti />}
+      <style>{`@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}`}</style>
       <div>
-        <div style={{ fontSize:56, marginBottom:12, animation:"pop .5s ease" }}>🎉</div>
-        <h2 style={{ fontSize:28, fontWeight:800, color:B.text, marginBottom:8, letterSpacing:-0.5 }}>
-          ¡Todo listo, {student.name}!
+        <div style={{ fontSize:52, marginBottom:12, animation:"pop .5s ease" }}>🎉</div>
+        <h2 style={{ fontSize:26, fontWeight:800, color:B.text, marginBottom:8, letterSpacing:-0.5 }}>
+          ¡Ya estás dentro, {name || "bienvenido"}!
         </h2>
-        <p style={{ fontSize:13, color:B.textSec, lineHeight:1.7, marginBottom:28 }}>
-          Tu cuenta está activa y ya sabes cómo funciona WCA.<br />
-          Tu primera clase es el <strong style={{ color:B.primary }}>{student.nextClass}</strong>.
+        <p style={{ fontSize:13, color:B.textSec, lineHeight:1.75, marginBottom:24 }}>
+          Tu perfil está creado. Tu coordinadora te contactará en las próximas <strong style={{ color:B.primary }}>24-48 horas</strong> para confirmar tu matrícula en <strong style={{ color:B.primary }}>{progName}</strong>.
         </p>
 
-        <style>{`@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.15)}100%{transform:scale(1)}}`}</style>
-
-        {/* Checklist */}
-        <div style={{ background:B.bg, borderRadius:12, padding:16, textAlign:"left", marginBottom:4 }}>
+        <div style={{ background:B.bg, borderRadius:12, padding:16, textAlign:"left" }}>
           {[
-            { text:`Nivel detectado: ${student.level} — ${student.levelName}`, done:true },
-            { text:`Ciclo activo: U${student.unit} — ${student.unitTitle}`, done:true },
-            { text:`Horario: ${student.group}`, done:true },
-            { text:"Acceso a plataforma 24/7 activado", done:true },
-            { text:"Cuenta Microsoft 365 asignada", done:true },
-          ].map((item,i) => (
-            <div key={i} style={{ display:"flex", gap:10, alignItems:"center", padding:"7px 0", borderBottom:i<4?`1px solid ${B.border}`:"none" }}>
+            { text:"Perfil creado en WCA Hub",                done:true  },
+            { text:`Programa elegido: ${progName}`,            done:true  },
+            { text:level && program !== "va" ? `Nivel indicado: ${level} (pendiente confirmación)` : "Nivel: Módulo 1 (todos los VA empiezan aquí)", done:true  },
+            { text:"Coordinadora notificada — te contactará pronto", done:true  },
+            { text:"Asignación de grupo y horario",            done:false },
+            { text:"Primer pago y activación completa",        done:false },
+          ].map((item,i,arr) => (
+            <div key={i} style={{ display:"flex", gap:10, alignItems:"center", padding:"8px 0", borderBottom:i<arr.length-1?`1px solid ${B.border}`:"none" }}>
               <div style={{ width:20, height:20, borderRadius:"50%", background:item.done?B.green:"transparent", border:`1.5px solid ${item.done?B.green:B.border}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                {item.done && <i className="ti ti-check" style={{ fontSize:10, color:"#fff" }} aria-hidden="true" />}
+                {item.done
+                  ? <i className="ti ti-check" style={{ fontSize:10, color:"#fff" }} aria-hidden="true" />
+                  : <i className="ti ti-clock" style={{ fontSize:10, color:B.border }} aria-hidden="true" />
+                }
               </div>
-              <span style={{ fontSize:12, color:B.text }}>{item.text}</span>
+              <span style={{ fontSize:12, color:item.done?B.text:B.textSec }}>{item.text}</span>
             </div>
           ))}
         </div>
       </div>
 
       <div>
-        <PrimaryBtn onClick={saving ? undefined : onFinish} style={{ width:"100%", padding:"14px", fontSize:15 }}>
-          Ir a mi portal →
+        <PrimaryBtn onClick={saving ? undefined : onFinish} disabled={saving} style={{ width:"100%", padding:"14px", fontSize:15 }}>
+          {saving ? "Guardando…" : "Ir a mi portal →"}
         </PrimaryBtn>
         <div style={{ fontSize:10, color:B.textSec, marginTop:8 }}>
-          Puedes volver a este tour desde Configuración → Guía de inicio
+          Mientras tanto, podés explorar tu portal. Tu acceso completo se activa al confirmar la matrícula.
         </div>
       </div>
     </div>
   );
 }
 
-// ─── MAIN COMPONENT ──────────────────────────────────────────────
+// ─── MAIN COMPONENT ───────────────────────────────────────────────
 export default function OnboardingWizard() {
-  const navigate = useNavigate();
-  const [step, setStep]       = useState(0);
-  const [saving, setSaving]   = useState(false);
-  const [profile, setProfile] = useState(null);
+  const navigate  = useNavigate();
+  const [step,    setStep]    = useState(0);
+  const [saving,  setSaving]  = useState(false);
+  const [name,    setName]    = useState("");
+  const [program, setProgram] = useState(null);
+  const [level,   setLevel]   = useState(null);
+
   const totalSteps = STEPS.length;
   const progress   = (step / (totalSteps - 1)) * 100;
 
-  // Load real user profile from Supabase
+  // Load real user name from Supabase
   useEffect(() => {
     async function load() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { navigate("/", { replace: true }); return; }
+
       const { data } = await supabase
         .from("profiles")
         .select("full_name, role, onboarding_done")
         .eq("id", session.user.id)
-        .single();
-      if (data?.onboarding_done) { navigate("/portal", { replace: true }); return; }
-      if (data) setProfile(data);
+        .maybeSingle();
+
+      if (data?.onboarding_done && data?.role !== "estudiante") {
+        navigate("/portal", { replace: true });
+        return;
+      }
+      if (data?.full_name) {
+        setName(data.full_name.split(" ")[0]);
+      }
     }
     load();
   }, [navigate]);
-
-  const student = {
-    ...STUDENT,
-    name: profile?.full_name?.split(" ")[0] || STUDENT.name,
-  };
 
   function next() { if (step < totalSteps - 1) setStep(s => s + 1); }
   function prev() { if (step > 0) setStep(s => s - 1); }
@@ -529,13 +504,25 @@ export default function OnboardingWizard() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        await supabase
-          .from("profiles")
-          .update({ onboarding_done: true })
-          .eq("id", session.user.id);
+        // Save onboarding data to profile
+        await supabase.from("profiles").update({
+          onboarding_done: true,
+        }).eq("id", session.user.id);
 
-        // Send welcome email
-        api.emails.welcome().catch(e => console.error("Welcome email:", e));
+        // Save program/level preference as a note (for coordinator to see)
+        const programNames = { en:"Inglés Completo", va:"Asistente Virtual", en_va:"Inglés + VA" };
+        await supabase.from("audit_log").insert({
+          actor_id:  session.user.id,
+          action:    "onboarding_completed",
+          entity:    "profile",
+          entity_id: session.user.id,
+          metadata:  {
+            program:      program,
+            program_name: programNames[program],
+            level_preference: level,
+            completed_at: new Date().toISOString(),
+          },
+        }).catch(console.error);
       }
     } catch (e) {
       console.error("Error saving onboarding:", e);
@@ -544,21 +531,27 @@ export default function OnboardingWizard() {
   }
 
   async function skip() {
-    await finish();
+    setSaving(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase.from("profiles").update({ onboarding_done: true }).eq("id", session.user.id);
+      }
+    } catch (e) { console.error(e); }
+    navigate("/portal", { replace: true });
   }
 
   return (
     <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:`linear-gradient(135deg, ${B.primary}12 0%, ${B.secondary}08 100%)`, padding:"24px 16px" }}>
-
-      <div style={{ width:"100%", maxWidth:440, background:B.white, borderRadius:20, boxShadow:"0 20px 60px rgba(21,82,102,.12), 0 4px 16px rgba(0,0,0,.06)", overflow:"hidden", display:"flex", flexDirection:"column" }}>
+      <div style={{ width:"100%", maxWidth:440, background:B.white, borderRadius:20, boxShadow:"0 20px 60px rgba(21,82,102,.12), 0 4px 16px rgba(0,0,0,.06)", overflow:"hidden" }}>
 
         {/* Progress bar */}
-        <div style={{ height:4, background:B.bg, flexShrink:0 }}>
+        <div style={{ height:4, background:B.bg }}>
           <div style={{ height:"100%", width:`${progress}%`, background:`linear-gradient(90deg, ${B.primary}, ${B.secondary})`, transition:"width .4s ease" }} />
         </div>
 
         {/* Step indicator */}
-        <div style={{ padding:"14px 24px 0", display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0 }}>
+        <div style={{ padding:"12px 20px 0", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
           <div style={{ fontSize:10, color:B.textSec }}>{step + 1} / {totalSteps}</div>
           <StepDots current={step} total={totalSteps} onGoTo={setStep} />
           {step > 0 && step < totalSteps - 1 && (
@@ -572,12 +565,12 @@ export default function OnboardingWizard() {
         {/* Step content */}
         <div style={{ minHeight:480 }}>
           <FadeSlide key={step}>
-            {step === 0 && <StepWelcome   student={student} onNext={next} />}
-            {step === 1 && <StepLevel     student={student} onNext={next} onPrev={prev} />}
-            {step === 2 && <StepHow       onNext={next} onPrev={prev} />}
-            {step === 3 && <StepSchedule  student={student} onNext={next} onPrev={prev} />}
-            {step === 4 && <StepPlatform  student={student} onNext={next} onPrev={prev} />}
-            {step === 5 && <StepReady     student={student} onFinish={finish} saving={saving} />}
+            {step === 0 && <StepWelcome   name={name} onNext={next} />}
+            {step === 1 && <StepProgram   selectedProgram={program} onSelect={setProgram} onNext={next} onPrev={prev} />}
+            {step === 2 && <StepPlacement program={program} selectedLevel={level} onSelect={setLevel} onNext={next} onPrev={prev} />}
+            {step === 3 && <StepHow       onNext={next} onPrev={prev} />}
+            {step === 4 && <StepNextSteps program={program} level={level} onNext={next} onPrev={prev} />}
+            {step === 5 && <StepReady     name={name} program={program} level={level} onFinish={finish} saving={saving} />}
           </FadeSlide>
         </div>
       </div>
