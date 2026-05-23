@@ -669,7 +669,7 @@ export default function AdminDashboard() {
                 {[
                   {label:"Nombre completo", ph:"María Rodríguez", type:"text"},
                   {label:"Email", ph:"m.rodriguez@correo.com", type:"email"},
-                  {label:"Teléfono / WhatsApp", ph:"+504 9999-0000", type:"tel"},
+                  {label:"Teléfono / WhatsApp", ph:"+504 XXXX-XXXX", type:"tel"},
                   {label:"País", ph:"Honduras", type:"text"},
                 ].map(f => (
                   <div key={f.label} style={{ marginBottom:12 }}>
@@ -801,7 +801,7 @@ export default function AdminDashboard() {
             {[
               {label:"Nombre completo", ph:"María Rodríguez", type:"text"},
               {label:"Email", ph:"m.rodriguez@correo.com", type:"email"},
-              {label:"Teléfono / WhatsApp", ph:"+504 9999-0000", type:"tel"},
+              {label:"Teléfono / WhatsApp", ph:"+504 XXXX-XXXX", type:"tel"},
             ].map(f => (
               <div key={f.label} style={{ marginBottom:11 }}>
                 <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>{f.label}</label>

@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase.js";
 
 const B = {
   primary:"#155266", dark:"#0f3d4d", primaryDim:"#e8f3f6",
@@ -438,7 +440,7 @@ function StepPlatform({ student, onNext, onPrev }) {
 }
 
 // STEP 5 — Ready!
-function StepReady({ student, onFinish }) {
+function StepReady({ student, onFinish, saving = false }) {
   const [show, setShow] = useState(false);
   useEffect(() => { const t = setTimeout(() => setShow(true), 100); return () => clearTimeout(t); }, []);
 
@@ -477,7 +479,7 @@ function StepReady({ student, onFinish }) {
       </div>
 
       <div>
-        <PrimaryBtn onClick={onFinish} style={{ width:"100%", padding:"14px", fontSize:15 }}>
+        <PrimaryBtn onClick={saving ? undefined : onFinish} style={{ width:"100%", padding:"14px", fontSize:15 }}>
           Ir a mi portal →
         </PrimaryBtn>
         <div style={{ fontSize:10, color:B.textSec, marginTop:8 }}>
@@ -490,31 +492,60 @@ function StepReady({ student, onFinish }) {
 
 // ─── MAIN COMPONENT ──────────────────────────────────────────────
 export default function OnboardingWizard() {
-  const [step, setStep] = useState(0);
-  const [done, setDone] = useState(false);
-
+  const navigate = useNavigate();
+  const [step, setStep]       = useState(0);
+  const [saving, setSaving]   = useState(false);
+  const [profile, setProfile] = useState(null);
   const totalSteps = STEPS.length;
-  const progress = ((step) / (totalSteps - 1)) * 100;
+  const progress   = (step / (totalSteps - 1)) * 100;
+
+  // Load real user profile from Supabase
+  useEffect(() => {
+    async function load() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { navigate("/", { replace: true }); return; }
+      const { data } = await supabase
+        .from("profiles")
+        .select("full_name, role, onboarding_done")
+        .eq("id", session.user.id)
+        .single();
+      if (data?.onboarding_done) { navigate("/portal", { replace: true }); return; }
+      if (data) setProfile(data);
+    }
+    load();
+  }, [navigate]);
+
+  const student = {
+    ...STUDENT,
+    name: profile?.full_name?.split(" ")[0] || STUDENT.name,
+  };
 
   function next() { if (step < totalSteps - 1) setStep(s => s + 1); }
   function prev() { if (step > 0) setStep(s => s - 1); }
 
-  if (done) return (
-    <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", height:"100%", display:"flex", alignItems:"center", justifyContent:"center", background:B.bg, padding:24 }}>
-      <div style={{ textAlign:"center" }}>
-        <div style={{ fontSize:18, fontWeight:700, color:B.text, marginBottom:8 }}>¡Bienvenida al portal, María!</div>
-        <div style={{ fontSize:12, color:B.textSec, marginBottom:16 }}>El wizard de onboarding se ha completado. El estudiante ahora ve su portal normal.</div>
-        <button onClick={() => { setStep(0); setDone(false); }} style={{ padding:"9px 20px", background:B.primary, color:"#fff", border:"none", borderRadius:8, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
-          Ver onboarding de nuevo
-        </button>
-      </div>
-    </div>
-  );
+  async function finish() {
+    setSaving(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase
+          .from("profiles")
+          .update({ onboarding_done: true })
+          .eq("id", session.user.id);
+      }
+    } catch (e) {
+      console.error("Error saving onboarding:", e);
+    }
+    navigate("/portal", { replace: true });
+  }
+
+  async function skip() {
+    await finish();
+  }
 
   return (
-    <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", height:"100%", display:"flex", alignItems:"center", justifyContent:"center", background:`linear-gradient(135deg, ${B.primary}12 0%, ${B.secondary}08 100%)`, padding:"24px 16px" }}>
+    <div style={{ fontFamily:"'DM Sans','Segoe UI',sans-serif", minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:`linear-gradient(135deg, ${B.primary}12 0%, ${B.secondary}08 100%)`, padding:"24px 16px" }}>
 
-      {/* Card */}
       <div style={{ width:"100%", maxWidth:440, background:B.white, borderRadius:20, boxShadow:"0 20px 60px rgba(21,82,102,.12), 0 4px 16px rgba(0,0,0,.06)", overflow:"hidden", display:"flex", flexDirection:"column" }}>
 
         {/* Progress bar */}
@@ -526,23 +557,23 @@ export default function OnboardingWizard() {
         <div style={{ padding:"14px 24px 0", display:"flex", justifyContent:"space-between", alignItems:"center", flexShrink:0 }}>
           <div style={{ fontSize:10, color:B.textSec }}>{step + 1} / {totalSteps}</div>
           <StepDots current={step} total={totalSteps} onGoTo={setStep} />
-          {step > 0 && (
-            <button onClick={() => setDone(true)} style={{ fontSize:10, color:B.textSec, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit" }}>
-              Saltar
+          {step > 0 && step < totalSteps - 1 && (
+            <button onClick={skip} style={{ fontSize:10, color:B.textSec, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit" }}>
+              Saltar →
             </button>
           )}
-          {step === 0 && <div style={{ width:36 }} />}
+          {(step === 0 || step === totalSteps - 1) && <div style={{ width:40 }} />}
         </div>
 
-        {/* Step content — fixed height */}
+        {/* Step content */}
         <div style={{ minHeight:480 }}>
           <FadeSlide key={step}>
-            {step === 0 && <StepWelcome   student={STUDENT} onNext={next} />}
-            {step === 1 && <StepLevel     student={STUDENT} onNext={next} onPrev={prev} />}
+            {step === 0 && <StepWelcome   student={student} onNext={next} />}
+            {step === 1 && <StepLevel     student={student} onNext={next} onPrev={prev} />}
             {step === 2 && <StepHow       onNext={next} onPrev={prev} />}
-            {step === 3 && <StepSchedule  student={STUDENT} onNext={next} onPrev={prev} />}
-            {step === 4 && <StepPlatform  student={STUDENT} onNext={next} onPrev={prev} />}
-            {step === 5 && <StepReady     student={STUDENT} onFinish={() => setDone(true)} />}
+            {step === 3 && <StepSchedule  student={student} onNext={next} onPrev={prev} />}
+            {step === 4 && <StepPlatform  student={student} onNext={next} onPrev={prev} />}
+            {step === 5 && <StepReady     student={student} onFinish={finish} saving={saving} />}
           </FadeSlide>
         </div>
       </div>

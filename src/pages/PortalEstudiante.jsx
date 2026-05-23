@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase.js";
 import { LEVELS, UNITS, SKILLS_BY_LEVEL } from "../data/englishContent.js";
 
 const P="#155266",PH="#0f3d4d",PD="#e8f3f6";
@@ -266,9 +267,25 @@ function UpsellBanner({prog,canEnroll,onEnroll}){
 // ─── MAIN ─────────────────────────────────────────────────────────
 export default function PortalEstudiante(){
   const navigate = useNavigate();
+  const [user, setUser] = useState({ name:"", email:"", avatar:null });
   const [view,       setView]       = useState("inicio");
   const [activeProg, setActiveProg] = useState("en"); // current program in practice/exam
   const [enrolled,   setEnrolled]   = useState(Object.keys(ENROLLMENTS));
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) { navigate("/", { replace: true }); return; }
+      supabase.from("profiles").select("full_name, email, avatar_url")
+        .eq("id", session.user.id).single()
+        .then(({ data }) => {
+          if (data) setUser({
+            name: data.full_name?.split(" ")[0] || data.email?.split("@")[0] || "Estudiante",
+            email: data.email || session.user.email || "",
+            avatar: data.avatar_url || null,
+          });
+        });
+    });
+  }, [navigate]);
   const [showEnrollSuccess, setEnrollSuccess] = useState(null);
 
   const enrolledProgs = ALL_PROGRAMS.filter(p=>enrolled.includes(p.id));
@@ -375,7 +392,7 @@ export default function PortalEstudiante(){
               <div style={{background:`linear-gradient(135deg,${P},${PH})`,borderRadius:16,padding:"22px 28px",marginBottom:20,position:"relative",overflow:"hidden"}}>
                 <div style={{position:"absolute",right:-30,top:-30,width:160,height:160,borderRadius:"50%",background:"rgba(255,255,255,.05)"}}/>
                 <div style={{fontSize:11,color:"rgba(255,255,255,.5)",textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Bienvenida de vuelta</div>
-                <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:6}}>¡Hola, María! 👋</div>
+                <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:6}}>{`¡Hola, ${user.name || "Estudiante"}! 👋`}</div>
                 <div style={{fontSize:13,color:"rgba(255,255,255,.7)",lineHeight:1.6,marginBottom:16}}>
                   Estás inscrita en <strong style={{color:Y}}>{enrolled.length} programas</strong>. Selecciona uno para continuar practicando.
                 </div>

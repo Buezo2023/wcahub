@@ -192,7 +192,7 @@ function DemoMenu() {
         transition:'all .2s',
       }}>
         <span style={{ fontSize:16 }}>{open ? '✕' : '⬡'}</span>
-        {open ? 'Cerrar' : 'Demo · 10 portales'}
+        {open ? 'Cerrar' : 'WCA Hub · Acceso interno'}
         {!open && <span style={{ background:'#ffbb23', color:'#0f3d4d', fontSize:10, padding:'2px 7px', borderRadius:20, fontWeight:800 }}>▾</span>}
       </button>
     </div>
@@ -268,8 +268,8 @@ function NavHub() {
         </div>
 
         <div style={{ textAlign:'center', marginTop:32, fontSize:11, color: dark?'#334155':'#cbd5e1' }}>
-          Demo visual interactivo · Datos ficticios · Sin backend real<br/>
-          <code style={{ color: dark?'#475569':'#94a3b8' }}>github.com/Buezo2023/wcahub</code>
+          Plataforma de gestión académica · WCA Academy<br/>
+          <code style={{ color: dark?'#475569':'#94a3b8' }}>worldconnectacademy.com</code>
         </div>
       </div>
     </div>
