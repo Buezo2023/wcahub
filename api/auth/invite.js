@@ -85,8 +85,17 @@ async function handleStudent(req, actor) {
   }
 
   await admin.from('profiles').upsert({ id: userId, email, full_name: fullName, role: 'estudiante', active: true }, { onConflict: 'id' });
-  const { data: student, error: sErr } = await admin.from('students').upsert({ profile_id: userId, level }, { onConflict: 'profile_id' }).select().single();
-  if (sErr) throw sErr;
+  const { data: existSt } = await admin.from('students').select('id').eq('profile_id', userId).maybeSingle();
+  let student;
+  if (existSt) {
+    const { data, error: sErr } = await admin.from('students').update({ level }).eq('id', existSt.id).select().single();
+    if (sErr) throw sErr;
+    student = data;
+  } else {
+    const { data, error: sErr } = await admin.from('students').insert({ profile_id: userId, level }).select().single();
+    if (sErr) throw sErr;
+    student = data;
+  }
 
   const { data: enrollment, error: eErr } = await admin.from('enrollments').upsert({
     student_id: student.id, program_id: programId, group_id: groupId || null,
@@ -152,14 +161,29 @@ async function handleStaff(req, actor) {
   );
   if (profErr) throw new Error('Error guardando perfil: ' + profErr.message);
 
-  const { data: staffRow, error: staffErr } = await admin.from('staff').upsert({
-    profile_id: userId, position: role,
-    department: role === 'Docente' ? 'Académico' : 'Administrativo',
-    salary: salary ? Number(salary) : null,
-    hire_date: hireDate || new Date().toISOString().slice(0, 10),
-    active: true,
-  }, { onConflict: 'profile_id' }).select().single();
-  if (staffErr) throw new Error('Error guardando staff: ' + staffErr.message);
+  // Check if staff record exists, then insert or update
+  const { data: existingStaff } = await admin.from('staff')
+    .select('id').eq('profile_id', userId).maybeSingle();
+
+  let staffRow;
+  if (existingStaff) {
+    const { data, error: updErr } = await admin.from('staff')
+      .update({ position: role, department: role === 'Docente' ? 'Académico' : 'Administrativo',
+        salary: salary ? Number(salary) : null, active: true })
+      .eq('id', existingStaff.id).select().single();
+    if (updErr) throw new Error('Error actualizando staff: ' + updErr.message);
+    staffRow = data;
+  } else {
+    const { data, error: insErr } = await admin.from('staff')
+      .insert({ profile_id: userId, position: role,
+        department: role === 'Docente' ? 'Académico' : 'Administrativo',
+        salary: salary ? Number(salary) : null,
+        hire_date: hireDate || new Date().toISOString().slice(0, 10),
+        active: true })
+      .select().single();
+    if (insErr) throw new Error('Error creando staff: ' + insErr.message);
+    staffRow = data;
+  }
 
   try { await admin.from('audit_log').insert({ actor_id: actor.id, action: 'invited_staff', entity: 'staff', entity_id: staffRow?.id || userId, metadata: { email, role, fullName } }); } catch(_) {}
 
