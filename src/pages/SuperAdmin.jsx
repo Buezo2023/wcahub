@@ -297,7 +297,7 @@ export default function SuperAdmin() {
         if (!res.ok || !json.ok) {
           globalToast.error("Error: " + (json.error || json.message || `HTTP ${res.status}`));
         } else {
-          globalToast.success(`✓ ${nombre} creado — invitación enviada a ${correo}`);
+          globalToast.success(json.data?.message || `✓ ${nombre} creado`);
           const { getStaff } = await import("../lib/db.js");
           const rows = await getStaff({ all: true });
           const rl = { docente:"Docente", coordinadora:"Coordinadora", admin:"Admin", cobros:"Gestor de Cobros", asesor_ventas:"Ventas" };

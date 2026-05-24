@@ -146,18 +146,20 @@ async function handleStaff(req, actor) {
     }
   }
 
-  await admin.from('profiles').upsert(
+  const { error: profErr } = await admin.from('profiles').upsert(
     { id: userId, email, full_name: fullName, role: supabaseRole, active: true },
     { onConflict: 'id' }
   );
+  if (profErr) throw new Error('Error guardando perfil: ' + profErr.message);
 
-  const { data: staffRow } = await admin.from('staff').upsert({
+  const { data: staffRow, error: staffErr } = await admin.from('staff').upsert({
     profile_id: userId, position: role,
     department: role === 'Docente' ? 'Académico' : 'Administrativo',
     salary: salary ? Number(salary) : null,
     hire_date: hireDate || new Date().toISOString().slice(0, 10),
     active: true,
   }, { onConflict: 'profile_id' }).select().single();
+  if (staffErr) throw new Error('Error guardando staff: ' + staffErr.message);
 
   try { await admin.from('audit_log').insert({ actor_id: actor.id, action: 'invited_staff', entity: 'staff', entity_id: staffRow?.id || userId, metadata: { email, role, fullName } }); } catch(_) {}
 
