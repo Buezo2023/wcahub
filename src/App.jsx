@@ -4,6 +4,8 @@ import { useGlobalSearch, GlobalSearchModal } from './lib/globalSearch.jsx';
 import { ToastContainer } from './lib/toast.jsx';
 import { Suspense, lazy, useState } from 'react';
 import { supabase } from './lib/supabase.js';
+import { ErrorBoundary } from './lib/ErrorBoundary.jsx';
+import { ConnectionGuard } from './lib/ConnectionGuard.jsx';
 import { ThemeProvider, ThemeToggle, useTheme } from './ThemeContext.jsx';
 
 const Landing         = lazy(() => import('./pages/Landing.jsx'));
@@ -340,8 +342,10 @@ function AppInner() {
   const search = useGlobalSearch();
   return (
     <>
+      <ConnectionGuard />
       <ToastContainer />
       <GlobalSearchModal search={search} />
+      <ErrorBoundary>
       <Suspense fallback={<PageLoader />}>
         <Routes>
             <Route path="/hub"          element={<NavHub />} />
@@ -361,6 +365,7 @@ function AppInner() {
             <Route path="*"             element={<Navigate to="/" replace />} />
           </Routes>
       </Suspense>
+      </ErrorBoundary>
     </>
   );
 }

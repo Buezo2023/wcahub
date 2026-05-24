@@ -275,8 +275,24 @@ export default function SuperAdmin() {
   async function saveStaff() {
     const nombre = (staffForm.name || "").trim();
     const correo = (staffForm.email || "").trim();
-    if (!nombre || !correo) {
-      globalToast.error("Nombre y email son requeridos");
+    const telefono = (staffForm.phone || "").trim();
+    const salario = staffForm.salary;
+
+    // Validaciones
+    if (!nombre || nombre.length < 3) {
+      globalToast.error("El nombre debe tener al menos 3 caracteres");
+      return;
+    }
+    if (!correo || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
+      globalToast.error("Ingresá un email válido (ej: nombre@dominio.com)");
+      return;
+    }
+    if (telefono && !/^[+\d\s()-]{7,20}$/.test(telefono)) {
+      globalToast.error("El teléfono debe tener entre 7 y 20 dígitos");
+      return;
+    }
+    if (salario && (isNaN(Number(salario)) || Number(salario) < 0)) {
+      globalToast.error("El salario debe ser un número positivo");
       return;
     }
     // Show immediate feedback
