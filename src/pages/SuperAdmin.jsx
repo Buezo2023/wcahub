@@ -285,6 +285,7 @@ export default function SuperAdmin() {
     setSaving(true);
     try {
       if (modoActual === "add") {
+        globalToast.info("Creando usuario…");
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) { globalToast.error("Sesión expirada — recargá la página"); setSaving(false); return; }
         const res = await fetch("/api/auth/invite", {
