@@ -600,7 +600,7 @@ export default function CRM() {
       updateLeadStage(id, "convertido").catch(console.error);
     }
     showToast("🎉 ¡Lead convertido! Se creó la matrícula.", G);
-    if (selLead?.id===id) setSelLead(l => ({...l,stage:"convertido",score:98}));
+    if (selLead?.id===id) setSelLead(l => ({...l,stage:"convertido",score:l?.score||100}));
   }
 
   const filteredLeads = leads.filter(l => {
