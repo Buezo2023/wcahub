@@ -594,7 +594,7 @@ export default function CRM() {
   }
 
   function convertLead(id) {
-    setLeads(ls => ls.map(l => l.id===id ? {...l,stage:"convertido",score:98} : l));
+    setLeads(ls => ls.map(l => l.id===id ? {...l,stage:"convertido",score:l.score||100} : l));
     // Persist stage change
     if(typeof id === "string" && id.length > 10) {
       updateLeadStage(id, "convertido").catch(console.error);
