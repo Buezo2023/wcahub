@@ -398,15 +398,8 @@ function B2BSection({ supabase, B, Badge, Stat }) {
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
-  // Session guard — redirect on expiry
+  // Session guard — only listen for sign-out (PrivateRoute handles role verification)
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) { navigate("/", { replace: true }); return; }
-      const { data: profile } = await supabase.from("profiles").select("role").eq("id", session.user.id).maybeSingle();
-      if (!profile || !["admin","super_admin"].includes(profile.role)) {
-        navigate("/", { replace: true });
-      }
-    });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       if (event === "SIGNED_OUT" || (!s && event !== "INITIAL_SESSION")) {
         navigate("/", { replace: true });

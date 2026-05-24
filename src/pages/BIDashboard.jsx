@@ -115,18 +115,8 @@ const VIEWS = [
 export default function BIDashboard() {
   const navigate = useNavigate();
 
-  // Session guard — redirect on expiry
+  // Session guard — only listen for sign-out (PrivateRoute handles role verification)
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) { navigate("/", { replace: true }); return; }
-      // Verificar rol — solo directivo, admin o super_admin
-      const { data: profile } = await supabase.from("profiles").select("role").eq("id", session.user.id).maybeSingle();
-      const allowed = ["directivo","admin","super_admin"];
-      if (!profile || !allowed.includes(profile.role)) {
-        navigate("/", { replace: true });
-        return;
-      }
-    });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
       if (event === "SIGNED_OUT" || (!s && event !== "INITIAL_SESSION")) {
         navigate("/", { replace: true });

@@ -17,7 +17,9 @@ export async function getCurrentProfile() {
 }
 
 // ─── STUDENTS ─────────────────────────────────────────────────────
-export async function getStudents({ limit = 200, search = '', level = '', status = '' } = {}) {
+export async function getStudents({ limit = 50, page = 0, search = '', level = '', status = '' } = {}) {
+  const from = page * limit;
+  const to   = from + limit - 1;
   let query = supabase
     .from('students')
     .select(`
@@ -26,14 +28,14 @@ export async function getStudents({ limit = 200, search = '', level = '', status
       enrollments(id, program_id, status, current_unit, group_id,
         group:groups(id, schedule, days, level, teams_link)
       )
-    `)
-    .limit(limit)
+    `, { count: 'exact' })
+    .range(from, to)
     .order('created_at', { ascending: false });
 
   if (level)  query = query.eq('level', level);
 
-  const { data, error } = await query;
-  if (error) { console.error('getStudents:', error); return []; }
+  const { data, error, count } = await query;
+  if (error) { console.error('getStudents:', error); return { rows: [], total: 0 }; }
 
   let results = data || [];
 
@@ -81,7 +83,7 @@ export async function updateStudentEnrollment(enrollmentId, updates) {
 }
 
 // ─── PAYMENTS ─────────────────────────────────────────────────────
-export async function getPayments({ limit = 100, status = '', search = '' } = {}) {
+export async function getPayments({ limit = 50, page = 0, status = '', search = '' } = {}) {
   let query = supabase
     .from('payments')
     .select(`
@@ -214,7 +216,7 @@ export async function getStaff({ active = true, all = false } = {}) {
 }
 
 // ─── LEADS (CRM) ──────────────────────────────────────────────────
-export async function getLeads({ search = '', stage = '' } = {}) {
+export async function getLeads({ search = '', stage = '', limit = 50, page = 0 } = {}) {
   let query = supabase
     .from('leads')
     .select(`
