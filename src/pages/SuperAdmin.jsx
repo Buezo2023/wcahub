@@ -46,15 +46,9 @@ const XP_ACTIONS = [
 
 const NAV = [
   { id:"overview",      icon:"ti-layout-dashboard", label:"Panel general"       },
-  { id:"bi",            icon:"ti-chart-bar",         label:"Business Intelligence"},
-  { id:"programs",      icon:"ti-books",             label:"Programas"           },
+  { id:"programs",      icon:"ti-books",             label:"Académico"           },
   { id:"hr",            icon:"ti-users-group",       label:"RRHH & Personal"     },
-  { id:"roles",         icon:"ti-shield-lock",       label:"Roles"               },
-  { id:"prices",        icon:"ti-coin",              label:"Precios"             },
-  { id:"cycle",         icon:"ti-refresh",           label:"Ciclo"               },
-  { id:"holidays",      icon:"ti-calendar",          label:"Festivos"            },
   { id:"gamification",  icon:"ti-trophy",            label:"Gamificación"        },
-  { id:"integrations",  icon:"ti-plug",              label:"Integraciones"       },
   { id:"notifications", icon:"ti-bell",              label:"Notificaciones"      },
   { id:"audit",         icon:"ti-list-details",      label:"Auditoría"           },
   { id:"banks",         icon:"ti-building-bank",     label:"Cuentas banco"       },
@@ -226,6 +220,7 @@ export default function SuperAdmin() {
     return () => subscription.unsubscribe();
   }, [navigate]);
   const [view,       setView]       = useState("overview");
+  const [subView,    setSubView]    = useState("progs");
   const [staff,      setStaff]      = useState([]);
   const [programs,   setPrograms]   = useState([]);
   const [holidays,   setHolidays]   = useState([]);
@@ -416,7 +411,7 @@ export default function SuperAdmin() {
         </div>
         <div style={{ flex:1, overflowY:"auto" }}>
           {NAV.map(n=>(
-            <button key={n.id} onClick={()=>setView(n.id)} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 18px", border:"none", background:view===n.id?"rgba(255,255,255,.12)":"transparent", color:view===n.id?"#fff":"rgba(255,255,255,.45)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:`2px solid ${view===n.id?Y:"transparent"}`, transition:"all .15s", fontFamily:"inherit", fontWeight:view===n.id?600:400, width:"100%" }}>
+            <button key={n.id} onClick={()=>{setView(n.id);setSubView(n.id==="programs"?"progs":n.id==="hr"?"staff":"");}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 18px", border:"none", background:view===n.id?"rgba(255,255,255,.12)":"transparent", color:view===n.id?"#fff":"rgba(255,255,255,.45)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:`2px solid ${view===n.id?Y:"transparent"}`, transition:"all .15s", fontFamily:"inherit", fontWeight:view===n.id?600:400, width:"100%" }}>
               <i className={"ti "+n.icon} style={{ fontSize:14, width:18, textAlign:"center" }} aria-hidden="true"/>
               {n.label}
               {n.id==="bi" && <span style={{ marginLeft:"auto", fontSize:8, background:Y, color:PH, padding:"2px 5px", borderRadius:8, fontWeight:700 }}>EXCLUSIVO</span>}
@@ -449,7 +444,7 @@ export default function SuperAdmin() {
         <div style={{ height:60, background:"var(--bg-surface)", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 24px", flexShrink:0, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
           <div>
             <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>
-              {{"overview":"Panel general","bi":"Business Intelligence","programs":"Programas educativos","hr":"RRHH & Personal","roles":"Roles","prices":"Precios","cycle":"Ciclo","holidays":"Festivos","gamification":"Gamificación","integrations":"Integraciones","notifications":"Notificaciones","audit":"Auditoría","banks":"Cuentas banco"}[view]}
+              {{"overview":"Panel general","programs":"Gestión académica","hr":"RRHH & Personal","gamification":"Gamificación","notifications":"Notificaciones","audit":"Auditoría","banks":"Cuentas banco"}[view]}
             </div>
           </div>
           <div style={{ display:"flex", gap:8 }}>
@@ -493,7 +488,7 @@ export default function SuperAdmin() {
               </div>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Accesos rápidos</SectionTitle>
-                {[["ti-books","Nuevo programa","programs"],["ti-user-plus","Agregar personal","hr"],["ti-coin","Editar precios","prices"],["ti-chart-bar","Ver BI","bi"],["ti-refresh","Control ciclo","cycle"],["ti-calendar","Agregar festivo","holidays"]].map(([ic,lb,ac],i)=>(
+                {[["ti-books","Nuevo programa","programs"],["ti-user-plus","Agregar personal","hr"],["ti-coin","Editar precios","programs"],["ti-chart-bar","Ver BI","bi"],["ti-refresh","Control ciclo","cycle"],["ti-calendar","Agregar festivo","programs"]].map(([ic,lb,ac],i)=>(
                   <button key={i} onClick={()=>setView(ac)} style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"10px 12px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, cursor:"pointer", marginBottom:7, textAlign:"left", fontFamily:"inherit", transition:"all .15s" }}
                     onMouseEnter={e=>{e.currentTarget.style.borderColor=P;e.currentTarget.style.background=PD;}}
                     onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.background="var(--bg-surface-subtle)";}}>
@@ -543,63 +538,15 @@ export default function SuperAdmin() {
           </>}
 
           {/* ── BI ── */}
-          {view==="bi" && <>
-            <div style={{ background:"var(--bg-surface-subtle)", border:`1px solid ${Y}40`, borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:12, color:A, display:"flex", gap:8 }}>
-              <i className="ti ti-shield-check" style={{ fontSize:14, flexShrink:0 }} aria-hidden="true"/>
-              Módulo exclusivo para Super Admin — acceso restringido.
+                    {view==="programs" && <>
+            {/* Sub-navigation: Programas | Precios | Ciclo | Festivos */}
+            <div style={{ display:"flex", gap:6, marginBottom:16 }}>
+              {[["progs","Programas"],["prices","Precios"],["cycle","Ciclo"],["holidays","Festivos"]].map(([id,label])=>(
+                <button key={id} onClick={()=>setSubView(id)} style={{ padding:"7px 16px", borderRadius:9, border:"none", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit",
+                  background: subView===id ? P : "var(--bg-surface-subtle)", color: subView===id ? "#fff" : "var(--text-secondary)" }}>{label}</button>
+              ))}
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginBottom:16 }}>
-              <Stat label="MRR actual"    value={statsLoading ? "—" : totalMRR > 0 ? `$${totalMRR.toLocaleString()}` : "$0"} sub={totalMRR > 0 ? `+${mrrGrowth}% vs mes ant.` : "Sin pagos aún"} color={P} icon="ti-trending-up" up={parseFloat(mrrGrowth)>0}/>
-              <Stat label="ARR"           value={annualRun > 0 ? `$${Math.round(annualRun/1000)}k` : "—"}  sub="Proyectado"        color={G} icon="ti-calendar" up={annualRun>0}/>
-              <Stat label="ARPU"          value={arpu > 0 ? `$${arpu}` : "—"} sub="Por alumno/mes" color={A} icon="ti-coin"/>
-              <Stat label="LTV estimado"  value={ltv > 0 ? `$${ltv.toLocaleString()}` : "—"}  sub="Estimado" color="var(--text-secondary)" icon="ti-chart-pie"/>
-            </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:14, marginBottom:14 }}>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:20, boxShadow:"var(--shadow-sm)" }}>
-                <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
-                  <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>Evolución MRR anual</div>
-                  <div style={{ fontSize:11, color:G }}>+119% YoY</div>
-                </div>
-                <svg width="100%" height={130} viewBox="0 0 500 130" preserveAspectRatio="none">
-                  <defs><linearGradient id="big2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor={P} stopOpacity={0.2}/><stop offset="100%" stopColor={P} stopOpacity={0}/></linearGradient></defs>
-                  {(()=>{
-                    const mx=20000,mn=6000;
-                    if(!MRR_DATA.length) return null; const pts=MRR_DATA.map((v,i)=>({ x:(i/(MRR_DATA.length-1))*486+7, y:120-((v-mn)/(mx-mn))*108+5, v }));
-                    const line=pts.map(p=>`${p.x},${p.y}`).join(" ");
-                    const area=`M${pts[0].x},${pts[0].y} ${pts.slice(1).map(p=>`L${p.x},${p.y}`).join(" ")} L${pts[pts.length-1].x},125 L${pts[0].x},125 Z`;
-                    return (<><path d={area} fill="url(#big2)"/><polyline points={line} fill="none" stroke={P} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>{pts.map((p,i)=>(<g key={i}><circle cx={p.x} cy={p.y} r={3} fill="var(--bg-surface)" stroke={P} strokeWidth={2}/><text x={p.x} y={128} textAnchor="middle" fontSize={7} fill="var(--text-tertiary)">{MRR_MONTHS[i]}</text><text x={p.x} y={p.y-7} textAnchor="middle" fontSize={6.5} fill={P} fontWeight="600">${(p.v/1000).toFixed(1)}k</text></g>))}</>);
-                  })()}
-                </svg>
-              </div>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
-                <SectionTitle>Ingresos por programa</SectionTitle>
-                {programs.filter(p=>p.active).map(p=>{
-                  const rev=p.students*p.price, mx=Math.max(...programs.filter(x=>x.active).map(x=>x.students*x.price));
-                  return (<div key={p.id} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:12 }}>
-                    <span style={{ fontSize:18 }}>{p.icon}</span>
-                    <div style={{ fontSize:12, color:"var(--text-primary)", width:140, flexShrink:0 }}>{p.name}</div>
-                    <MiniBar value={rev} max={mx} color={p.color}/>
-                    <div style={{ fontSize:12, fontWeight:700, color:"var(--text-primary)", minWidth:55, textAlign:"right" }}>${rev.toLocaleString()}</div>
-                  </div>);
-                })}
-              </div>
-            </div>
-            <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
-              <SectionTitle>Retención por cohorte</SectionTitle>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(6,1fr)", gap:8 }}>
-                {[["Ene",12,83],["Feb",18,78],["Mar",19,89],["Abr",22,84],["May",24,88],["Jun",20,90]].map(([m,n,r],i)=>(
-                  <div key={i} style={{ textAlign:"center", background:"var(--bg-surface-subtle)", borderRadius:10, padding:"12px 8px" }}>
-                    <div style={{ fontSize:11, color:"var(--text-tertiary)", marginBottom:4 }}>{m} 25</div>
-                    <div style={{ fontSize:22, fontWeight:800, color:r>=85?G:r>=75?A:R }}>{r}%</div>
-                    <div style={{ fontSize:10, color:"var(--text-tertiary)", marginTop:3 }}>{n} alumnos</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </>}
-
-          {/* ── PROGRAMS ── */}
-          {view==="programs" && <>
+            {subView==="progs" && <>
             <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:14 }}>
               <BtnPrimary onClick={openAddProg} style={{ display:"flex", alignItems:"center", gap:7 }}>
                 <i className="ti ti-plus" style={{ fontSize:14 }} aria-hidden="true"/> Nuevo programa
@@ -642,9 +589,16 @@ export default function SuperAdmin() {
               ))}
             </div>
           </>}
+          </>}
 
           {/* ── HR ── */}
           {view==="hr" && <>
+            <div style={{ display:"flex", gap:6, marginBottom:16 }}>
+              {[["staff","Personal"],["roles","Roles del sistema"]].map(([id,label])=>(
+                <button key={id} onClick={()=>setSubView(id)} style={{ padding:"7px 16px", borderRadius:9, border:"none", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit",
+                  background: (subView==="staff"||subView==="roles"?subView:"staff")===id ? P : "var(--bg-surface-subtle)", color: (subView==="staff"||subView==="roles"?subView:"staff")===id ? "#fff" : "var(--text-secondary)" }}>{label}</button>
+              ))}
+            </div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginBottom:16 }}>
               <Stat label="Personal total"   value={staff.length}                                   sub={`${staff.filter(s=>s.status==="active").length} activos`} color={P}  icon="ti-users-group"/>
               <Stat label="Docentes"         value={staff.filter(s=>s.role==="Docente").length}     sub="Activos"            color={A} icon="ti-school"/>
@@ -710,7 +664,7 @@ export default function SuperAdmin() {
           </>}
 
           {/* ── ROLES ── */}
-          {view==="roles" && (
+          {view==="hr" && subView==="roles" && (
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:"14px 18px", display:"flex", justifyContent:"space-between", alignItems:"center", boxShadow:"var(--shadow-sm)" }}>
                 <div>
@@ -754,7 +708,7 @@ export default function SuperAdmin() {
           )}
 
           {/* ── PRICES ── */}
-          {view==="prices" && (
+          {view==="programs" && subView==="prices" && (
             <div style={{ maxWidth:600 }}>
               <div style={{ background:AD, border:`1px solid ${A}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:12, color:A, display:"flex", gap:8 }}>
                 <i className="ti ti-info-circle" style={{ fontSize:14 }} aria-hidden="true"/> Los cambios aplican a nuevas inscripciones.
@@ -795,7 +749,7 @@ export default function SuperAdmin() {
           )}
 
           {/* ── CYCLE ── */}
-          {view==="cycle" && (
+          {view==="programs" && subView==="cycle" && (
             <div>
               <div style={{ background:RD, border:`1px solid ${R}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:12, color:R, display:"flex", gap:8 }}>
                 <i className="ti ti-alert-triangle" style={{ fontSize:14 }} aria-hidden="true"/> Reiniciar es irreversible.
@@ -830,7 +784,7 @@ export default function SuperAdmin() {
           )}
 
           {/* ── HOLIDAYS ── */}
-          {view==="holidays" && (
+          {view==="programs" && subView==="holidays" && (
             <div style={{ display:"grid", gridTemplateColumns:"1fr 310px", gap:14 }}>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
                 <div style={{ padding:"14px 18px", borderBottom:"1px solid var(--border)", fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>Festivos configurados</div>
@@ -898,7 +852,7 @@ export default function SuperAdmin() {
           )}
 
           {/* ── INTEGRATIONS ── */}
-          {view==="integrations" && (
+          {false && (
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               {INTEGRATIONS.map(int=>(
                 <div key={int.id} style={{ background:"var(--bg-surface)", border:`1.5px solid ${int.configured?"var(--border)":`${A}50`}`, borderRadius:14, padding:"16px 18px", boxShadow:"var(--shadow-sm)", display:"flex", alignItems:"center", gap:16 }}>
