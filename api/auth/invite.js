@@ -187,23 +187,33 @@ async function handleStaff(req, actor) {
 
   try { await admin.from('audit_log').insert({ actor_id: actor.id, action: 'invited_staff', entity: 'staff', entity_id: staffRow?.id || userId, metadata: { email, role, fullName } }); } catch(_) {}
 
-  // ALSO send the custom branded email via Resend if configured
-  // (works once a custom domain is verified in Resend)
+  // Send invite email — try multiple methods
+  let emailSent = supabaseInviteSent;
+  let emailNote = '';
+
+  // If user already existed (no Supabase invite sent), try resending invite
+  if (!emailSent) {
+    try {
+      const { error: reInvErr } = await admin.auth.admin.inviteUserByEmail(email, {
+        redirectTo: portalUrl,
+        data: { full_name: fullName, role: supabaseRole },
+      });
+      if (!reInvErr) emailSent = true;
+    } catch(_) {}
+  }
+
+  // Also try Resend for branded email (works when domain is verified)
   let resendSent = false;
   try {
     const { subject, html } = staffEmailHtml({ name: fullName, role, portalUrl, email });
     await sendEmail({ to: email, toName: fullName, subject, html });
     resendSent = true;
-  } catch(e) {
-    console.log('Resend email skipped (no verified domain yet):', e.message);
-  }
+  } catch(_) {}
 
-  const emailSent = supabaseInviteSent || resendSent;
-  const emailNote = resendSent
-    ? 'email de bienvenida enviado via Resend'
-    : supabaseInviteSent
-      ? 'email de invitación enviado via Supabase (revisá bandeja + spam)'
-      : 'usuario creado — reenviar invitación desde RRHH';
+  emailSent = emailSent || resendSent;
+  emailNote = emailSent
+    ? 'email de invitación enviado (revisá bandeja + spam)'
+    : 'usuario creado — reenviar invitación desde RRHH con botón ✉';
 
   return {
     message: `${fullName} agregado/a como ${role} — ${emailNote}`,

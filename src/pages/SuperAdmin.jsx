@@ -338,6 +338,12 @@ export default function SuperAdmin() {
   }
   async function deleteStaff(id) {
     const member = staff.find(s => s.id === id);
+    // Proteger contra auto-eliminación y borrado de super_admin
+    if (member?.role === "Super Admin" || member?.role === "super_admin") {
+      showToast("No se puede desactivar al Super Admin", R);
+      setDeleteConfirm(null);
+      return;
+    }
     try {
       if (member?.email) {
         const { data: profile } = await supabase
@@ -348,8 +354,9 @@ export default function SuperAdmin() {
             .eq("profile_id", profile.id);
         }
       }
-      setStaff(p => p.filter(s => s.id !== id));
-      showToast("Empleado desactivado correctamente");
+      // Marcar como inactivo en la lista — NO borrar del estado
+      setStaff(p => p.map(s => s.id === id ? { ...s, status: "inactive" } : s));
+      showToast("Empleado desactivado — puede reactivarse");
     } catch(e) { showToast("Error: " + e.message, R); }
     setDeleteConfirm(null); setStaffModal(null);
   }
@@ -612,7 +619,11 @@ export default function SuperAdmin() {
                   <div style={{ display:"flex", gap:7 }}>
                     <button onClick={()=>openEditProg(p)} style={{ flex:1, padding:"8px", background:PD, color:P, border:"none", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✎ Editar</button>
                     <button onClick={()=>setPrograms(prev=>prev.map(x=>x.id===p.id?{...x,active:!x.active}:x))} style={{ flex:1, padding:"8px", background:p.active?RD:GD, color:p.active?R:G, border:"none", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>{p.active?"Desactivar":"Activar"}</button>
-                    {p.students===0 && <button onClick={()=>setPrograms(prev=>prev.filter(x=>x.id!==p.id))} style={{ padding:"8px 12px", background:RD, color:R, border:"none", borderRadius:8, fontSize:14, cursor:"pointer", fontFamily:"inherit" }}>🗑</button>}
+                    {p.students===0 && <button onClick={async()=>{
+  const { error } = await supabase.from("programs").update({active:false}).eq("id",p.id);
+  if(error) showToast("Error: "+error.message, R);
+  else { setPrograms(prev=>prev.map(x=>x.id===p.id?{...x,active:false}:x)); showToast("Programa desactivado"); }
+}} style={{ padding:"8px 12px", background:RD, color:R, border:"none", borderRadius:8, fontSize:14, cursor:"pointer", fontFamily:"inherit" }}>Desactivar</button>}
                   </div>
                 </div>
               ))}
@@ -818,7 +829,11 @@ export default function SuperAdmin() {
                       <div style={{ fontSize:11, color:"var(--text-secondary)" }}>{h.date}</div>
                     </div>
                     <Badge text={h.affects?"Pausa ciclo":"Sin efecto"} bg={h.affects?RD:AD} color={h.affects?R:A}/>
-                    <button onClick={()=>setHolidays(hh=>hh.filter((_,j)=>j!==i))} style={{ fontSize:12, padding:"4px 9px", background:RD, color:R, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>✕</button>
+                    <button onClick={async()=>{
+  await supabase.from("holidays").delete().eq("name",h.name).eq("date",h.date);
+  setHolidays(hh=>hh.filter((_,j)=>j!==i));
+  showToast("Festivo eliminado");
+}} style={{ fontSize:12, padding:"4px 9px", background:RD, color:R, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>✕</button>
                   </div>
                 ))}
               </div>
@@ -1117,11 +1132,11 @@ export default function SuperAdmin() {
       )}
 
       {deleteConfirm && (
-        <Modal title="Eliminar empleado" subtitle={`${deleteConfirm.name} · ${deleteConfirm.role}`} onClose={()=>setDeleteConfirm(null)}>
-          <div style={{ background:RD, borderRadius:10, padding:"12px 14px", marginBottom:16, fontSize:12, color:R }}>Esta acción es permanente. El empleado perderá acceso inmediatamente.</div>
+        <Modal title="Desactivar empleado" subtitle={`${deleteConfirm.name} · ${deleteConfirm.role}`} onClose={()=>setDeleteConfirm(null)}>
+          <div style={{ background:RD, borderRadius:10, padding:"12px 14px", marginBottom:16, fontSize:12, color:R }}>El empleado será marcado como inactivo y perderá acceso. Sus datos se conservan y puede reactivarse.</div>
           <div style={{ display:"flex", gap:8 }}>
             <BtnGhost onClick={()=>setDeleteConfirm(null)}>Cancelar</BtnGhost>
-            <button onClick={()=>deleteStaff(deleteConfirm.id)} style={{ flex:1, padding:"10px", background:R, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Sí, eliminar</button>
+            <button onClickCapture={(e)=>{e.stopPropagation();deleteStaff(deleteConfirm.id);}} style={{ flex:1, padding:"10px", background:R, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Sí, desactivar</button>
           </div>
         </Modal>
       )}
