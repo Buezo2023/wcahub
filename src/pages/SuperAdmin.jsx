@@ -405,9 +405,9 @@ export default function SuperAdmin() {
       {/* SIDEBAR */}
       <aside style={{ width:218, background:PH, display:"flex", flexDirection:"column", padding:"0 0 16px", flexShrink:0, minHeight:"100vh", position:"sticky", top:0 }}>
         <div style={{ padding:"22px 18px 18px", borderBottom:"1px solid rgba(255,255,255,.08)", marginBottom:8 }}>
-          <div style={{ fontSize:10, color:Y, fontWeight:700, letterSpacing:2, textTransform:"uppercase", marginBottom:5 }}>World Connect Academy</div>
+          <div style={{ fontSize:11, color:Y, fontWeight:700, letterSpacing:2, textTransform:"uppercase", marginBottom:5 }}>World Connect Academy</div>
           <div style={{ fontSize:17, fontWeight:800, color:"#fff" }}>Super Admin</div>
-          <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", marginTop:2 }}>Control total del sistema</div>
+          <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", marginTop:2 }}>Control total del sistema</div>
         </div>
         <div style={{ flex:1, overflowY:"auto" }}>
           {NAV.map(n=>(
@@ -421,7 +421,7 @@ export default function SuperAdmin() {
         <div style={{ padding:"14px 18px 0", borderTop:"1px solid rgba(255,255,255,.08)" }}>
           <div style={{ display:"flex", alignItems:"center", gap:9 }}>
             <div style={{ width:32, height:32, borderRadius:"50%", background:Y, display:"flex", alignItems:"center", justifyContent:"center", fontSize:12, fontWeight:700, color:PH }}>SA</div>
-            <div><div style={{ fontSize:12, color:"#fff", fontWeight:600 }}>Super Admin</div><div style={{ fontSize:10, color:"rgba(255,255,255,.3)" }}>wcahub.com</div></div>
+            <div><div style={{ fontSize:12, color:"#fff", fontWeight:600 }}>Super Admin</div><div style={{ fontSize:11, color:"rgba(255,255,255,.3)" }}>wcahub.com</div></div>
           </div>
         </div>
       
@@ -530,7 +530,7 @@ export default function SuperAdmin() {
                       <div style={{ fontSize:12, color:"var(--text-primary)" }}><strong>{a.user}</strong> — {a.action}</div>
                       <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:1 }}>{a.detail}</div>
                     </div>
-                    <div style={{ fontSize:10, color:"var(--text-tertiary)", whiteSpace:"nowrap" }}>{a.time}</div>
+                    <div style={{ fontSize:11, color:"var(--text-tertiary)", whiteSpace:"nowrap" }}>{a.time}</div>
                   </div>
                 ))}
               </div>
@@ -569,11 +569,11 @@ export default function SuperAdmin() {
                   <div style={{ display:"flex", gap:10, marginBottom:14 }}>
                     <div style={{ flex:1, background:"var(--bg-surface-subtle)", borderRadius:9, padding:"10px 12px" }}>
                       <div style={{ fontSize:22, fontWeight:800, color:p.color }}>${p.price}</div>
-                      <div style={{ fontSize:10, color:"var(--text-tertiary)" }}>/{p.interval}</div>
+                      <div style={{ fontSize:11, color:"var(--text-tertiary)" }}>/{p.interval}</div>
                     </div>
                     <div style={{ flex:1, background:"var(--bg-surface-subtle)", borderRadius:9, padding:"10px 12px" }}>
                       <div style={{ fontSize:22, fontWeight:800, color:"var(--text-primary)" }}>{p.students}</div>
-                      <div style={{ fontSize:10, color:"var(--text-tertiary)" }}>estudiantes</div>
+                      <div style={{ fontSize:11, color:"var(--text-tertiary)" }}>estudiantes</div>
                     </div>
                   </div>
                   <div style={{ display:"flex", gap:7 }}>
@@ -619,7 +619,7 @@ export default function SuperAdmin() {
             <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
               <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
                 <thead><tr style={{ background:"var(--bg-surface-subtle)" }}>
-                  {["Nombre","Rol","Email","Salario","Estado",""].map(h=><th key={h} style={{ padding:"12px 14px", textAlign:"left", fontSize:10, fontWeight:700, color:"var(--text-tertiary)", letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>)}
+                  {["Nombre","Rol","Email","Salario","Estado",""].map(h=><th key={h} style={{ padding:"12px 14px", textAlign:"left", fontSize:11, fontWeight:700, color:"var(--text-tertiary)", letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>)}
                 </tr></thead>
                 <tbody>
                   {filteredStaff.map((s,i)=>{
@@ -829,7 +829,12 @@ export default function SuperAdmin() {
                     <span style={{ fontSize:11, color:"var(--text-tertiary)" }}>XP</span>
                   </div>
                 ))}
-                <BtnPrimary onClick={()=>showToast("Configuración XP guardada")} style={{ marginTop:14, width:"100%" }}>Guardar</BtnPrimary>
+                <BtnPrimary onClick={async()=>{
+  try {
+    await supabase.from("app_config").upsert({ key:"xp_config", value:xpVals },{ onConflict:"key" });
+    showToast("Configuración XP guardada en BD");
+  } catch(e) { showToast("Error: "+e.message, R); }
+}} style={{ marginTop:14, width:"100%" }}>Guardar</BtnPrimary>
               </div>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Recompensa leaderboard</SectionTitle>
@@ -843,7 +848,7 @@ export default function SuperAdmin() {
                     <span style={{ fontSize:16 }}>{r.split(" ")[0]}</span>
                     <div style={{ flex:1, fontSize:12, fontWeight:600, color:c }}>{r.split(" ").slice(1).join(" ")}</div>
                     <input type="number" defaultValue={xp} style={{ width:64, padding:"4px 7px", border:"1px solid var(--border)", borderRadius:6, fontSize:12, fontWeight:700, color:c, textAlign:"center", background:"#fff", fontFamily:"inherit" }}/>
-                    <span style={{ fontSize:10, color:"var(--text-tertiary)" }}>XP</span>
+                    <span style={{ fontSize:11, color:"var(--text-tertiary)" }}>XP</span>
                   </div>
                 ))}
                 <BtnPrimary style={{ marginTop:12, width:"100%" }}>Guardar</BtnPrimary>
@@ -926,7 +931,7 @@ export default function SuperAdmin() {
                       <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)" }}>{t.label}</div>
                       <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:2 }}>Canal: <strong>{t.channel}</strong> · Trigger: <strong>{t.trigger}</strong></div>
                     </div>
-                    <button onClick={()=>showToast(`Plantilla "${t.label}" — editor de plantillas próximamente`)} style={{ fontSize:11, padding:"6px 14px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Editar</button>
+                    <button disabled style={{ fontSize:11, padding:"6px 14px", background:"var(--bg-surface-subtle)", color:"var(--text-tertiary)", border:"none", borderRadius:8, cursor:"default", fontWeight:600, fontFamily:"inherit", opacity:0.6 }}>Próximamente</button>
                   </div>
                   <div style={{ background:"var(--bg-surface-subtle)", borderRadius:8, padding:"10px 13px", fontSize:12, color:"var(--text-primary)", fontStyle:"italic", lineHeight:1.7 }}>{t.preview}</div>
                 </div>
@@ -942,12 +947,17 @@ export default function SuperAdmin() {
                   <i className="ti ti-search" style={{ color:"var(--text-tertiary)", fontSize:15 }} aria-hidden="true"/>
                   <input aria-label="Buscar en auditoría" placeholder="Buscar…" style={{ border:"none", outline:"none", fontSize:13, background:"transparent", color:"var(--text-primary)", flex:1, fontFamily:"inherit" }}/>
                 </div>
-                <button onClick={()=>{}} style={{ padding:"9px 16px", background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:10, fontSize:12, cursor:"pointer", color:"var(--text-secondary)", fontFamily:"inherit" }}>↓ Exportar</button>
+                <button onClick={()=>{
+  import("../lib/exportCSV.js").then(({exportCSV})=>{
+    exportCSV(auditLog.map(a=>({Fecha:a.date,Acción:a.action,Entidad:a.entity||"—",Actor:a.actor||"—",Detalle:JSON.stringify(a.metadata||{})})), `auditoria-${new Date().toISOString().slice(0,10)}.csv`);
+    showToast("Auditoría exportada como CSV");
+  });
+}} style={{ padding:"9px 16px", background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:10, fontSize:12, cursor:"pointer", color:"var(--text-secondary)", fontFamily:"inherit" }}>↓ Exportar</button>
               </div>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
                 <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
                   <thead><tr style={{ background:"var(--bg-surface-subtle)" }}>
-                    {["Usuario","Acción","Detalle","Tiempo"].map(h=><th key={h} style={{ padding:"11px 14px", textAlign:"left", fontSize:10, fontWeight:700, color:"var(--text-tertiary)", letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>)}
+                    {["Usuario","Acción","Detalle","Tiempo"].map(h=><th key={h} style={{ padding:"11px 14px", textAlign:"left", fontSize:11, fontWeight:700, color:"var(--text-tertiary)", letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>)}
                   </tr></thead>
                   <tbody>
                     {dbAudit.map((row,i)=>{
@@ -986,7 +996,12 @@ export default function SuperAdmin() {
                     <div style={{ fontSize:12, color:"var(--text-secondary)", marginTop:2 }}>{b.type} · {b.acc}</div>
                   </div>
                   <Badge text={b.active?"Activo":"Inactivo"} bg={b.active?GD:"var(--bg-surface-subtle)"} color={b.active?"#065f46":"var(--text-secondary)"}/>
-                  <button onClick={()=>showToast(`Banco ${b.active?"desactivado":"activado"} — configuración guardada`)} style={{ fontSize:12, padding:"7px 12px", background:b.active?RD:GD, color:b.active?R:G, border:"none", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>{b.active?"Desactivar":"Activar"}</button>
+                  <button onClick={async()=>{
+  const newState = !b.active;
+  await supabase.from("bank_accounts").update({active:newState}).eq("id",b.id);
+  setBanks(prev=>prev.map(x=>x.id===b.id?{...x,active:newState}:x));
+  showToast(newState ? "Banco activado" : "Banco desactivado");
+}} style={{ fontSize:12, padding:"7px 12px", background:b.active?RD:GD, color:b.active?R:G, border:"none", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>{b.active?"Desactivar":"Activar"}</button>
                 </div>
               ))}
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>

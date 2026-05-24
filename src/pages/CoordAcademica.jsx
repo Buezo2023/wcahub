@@ -579,7 +579,7 @@ export default function CoordAcademica() {
                         <div style={{ fontSize:12, fontWeight:600, color:B.text }}>{g.level} · {g.time} · {g.days}</div>
                         <div style={{ fontSize:11, color:B.textSec }}>Docente: {g.teacher} · Capacidad: {g.capacity} · U{g.unit}</div>
                       </div>
-                      <span style={{ fontSize:10, padding:"2px 8px", borderRadius:20, background:g.teamsSet?B.greenDim:B.redDim, color:g.teamsSet?"#065f46":B.red, fontWeight:600 }}>
+                      <span style={{ fontSize:11, padding:"2px 8px", borderRadius:20, background:g.teamsSet?B.greenDim:B.redDim, color:g.teamsSet?"#065f46":B.red, fontWeight:600 }}>
                         {g.teamsSet ? "✓ Teams" : "Sin Teams"}
                       </span>
                     </div>
@@ -800,7 +800,7 @@ export default function CoordAcademica() {
                   {[{l:"Asistencia",v:`${teacherModal.data.attendance}%`,c:attCol(teacherModal.data.attendance)},{l:"Calificación",v:`★ ${teacherModal.data.rating}`,c:B.amber},{l:"Horas/sem.",v:`${teacherModal.data.hours}h`,c:B.primary}].map((m,i)=>(
                     <div key={i} style={{ background:"var(--bg-surface-subtle)", borderRadius:8, padding:"8px 10px", textAlign:"center" }}>
                       <div style={{ fontSize:16, fontWeight:700, color:m.c }}>{m.v}</div>
-                      <div style={{ fontSize:10, color:"var(--text-secondary)", marginTop:2 }}>{m.l}</div>
+                      <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:2 }}>{m.l}</div>
                     </div>
                   ))}
                 </div>

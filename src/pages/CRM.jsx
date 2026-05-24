@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getLeads, createLead, updateLeadStage, createTask, toggleTask } from "../lib/db.js";
 import { toast as globalToast } from "../lib/toast.jsx";
 import { supabase } from "../lib/supabase.js";
+import { EmptyState } from "../lib/EmptyState.jsx";
 
 // ─── Brand ───────────────────────────────────────────────────────
 const P  = "#155266";          // brand primary — fixed (logo color)
@@ -66,7 +67,7 @@ function Badge({ text, bg, color, size=11 }) {
 function StageChip({ stage }) {
   const s = STAGES.find(x=>x.id===stage);
   if (!s) return null;
-  return <span style={{ fontSize:10, padding:"3px 10px", borderRadius:20, background:s.light, color:s.color, fontWeight:600 }}>{s.icon} {s.label}</span>;
+  return <span style={{ fontSize:11, padding:"3px 10px", borderRadius:20, background:s.light, color:s.color, fontWeight:600 }}>{s.icon} {s.label}</span>;
 }
 function ScoreRing({ score, size=40 }) {
   const r = size/2-4, circ = 2*Math.PI*r, dash = (score/100)*circ;
@@ -122,12 +123,12 @@ function PipelineCard({ lead, stageColor, onClick, selected }) {
       </div>
       {lead.program && <div style={{ fontSize:11, color:P, fontWeight:500, marginBottom:6 }}>📚 {lead.program}</div>}
       <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
-        <span style={{ fontSize:10, color:"var(--text-tertiary)" }}>{lead.source}</span>
+        <span style={{ fontSize:11, color:"var(--text-tertiary)" }}>{lead.source}</span>
         <span style={{ color:"#cbd5e1", fontSize:10 }}>·</span>
-        <span style={{ fontSize:10, color:"var(--text-tertiary)" }}>{lead.date}</span>
+        <span style={{ fontSize:11, color:"var(--text-tertiary)" }}>{lead.date}</span>
         {lead.tags.map(t => {
           const [bg,col] = TAG_COLORS[t]||[PD,P];
-          return <span key={t} style={{ fontSize:9, padding:"1px 7px", borderRadius:20, background:bg, color:col, fontWeight:600, marginLeft:"auto" }}>{t}</span>;
+          return <span key={t} style={{ fontSize:11, padding:"1px 7px", borderRadius:20, background:bg, color:col, fontWeight:600, marginLeft:"auto" }}>{t}</span>;
         })}
       </div>
       {lead.lastMsg && (
@@ -205,7 +206,7 @@ function LeadPanel({ lead, onClose, onStageChange, onConvert, onLost }) {
         <div style={{ fontSize:11, color:"var(--text-tertiary)", marginBottom:6 }}>Cambiar etapa</div>
         <div style={{ display:"flex", gap:4, flexWrap:"wrap" }}>
           {STAGES.map(stage=>(
-            <button key={stage.id} onClick={()=>onStageChange(stage.id)} style={{ fontSize:10, padding:"4px 10px", borderRadius:20, border:`1px solid ${lead.stage===stage.id?stage.color:"#e2e8f0"}`, background:lead.stage===stage.id?stage.light:"transparent", color:lead.stage===stage.id?stage.color:"var(--text-secondary)", cursor:"pointer", fontFamily:"inherit", fontWeight:lead.stage===stage.id?700:400 }}>
+            <button key={stage.id} onClick={()=>onStageChange(stage.id)} style={{ fontSize:11, padding:"4px 10px", borderRadius:20, border:`1px solid ${lead.stage===stage.id?stage.color:"#e2e8f0"}`, background:lead.stage===stage.id?stage.light:"transparent", color:lead.stage===stage.id?stage.color:"var(--text-secondary)", cursor:"pointer", fontFamily:"inherit", fontWeight:lead.stage===stage.id?700:400 }}>
               {stage.icon} {stage.label}
             </button>
           ))}
@@ -241,7 +242,7 @@ function LeadPanel({ lead, onClose, onStageChange, onConvert, onLost }) {
             <div style={{ width:22, height:22, borderRadius:"50%", background:"var(--bg-surface-subtle)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, flexShrink:0, zIndex:1 }}>{ACT_ICON(a.type)}</div>
             <div style={{ flex:1 }}>
               <div style={{ fontSize:12, color:"var(--text-secondary)", lineHeight:1.5 }}>{a.text}</div>
-              <div style={{ fontSize:10, color:"var(--text-tertiary)", marginTop:2 }}>{a.time}</div>
+              <div style={{ fontSize:11, color:"var(--text-tertiary)", marginTop:2 }}>{a.time}</div>
             </div>
           </div>
         ))}
@@ -622,20 +623,20 @@ export default function CRM() {
       {/* SIDEBAR */}
       <aside style={{ width:196, background:PH, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0, minHeight:"100vh", position:"sticky", top:0 }}>
         <div style={{ padding:"22px 18px 18px", borderBottom:"1px solid rgba(255,255,255,.08)", marginBottom:8 }}>
-          <div style={{ fontSize:9, color:Y, fontWeight:700, letterSpacing:2, textTransform:"uppercase", marginBottom:5 }}>WCA Academy</div>
+          <div style={{ fontSize:11, color:Y, fontWeight:700, letterSpacing:2, textTransform:"uppercase", marginBottom:5 }}>WCA Academy</div>
           <div style={{ fontSize:16, fontWeight:800, color:"#fff" }}>CRM Ventas</div>
         </div>
         {NAV.map(n=>(
           <button key={n.id} onClick={()=>{setView(n.id);setSelLead(null);}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 18px", border:"none", background:view===n.id?"rgba(255,255,255,.12)":"transparent", color:view===n.id?"#fff":"rgba(255,255,255,.45)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:`2px solid ${view===n.id?Y:"transparent"}`, transition:"all .15s", fontFamily:"inherit", fontWeight:view===n.id?600:400, width:"100%" }}>
             <i className={"ti "+n.icon} style={{ fontSize:14, width:18, textAlign:"center" }} aria-hidden="true"/>
             {n.label}
-            {n.id==="tasks" && pendingTasks>0 && <span style={{ marginLeft:"auto", fontSize:9, background:R, color:"#fff", borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>{pendingTasks}</span>}
+            {n.id==="tasks" && pendingTasks>0 && <span style={{ marginLeft:"auto", fontSize:11, background:R, color:"#fff", borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>{pendingTasks}</span>}
           </button>
         ))}
         <div style={{ marginTop:"auto", padding:"14px 18px 0", borderTop:"1px solid rgba(255,255,255,.08)" }}>
           <div style={{ display:"flex", alignItems:"center", gap:9 }}>
             <div style={{ width:30, height:30, borderRadius:"50%", background:Y, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:PH }}>VN</div>
-            <div><div style={{ fontSize:11, color:"#fff", fontWeight:600 }}>Asesor WCA</div><div style={{ fontSize:9, color:"rgba(255,255,255,.35)" }}>Ventas</div></div>
+            <div><div style={{ fontSize:11, color:"#fff", fontWeight:600 }}>Asesor WCA</div><div style={{ fontSize:11, color:"rgba(255,255,255,.35)" }}>Ventas</div></div>
           </div>
         </div>
       
@@ -691,7 +692,7 @@ export default function CRM() {
               </div>
               <div>
                 <div style={{ fontSize:18, fontWeight:800, color:"var(--text-primary)", lineHeight:1 }}>{k.value}</div>
-                <div style={{ fontSize:10, color:"var(--text-tertiary)", marginTop:2 }}>{k.label}</div>
+                <div style={{ fontSize:11, color:"var(--text-tertiary)", marginTop:2 }}>{k.label}</div>
               </div>
             </div>
           ))}
@@ -745,7 +746,7 @@ export default function CRM() {
                           <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:10, padding:"7px 10px", background:"var(--bg-surface)", borderRadius:9, border:"1px solid var(--border)" }}>
                             <div style={{ width:7, height:7, borderRadius:"50%", background:stage.color }}/>
                             <span style={{ fontSize:11, fontWeight:700, color:"var(--text-primary)", flex:1 }}>{stage.label}</span>
-                            <span style={{ fontSize:10, padding:"2px 7px", borderRadius:20, background:stage.light, color:stage.color, fontWeight:700 }}>{stageLeads.length}</span>
+                            <span style={{ fontSize:11, padding:"2px 7px", borderRadius:20, background:stage.light, color:stage.color, fontWeight:700 }}>{stageLeads.length}</span>
                           </div>
                           {stageLeads.map(lead=>(
                             <PipelineCard key={lead.id} lead={lead} stageColor={stage.color}
@@ -771,7 +772,7 @@ export default function CRM() {
                     <thead>
                       <tr style={{ background:"var(--bg-page)" }}>
                         {["Lead","Etapa","Score","Programa","Canal","Última actividad",""].map(h=>(
-                          <th key={h} style={{ padding:"12px 16px", textAlign:"left", fontSize:10, fontWeight:700, color:"var(--text-tertiary)", letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>
+                          <th key={h} style={{ padding:"12px 16px", textAlign:"left", fontSize:11, fontWeight:700, color:"var(--text-tertiary)", letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
@@ -842,8 +843,8 @@ export default function CRM() {
                         <div style={{ fontSize:13, fontWeight:500, color:t.done?"#94a3b8":"#0f172a", textDecoration:t.done?"line-through":"none" }}>{t.text}</div>
                         <div style={{ fontSize:11, color:"var(--text-tertiary)", marginTop:3 }}>Lead: <strong style={{ color:"var(--text-secondary)" }}>{t.lead}</strong> · {t.due}</div>
                       </div>
-                      {!t.done && t.priority==="high" && <span style={{ fontSize:10, padding:"3px 9px", borderRadius:20, background:RD, color:R, fontWeight:600 }}>Urgente</span>}
-                      {!t.done && t.priority==="medium" && <span style={{ fontSize:10, padding:"3px 9px", borderRadius:20, background:AD, color:A, fontWeight:600 }}>Normal</span>}
+                      {!t.done && t.priority==="high" && <span style={{ fontSize:11, padding:"3px 9px", borderRadius:20, background:RD, color:R, fontWeight:600 }}>Urgente</span>}
+                      {!t.done && t.priority==="medium" && <span style={{ fontSize:11, padding:"3px 9px", borderRadius:20, background:AD, color:A, fontWeight:600 }}>Normal</span>}
                       <button onClick={async()=>{
   setTasks(ts=>ts.filter(x=>x.id!==t.id));
 }} style={{ fontSize:12, padding:"5px 10px", background:"var(--bg-surface-subtle)", color:"var(--text-tertiary)", border:"none", borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>✕</button>

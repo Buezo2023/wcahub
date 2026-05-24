@@ -581,7 +581,7 @@ export default function GestorCobros() {
                       <div style={{ fontSize:11, color:"var(--text-secondary)" }}>/{p.interval}</div>
                     </div>
                     <div style={{ fontSize:22, fontWeight:800, color:p.color }}>${p.price}</div>
-                    <span style={{ fontSize:10, padding:"3px 9px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", borderRadius:20 }}>Solo lectura</span>
+                    <span style={{ fontSize:11, padding:"3px 9px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", borderRadius:20 }}>Solo lectura</span>
                   </div>
                 ))}
                 <div style={{ marginTop:12, fontSize:12, color:"var(--text-tertiary)", textAlign:"center" }}>

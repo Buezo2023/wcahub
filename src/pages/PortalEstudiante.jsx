@@ -159,11 +159,11 @@ function SkillCard({skill}){
   return(
     <div style={{background:skill.color,borderRadius:12,padding:"14px 12px",position:"relative",overflow:"hidden"}}>
       <div style={{fontSize:13,fontWeight:700,color:"#fff",marginBottom:6}}>{skill.name}</div>
-      <div style={{fontSize:10,color:"rgba(255,255,255,.65)",marginBottom:1}}>Scores</div>
+      <div style={{fontSize:11,color:"rgba(255,255,255,.65)",marginBottom:1}}>Scores</div>
       <div style={{fontSize:20,fontWeight:800,color:"#fff",marginBottom:10}}>{skill.score}%</div>
       <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div>
-          <div style={{fontSize:10,color:"rgba(255,255,255,.65)",marginBottom:1}}>Activities done</div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.65)",marginBottom:1}}>Activities done</div>
           <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>{skill.done}/{skill.total}</div>
         </div>
         <Ring pct={pct} size={40} stroke={3} color="rgba(255,255,255,.9)" bg="rgba(255,255,255,.25)"/>
@@ -188,14 +188,14 @@ function UnitRow({unit,prog,isActive,isDone,isLocked,color}){
         <div style={{flex:1}}>
           <div style={{fontSize:13,fontWeight:isActive?700:500,color:isLocked?"var(--text-tertiary)":"var(--text-primary)"}}>
             Unit {unit.n} — {title}
-            {isActive&&<span style={{marginLeft:8,fontSize:10,background:Y,color:PH,padding:"2px 8px",borderRadius:20,fontWeight:700}}>ACTIVA</span>}
-            {isLocked&&<span style={{marginLeft:6,fontSize:10,color:"var(--text-tertiary)"}}>🔒</span>}
+            {isActive&&<span style={{marginLeft:8,fontSize:11,background:Y,color:PH,padding:"2px 8px",borderRadius:20,fontWeight:700}}>ACTIVA</span>}
+            {isLocked&&<span style={{marginLeft:6,fontSize:11,color:"var(--text-tertiary)"}}>🔒</span>}
           </div>
         </div>
         <div style={{display:"flex",alignItems:"center",gap:7,minWidth:130,justifyContent:"flex-end"}}>
           <div style={{textAlign:"right"}}>
             <div style={{fontSize:12,color:"var(--text-secondary)"}}>{prog.actsDone}/{unit.acts}</div>
-            <div style={{fontSize:10,color:"var(--text-tertiary)"}}>Activities done</div>
+            <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Activities done</div>
           </div>
           <Ring pct={actsPct} size={34} stroke={3} color={isDone?G:isActive?Y:"#d1d5db"}/>
         </div>
@@ -209,12 +209,12 @@ function UnitRow({unit,prog,isActive,isDone,isLocked,color}){
         <div style={{width:32,height:32,borderRadius:"50%",background:isDone?G:isActive?Y:"#d4b483",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:"#fff",flexShrink:0}}>{unit.n}</div>
         <div style={{flex:1,fontSize:13,color:isLocked||(!isDone&&!isActive)?"var(--text-tertiary)":"var(--text-primary)"}}>
           Unit {unit.n} Test
-          {isDone&&prog.testDone===3&&<span style={{marginLeft:8,fontSize:10,background:GD,color:G,padding:"2px 8px",borderRadius:20,fontWeight:700}}>✓</span>}
+          {isDone&&prog.testDone===3&&<span style={{marginLeft:8,fontSize:11,background:GD,color:G,padding:"2px 8px",borderRadius:20,fontWeight:700}}>✓</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:7,minWidth:130,justifyContent:"flex-end"}}>
           <div style={{textAlign:"right"}}>
             <div style={{fontSize:12,color:"var(--text-secondary)"}}>{prog.testDone}/3</div>
-            <div style={{fontSize:10,color:"var(--text-tertiary)"}}>Activities done</div>
+            <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Activities done</div>
           </div>
           <Ring pct={testPct} size={34} stroke={3} color={prog.testDone===3?G:color}/>
         </div>
@@ -235,12 +235,12 @@ function UpsellBanner({prog,canEnroll,onEnroll}){
       <div style={{flex:1}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
           <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>{prog.name}</div>
-          {prog.tag&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:20,background:prog.color,color:"#fff",fontWeight:700}}>{prog.tag}</span>}
+          {prog.tag&&<span style={{fontSize:11,padding:"2px 8px",borderRadius:20,background:prog.color,color:"#fff",fontWeight:700}}>{prog.tag}</span>}
         </div>
         <div style={{fontSize:12,color:"var(--text-secondary)",lineHeight:1.6,marginBottom:10}}>{prog.desc}</div>
         <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
-          {prog.skills.slice(0,4).map(s=><span key={s} style={{fontSize:10,padding:"3px 9px",borderRadius:20,background:prog.colorLight,color:prog.color,fontWeight:500}}>{s}</span>)}
-          {prog.skills.length>4&&<span style={{fontSize:10,padding:"3px 9px",borderRadius:20,background:"var(--bg-surface-subtle)",color:"var(--text-tertiary)"}}>+{prog.skills.length-4} más</span>}
+          {prog.skills.slice(0,4).map(s=><span key={s} style={{fontSize:11,padding:"3px 9px",borderRadius:20,background:prog.colorLight,color:prog.color,fontWeight:500}}>{s}</span>)}
+          {prog.skills.length>4&&<span style={{fontSize:11,padding:"3px 9px",borderRadius:20,background:"var(--bg-surface-subtle)",color:"var(--text-tertiary)"}}>+{prog.skills.length-4} más</span>}
         </div>
         {prog.prereq&&!canEnroll&&(
           <div style={{fontSize:11,color:A,background:AD,padding:"6px 12px",borderRadius:8,marginBottom:10,display:"flex",gap:6}}>
@@ -599,12 +599,12 @@ export default function PortalEstudiante(){
       <aside style={{width:200,background:P,display:"flex",flexDirection:"column",padding:"0 0 16px",flexShrink:0,minHeight:"100vh",position:"sticky",top:0}}>
         <div style={{padding:"22px 18px 18px",borderBottom:"1px solid rgba(255,255,255,.08)",marginBottom:8}}>
           <div style={{fontSize:17,fontWeight:800,color:"#fff"}}>WCA <span style={{color:Y}}>Hub</span></div>
-          <div style={{fontSize:9,color:"rgba(255,255,255,.35)",marginTop:2,textTransform:"uppercase",letterSpacing:1}}>Portal del estudiante</div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginTop:2,textTransform:"uppercase",letterSpacing:1}}>Portal del estudiante</div>
         </div>
 
         {/* Enrolled programs in sidebar */}
         <div style={{padding:"8px 12px",marginBottom:4}}>
-          <div style={{fontSize:9,color:"rgba(255,255,255,.3)",fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:8}}>Mis programas</div>
+          <div style={{fontSize:11,color:"rgba(255,255,255,.3)",fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:8}}>Mis programas</div>
           {enrolledProgs.map(p=>(
             <button key={p.id} onClick={()=>{setActiveProg(p.id);setView("practica");}} style={{width:"100%",display:"flex",alignItems:"center",gap:7,padding:"8px 9px",border:"none",background:activeProg===p.id?"rgba(255,255,255,.15)":"rgba(255,255,255,.05)",color:activeProg===p.id?"#fff":"rgba(255,255,255,.55)",borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontSize:11,marginBottom:4,textAlign:"left",fontWeight:activeProg===p.id?600:400,borderLeft:`2px solid ${activeProg===p.id?Y:"transparent"}`,transition:"all .15s"}}>
               <span style={{fontSize:14}}>{p.icon}</span>
@@ -626,7 +626,7 @@ export default function PortalEstudiante(){
         <div style={{marginTop:"auto",padding:"14px 18px 0",borderTop:"1px solid rgba(255,255,255,.08)"}}>
           <div style={{display:"flex",alignItems:"center",gap:9}}>
             <div style={{width:32,height:32,borderRadius:"50%",background:Y,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:PH}}>MR</div>
-            <div><div style={{fontSize:12,color:"#fff",fontWeight:600}}>María Rodríguez</div><div style={{fontSize:10,color:"rgba(255,255,255,.35)"}}>{enrolled.length} programa{enrolled.length!==1?"s":""} activo{enrolled.length!==1?"s":""}</div></div>
+            <div><div style={{fontSize:12,color:"#fff",fontWeight:600}}>María Rodríguez</div><div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{enrolled.length} programa{enrolled.length!==1?"s":""} activo{enrolled.length!==1?"s":""}</div></div>
           </div>
         </div>
       
@@ -655,7 +655,7 @@ export default function PortalEstudiante(){
               style={{position:"relative",background:"none",border:"none",cursor:"pointer",padding:6,borderRadius:8,color:"var(--text-secondary)",fontSize:20,display:"flex"}}>
               <i className="ti ti-bell" aria-hidden="true"/>
               {unread > 0 && (
-                <span style={{position:"absolute",top:0,right:0,width:16,height:16,borderRadius:"50%",background:"#dc2626",color:"#fff",fontSize:9,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{unread > 9?"9+":unread}</span>
+                <span style={{position:"absolute",top:0,right:0,width:16,height:16,borderRadius:"50%",background:"#dc2626",color:"#fff",fontSize:11,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center"}}>{unread > 9?"9+":unread}</span>
               )}
             </button>
             {showNotifs && (
@@ -676,7 +676,7 @@ export default function PortalEstudiante(){
                       <div style={{flex:1}}>
                         <div style={{fontSize:12,fontWeight:n.read?400:600,color:"var(--text-primary)"}}>{n.title}</div>
                         {n.body&&<div style={{fontSize:11,color:"var(--text-secondary)",marginTop:2,lineHeight:1.5}}>{n.body}</div>}
-                        <div style={{fontSize:10,color:"var(--text-tertiary)",marginTop:3}}>{new Date(n.created_at).toLocaleString("es-HN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
+                        <div style={{fontSize:11,color:"var(--text-tertiary)",marginTop:3}}>{new Date(n.created_at).toLocaleString("es-HN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
                       </div>
                     </div>
                   ))}
@@ -961,11 +961,11 @@ export default function PortalEstudiante(){
                       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
                         <div style={{background:"var(--bg-surface-subtle)",borderRadius:8,padding:"8px 10px",textAlign:"center"}}>
                           <div style={{fontSize:18,fontWeight:800,color:p.color}}>U{realUnit}</div>
-                          <div style={{fontSize:10,color:"var(--text-tertiary)"}}>Unidad actual</div>
+                          <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Unidad actual</div>
                         </div>
                         <div style={{background:"var(--bg-surface-subtle)",borderRadius:8,padding:"8px 10px",textAlign:"center"}}>
                           <div style={{fontSize:18,fontWeight:800,color:avgScore>=70?G:A}}>{avgScore}%</div>
-                          <div style={{fontSize:10,color:"var(--text-tertiary)"}}>Promedio exámenes</div>
+                          <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Promedio exámenes</div>
                         </div>
                       </div>
                     </div>
@@ -986,8 +986,8 @@ export default function PortalEstudiante(){
                           <div style={{width:50,height:50,borderRadius:"50%",background:isEnrolled?p.color:p.colorLight,border:`2.5px solid ${isEnrolled?p.color:"var(--border)"}`,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20,flexShrink:0}}>
                             {p.icon}
                           </div>
-                          <div style={{fontSize:10,fontWeight:600,color:isEnrolled?p.color:"var(--text-tertiary)",textAlign:"center",maxWidth:72,lineHeight:1.3}}>{p.shortName}</div>
-                          <div style={{fontSize:9,padding:"2px 7px",borderRadius:20,background:isEnrolled?p.colorLight:"var(--bg-surface-subtle)",color:isEnrolled?p.color:"var(--text-tertiary)",fontWeight:600}}>{isEnrolled?"Activo":"Disponible"}</div>
+                          <div style={{fontSize:11,fontWeight:600,color:isEnrolled?p.color:"var(--text-tertiary)",textAlign:"center",maxWidth:72,lineHeight:1.3}}>{p.shortName}</div>
+                          <div style={{fontSize:11,padding:"2px 7px",borderRadius:20,background:isEnrolled?p.colorLight:"var(--bg-surface-subtle)",color:isEnrolled?p.color:"var(--text-tertiary)",fontWeight:600}}>{isEnrolled?"Activo":"Disponible"}</div>
                         </div>
                         {i<ALL_PROGRAMS.length-1&&<div style={{width:24,height:2,background:isEnrolled?"var(--border)":"var(--border)",flexShrink:0}}/>}
                       </div>
@@ -1013,9 +1013,9 @@ export default function PortalEstudiante(){
                       </div>
                       <div style={{textAlign:"right"}}>
                         <div style={{fontSize:22,fontWeight:800,color:p.color}}>${prog2?.price}</div>
-                        <div style={{fontSize:10,color:"var(--text-tertiary)"}}>/{prog2?.interval}</div>
+                        <div style={{fontSize:11,color:"var(--text-tertiary)"}}>/{prog2?.interval}</div>
                       </div>
-                      <div style={{fontSize:10,padding:"3px 10px",background:GD,color:G,borderRadius:20,fontWeight:600}}>Activa</div>
+                      <div style={{fontSize:11,padding:"3px 10px",background:GD,color:G,borderRadius:20,fontWeight:600}}>Activa</div>
                     </div>
                     <button onClick={async()=>{
                       try{
@@ -1048,7 +1048,7 @@ export default function PortalEstudiante(){
                   <div key={p.id||i} style={{display:"flex",alignItems:"center",gap:14,padding:"12px 18px",borderBottom:"1px solid var(--border)"}}>
                     <div style={{flex:1}}><div style={{fontSize:13,color:"var(--text-primary)",fontWeight:500}}>{fecha} · {prog3}</div><div style={{fontSize:11,color:"var(--text-secondary)"}}>{p.method||"Transferencia"}</div></div>
                     <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>${Number(p.amount).toFixed(2)}</div>
-                    <div style={{fontSize:10,padding:"3px 9px",background:statusBg,color:statusColor,borderRadius:20,fontWeight:600}}>{statusText}</div>
+                    <div style={{fontSize:11,padding:"3px 9px",background:statusBg,color:statusColor,borderRadius:20,fontWeight:600}}>{statusText}</div>
                   </div>);
                 }) : (
                   <div style={{padding:"18px",fontSize:12,color:"var(--text-secondary)",textAlign:"center"}}>

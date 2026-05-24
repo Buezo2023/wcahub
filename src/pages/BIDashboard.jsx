@@ -130,6 +130,7 @@ export default function BIDashboard() {
   const [realStats,   setRealStats]   = useState(null);
   const [statsLoading,setStatsLoading] = useState(true);
   const [mrrHistory,  setMrrHistory]  = useState([]);
+  const totalMRR = mrrHistory.length > 0 ? mrrHistory[mrrHistory.length - 1]?.amount || 0 : 0;
 
   useEffect(() => { setAnimate(false); setTimeout(() => setAnimate(true), 50); }, [view]);
 
@@ -414,8 +415,8 @@ export default function BIDashboard() {
             <div>
               <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:10, marginBottom:14 }}>
                 {[
-                  { label:"MRR actual",    value:"$18,420", sub:`↑ ${mrrGrowth}% vs nov`, color:B.primary },
-                  { label:"ARR proyectado",value:"$221k",   sub:"A ritmo actual",           color:B.green },
+                  { label:"MRR actual",    value:`$${totalMRR.toLocaleString()}`, sub:totalMRR>0?`${mrrHistory.length} meses de datos`:"Sin datos aún", color:B.primary },
+                  { label:"ARR proyectado",value:`$${Math.round(totalMRR*12/1000)}k`, sub:"Proyección anual",           color:B.green },
                   { label:"ARPU",          value:`$${arpu}`, sub:"Por estudiante/mes",       color:B.amber },
                   { label:"LTV estimado",  value:`$${ltv}`, sub:`Churn ${churnRate}%/mes`,   color:B.purple },
                 ].map((k,i) => (
@@ -432,8 +433,8 @@ export default function BIDashboard() {
                 <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text }}>Evolución MRR mensual</div>
                   <div style={{ display:"flex", gap:12, fontSize:12, color:B.textSec }}>
-                    <span>Mín: $8,400 (Ene)</span>
-                    <span>Máx: $18,800 (Nov)</span>
+                    <span>Mín: ${Math.min(...(mrrHistory.map(m=>m.amount)||[0])).toLocaleString()}</span>
+                    <span>Máx: ${Math.max(...(mrrHistory.map(m=>m.amount)||[0])).toLocaleString()}</span>
                     <span style={{ color:B.green, fontWeight:600 }}>+119% YoY</span>
                   </div>
                 </div>
@@ -605,7 +606,7 @@ export default function BIDashboard() {
                 </div>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:"14px 15px", borderTop:`3px solid ${B.amber}` }}>
                   <div style={{ fontSize:12, color:B.textSec, marginBottom:6 }}>CAC promedio</div>
-                  <div style={{ fontSize:24, fontWeight:800, color:B.amber }}>$47</div>
+                  <div style={{ fontSize:24, fontWeight:800, color:B.amber }}>—</div>
                   <div style={{ fontSize:12, color:B.textSec }}>LTV/CAC ratio: {Math.round(ltv/47)}x</div>
                 </div>
               </div>
@@ -661,7 +662,7 @@ export default function BIDashboard() {
             <div>
               <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:10, marginBottom:14 }}>
                 {[
-                  { label:"Asistencia promedio", value:"85%", sub:"Todos los grupos", color:B.green },
+                  { label:"Asistencia promedio", value:"—", sub:"Datos de asistencia próximamente", color:B.green },
                   { label:"Tasa de aprobación", value:"78%", sub:"Exámenes de unidad", color:B.primary },
                   { label:"Estudiantes en riesgo", value:"4", sub:"Asist. <70% o promedio <65%", color:B.red },
                   { label:"Próximos a graduar", value:"3", sub:"En unidad 10–12 de C1", color:B.amber },

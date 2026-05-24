@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { getStudents, getGroups, getPayments, updateGroupTeamsLink, getPrograms, getAuditLog } from "../lib/db.js";
 import { exportCSV } from "../lib/exportCSV.js";
+import { EmptyState } from "../lib/EmptyState.jsx";
 import { supabase } from "../lib/supabase.js";
 import { toast } from "../lib/toast.jsx";
 import { api } from "../lib/api.js";
@@ -511,7 +512,7 @@ export default function AdminDashboard() {
     {id:1, name:"María López",    level:"B1", group:"B1·6PM", status:"active",   type:"regular"},
     {id:2, name:"Carlos Torres",  level:"A1", group:"A1·6PM", status:"active",   type:"regular"},
     {id:3, name:"Ana Mejía",      level:"A1", group:"A1·8PM", status:"active",   type:"regular"},
-    {id:4, name:"Luis Morales",   level:"A1", group:"A1·6PM", status:"suspended",type:"regular"},
+
     {id:5, name:"Pedro Jiménez",  level:"A2", group:"A2·7PM", status:"active",   type:"scholarship"},
 
   ]);

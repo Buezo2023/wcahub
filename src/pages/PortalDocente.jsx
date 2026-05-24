@@ -399,7 +399,7 @@ export default function TeacherPortal(){
                     {!s.recorded?(
                       <div style={{display:"flex",gap:6}}>
                         <input aria-label="Link de recurso" value={recLinks[i]||""} onChange={e=>setRecLinks(r=>({...r,[i]:e.target.value}))} placeholder="Link de Stream (grabación)..." style={{flex:1,padding:"5px 8px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:6,fontSize:12,color:C.textPri,fontFamily:"inherit"}}/>
-                        <button style={{fontSize:12,padding:"5px 10px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:6,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}} onClick={()=>showToast("✓ Grabación subida correctamente")}>Subir</button>
+                        <button disabled style={{fontSize:12,padding:"5px 10px",background:"var(--bg-surface-subtle)",color:"var(--text-tertiary)",border:"1px solid var(--border)",borderRadius:6,cursor:"default",fontFamily:"inherit",opacity:0.6}}>Próximamente</button>
                       </div>
                     ):(
                       <div style={{fontSize:12,color:C.green}}>✓ Grabación disponible 7 días</div>
@@ -529,7 +529,7 @@ export default function TeacherPortal(){
   showToast("✓ Intento extra habilitado");
   setExtraModal(null);
 }}>Guardar cambios</button>
-                    <button style={{padding:"11px 18px",background:C.greenDim,color:C.green,border:`1px solid ${C.green}40`,borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}} onClick={()=>showToast("✓ Actividad publicada — los estudiantes ya pueden verla")}>Publicar</button>
+                    <button disabled style={{padding:"11px 18px",background:"var(--bg-surface-subtle)",color:"var(--text-tertiary)",border:"1px solid var(--border)",borderRadius:10,fontSize:13,fontWeight:600,cursor:"default",fontFamily:"inherit",opacity:0.6}}>Publicar (próximamente)</button>
                   </div>
                 </div>
               ):(
@@ -562,7 +562,7 @@ export default function TeacherPortal(){
                       <div style={{fontSize:12,color:C.textTer,marginBottom:10}}>A1 · U{act.unit}</div>
                       <div style={{display:"flex",gap:6}}>
                         <button style={{flex:1,fontSize:12,padding:"5px",background:C.accentDim,color:C.accent,border:"none",borderRadius:7,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>Asignar a unidad</button>
-                        <button onClick={()=>showToast("Funcionalidad próximamente")} style={{fontSize:12,padding:"5px 10px",background:C.surfaceHigh,color:C.textSec,border:`1px solid ${C.border}`,borderRadius:7,cursor:"pointer",fontFamily:"inherit"}}>Editar</button>
+                        <button disabled style={{fontSize:12,padding:"5px 10px",background:"var(--bg-surface-subtle)",color:"var(--text-tertiary)",border:"1px solid var(--border)",borderRadius:7,cursor:"default",fontFamily:"inherit",opacity:0.6}}>Próximamente</button>
                       </div>
                     </div>
                   );
@@ -583,7 +583,7 @@ export default function TeacherPortal(){
             <div style={{fontSize:12,color:C.textTer,marginBottom:8}}>Motivo (queda en el log de auditoría):</div>
             <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
               {["Problema técnico durante el examen","Se explicó el contenido de nuevo","Caso especial justificado"].map(r=>(
-                <button key={r} onClick={()=>showToast(`${r} — próximamente`)} style={{fontSize:12,padding:"7px 10px",background:C.surfaceHigh,color:C.textSec,border:`1px solid ${C.border}`,borderRadius:8,cursor:"pointer",fontFamily:"inherit",textAlign:"left"}}>{r}</button>
+                <button key={r} disabled style={{fontSize:12,padding:"7px 10px",background:"var(--bg-surface-subtle)",color:"var(--text-tertiary)",border:"1px solid var(--border)",borderRadius:8,cursor:"default",fontFamily:"inherit",textAlign:"left",opacity:0.6}}>{r} · próximamente</button>
               ))}
             </div>
             <input placeholder="Nota adicional (opcional)..." style={{width:"100%",padding:"8px 12px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,fontSize:13,color:C.textPri,fontFamily:"inherit",marginBottom:14}}/>

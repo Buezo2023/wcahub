@@ -405,7 +405,7 @@ export default function Landing() {
             {testimonials.map((t,i)=>(
               <FadeIn key={i} delay={i*0.1}>
                 <div className="hover-lift" style={{ background:T.white, border:`1px solid ${T.border}`, borderRadius:20, padding:28 }}>
-                  <div style={{ fontSize:32, color:T.gold, fontFamily:"Georgia", lineHeight:1, marginBottom:16 }}>"</div>
+                  <div style={{ fontSize:32, color:T.gold, fontStyle:"italic", lineHeight:1, marginBottom:16 }}>"</div>
                   <p className="serif" style={{ fontSize:17, color:T.ink, lineHeight:1.65, marginBottom:20, fontStyle:"italic" }}>"{t.quote}"</p>
                   <div style={{ display:"flex", alignItems:"center", gap:12 }}>
                     <div style={{ width:42, height:42, borderRadius:"50%", background:T.teal, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:T.gold, flexShrink:0 }}>{t.avatar}</div>
