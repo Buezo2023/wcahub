@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { getStudents, getGroups, getPayments, updateGroupTeamsLink, getPrograms } from "../lib/db.js";
+import { getStudents, getGroups, getPayments, updateGroupTeamsLink, getPrograms, getAuditLog } from "../lib/db.js";
+import { exportCSV } from "../lib/exportCSV.js";
 import { supabase } from "../lib/supabase.js";
 import { toast } from "../lib/toast.jsx";
 import { api } from "../lib/api.js";
@@ -36,12 +37,8 @@ const NAV = [
   { id:"home",        icon:"ti-layout-dashboard", label:"Inicio"         },
   { id:"students",    icon:"ti-users",             label:"Estudiantes"    },
   { id:"groups",      icon:"ti-grid-dots",         label:"Grupos"         },
-  { id:"enrollments", icon:"ti-user-plus",         label:"Matrículas"     },
   { id:"payments",    icon:"ti-credit-card",       label:"Pagos"          },
-  { id:"cycle",       icon:"ti-refresh",           label:"Ciclo"          },
-  { id:"reports",     icon:"ti-chart-bar",         label:"Reportes"       },
   { id:"b2b",         icon:"ti-building",          label:"Empresas B2B"   },
-  { id:"precios",     icon:"ti-tag",               label:"Precios"         },
 ];
 
 const stateColor = s => s==="active"?[B.greenDim,"#065f46"]:s==="suspended"?[B.redDim,B.red]:[B.secondaryDim,"#92400e"];
@@ -411,6 +408,10 @@ export default function AdminDashboard() {
   const [realStudents, setRealStudents] = useState([]);
   const [realGroups,   setRealGroups]   = useState([]);
   const [realCycleStatus, setRealCycleStatus] = useState([]);
+  const [auditItems, setAuditItems] = useState([]);
+  const [realPayments, setRealPayments] = useState([]);
+  const PAYMENTS_PENDING = useMemo(() => realPayments.filter(p => p.status === "pending"), [realPayments]);
+  const confirmed = useMemo(() => realPayments.filter(p => p.status === "confirmed"), [realPayments]);
   const [loadingData,  setLoadingData]  = useState(true);
 
   // Load real students + groups from Supabase
@@ -470,6 +471,21 @@ export default function AdminDashboard() {
             teamsLink: g.teams_link,
             dbId:     g.id,
           }));
+        // Load pending payments
+        const { data: pays } = await supabase.from("payments")
+          .select("id, amount, method, status, created_at, enrollment_id, students(profiles(full_name, email))")
+          .order("created_at", { ascending: false }).limit(100);
+        if (pays) setRealPayments(pays.map(p => ({
+          id: p.id, amount: p.amount, method: p.method, status: p.status,
+          student: p.students?.profiles?.full_name || "—",
+          email: p.students?.profiles?.email || "—",
+          date: new Date(p.created_at).toLocaleDateString("es-HN", {day:"2-digit",month:"short"}),
+        })));
+        // Load audit log for activity feed
+        const { data: audit } = await supabase.from("audit_log")
+          .select("id, action, metadata, created_at")
+          .order("created_at", { ascending: false }).limit(10);
+        if (audit) setAuditItems(audit);
           setRealGroups(mappedG);
         }
         // Load cycle status from Supabase
@@ -497,7 +513,7 @@ export default function AdminDashboard() {
     {id:3, name:"Ana Mejía",      level:"A1", group:"A1·8PM", status:"active",   type:"regular"},
     {id:4, name:"Luis Morales",   level:"A1", group:"A1·6PM", status:"suspended",type:"regular"},
     {id:5, name:"Pedro Jiménez",  level:"A2", group:"A2·7PM", status:"active",   type:"scholarship"},
-    {id:6, name:"Isabel Navarro", level:"C1", group:"C1·6PM", status:"active",   type:"regular"},
+
   ]);
   const [search, setSearch] = useState("");
   const [filterState, setFilterState] = useState("all");
@@ -582,11 +598,14 @@ export default function AdminDashboard() {
           <div style={{ display:"flex", gap:8, alignItems:"center" }}>
             {suspended.length > 0 && <div style={{ fontSize:12, background:B.redDim, color:B.red, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>⚠ {suspended.length} suspendidos</div>}
             <div style={{ fontSize:12, background:B.primaryDim, color:B.primary, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>{active.length} activos hoy</div>
-            {view === "students" && (
+            {view === "students" && <>
+              <button onClick={() => exportCSV(filtered.map(s=>({Nombre:s.name,Email:s.email,Nivel:s.level,Grupo:s.group,Programa:s.program,Estado:s.state,Inscrito:s.enrolled})), `estudiantes-${new Date().toISOString().slice(0,10)}.csv`)} style={{ padding:"6px 14px", background:B.white, color:B.primary, border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:5 }}>
+                <i className="ti ti-download" style={{ fontSize:14 }} aria-hidden="true" /> CSV
+              </button>
               <button onClick={() => setEnrollModal(true)} style={{ padding:"6px 14px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:5 }}>
                 <i className="ti ti-user-plus" style={{ fontSize:14 }} aria-hidden="true" /> Nuevo estudiante
               </button>
-            )}
+            </>}
           </div>
         </div>
 
@@ -608,8 +627,8 @@ export default function AdminDashboard() {
               {/* Stats */}
               <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, margin:"16px 0" }}>
                 <Stat label="Estudiantes activos" value={active.length} sub="Este mes" color={B.primary} icon="ti-users" />
-                <Stat label="Ingresos (junio)" value="$18,420" sub="↑ 8% vs mayo" color={B.secondary} icon="ti-coin" />
-                <Stat label="Pagos pendientes" value={PAYMENTS_PENDING.length} sub="Transferencias" color={B.amber} icon="ti-clock" />
+                <Stat label="Ingresos confirmados" value={`$${(confirmed || []).reduce((s,p) => s + (p.amount||0), 0).toLocaleString()}`} sub="Pagos confirmados" color={B.secondary} icon="ti-coin" />
+                <Stat label="Pagos pendientes" value={PAYMENTS_PENDING.length} sub="Por confirmar" color={B.amber} icon="ti-clock" />
                 <Stat label="Grupos activos" value={displayGroups.length} sub="5 niveles" color={B.green} icon="ti-grid-dots" />
               </div>
 
@@ -640,23 +659,23 @@ export default function AdminDashboard() {
                 {/* Recent activity */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Actividad reciente</div>
-                  {[
-                    { icon:"ti-user-plus", color:B.green,   text:"Valentina Cruz matriculada — A1 · 8PM",          time:"Hace 3h" },
-                    { icon:"ti-credit-card", color:B.primary, text:"Pago confirmado: Diego Fuentes — $170",           time:"Hace 5h" },
-                    { icon:"ti-certificate", color:B.secondary, text:"Certificado B1 generado — Isabel Navarro",       time:"Ayer" },
-                    { icon:"ti-refresh",   color:B.amber,  text:"Ciclo avanzó a U9 — niveles A1 y B1",              time:"Lun 9 Jun" },
-                    { icon:"ti-user-off",  color:B.red,    text:"Marcos Silva suspendido por falta de pago",         time:"Hace 3 días" },
-                  ].map((a, i) => (
-                    <div key={i} style={{ display:"flex", gap:10, padding:"7px 0", borderTop: i>0?`1px solid ${B.borderLight}`:"none" }}>
+                  {(auditItems.length > 0 ? auditItems.slice(0,5) : [{action:"sin_actividad",metadata:{},id:"empty"}]).map((a, i) => {
+                    const ic = {invited_staff:"ti-user-plus",enrolled_student:"ti-user-plus",payment_confirmed:"ti-credit-card",payment_recorded:"ti-credit-card",suspended_student:"ti-user-off",reactivated_student:"ti-refresh",onboarding_completed:"ti-check"}[a.action]||"ti-activity";
+                    const cl = {invited_staff:B.green,enrolled_student:B.green,payment_confirmed:B.primary,payment_recorded:B.primary,suspended_student:B.red,reactivated_student:B.amber}[a.action]||B.textSec;
+                    const tx = a.action==="sin_actividad" ? "Sin actividad reciente" : `${a.action.replace(/_/g," ")}${a.metadata?.email ? " — "+a.metadata.email : a.metadata?.fullName ? " — "+a.metadata.fullName : ""}`;
+                    const ago = a.created_at ? (()=>{const m=Math.floor((Date.now()-new Date(a.created_at).getTime())/60000);return m<60?`Hace ${m}min`:m<1440?`Hace ${Math.floor(m/60)}h`:`Hace ${Math.floor(m/1440)}d`;})() : "";
+                    return (
+                    <div key={a.id||i} style={{ display:"flex", gap:10, padding:"7px 0", borderTop: i>0?`1px solid ${B.borderLight}`:"none" }}>
                       <div style={{ width:28, height:28, borderRadius:"50%", background:B.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                        <i className={`ti ${a.icon}`} style={{ fontSize:15, color:a.color }} aria-hidden="true" />
+                        <i className={`ti ${ic}`} style={{ fontSize:15, color:cl }} aria-hidden="true" />
                       </div>
                       <div style={{ flex:1 }}>
-                        <div style={{ fontSize:13, color:B.text }}>{a.text}</div>
-                        <div style={{ fontSize:12, color:B.textSec, marginTop:1 }}>{a.time}</div>
+                        <div style={{ fontSize:13, color:B.text }}>{tx}</div>
+                        <div style={{ fontSize:12, color:B.textSec, marginTop:1 }}>{ago}</div>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* Pending transfers */}
@@ -856,7 +875,7 @@ export default function AdminDashboard() {
           {view === "payments" && (
             <div>
               <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:16 }}>
-                <Stat label="Cobrado (junio)" value="$18,420" sub="↑ 8% vs mayo" color={B.green} icon="ti-trending-up" />
+                <Stat label="Cobrado total" value={`$${confirmed.reduce((s,p)=>s+(p.amount||0),0).toLocaleString()}`} sub={`${confirmed.length} pagos`} color={B.green} icon="ti-trending-up" />
                 <Stat label="Transferencias pendientes" value={PAYMENTS_PENDING.length} sub="Requieren confirmación" color={B.amber} icon="ti-clock" />
                 <Stat label="Vencidos +30 días" value="2" sub="Acción urgente" color={B.red} icon="ti-alert-circle" />
               </div>
@@ -890,83 +909,10 @@ export default function AdminDashboard() {
           )}
 
           {/* ── CYCLE ── */}
-          {view === "cycle" && (
-            <div>
-              <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16, marginBottom:14 }}>
-                <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:14 }}>Estado del ciclo continuo — todos los niveles</div>
-                {(realCycleStatus.length > 0 ? realCycleStatus : []).map(c => (
-                  <div key={c.level} style={{ marginBottom:16, paddingBottom:16, borderBottom:`1px solid ${B.borderLight}` }}>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8 }}>
-                      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                        <div style={{ width:38, height:38, borderRadius:10, background:B.primaryDim, display:"flex", alignItems:"center", justifyContent:"center", fontSize:14, fontWeight:800, color:B.primary }}>{c.level}</div>
-                        <div>
-                          <div style={{ fontSize:13, fontWeight:600, color:B.text }}>U{c.unit} — {c.title}</div>
-                          <div style={{ fontSize:12, color:B.textSec }}>{c.students} estudiantes · {c.groups} grupos activos</div>
-                        </div>
-                      </div>
-                      <div style={{ textAlign:"right" }}>
-                        <div style={{ fontSize:13, color:B.primary, fontWeight:600 }}>U{c.unit} de 12</div>
-                        <div style={{ fontSize:11, color:B.textSec }}>Próximo avance: lunes</div>
-                      </div>
-                    </div>
-                    <div style={{ display:"flex", gap:3 }}>
-                      {Array.from({length:12},(_,i)=>(
-                        <div key={i} style={{ flex:1, height:6, borderRadius:3, background: i+1<c.unit?B.green:i+1===c.unit?B.secondary:B.bg, transition:"background .3s" }} />
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div style={{ background:B.secondaryDim, border:`1px solid ${B.amber}40`, borderRadius:12, padding:14, display:"flex", gap:12, alignItems:"center" }}>
-                <i className="ti ti-calendar" style={{ fontSize:18, color:"#92400e", flexShrink:0 }} aria-hidden="true" />
-                <div style={{ flex:1 }}>
-                  <div style={{ fontSize:13, fontWeight:600, color:B.text }}>Próximo feriado: 15 Sep — Independencia de Honduras</div>
-                  <div style={{ fontSize:12, color:B.textSec, marginTop:2 }}>El ciclo se pausará automáticamente ese lunes. Configurado en Super Admin.</div>
-                </div>
-                <button style={{ fontSize:12, padding:"5px 12px", background:B.white, color:B.primary, border:`1px solid ${B.border}`, borderRadius:6, cursor:"pointer", fontWeight:600, fontFamily:"inherit", whiteSpace:"nowrap" }}>Ver calendario</button>
-              </div>
-            </div>
-          )}
+
 
           {/* ── REPORTS ── */}
-          {view === "reports" && (
-            <div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-                {[
-                  { title:"Reporte de asistencia por grupo", desc:"Asistencia % semanal y mensual por docente y horario", icon:"ti-calendar-check", color:B.primary },
-                  { title:"Progreso académico por nivel",    desc:"Promedio de notas, tasa de aprobación y deserción", icon:"ti-chart-bar",       color:B.green },
-                  { title:"Reporte de ingresos operativos",  desc:"Cobros, pendientes y vencidos del mes",             icon:"ti-coin",            color:B.secondary },
-                  { title:"Estudiantes en riesgo",           desc:"Baja asistencia, intentos fallidos, inactividad",   icon:"ti-alert-triangle",  color:B.red },
-                  { title:"Reporte de ciclo y unidades",     desc:"Estado de contenido por nivel y docente",           icon:"ti-refresh",         color:B.amber },
-                  { title:"Reporte de becas",                desc:"Becados activos, asistencia y datos de financiación",icon:"ti-certificate",     color:B.primary },
-                ].map((r,i) => (
-                  <div key={i} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14, display:"flex", gap:12, alignItems:"flex-start", cursor:"pointer" }}>
-                    <div style={{ width:40, height:40, borderRadius:10, background:B.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
-                      <i className={`ti ${r.icon}`} style={{ fontSize:20, color:r.color }} aria-hidden="true" />
-                    </div>
-                    <div style={{ flex:1 }}>
-                      <div style={{ fontSize:13, fontWeight:600, color:B.text, marginBottom:3 }}>{r.title}</div>
-                      <div style={{ fontSize:12, color:B.textSec, lineHeight:1.5, marginBottom:8 }}>{r.desc}</div>
-                      <div style={{ display:"flex", gap:6 }}>
-                        <button style={{ fontSize:11, padding:"3px 10px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Ver reporte</button>
-                        <button onClick={()=>{
-  const rows = filtered;
-  const headers = ["Nombre","Email","Nivel","Grupo","Programa","Estado","Matrícula"];
-  const csv = [headers, ...rows.map(r=>[r.name,r.email,r.level,r.group,r.program,r.state,r.enrolled])]
-    .map(row=>row.map(v=>`"${String(v||"").replace(/"/g,'""')}"`).join(",")).join("\n");
-  const blob = new Blob([csv], {type:"text/csv"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = `estudiantes-${new Date().toISOString().slice(0,10)}.csv`;
-  a.click();
-}} style={{ fontSize:11, padding:"3px 10px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>↓ Exportar Excel</button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+
 
           {/* ── B2B ── */}
           {view === "b2b" && (
@@ -974,55 +920,7 @@ export default function AdminDashboard() {
           )}
 
           {/* ── ENROLLMENTS ── */}
-          {view === "enrollments" && (
-            <div style={{ maxWidth:560 }}>
-              <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:20 }}>
-                <div style={{ fontSize:14, fontWeight:700, color:B.text, marginBottom:16 }}>Nueva matrícula manual</div>
-                {[
-                  {label:"Nombre completo", ph:"María Rodríguez", type:"text"},
-                  {label:"Email", ph:"m.rodriguez@correo.com", type:"email"},
-                  {label:"Teléfono / WhatsApp", ph:"+504 XXXX-XXXX", type:"tel"},
-                  {label:"País", ph:"Honduras", type:"text"},
-                ].map(f => (
-                  <div key={f.label} style={{ marginBottom:12 }}>
-                    <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>{f.label}</label>
-                    <input type={f.type} placeholder={f.ph} style={{ width:"100%", padding:"8px 12px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, color:B.text, background:B.bg, fontFamily:"inherit" }} />
-                  </div>
-                ))}
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:12 }}>
-                  <div>
-                    <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>Programa</label>
-                    <select style={{ width:"100%", padding:"8px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit" }}>
-                      <option>Inglés</option><option>VA</option><option>Inglés + VA</option><option>Beca Inglés</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>Nivel de ingreso</label>
-                    <select style={{ width:"100%", padding:"8px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit" }}>
-                      {["A1","A2","B1","B2","C1"].map(l => <option key={l}>{l}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>Horario</label>
-                    <select style={{ width:"100%", padding:"8px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit" }}>
-                      <option>6:00–7:00 PM</option><option>7:00–8:00 PM</option><option>8:00–9:00 PM</option><option>9:00–10:00 PM</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>Forma de pago</label>
-                    <select style={{ width:"100%", padding:"8px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit" }}>
-                      <option>Transferencia</option><option>Efectivo</option><option>Tarjeta (Stripe)</option>
-                    </select>
-                  </div>
-                </div>
-                <div style={{ background:B.primaryDim, borderRadius:8, padding:"10px 12px", fontSize:13, color:B.primary, marginBottom:16, display:"flex", gap:6 }}>
-                  <i className="ti ti-info-circle" style={{ fontSize:14, flexShrink:0, marginTop:1 }} aria-hidden="true" />
-                  El sistema asignará automáticamente la unidad activa del ciclo para el nivel seleccionado.
-                </div>
-                <button style={{ width:"100%", padding:"11px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Crear matrícula</button>
-              </div>
-            </div>
-          )}
+
 
 
           {/* ── PRECIOS DE ESPECIALIZACIONES ── */}
