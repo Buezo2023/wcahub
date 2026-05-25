@@ -188,13 +188,13 @@ export default function TeacherPortal(){
     : displayStudents.filter(s => s.group <= 2);
   const atRisk  = allStudents.filter(s => s.flags?.includes("at-risk"));
   const blocked = allStudents.filter(s => s.flags?.includes("blocked"));
-  const group   = displayGroups.find(g => String(g.id) === String(selGroupId)) || displayGroups[0];
+  const group   = displayGroups.find(g => String(g.id) === String(selGroupId)) || displayGroups[0] || { id:0, level:"—", schedule:"Sin asignar", days:"—", teacher:"—", students:0, color:"#94a3b8", dbId:null };
 
   return(
     <div style={{display:"flex",minHeight: "100vh", height: "100vh",background:C.bg,overflow:"hidden",border:`1px solid ${C.border}`,fontFamily:"'DM Sans','Outfit','Segoe UI',sans-serif",position:"relative"}}>
 
       {/* SIDEBAR */}
-      <aside style={{width:190,background:C.surface,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",padding:"18px 0",flexShrink:0}}>
+      <aside style={{width:isMobile?260:190,background:C.surface,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",padding:"18px 0",flexShrink:0,position:isMobile?"fixed":"relative",top:0,left:0,bottom:0,zIndex:isMobile?9990:1,transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none",transition:"transform .25s ease",overflowY:"auto",minHeight:isMobile?"100vh":"auto"}}>
         <div style={{padding:"0 18px 16px",borderBottom:`1px solid ${C.border}`,marginBottom:10}}>
           <div style={{display:"flex",alignItems:"center",gap:10}}>
               <svg viewBox="0 0 32 32" style={{width:32,height:32,flexShrink:0}}><rect width="32" height="32" rx="8" fill="#ffbb23"/><text x="16" y="23" fontFamily="sans-serif" fontSize="18" fontWeight="800" fill="#155266" textAnchor="middle">W</text></svg>
@@ -203,7 +203,6 @@ export default function TeacherPortal(){
                 <div style={{fontSize:11,color:C.textSec,letterSpacing:1,textTransform:"uppercase"}}>Portal Docente</div>
               </div>
             </div>
-          <div style={{fontSize:11,color:C.textTer,marginTop:2,letterSpacing:1,textTransform:"uppercase"}}>Portal Docente</div>
         </div>
         {NAV.map(item=>(
           <button key={item.id} onClick={()=>setView(item.id)} style={{
@@ -352,7 +351,7 @@ export default function TeacherPortal(){
               <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:"14px 16px",marginBottom:14}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <div>
-                    <div style={{fontSize:16,fontWeight:800,color:C.textPri,marginBottom:3}}>Nivel {group.level} · <span style={{color:C.accent}}>{group.schedule}</span></div>
+                    <div style={{fontSize:16,fontWeight:800,color:C.textPri,marginBottom:3}}>Nivel {group?.level || "—"} · <span style={{color:C.accent}}>{group?.schedule || "—"}</span></div>
                     <div style={{fontSize:13,color:C.textSec}}>{group.days} · {group.students} estudiantes · U{group.activeUnit} activa</div>
                   </div>
                   <button style={{fontSize:13,padding:"7px 16px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:9,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}} onClick={()=>{ const url=group?.teamsLink||group?.teams_link; if(url&&url!=="")window.open(url,"_blank"); else showToast("Link de Teams no configurado — pedile al Admin"); }}>▷ Abrir Teams</button>

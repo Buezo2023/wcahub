@@ -659,7 +659,7 @@ export default function CRM() {
     <div style={{ display:"flex",flexDirection:isMobile?"column":"row", minHeight:"100vh", background:"var(--bg-page)", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
 
       {/* SIDEBAR */}
-      <aside style={{ width:196, background:PH, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0, minHeight:"100vh", position:"sticky", top:0 }}>
+      <aside style={{ width:isMobile?260:196, background:PH, position:isMobile?"fixed":"sticky", top:0, left:0, bottom:0, zIndex:isMobile?9990:1, transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none", transition:"transform .25s ease", overflowY:"auto", display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0, minHeight:"100vh", position:"sticky", top:0 }}>
         <div style={{ padding:"22px 18px 18px", borderBottom:"1px solid rgba(255,255,255,.08)", marginBottom:8 }}>
           <div style={{ fontSize:11, color:Y, fontWeight:700, letterSpacing:2, textTransform:"uppercase", marginBottom:5 }}>WCA Academy</div>
           <div style={{ fontSize:16, fontWeight:800, color:"#fff" }}>CRM Ventas</div>
