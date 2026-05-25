@@ -309,7 +309,7 @@ function B2BSection({ supabase, B, Badge, Stat }) {
 
   return (
     <div>
-      <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:10, marginBottom:14 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:14 }}>
         <Stat label="Empresas activas" value={companies.length} sub={`${companies.reduce((a,c)=>a+c.seats_paid,0)} cupos totales`} color={B.primary} icon="ti-building" />
         <Stat label="Ingresos B2B (mes)" value={`$${totalRevenue.toLocaleString()}`} sub="Con descuentos aplicados" color={B.secondary} icon="ti-coin" />
         <Stat label="Próxima factura" value="1 del mes" sub={`${companies.length} empresa${companies.length!==1?"s":""}`} color={B.green} icon="ti-receipt" />

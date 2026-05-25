@@ -143,7 +143,7 @@ function ProgTag({prog}){
 function ProgramPill({prog,active,onClick}){
   return(
     <button onClick={onClick} style={{
-      display:"flex",alignItems:"center",gap:7,padding:isMobile?"6px 10px":"8px 16px",
+      display:"flex",alignItems:"center",gap:7,padding:"8px 16px",
       background:active?prog.color:"var(--bg-surface)",
       color:active?"#fff":"var(--text-secondary)",
       border:`1.5px solid ${active?prog.color:"var(--border)"}`,
@@ -195,7 +195,7 @@ function UnitRow({unit,prog,isActive,isDone,isLocked,color}){
             {isLocked&&<span style={{marginLeft:6,fontSize:11,color:"var(--text-tertiary)"}}>🔒</span>}
           </div>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:7,minWidth:isMobile?80:130,justifyContent:"flex-end"}}>
+        <div style={{display:"flex",alignItems:"center",gap:7,minWidth:130,justifyContent:"flex-end"}}>
           <div style={{textAlign:"right"}}>
             <div style={{fontSize:12,color:"var(--text-secondary)"}}>{prog.actsDone}/{unit.acts}</div>
             <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Activities done</div>
@@ -214,7 +214,7 @@ function UnitRow({unit,prog,isActive,isDone,isLocked,color}){
           Unit {unit.n} Test
           {isDone&&prog.testDone===3&&<span style={{marginLeft:8,fontSize:11,background:GD,color:G,padding:"2px 8px",borderRadius:20,fontWeight:700}}>✓</span>}
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:7,minWidth:isMobile?80:130,justifyContent:"flex-end"}}>
+        <div style={{display:"flex",alignItems:"center",gap:7,minWidth:130,justifyContent:"flex-end"}}>
           <div style={{textAlign:"right"}}>
             <div style={{fontSize:12,color:"var(--text-secondary)"}}>{prog.testDone}/3</div>
             <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Activities done</div>
@@ -252,7 +252,7 @@ function UpsellBanner({prog,canEnroll,onEnroll}){
           </div>
         )}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div><span style={{fontSize:isMobile?17:22,fontWeight:800,color:prog.color}}>${prog.price}</span><span style={{fontSize:12,color:"var(--text-secondary)"}}>/{prog.interval}</span></div>
+          <div><span style={{fontSize:22,fontWeight:800,color:prog.color}}>${prog.price}</span><span style={{fontSize:12,color:"var(--text-secondary)"}}>/{prog.interval}</span></div>
           <button onClick={onEnroll} disabled={!!prog.prereq&&!canEnroll} style={{padding:"9px 20px",background:prog.prereq&&!canEnroll?"var(--bg-surface-subtle)":prog.color,color:prog.prereq&&!canEnroll?"var(--text-tertiary)":"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:700,cursor:prog.prereq&&!canEnroll?"not-allowed":"pointer",fontFamily:"inherit",transition:"all .15s"}}>
             {prog.prereq&&!canEnroll?"Bloqueado 🔒":"Inscribirse →"}
           </button>
@@ -404,20 +404,20 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
     <div style={{ padding:24 }}>
       <div style={{ display:"flex", gap:8, marginBottom:16 }}>
         {enrolledProgs.map(p => (
-          <button key={p.id} onClick={() => setActiveProg(p.id)} style={{ display:"flex", alignItems:"center", gap:7, padding:isMobile?"6px 10px":"8px 16px", background:activeProg===p.id?p.color:"var(--bg-surface)", color:activeProg===p.id?"#fff":"var(--text-secondary)", border:`1.5px solid ${activeProg===p.id?p.color:"var(--border)"}`, borderRadius:30, fontSize:12, fontWeight:activeProg===p.id?700:400, cursor:"pointer", fontFamily:"inherit" }}>
+          <button key={p.id} onClick={() => setActiveProg(p.id)} style={{ display:"flex", alignItems:"center", gap:7, padding:"8px 16px", background:activeProg===p.id?p.color:"var(--bg-surface)", color:activeProg===p.id?"#fff":"var(--text-secondary)", border:`1.5px solid ${activeProg===p.id?p.color:"var(--border)"}`, borderRadius:30, fontSize:12, fontWeight:activeProg===p.id?700:400, cursor:"pointer", fontFamily:"inherit" }}>
             <span style={{ fontSize:14 }}>{p.icon}</span>{p.shortName}
           </button>
         ))}
       </div>
       <div style={{ background:"var(--bg-surface)", border:`1.5px solid ${P}40`, borderRadius:16, padding:28, maxWidth:540 }}>
         <div style={{ fontSize:11, color:"var(--text-tertiary)", textTransform:"uppercase", letterSpacing:.5, marginBottom:4 }}>Examen · {prog?.shortName}</div>
-        <div style={{ fontSize:isMobile?17:22, fontWeight:800, color:"var(--text-primary)", marginBottom:4 }}>Unidad {unit}</div>
+        <div style={{ fontSize:22, fontWeight:800, color:"var(--text-primary)", marginBottom:4 }}>Unidad {unit}</div>
         {enrollment?.examScore > 0 && (
           <div style={{ fontSize:14, color:enrollment.examScore>=70?G:R, fontWeight:600, marginBottom:12 }}>
             Último intento: {enrollment.examScore}% {enrollment.examScore>=70?"✓ Aprobado":"✗ No aprobado"}
           </div>
         )}
-        <div style={{ display:"grid", gridTemplateColumns:isMobile?"1fr 1fr":"repeat(3,1fr)", gap:10, marginBottom:20 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:20 }}>
           {[["Preguntas", questions.length,"var(--text-primary)"],["Para aprobar","≥ 70%",G],["Tiempo límite","30 min",P]].map(([l,v,c],i) => (
             <div key={i} style={{ background:"var(--bg-surface-subtle)", borderRadius:9, padding:"12px 14px" }}>
               <div style={{ fontSize:20, fontWeight:800, color:c }}>{v}</div>
@@ -441,7 +441,7 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
 
   if (phase === "taking") return (
     <div style={{ padding:24, maxWidth:620 }}>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:20, background:"var(--bg-surface)", border:`1px solid ${P}30`, borderRadius:12, padding:"12px 18px" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:"nowrap", gap:0, marginBottom:20, background:"var(--bg-surface)", border:`1px solid ${P}30`, borderRadius:12, padding:"12px 18px" }}>
         <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>Examen U{unit} · {prog?.shortName}</div>
         <div style={{ display:"flex", alignItems:"center", gap:14 }}>
           <div style={{ fontSize:12, color:"var(--text-secondary)" }}>{answered}/{questions.length} respondidas</div>
@@ -485,7 +485,7 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
       <div style={{ background:"var(--bg-surface)", border:`2px solid ${passed?G:R}`, borderRadius:20, padding:32, textAlign:"center", marginBottom:16 }}>
         <div style={{ fontSize:56, marginBottom:8 }}>{passed?"🏆":"📚"}</div>
         <div style={{ fontSize:15, fontWeight:600, color:"var(--text-secondary)", marginBottom:4 }}>{passed?"¡Aprobaste!":"Casi — seguí practicando"}</div>
-        <div style={{ fontSize:isMobile?32:52, fontWeight:800, color:passed?G:R, lineHeight:1 }}>{score}%</div>
+        <div style={{ fontSize:52, fontWeight:800, color:passed?G:R, lineHeight:1 }}>{score}%</div>
         <div style={{ fontSize:13, color:"var(--text-secondary)", marginTop:6 }}>Unidad {unit} · {prog?.shortName}</div>
         {saving && <div style={{ fontSize:12, color:"var(--text-tertiary)", marginTop:8 }}>Guardando resultado…</div>}
         {confirmed && <div style={{ fontSize:12, color:G, marginTop:8 }}>✓ Resultado guardado en tu historial</div>}
