@@ -283,7 +283,7 @@ export default function Landing() {
           </div>
         </FadeIn>
 
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:24 }} className="how-grid">
+        <div style={{ display:"grid", gridTemplateColumns:window.innerWidth<=768?"1fr":"repeat(3,1fr)", gap:24 }} className="how-grid">
           {[
             { icon:"💵", title:"Gana en dólares",    desc:"El VA bilingüe promedio factura entre $800–2,500 USD/mes. Desde tu casa, en cualquier país de LATAM.", color:T.teal },
             { icon:"🌍", title:"Trabaja desde donde quieras", desc:"Tus clientes están en EE.UU., Canadá y Europa. Tu oficina es donde tengas wifi.", color:"#7c3aed" },
@@ -334,7 +334,7 @@ export default function Landing() {
           {programs.filter(p=>p.id===activeProgram).map(p=>(
             <FadeIn key={p.id}>
               <div style={{ background:"rgba(255,255,255,.05)", backdropFilter:"blur(10px)", border:`1px solid rgba(255,255,255,.1)`, borderRadius:24, padding:"36px 40px", display:"flex", gap:40, alignItems:"center" }}>
-                <div style={{ width:90, height:90, borderRadius:22, background:p.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:44, flexShrink:0 }}>{p.icon}</div>
+                <div style={{ width:90, height:90, borderRadius:22, background:p.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:window.innerWidth<=768?26:44, flexShrink:0 }}>{p.icon}</div>
                 <div style={{ flex:1 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
                     <div className="serif" style={{ fontSize:26, color:T.white }}>{p.name}</div>
@@ -433,7 +433,7 @@ export default function Landing() {
           </div>
         </FadeIn>
 
-        <div className="programs-grid" style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:20 }}>
+        <div className="programs-grid" style={{ display:"grid", gridTemplateColumns:window.innerWidth<=768?"1fr":"repeat(3,1fr)", gap:20 }}>
           {programs.slice(0,3).map((p,i)=>(
             <FadeIn key={i} delay={i*0.1}>
               <div className="hover-lift" style={{ background:p.popular?T.teal:T.white, border:`1.5px solid ${p.popular?T.teal:T.border}`, borderRadius:22, padding:"28px 24px", position:"relative", overflow:"hidden" }}>
@@ -457,7 +457,7 @@ export default function Landing() {
         <FadeIn delay={0.2}>
           <div style={{ marginTop:20, background:"var(--bg-surface, #fff)", border:`1px solid ${T.border}`, borderRadius:22, padding:"24px 28px" }}>
             <div style={{ fontSize:13, fontWeight:700, color:T.muted, marginBottom:16, textTransform:"uppercase", letterSpacing:.8 }}>Especializaciones VA · $95/mes c/u · Requieren VA General</div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:14 }}>
+            <div style={{ display:"grid", gridTemplateColumns:window.innerWidth<=768?"1fr":"repeat(3,1fr)", gap:14 }}>
               {programs.slice(2).map((p,i)=>(
                 <div key={i} style={{ display:"flex", gap:12, alignItems:"center", padding:"12px 14px", background:"#f8fafc", borderRadius:12, border:`1px solid ${T.border}` }}>
                   <span style={{ fontSize:22 }}>{p.icon}</span>
@@ -650,7 +650,7 @@ export default function Landing() {
         <div style={{ maxWidth:640, margin:"0 auto", textAlign:"center" }}>
           <FadeIn>
             <div style={{ fontSize:11, fontWeight:700, color:T.gold, letterSpacing:2.5, textTransform:"uppercase", marginBottom:16 }}>Empieza hoy</div>
-            <h2 className="serif" style={{ fontSize:44, color:T.white, lineHeight:1.15, marginBottom:16 }}>
+            <h2 className="serif" style={{ fontSize:window.innerWidth<=768?26:44, color:T.white, lineHeight:1.15, marginBottom:16 }}>
               Tu carrera como VA<br/><em style={{ color:T.gold }}>comienza aquí.</em>
             </h2>
             <p style={{ fontSize:15, color:"rgba(255,255,255,.55)", marginBottom:40, lineHeight:1.8 }}>

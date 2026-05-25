@@ -651,7 +651,7 @@ export default function AdminDashboard() {
 
                 {/* Cycle status */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16 }}>
-                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12, display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0 }}>
                     Estado del ciclo — esta semana
                     <button onClick={() => setView("cycle")} style={{ fontSize:11, padding:"3px 8px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>Ver todo</button>
                   </div>
@@ -793,7 +793,7 @@ export default function AdminDashboard() {
 
               {/* Student detail panel */}
               {selStudent && (
-                <div style={{ width:isMobile?"100%":280, background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16, flexShrink:0, overflow:"auto" }}>
+                <div style={{ width:isMobile?"100%":280, background:B.white, position:isMobile?"fixed":"relative", top:isMobile?0:"auto", left:isMobile?0:"auto", right:isMobile?0:"auto", bottom:isMobile?0:"auto", zIndex:isMobile?9990:1, overflowY:isMobile?"auto":"visible", border:`1px solid ${B.border}`, borderRadius:12, padding:16, flexShrink:0, overflow:"auto" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
                     <div style={{ fontSize:14, fontWeight:700, color:B.text }}>{selStudent.name}</div>
                     <button onClick={() => setSelStudent(null)} style={{ background:"none", border:"none", cursor:"pointer", color:B.textSec, fontSize:16 }}>✕</button>
@@ -1039,7 +1039,7 @@ export default function AdminDashboard() {
           onClick={e=>{ if(e.target===e.currentTarget) setEnrollModal(false); }}
           style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}>
           <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, width:440, border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:18 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:18 }}>
               <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>Nuevo estudiante</div>
               <button onClick={()=>setEnrollModal(false)} aria-label="Cerrar" style={{ background:"none", border:"none", cursor:"pointer", color:"var(--text-secondary)", fontSize:18 }}>✕</button>
             </div>
@@ -1080,7 +1080,7 @@ export default function AdminDashboard() {
           onClick={e=>{ if(e.target===e.currentTarget) setTeamsModal(null); }}
           style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}>
           <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:24, width:400, border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:14 }}>
               <div>
                 <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>Configurar link de Teams</div>
                 {teamsModal && <div style={{ fontSize:12, color:"var(--text-secondary)", marginTop:2 }}>{teamsModal.level} · {teamsModal.time} · {teamsModal.teacher}</div>}

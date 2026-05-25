@@ -290,7 +290,7 @@ export default function BIDashboard() {
                     <div style={{ fontSize:22, fontWeight:800, color:B.text, lineHeight:1, marginBottom:4 }}>
                       {animate && <AnimNum value={k.value} prefix={k.prefix} suffix={k.suffix} decimals={k.label==="Churn rate"?1:0} />}
                     </div>
-                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0 }}>
                       <div style={{ fontSize:12, color:k.up?B.green:B.red, fontWeight:600 }}>
                         {k.up?"↑":"↓"} {k.trend}
                       </div>
@@ -304,7 +304,7 @@ export default function BIDashboard() {
               <div style={{ display:"grid", gridTemplateColumns:"1.4fr 1fr", gap:12, marginBottom:12 }}>
                 {/* MRR Chart */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16 }}>
-                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:14 }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:14 }}>
                     <div style={{ fontSize:13, fontWeight:700, color:B.text }}>MRR — 12 meses</div>
                     <div style={{ fontSize:12, color:B.green, fontWeight:600 }}>↑ 119% YoY</div>
                   </div>

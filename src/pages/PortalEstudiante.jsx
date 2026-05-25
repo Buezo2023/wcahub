@@ -141,7 +141,7 @@ function ProgTag({prog}){
 function ProgramPill({prog,active,onClick}){
   return(
     <button onClick={onClick} style={{
-      display:"flex",alignItems:"center",gap:7,padding:"8px 16px",
+      display:"flex",alignItems:"center",gap:7,padding:isMobile?"6px 10px":"8px 16px",
       background:active?prog.color:"var(--bg-surface)",
       color:active?"#fff":"var(--text-secondary)",
       border:`1.5px solid ${active?prog.color:"var(--border)"}`,
@@ -193,7 +193,7 @@ function UnitRow({unit,prog,isActive,isDone,isLocked,color}){
             {isLocked&&<span style={{marginLeft:6,fontSize:11,color:"var(--text-tertiary)"}}>🔒</span>}
           </div>
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:7,minWidth:130,justifyContent:"flex-end"}}>
+        <div style={{display:"flex",alignItems:"center",gap:7,minWidth:isMobile?80:130,justifyContent:"flex-end"}}>
           <div style={{textAlign:"right"}}>
             <div style={{fontSize:12,color:"var(--text-secondary)"}}>{prog.actsDone}/{unit.acts}</div>
             <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Activities done</div>
@@ -212,7 +212,7 @@ function UnitRow({unit,prog,isActive,isDone,isLocked,color}){
           Unit {unit.n} Test
           {isDone&&prog.testDone===3&&<span style={{marginLeft:8,fontSize:11,background:GD,color:G,padding:"2px 8px",borderRadius:20,fontWeight:700}}>✓</span>}
         </div>
-        <div style={{display:"flex",alignItems:"center",gap:7,minWidth:130,justifyContent:"flex-end"}}>
+        <div style={{display:"flex",alignItems:"center",gap:7,minWidth:isMobile?80:130,justifyContent:"flex-end"}}>
           <div style={{textAlign:"right"}}>
             <div style={{fontSize:12,color:"var(--text-secondary)"}}>{prog.testDone}/3</div>
             <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Activities done</div>
@@ -250,7 +250,7 @@ function UpsellBanner({prog,canEnroll,onEnroll}){
           </div>
         )}
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-          <div><span style={{fontSize:22,fontWeight:800,color:prog.color}}>${prog.price}</span><span style={{fontSize:12,color:"var(--text-secondary)"}}>/{prog.interval}</span></div>
+          <div><span style={{fontSize:isMobile?17:22,fontWeight:800,color:prog.color}}>${prog.price}</span><span style={{fontSize:12,color:"var(--text-secondary)"}}>/{prog.interval}</span></div>
           <button onClick={onEnroll} disabled={!!prog.prereq&&!canEnroll} style={{padding:"9px 20px",background:prog.prereq&&!canEnroll?"var(--bg-surface-subtle)":prog.color,color:prog.prereq&&!canEnroll?"var(--text-tertiary)":"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:700,cursor:prog.prereq&&!canEnroll?"not-allowed":"pointer",fontFamily:"inherit",transition:"all .15s"}}>
             {prog.prereq&&!canEnroll?"Bloqueado 🔒":"Inscribirse →"}
           </button>
@@ -402,20 +402,20 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
     <div style={{ padding:24 }}>
       <div style={{ display:"flex", gap:8, marginBottom:16 }}>
         {enrolledProgs.map(p => (
-          <button key={p.id} onClick={() => setActiveProg(p.id)} style={{ display:"flex", alignItems:"center", gap:7, padding:"8px 16px", background:activeProg===p.id?p.color:"var(--bg-surface)", color:activeProg===p.id?"#fff":"var(--text-secondary)", border:`1.5px solid ${activeProg===p.id?p.color:"var(--border)"}`, borderRadius:30, fontSize:12, fontWeight:activeProg===p.id?700:400, cursor:"pointer", fontFamily:"inherit" }}>
+          <button key={p.id} onClick={() => setActiveProg(p.id)} style={{ display:"flex", alignItems:"center", gap:7, padding:isMobile?"6px 10px":"8px 16px", background:activeProg===p.id?p.color:"var(--bg-surface)", color:activeProg===p.id?"#fff":"var(--text-secondary)", border:`1.5px solid ${activeProg===p.id?p.color:"var(--border)"}`, borderRadius:30, fontSize:12, fontWeight:activeProg===p.id?700:400, cursor:"pointer", fontFamily:"inherit" }}>
             <span style={{ fontSize:14 }}>{p.icon}</span>{p.shortName}
           </button>
         ))}
       </div>
       <div style={{ background:"var(--bg-surface)", border:`1.5px solid ${P}40`, borderRadius:16, padding:28, maxWidth:540 }}>
         <div style={{ fontSize:11, color:"var(--text-tertiary)", textTransform:"uppercase", letterSpacing:.5, marginBottom:4 }}>Examen · {prog?.shortName}</div>
-        <div style={{ fontSize:22, fontWeight:800, color:"var(--text-primary)", marginBottom:4 }}>Unidad {unit}</div>
+        <div style={{ fontSize:isMobile?17:22, fontWeight:800, color:"var(--text-primary)", marginBottom:4 }}>Unidad {unit}</div>
         {enrollment?.examScore > 0 && (
           <div style={{ fontSize:14, color:enrollment.examScore>=70?G:R, fontWeight:600, marginBottom:12 }}>
             Último intento: {enrollment.examScore}% {enrollment.examScore>=70?"✓ Aprobado":"✗ No aprobado"}
           </div>
         )}
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:20 }}>
+        <div style={{ display:"grid", gridTemplateColumns:isMobile?"1fr 1fr":"repeat(3,1fr)", gap:10, marginBottom:20 }}>
           {[["Preguntas", questions.length,"var(--text-primary)"],["Para aprobar","≥ 70%",G],["Tiempo límite","30 min",P]].map(([l,v,c],i) => (
             <div key={i} style={{ background:"var(--bg-surface-subtle)", borderRadius:9, padding:"12px 14px" }}>
               <div style={{ fontSize:20, fontWeight:800, color:c }}>{v}</div>
@@ -439,7 +439,7 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
 
   if (phase === "taking") return (
     <div style={{ padding:24, maxWidth:620 }}>
-      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20, background:"var(--bg-surface)", border:`1px solid ${P}30`, borderRadius:12, padding:"12px 18px" }}>
+      <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:20, background:"var(--bg-surface)", border:`1px solid ${P}30`, borderRadius:12, padding:"12px 18px" }}>
         <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>Examen U{unit} · {prog?.shortName}</div>
         <div style={{ display:"flex", alignItems:"center", gap:14 }}>
           <div style={{ fontSize:12, color:"var(--text-secondary)" }}>{answered}/{questions.length} respondidas</div>
@@ -483,7 +483,7 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
       <div style={{ background:"var(--bg-surface)", border:`2px solid ${passed?G:R}`, borderRadius:20, padding:32, textAlign:"center", marginBottom:16 }}>
         <div style={{ fontSize:56, marginBottom:8 }}>{passed?"🏆":"📚"}</div>
         <div style={{ fontSize:15, fontWeight:600, color:"var(--text-secondary)", marginBottom:4 }}>{passed?"¡Aprobaste!":"Casi — seguí practicando"}</div>
-        <div style={{ fontSize:52, fontWeight:800, color:passed?G:R, lineHeight:1 }}>{score}%</div>
+        <div style={{ fontSize:isMobile?32:52, fontWeight:800, color:passed?G:R, lineHeight:1 }}>{score}%</div>
         <div style={{ fontSize:13, color:"var(--text-secondary)", marginTop:6 }}>Unidad {unit} · {prog?.shortName}</div>
         {saving && <div style={{ fontSize:12, color:"var(--text-tertiary)", marginTop:8 }}>Guardando resultado…</div>}
         {confirmed && <div style={{ fontSize:12, color:G, marginTop:8 }}>✓ Resultado guardado en tu historial</div>}
@@ -708,7 +708,7 @@ export default function PortalEstudiante(){
               )}
             </button>
             {showNotifs && (
-              <div style={{position:"absolute",top:44,right:0,width:320,background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,boxShadow:"0 8px 32px rgba(0,0,0,.15)",zIndex:999,overflow:"hidden"}}>
+              <div style={{position:"absolute",top:44,right:0,width:isMobile?"90vw":320,background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,boxShadow:"0 8px 32px rgba(0,0,0,.15)",zIndex:999,overflow:"hidden"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 16px",borderBottom:"1px solid var(--border)"}}>
                   <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)"}}>Notificaciones</div>
                   {unread > 0 && <button onClick={markAllRead} style={{fontSize:11,color:P,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Marcar leídas</button>}
@@ -716,7 +716,7 @@ export default function PortalEstudiante(){
                 <div style={{maxHeight:320,overflowY:"auto"}}>
                   {notifications.length === 0 ? (
                     <div style={{padding:"24px 16px",textAlign:"center",fontSize:13,color:"var(--text-secondary)"}}>
-                      <div style={{fontSize:28,marginBottom:8}}>🔔</div>No hay notificaciones
+                      <div style={{fontSize:isMobile?20:28,marginBottom:8}}>🔔</div>No hay notificaciones
                     </div>
                   ) : notifications.map(n=>(
                     <div key={n.id} onClick={()=>markRead(n.id)}
@@ -761,7 +761,7 @@ export default function PortalEstudiante(){
                 </div>
                 <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                   {enrolledProgs.map(p=>(
-                    <button key={p.id} onClick={()=>{setActiveProg(p.id);setView("practica");}} style={{display:"flex",alignItems:"center",gap:7,padding:"8px 16px",background:"rgba(255,255,255,.15)",color:"#fff",border:"1px solid rgba(255,255,255,.25)",borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",transition:"all .15s"}}
+                    <button key={p.id} onClick={()=>{setActiveProg(p.id);setView("practica");}} style={{display:"flex",alignItems:"center",gap:7,padding:isMobile?"6px 10px":"8px 16px",background:"rgba(255,255,255,.15)",color:"#fff",border:"1px solid rgba(255,255,255,.25)",borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",transition:"all .15s"}}
                       onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.25)";}}
                       onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.15)";}}>
                       <span style={{fontSize:16}}>{p.icon}</span> {p.shortName} →
@@ -830,7 +830,7 @@ export default function PortalEstudiante(){
               {/* All enrolled → show completion message */}
               {unenrolledProgs.length===0&&(
                 <div style={{background:GD,border:`1px solid ${G}40`,borderRadius:14,padding:20,textAlign:"center"}}>
-                  <div style={{fontSize:32,marginBottom:8}}>🏆</div>
+                  <div style={{fontSize:isMobile?22:32,marginBottom:8}}>🏆</div>
                   <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:4}}>¡Estás inscrita en todos los programas!</div>
                   <div style={{fontSize:13,color:"var(--text-secondary)"}}>Sigue practicando para completar cada uno.</div>
                 </div>
@@ -873,7 +873,7 @@ export default function PortalEstudiante(){
                   </div>
                   <div style={{borderLeft:"1px solid var(--border)",paddingLeft:48}}>
                     <div style={{fontSize:11,color:"var(--text-secondary)",marginBottom:3}}>Scores</div>
-                    <div style={{fontSize:22,fontWeight:800,color:"var(--text-primary)"}}>{avgScore}%</div>
+                    <div style={{fontSize:isMobile?17:22,fontWeight:800,color:"var(--text-primary)"}}>{avgScore}%</div>
                   </div>
                   <div style={{borderLeft:"1px solid var(--border)",paddingLeft:48,display:"flex",alignItems:"center",gap:10}}>
                     <i className="ti ti-clock" style={{fontSize:20,color:"var(--text-secondary)"}} aria-hidden="true"/>
@@ -884,7 +884,7 @@ export default function PortalEstudiante(){
                   </div>
                 </div>
                 {/* Skill cards */}
-                <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(skills.length,4)},1fr)`,gap:10}}>
+                <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":`repeat(${Math.min(skills.length,4)},1fr)`,gap:10}}>
                   {skills.map(s=><SkillCard key={s.name} skill={s}/>)}
                 </div>
               </div>
@@ -936,7 +936,7 @@ export default function PortalEstudiante(){
               </div>
               <div style={{background:`linear-gradient(135deg,${prog?.color||P},${PH})`,borderRadius:16,padding:24,marginBottom:20,color:"#fff"}}>
                 <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginBottom:4}}>Próxima clase en vivo · {prog?.shortName}</div>
-                <div style={{fontSize:22,fontWeight:800,marginBottom:4}}>{enrollment?.nextClass}</div>
+                <div style={{fontSize:isMobile?17:22,fontWeight:800,marginBottom:4}}>{enrollment?.nextClass}</div>
                 <div style={{fontSize:13,color:"rgba(255,255,255,.7)",marginBottom:18}}>Docente: {enrollment?.teacher} · U{enrollment?.unit}: {enrollment?.unitTitle}</div>
                 <button onClick={()=>{
                   const link = enrollment?.teamsLink;
@@ -1061,7 +1061,7 @@ export default function PortalEstudiante(){
                         <div style={{fontSize:11,color:"var(--text-secondary)"}}>Mensual · Próxima renovación: 16 Jul</div>
                       </div>
                       <div style={{textAlign:"right"}}>
-                        <div style={{fontSize:22,fontWeight:800,color:p.color}}>${prog2?.price}</div>
+                        <div style={{fontSize:isMobile?17:22,fontWeight:800,color:p.color}}>${prog2?.price}</div>
                         <div style={{fontSize:11,color:"var(--text-tertiary)"}}>/{prog2?.interval}</div>
                       </div>
                       <div style={{fontSize:11,padding:"3px 10px",background:GD,color:G,borderRadius:20,fontWeight:600}}>Activa</div>
@@ -1155,7 +1155,7 @@ export default function PortalEstudiante(){
                           <div style={{fontSize:13,color:"var(--text-secondary)"}}>Subiendo...</div>
                         ) : (
                           <>
-                            <i className="ti ti-upload" style={{fontSize:28,color:"var(--text-tertiary)",display:"block",marginBottom:8}} aria-hidden="true"/>
+                            <i className="ti ti-upload" style={{fontSize:isMobile?20:28,color:"var(--text-tertiary)",display:"block",marginBottom:8}} aria-hidden="true"/>
                             <div style={{fontSize:13,fontWeight:600,color:"var(--text-primary)",marginBottom:2}}>Haz clic para seleccionar el comprobante</div>
                             <div style={{fontSize:11,color:"var(--text-secondary)"}}>JPG, PNG o PDF · Máx. 5 MB</div>
                           </>

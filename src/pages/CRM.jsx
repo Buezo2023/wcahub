@@ -264,7 +264,7 @@ function NewLeadModal({ onSave, onClose }) {
     <div style={{ position:"fixed", inset:0, background:"rgba(15,23,42,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}
       onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
       <div style={{ background:"var(--bg-surface)", borderRadius:20, padding:28, width:480, maxWidth:"100%", boxShadow:"0 24px 60px rgba(0,0,0,.2)", maxHeight:"90vh", overflowY:"auto" }}>
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:20 }}>
           <div style={{ fontSize:16, fontWeight:700, color:"var(--text-primary)" }}>Nuevo lead</div>
           <button onClick={onClose} style={{ background:"none", border:"none", fontSize:20, cursor:"pointer", color:"var(--text-tertiary)" }}>✕</button>
         </div>
@@ -410,7 +410,7 @@ function PlacementTestModal({ lead, onClose, onSave }) {
       <div style={{ background:"var(--bg-surface)", borderRadius:20, padding:28, width:520, maxWidth:"100%", maxHeight:"90vh", overflowY:"auto", boxShadow:"0 24px 60px rgba(0,0,0,.2)" }}>
 
         {/* Header */}
-        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
+        <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:20 }}>
           <div>
             <div style={{ fontSize:16, fontWeight:700, color:"var(--text-primary)" }}>Placement Test</div>
             {lead && <div style={{ fontSize:12, color:"var(--text-secondary)", marginTop:2 }}>Lead: {lead.name}</div>}
@@ -748,7 +748,7 @@ export default function CRM() {
                 {STAGES.map(stage=>{
                   const stageLeads = filteredLeads.filter(l=>l.stage===stage.id);
                   return (
-                    <div key={stage.id} style={{ width:220, flexShrink:0 }}>
+                    <div key={stage.id} style={{ width:isMobile?180:220, flexShrink:0 }}>
                       {/* Column header */}
                       <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:12, padding:"8px 12px", background:"var(--bg-surface)", borderRadius:10, border:"1px solid var(--border)", boxShadow:"0 1px 3px rgba(0,0,0,.04)" }}>
                         <div style={{ width:8, height:8, borderRadius:"50%", background:stage.color }}/>
@@ -892,7 +892,7 @@ export default function CRM() {
                   ))}
                   {pendingTasks===0 && (
                     <div style={{ textAlign:"center", padding:"40px 20px", background:"var(--bg-surface)", borderRadius:14, border:"1px solid var(--border)" }}>
-                      <div style={{ fontSize:32, marginBottom:10 }}>✅</div>
+                      <div style={{ fontSize:isMobile?22:32, marginBottom:10 }}>✅</div>
                       <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>¡Todo al día!</div>
                       <div style={{ fontSize:13, color:"var(--text-tertiary)" }}>No tenés tareas pendientes para hoy.</div>
                     </div>

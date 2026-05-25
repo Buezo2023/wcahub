@@ -316,7 +316,7 @@ export default function GestorCobros() {
               <div style={{ flex:1, overflow:"auto" }}>
                 {pending.length === 0 && (
                   <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:40, textAlign:"center" }}>
-                    <div style={{ fontSize:32, marginBottom:8 }}>🎉</div>
+                    <div style={{ fontSize:isMobile?22:32, marginBottom:8 }}>🎉</div>
                     <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Todo confirmado</div>
                     <div style={{ fontSize:13, color:B.textSec }}>No hay transferencias pendientes en este momento.</div>
                   </div>
@@ -605,7 +605,7 @@ export default function GestorCobros() {
         <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}
           onClick={e=>{ if(e.target===e.currentTarget) setRejectModal(null); }}>
           <div style={{ background:B.white, borderRadius:16, padding:24, width:380, border:`1px solid ${B.border}`, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
-            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:4 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:4 }}>
               <div style={{ fontSize:15, fontWeight:700, color:B.text }}>Rechazar transferencia</div>
               <button onClick={()=>setRejectModal(null)} style={{ background:"none", border:"none", cursor:"pointer", color:B.textSec, fontSize:18 }} aria-label="Cerrar">✕</button>
             </div>
@@ -660,7 +660,7 @@ export default function GestorCobros() {
             ) : (
               <div style={{ background:B.bg, borderRadius:10, height:120, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14, border:`1px solid ${B.border}` }}>
                 <div style={{ textAlign:"center", color:B.textSec }}>
-                  <i className="ti ti-file-off" style={{ fontSize:28, display:"block", marginBottom:6 }} aria-hidden="true" />
+                  <i className="ti ti-file-off" style={{ fontSize:isMobile?20:28, display:"block", marginBottom:6 }} aria-hidden="true" />
                   <div style={{ fontSize:12 }}>Sin comprobante adjunto</div>
                   <div style={{ fontSize:11, color:B.textSec, marginTop:2 }}>El estudiante no subió imagen</div>
                 </div>

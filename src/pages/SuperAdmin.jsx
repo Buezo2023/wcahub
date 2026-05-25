@@ -104,7 +104,7 @@ function Modal({ title, subtitle, onClose, children }) {
       <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:460, maxWidth:"100%", border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)", maxHeight:"90vh", overflowY:"auto" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
           <div>
-            <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>{title}</div>
+            <div style={{ fontSize:isMobile?14:15, fontWeight:700, color:"var(--text-primary)" }}>{title}</div>
             {subtitle && <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:2 }}>{subtitle}</div>}
           </div>
           <button onClick={onClose} style={{ background:"none", border:"none", fontSize:20, cursor:"pointer", color:"var(--text-tertiary)" }}>✕</button>
@@ -564,7 +564,7 @@ export default function SuperAdmin() {
                     <div style={{ display:"flex", gap:12, alignItems:"center" }}>
                       <div style={{ width:48, height:48, borderRadius:12, background:`${p.color}15`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>{p.icon}</div>
                       <div>
-                        <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>{p.name}</div>
+                        <div style={{ fontSize:isMobile?14:15, fontWeight:700, color:"var(--text-primary)" }}>{p.name}</div>
                         <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:2 }}><code style={{ background:"var(--bg-surface-subtle)", padding:"1px 7px", borderRadius:5, fontSize:10 }}>{p.code}</code>{" · "}{p.levels}</div>
                       </div>
                     </div>
@@ -671,7 +671,7 @@ export default function SuperAdmin() {
           {/* ── ROLES ── */}
           {view==="hr" && subView==="roles" && (
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:"14px 18px", display:"flex", justifyContent:"space-between", alignItems:"center", boxShadow:"var(--shadow-sm)" }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:"14px 18px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, boxShadow:"var(--shadow-sm)" }}>
                 <div>
                   <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>Roles del sistema ({ROLES_DEF.length})</div>
                   <div style={{ fontSize:12, color:"var(--text-secondary)", marginTop:2 }}>Para crear usuarios con cada rol usá RRHH & Personal → Agregar empleado</div>
@@ -729,7 +729,7 @@ export default function SuperAdmin() {
                     {editPrice===p.id ? (
                       <div style={{ display:"flex", gap:7, alignItems:"center" }}>
                         <span style={{ fontSize:14, color:"var(--text-secondary)" }}>$</span>
-                        <input autoFocus value={tmpPrice} onChange={e=>setTmpPrice(e.target.value)} onKeyDown={e=>{ if(e.key==="Enter") document.querySelector('[data-price-save]')?.click(); }} style={{ width:70, padding:"7px 9px", border:`2px solid ${P}`, borderRadius:8, fontSize:15, fontWeight:700, color:P, textAlign:"center", fontFamily:"inherit" }}/>
+                        <input autoFocus value={tmpPrice} onChange={e=>setTmpPrice(e.target.value)} onKeyDown={e=>{ if(e.key==="Enter") document.querySelector('[data-price-save]')?.click(); }} style={{ width:70, padding:"7px 9px", border:`2px solid ${P}`, borderRadius:8, fontSize:isMobile?14:15, fontWeight:700, color:P, textAlign:"center", fontFamily:"inherit" }}/>
                         <BtnPrimary onClick={async()=>{
   const newP = +tmpPrice;
   await supabase.from("programs").update(
