@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getLeads, createLead, updateLeadStage, createTask, toggleTask } from "../lib/db.js";
 import { toast as globalToast } from "../lib/toast.jsx";
 import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
+import { SuperAdminBar } from "../lib/SuperAdminBar.jsx";
 import { supabase } from "../lib/supabase.js";
 import { EmptyState } from "../lib/EmptyState.jsx";
 

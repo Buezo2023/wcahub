@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect} from "react";
 import { useNavigate } from 'react-router-dom';
 import { toast } from "../lib/toast.jsx";
 import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
+import { SuperAdminBar } from "../lib/SuperAdminBar.jsx";
 import { supabase } from "../lib/supabase.js";
 
 const B = {
@@ -166,6 +167,7 @@ export default function CoordAcademica() {
 
   return (
     <div style={{ display:"flex", minHeight: "100vh", height: "100vh", background:B.bg,  overflow:"hidden",  fontFamily:"'DM Sans','Segoe UI',sans-serif", position:"relative" }}>
+      <SuperAdminBar />
 
       {/* SIDEBAR */}
       <aside style={{ width:isMobile?260:196, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0 , zIndex:isMobile?9990:1, transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none", transition:"transform .25s ease", maxWidth:isMobile?"80vw":"none" }}>

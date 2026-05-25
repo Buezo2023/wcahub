@@ -4,6 +4,7 @@ import { getStudents, getGroups, getPayments, updateGroupTeamsLink, getPrograms,
 import { exportCSV } from "../lib/exportCSV.js";
 import { EmptyState } from "../lib/EmptyState.jsx";
 import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
+import { SuperAdminBar } from "../lib/SuperAdminBar.jsx";
 import { supabase } from "../lib/supabase.js";
 import { toast } from "../lib/toast.jsx";
 import { api } from "../lib/api.js";
@@ -549,6 +550,7 @@ export default function AdminDashboard() {
 
   return (
     <div style={{ display:"flex", minHeight: "100vh", height: "100vh", background:B.bg,  overflow:"hidden",  fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+      <SuperAdminBar />
 
       {/* ── SIDEBAR ── */}
       <aside style={{ width:isMobile?260:200, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 16px", flexShrink:0, position:isMobile?"fixed":"relative", top:0, left:0, bottom:0, zIndex:isMobile?9990:1, transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none", transition:"transform .25s ease", overflowY:"auto", maxWidth:isMobile?"80vw":"none", minHeight:isMobile?"100vh":"auto" }}>

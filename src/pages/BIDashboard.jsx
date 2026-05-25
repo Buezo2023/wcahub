@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
 import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
+import { SuperAdminBar } from "../lib/SuperAdminBar.jsx";
 import { supabase } from "../lib/supabase.js";
 
 // ─── BRAND ────────────────────────────────────────────────────────
@@ -195,6 +196,7 @@ export default function BIDashboard() {
 
   return (
     <div style={{ display:"flex", minHeight: "100vh", height: "100vh", background:B.bg,  overflow:"hidden",  fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+      <SuperAdminBar />
 
       {/* SIDEBAR */}
       <aside style={{ width:184, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0 }}>
