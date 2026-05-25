@@ -55,7 +55,7 @@ export function EstudiantesSection({ showToast }) {
       const res = await fetch("/api/auth/invite", {
         method:"POST",
         headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},
-        body:JSON.stringify({action:"student",...enrollForm,fullName:enrollForm.name}),
+        body:JSON.stringify({action:"student",...enrollForm,fullName:enrollForm.name,scholarship:enrollForm.scholarship||false}),
       });
       const json = await res.json().catch(()=>({}));
       if (!res.ok||!json.ok) { showToast("Error: "+(json.error||json.message), R); return; }
@@ -255,10 +255,19 @@ export function EstudiantesSection({ showToast }) {
                 ))}
               </select>
             </div>
-            <div style={{marginBottom:20}}>
+            <div style={{marginBottom:12}}>
               <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Precio mensual (USD)</div>
               <input type="number" value={enrollForm.price} onChange={e=>setEnrollForm(p=>({...p,price:+e.target.value}))}
                 style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+            </div>
+            <div style={{marginBottom:20,display:"flex",alignItems:"center",gap:10}}>
+              <label style={{display:"flex",alignItems:"center",gap:6,cursor:"pointer",fontSize:12,color:"var(--text-secondary)"}}>
+                <input type="checkbox" checked={enrollForm.scholarship||false} onChange={e=>{
+                  const hasBeca = e.target.checked;
+                  setEnrollForm(p=>({...p,scholarship:hasBeca,price:hasBeca?0:95}));
+                }}/> Beca (precio $0)
+              </label>
+              {enrollForm.scholarship && <span style={{fontSize:11,padding:"2px 8px",borderRadius:12,background:"#e8f3f6",color:"#155266",fontWeight:600}}>100% beca aplicada</span>}
             </div>
             <div style={{display:"flex",gap:8}}>
               <button onClick={()=>setEnrollModal(false)}

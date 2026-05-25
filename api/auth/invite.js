@@ -62,7 +62,7 @@ function staffEmailHtml({ name, role, portalUrl, email }) {
 // ── Handlers ───────────────────────────────────────────────────────
 
 async function handleStudent(req, actor) {
-  const { email, fullName, programId = 'en', level = 'A1', price = 95, groupId } = req.body;
+  const { email, fullName, programId = 'en', level = 'A1', price = 95, groupId, scholarship = false } = req.body;
   if (!email || !fullName) return { status: 400, message: 'email y fullName son requeridos' };
 
   const admin = getSupabaseAdmin();
@@ -92,7 +92,7 @@ async function handleStudent(req, actor) {
     if (sErr) throw sErr;
     student = data;
   } else {
-    const { data, error: sErr } = await admin.from('students').insert({ profile_id: userId, level }).select().single();
+    const { data, error: sErr } = await admin.from('students').insert({ profile_id: userId, level, scholarship }).select().single();
     if (sErr) throw sErr;
     student = data;
   }

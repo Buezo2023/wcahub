@@ -485,6 +485,18 @@ export default function SuperAdmin() {
           </div>
           <div style={{ display:"flex", gap:8 }}>
             <Badge text="Sistema activo" bg={GD} color="#065f46"/>
+            <button onClick={async()=>{
+              try {
+                const {data:{session}} = await supabase.auth.getSession();
+                const res = await fetch("/api/jobs/daily-billing", {
+                  headers:{"x-cron-secret": "manual-trigger", "Authorization":`Bearer ${session?.access_token}`}
+                });
+                const json = await res.json().catch(()=>({}));
+                showToast(`Ciclo ejecutado: ${json.results?.autoSuspended?.count||0} suspendidos, ${json.results?.preReminders?.sent||0} recordatorios`);
+              } catch(e){ showToast("Error: "+e.message, R); }
+            }} style={{fontSize:11,padding:"7px 14px",background:PD,color:P,border:`1px solid ${P}30`,borderRadius:8,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>
+              ▶ Ciclo cobro manual
+            </button>
           </div>
         </div>
 

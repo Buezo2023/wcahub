@@ -37,5 +37,11 @@
       ]
     }
   ],
-  "outputDirectory": "dist"
+  "outputDirectory": "dist",
+  "crons": [
+    {
+      "path": "/api/jobs/daily-billing",
+      "schedule": "0 9 * * *"
+    }
+  ]
 }

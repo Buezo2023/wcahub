@@ -1118,19 +1118,59 @@ export default function PortalEstudiante(){
                   </div>
                 );
               })}
+              {/* Upload proof for pending payments */}
+              {realPayments.filter(p=>p.status==="pending").map(p=>(
+                <div key={p.id} style={{background:AD,border:`1px solid ${A}40`,borderRadius:12,padding:"14px 18px",marginBottom:10,display:"flex",alignItems:"center",gap:12}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:13,fontWeight:700,color:A}}>⏳ Pago pendiente de confirmación</div>
+                    <div style={{fontSize:11,color:"var(--text-secondary)",marginTop:2}}>${Number(p.amount).toFixed(2)} · {new Date(p.created_at).toLocaleDateString("es-HN",{day:"2-digit",month:"long"})}</div>
+                  </div>
+                  {p.proof_url
+                    ? <div style={{fontSize:11,color:G,fontWeight:600}}>✓ Comprobante enviado</div>
+                    : <label style={{fontSize:12,padding:"6px 14px",background:A,color:"#fff",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>
+                        📎 Subir comprobante
+                        <input type="file" accept="image/*,.pdf" style={{display:"none"}} onChange={async e=>{
+                          const file = e.target.files[0];
+                          if (!file) return;
+                          try {
+                            const ext = file.name.split(".").pop();
+                            const path = `proofs/${p.id}.${ext}`;
+                            const { error: upErr } = await supabase.storage.from("proofs").upload(path, file, {upsert:true});
+                            if (upErr) throw upErr;
+                            const { data: urlData } = supabase.storage.from("proofs").getPublicUrl(path);
+                            const {data:{session}} = await supabase.auth.getSession();
+                            await fetch("/api/payments/upload-proof",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},body:JSON.stringify({paymentId:p.id,proofUrl:urlData.publicUrl})});
+                            toast.success("✓ Comprobante enviado — cobros lo revisará en breve");
+                            setRealPayments(ps=>ps.map(x=>x.id===p.id?{...x,proof_url:urlData.publicUrl}:x));
+                          } catch(err){ toast.error("Error al subir: "+err.message); }
+                        }}/>
+                      </label>
+                  }
+                </div>
+              ))}
+
+              {/* Payment history by month */}
               <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,overflow:"hidden",boxShadow:"var(--shadow-sm)"}}>
-                <div style={{padding:"13px 18px",borderBottom:"1px solid var(--border)",fontSize:12,fontWeight:700,color:"var(--text-primary)"}}>Historial de pagos</div>
+                <div style={{padding:"13px 18px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <div style={{fontSize:12,fontWeight:700,color:"var(--text-primary)"}}>Historial de pagos</div>
+                  <div style={{fontSize:11,color:"var(--text-secondary)"}}>{realPayments.filter(p=>p.status==="confirmed").length} pagos confirmados</div>
+                </div>
                 {realPayments.length > 0 ? realPayments.map((p,i)=>{
-                  const fecha = new Date(p.created_at).toLocaleDateString("es-HN",{day:"2-digit",month:"short"});
+                  const fecha = new Date(p.created_at).toLocaleDateString("es-HN",{day:"2-digit",month:"short",year:"numeric"});
                   const prog3 = p.programs?.name || "Programa";
                   const statusColor = p.status==="confirmed"?G:p.status==="pending"?A:R;
                   const statusBg    = p.status==="confirmed"?GD:p.status==="pending"?AD:RD;
                   const statusText  = p.status==="confirmed"?"✓ Confirmado":p.status==="pending"?"Pendiente":"Rechazado";
                   return(
                   <div key={p.id||i} style={{display:"flex",alignItems:"center",gap:14,padding:"12px 18px",borderBottom:"1px solid var(--border)"}}>
-                    <div style={{flex:1}}><div style={{fontSize:13,color:"var(--text-primary)",fontWeight:500}}>{fecha} · {prog3}</div><div style={{fontSize:11,color:"var(--text-secondary)"}}>{p.method||"Transferencia"}</div></div>
-                    <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>${Number(p.amount).toFixed(2)}</div>
-                    <div style={{fontSize:11,padding:"3px 9px",background:statusBg,color:statusColor,borderRadius:20,fontWeight:600}}>{statusText}</div>
+                    <div style={{width:40,height:40,borderRadius:10,background:statusBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
+                      {p.status==="confirmed"?"✓":p.status==="pending"?"⏳":"✗"}
+                    </div>
+                    <div style={{flex:1}}><div style={{fontSize:13,color:"var(--text-primary)",fontWeight:500}}>{fecha}</div><div style={{fontSize:11,color:"var(--text-secondary)"}}>{p.method||"Transferencia"} · {p.reference_code||"—"}</div></div>
+                    <div style={{textAlign:"right"}}>
+                      <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>${Number(p.amount).toFixed(2)}</div>
+                      <div style={{fontSize:10,padding:"2px 7px",background:statusBg,color:statusColor,borderRadius:12,fontWeight:600,marginTop:2}}>{statusText}</div>
+                    </div>
                   </div>);
                 }) : (
                   <div style={{padding:"18px",fontSize:12,color:"var(--text-secondary)",textAlign:"center"}}>

@@ -27,7 +27,7 @@ export function PagosSection({ showToast }) {
         .order("created_at",{ascending:false}).limit(100);
       if (pays) setPayments(pays);
       const {data:sts} = await supabase.from("students")
-        .select("id,level,profile:profiles(full_name,email),enrollments(id,program_id,status)").limit(200);
+        .select("id,level,profile:profiles(full_name,email),enrollments(id,program_id,status,price_locked)").limit(200);
       if (sts) setStudents(sts.filter(s=>s.enrollments?.some(e=>e.status==="active")));
     } finally { setLoading(false); }
   }
@@ -165,7 +165,9 @@ export function PagosSection({ showToast }) {
               <select value={form.studentId} onChange={e=>{
                 const s=students.find(x=>x.id===e.target.value);
                 const en=s?.enrollments?.find(x=>x.status==="active");
-                setForm(p=>({...p,studentId:e.target.value,enrollmentId:en?.id||""}));
+                // Auto-fill locked price (respects scholarship=$0 and B2B discount)
+                const autoPrice = en?.price_locked || 95;
+                setForm(p=>({...p,studentId:e.target.value,enrollmentId:en?.id||"",amount:autoPrice}));
               }} style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}>
                 <option value="">Seleccionar estudiante...</option>
                 {students.map(s=><option key={s.id} value={s.id}>{s.profile?.full_name} — {s.profile?.email}</option>)}
