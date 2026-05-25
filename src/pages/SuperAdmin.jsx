@@ -6,6 +6,10 @@ import { api } from "../lib/api.js";
 import { toast as globalToast } from "../lib/toast.jsx";
 import { useConfirm } from "../lib/ConfirmModal.jsx";
 import { getAuditLog, getPrograms } from "../lib/db.js";
+import { EstudiantesSection } from "../sections/EstudiantesSection.jsx";
+import { PagosSection }       from "../sections/PagosSection.jsx";
+import { LeadsSection }        from "../sections/LeadsSection.jsx";
+import { GruposSection }       from "../sections/GruposSection.jsx";
 
 const P = "#155266", PH = "#0f3d4d", PD = "#e8f3f6";
 const Y = "#ffbb23", YD = "#fff8e6";
@@ -53,13 +57,10 @@ const NAV = [
   { id:"notifications", icon:"ti-bell",              label:"Notificaciones"      },
   { id:"audit",         icon:"ti-list-details",      label:"Auditoría"           },
   { id:"banks",         icon:"ti-building-bank",     label:"Cuentas banco"       },
-  // ── Accesos directos a otros portales ──
-  { id:"_sep",          icon:"",                     label:"OTROS PORTALES", sep:true },
-  { id:"/admin",        icon:"ti-users",             label:"Estudiantes y Grupos", link:true },
-  { id:"/crm",          icon:"ti-briefcase",         label:"CRM · Leads",          link:true },
-  { id:"/cobros",       icon:"ti-credit-card",       label:"Cobros y Pagos",       link:true },
-  { id:"/coordinacion", icon:"ti-school",            label:"Coordinación",         link:true },
-  { id:"/bi",           icon:"ti-chart-bar",         label:"Business Intelligence",link:true },
+  { id:"students",      icon:"ti-users",             label:"Estudiantes"         },
+  { id:"groups",        icon:"ti-grid-dots",         label:"Grupos"              },
+  { id:"payments",      icon:"ti-credit-card",       label:"Pagos"               },
+  { id:"leads",         icon:"ti-briefcase",         label:"CRM · Leads"         },
 ];
 
 const ROLE_COLORS = {
@@ -479,7 +480,7 @@ export default function SuperAdmin() {
         <div style={{ height:60, background:"var(--bg-surface)", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 24px", flexShrink:0, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
           <div>
             <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>
-              {{"overview":"Panel general","programs":"Gestión académica","hr":"RRHH & Personal","gamification":"Gamificación","notifications":"Notificaciones","audit":"Auditoría","banks":"Cuentas banco"}[view]}
+              {{"overview":"Panel general","programs":"Gestión académica","hr":"RRHH & Personal","gamification":"Gamificación","notifications":"Notificaciones","audit":"Auditoría","banks":"Cuentas banco","students":"Estudiantes","groups":"Grupos y horarios","payments":"Pagos","leads":"CRM · Leads"}[view]}
             </div>
           </div>
           <div style={{ display:"flex", gap:8 }}>
