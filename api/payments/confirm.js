@@ -54,6 +54,26 @@ export default async function handler(req, res) {
       .single();
     if (error) throw error;
 
+    // Advance next_payment_date by 1 month when payment is confirmed
+    if (action === 'confirm' && payment.enrollment_id) {
+      const { data: enroll } = await admin
+        .from('enrollments')
+        .select('next_payment_date')
+        .eq('id', payment.enrollment_id)
+        .single();
+
+      if (enroll) {
+        const current = enroll.next_payment_date
+          ? new Date(enroll.next_payment_date)
+          : new Date();
+        const next = new Date(current);
+        next.setMonth(next.getMonth() + 1);
+        await admin.from('enrollments')
+          .update({ next_payment_date: next.toISOString().slice(0, 10) })
+          .eq('id', payment.enrollment_id);
+      }
+    }
+
     await admin.from('audit_log').insert({
       actor_id:  actor.id,
       action:    action === 'confirm' ? 'confirmed_payment' : 'rejected_payment',

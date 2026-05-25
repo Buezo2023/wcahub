@@ -1067,13 +1067,37 @@ export default function PortalEstudiante(){
                       <span style={{fontSize:22}}>{p.icon}</span>
                       <div style={{flex:1}}>
                         <div style={{fontSize:14,fontWeight:700,color:"var(--text-primary)"}}>{p.name}</div>
-                        <div style={{fontSize:11,color:"var(--text-secondary)"}}>Mensual · Próxima renovación: 16 Jul</div>
+                        {(()=>{
+                          const enData = realEnrollments[p.id] || {};
+                          const nextDate = enData.nextPaymentDate;
+                          if (!nextDate) return <div style={{fontSize:11,color:"var(--text-secondary)"}}>Pago mensual</div>;
+                          const daysUntil = Math.ceil((new Date(nextDate) - new Date()) / (1000*60*60*24));
+                          const isOverdue = daysUntil < 0;
+                          const isSoon   = daysUntil >= 0 && daysUntil <= 5;
+                          const dateStr  = new Date(nextDate).toLocaleDateString("es-HN",{day:"2-digit",month:"short"});
+                          const color    = isOverdue ? R : isSoon ? A : G;
+                          const label    = isOverdue
+                            ? `Vencido hace ${Math.abs(daysUntil)} días`
+                            : daysUntil === 0 ? "Vence hoy"
+                            : isSoon    ? `Vence en ${daysUntil} días (${dateStr})`
+                            : `Próximo pago: ${dateStr}`;
+                          return <div style={{fontSize:11,color,fontWeight:isOverdue||isSoon?700:400}}>{label}</div>;
+                        })()}
                       </div>
                       <div style={{textAlign:"right"}}>
                         <div style={{fontSize:isMobile?17:22,fontWeight:800,color:p.color}}>${prog2?.price}</div>
                         <div style={{fontSize:11,color:"var(--text-tertiary)"}}>/{prog2?.interval}</div>
                       </div>
-                      <div style={{fontSize:11,padding:"3px 10px",background:GD,color:G,borderRadius:20,fontWeight:600}}>Activa</div>
+                      {(()=>{
+                        const enData = realEnrollments[p.id] || {};
+                        const nextDate = enData.nextPaymentDate;
+                        const daysUntil = nextDate ? Math.ceil((new Date(nextDate) - new Date()) / (1000*60*60*24)) : 999;
+                        const isOverdue = daysUntil < 0;
+                        const isSoon    = daysUntil >= 0 && daysUntil <= 5;
+                        return <div style={{fontSize:11,padding:"3px 10px",background:isOverdue?RD:isSoon?AD:GD,color:isOverdue?R:isSoon?A:G,borderRadius:20,fontWeight:600}}>
+                          {isOverdue?"Pago vencido":isSoon?"Pago pronto":"Al día"}
+                        </div>;
+                      })()}
                     </div>
                     <button onClick={async()=>{
                       try{

@@ -23,50 +23,55 @@ export default async function handler(req, res) {
     const { studentIds, daysOverdue = 5 } = req.body || {};
     const admin = getSupabaseAdmin();
 
-    // Get overdue students: active enrollments with no confirmed payment in current month
+    // Smart detection using next_payment_date
     const now = new Date();
-    const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().slice(0, 10);
+    const today = now.toISOString().slice(0, 10);
+    // daysOverdue: also used as "days before due" for pre-reminders
+    const dueCutoff = new Date(now);
+    dueCutoff.setDate(dueCutoff.getDate() - daysOverdue);
+    const cutoffDate = dueCutoff.toISOString().slice(0, 10);
 
     let query = admin
-      .from('students')
+      .from('enrollments')
       .select(`
-        id,
-        profile:profiles(full_name, email, active),
-        enrollments(
-          id, program_id, status, price_locked,
-          payments(id, status, created_at)
+        id, program_id, status, price_locked, next_payment_date,
+        student:students(
+          id,
+          profile:profiles(full_name, email, active)
         )
       `)
-      .eq('profiles.active', true);
+      .eq('status', 'active')
+      .not('next_payment_date', 'is', null)
+      .lte('next_payment_date', today); // due today or overdue
 
-    if (studentIds?.length) query = query.in('id', studentIds);
+    if (studentIds?.length) {
+      query = query.in('student_id', studentIds);
+    }
 
-    const { data: students } = await query;
-    if (!students?.length) return ok(res, { message: 'No hay estudiantes para notificar', sent: 0 });
+    const { data: overdueEnrollments } = await query;
+    if (!overdueEnrollments?.length) return ok(res, { message: 'No hay pagos vencidos para notificar', sent: 0 });
 
     const programNames = { en:'Inglés Completo', va:'Asistente Virtual', va_mkt:'VA Marketing', va_legal:'VA Legal', va_care:'VA Cuidador' };
 
     let sent = 0;
     const errors = [];
 
-    for (const student of students) {
-      if (!student.profile?.email) continue;
+    for (const enroll of overdueEnrollments) {
+      const student = enroll.student;
+      if (!student?.profile?.email || student.profile.active === false) continue;
 
-      const activeEnroll = student.enrollments?.find(e => e.status === 'active');
-      if (!activeEnroll) continue;
+      const dueDate = new Date(enroll.next_payment_date);
+      const actualDaysOverdue = Math.max(0, Math.floor((now - dueDate) / (1000 * 60 * 60 * 24)));
 
-      // Check if already paid this month
-      const paidThisMonth = activeEnroll.payments?.some(p =>
-        p.status === 'confirmed' && p.created_at >= firstOfMonth
-      );
-      if (paidThisMonth) continue;
+      // Wrap in student-like object for email template
+      const activeEnroll = enroll;
 
       try {
         const { subject, html } = EmailTemplates.paymentReminder({
           name:        student.profile.full_name.split(' ')[0],
           programName: programNames[activeEnroll.program_id] || 'WCA Academy',
           amount:      activeEnroll.price_locked || 95,
-          daysOverdue,
+          daysOverdue: actualDaysOverdue,
         });
 
         await sendEmail({

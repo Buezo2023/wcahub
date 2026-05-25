@@ -97,9 +97,16 @@ async function handleStudent(req, actor) {
     student = data;
   }
 
+  // Set next_payment_date: same day of month, next occurrence
+  const _now = new Date();
+  const _payDay = _now.getDate();
+  const _nextPay = new Date(_now.getFullYear(), _now.getMonth(), _payDay);
+  if (_nextPay <= _now) _nextPay.setMonth(_nextPay.getMonth() + 1);
+
   const { data: enrollment, error: eErr } = await admin.from('enrollments').upsert({
     student_id: student.id, program_id: programId, group_id: groupId || null,
     status: 'active', current_unit: 1, price_locked: price,
+    next_payment_date: _nextPay.toISOString().slice(0, 10),
   }, { onConflict: 'student_id,program_id' }).select().single();
   if (eErr) throw eErr;
 

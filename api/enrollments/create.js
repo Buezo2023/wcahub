@@ -98,16 +98,27 @@ export default async function handler(req, res) {
     }
 
     // 5. Create or reactivate enrollment
+    // Calculate next_payment_date: same day of month as today, next occurrence
+    const now = new Date();
+    const payDay = now.getDate(); // day of month they enrolled
+    const nextPayment = new Date(now.getFullYear(), now.getMonth(), payDay);
+    // If today's payment day has passed, move to next month
+    if (nextPayment <= now) {
+      nextPayment.setMonth(nextPayment.getMonth() + 1);
+    }
+    const nextPaymentDate = nextPayment.toISOString().slice(0, 10);
+
     const { data: enrollment, error: enrollError } = await admin
       .from('enrollments')
       .upsert({
-        student_id:   studentId,
-        program_id:   programId,
-        group_id:     groupId || null,
-        status:       'active',
-        current_unit: existing ? existing.current_unit || 1 : 1,
-        price_locked: price || null,
-        enrolled_at:  new Date().toISOString(),
+        student_id:        studentId,
+        program_id:        programId,
+        group_id:          groupId || null,
+        status:            'active',
+        current_unit:      existing ? existing.current_unit || 1 : 1,
+        price_locked:      price || null,
+        enrolled_at:       new Date().toISOString(),
+        next_payment_date: nextPaymentDate,
       }, { onConflict: 'student_id,program_id' })
       .select()
       .single();

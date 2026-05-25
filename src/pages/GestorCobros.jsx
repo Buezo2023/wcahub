@@ -138,22 +138,42 @@ export default function GestorCobros() {
           })));
         }
 
-        // Load overdue (enrollments suspended + no recent payment)
+        // Real overdue detection: active enrollments where next_payment_date < today
+        const today = new Date().toISOString().slice(0, 10);
+        const { data: overdueEnrolls } = await supabase
+          .from("enrollments")
+          .select("id, next_payment_date, price_locked, students(id, profiles(full_name, phone)), groups(level)")
+          .eq("status", "active")
+          .lt("next_payment_date", today)
+          .not("next_payment_date", "is", null)
+          .limit(50);
+
+        // Also include manually suspended (older method)
         const { data: susp } = await supabase
           .from("enrollments")
-          .select("id, students(id, profiles(full_name, phone)), groups(level)")
+          .select("id, next_payment_date, price_locked, students(id, profiles(full_name, phone)), groups(level)")
           .eq("status", "suspended")
           .limit(20);
 
-        if (susp?.length) {
-          setRealOverdue(susp.map(e => ({
-            student: e.students?.profiles?.full_name || "—",
-            level:   e.groups?.level || "—",
-            days:    30,
-            amount:  95,
-            contact: e.students?.profiles?.phone || "",
-            lastContact: "Sin datos",
-          })));
+        const allOverdue = [...(overdueEnrolls || []), ...(susp || [])];
+        // Deduplicate by id
+        const unique = allOverdue.filter((e, i, arr) => arr.findIndex(x => x.id === e.id) === i);
+
+        if (unique.length) {
+          setRealOverdue(unique.map(e => {
+            const dueDate = e.next_payment_date ? new Date(e.next_payment_date) : new Date();
+            const daysLate = Math.max(0, Math.floor((new Date() - dueDate) / (1000 * 60 * 60 * 24)));
+            return {
+              id:          e.id,
+              student:     e.students?.profiles?.full_name || "—",
+              level:       e.groups?.level || "—",
+              days:        daysLate,
+              amount:      e.price_locked || 95,
+              contact:     e.students?.profiles?.phone || "",
+              dueDate:     e.next_payment_date,
+              lastContact: "Sin datos",
+            };
+          }));
         }
       } catch(e) {
         setDataError("Error cargando datos: " + e.message);
@@ -507,7 +527,7 @@ export default function GestorCobros() {
                         toast.success("✓ WhatsApp enviado via Twilio");
                       } catch {
                         // Fallback to wa.me direct link
-                        const msg = encodeURIComponent(`Hola ${o.student}, tu pago de $${o.amount} lleva ${o.days} días vencido en WCA Academy. ¿Podemos ayudarte a regularizarlo? 🙏`);
+                        const msg = encodeURIComponent(`Hola ${o.student}, tu pago de \$${o.amount} lleva ${o.days} días vencido en WCA Academy. ¿Podemos ayudarte a regularizarlo? 🙏`);
                         window.open(`https://wa.me/${phone.replace(/^\+/,"")}?text=${msg}`, "_blank");
                       }
                     }} style={{ flex:1, fontSize:12, padding:"8px", background:"#ecfdf5", color:"#059669", border:"1px solid #059669", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>
