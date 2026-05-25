@@ -799,7 +799,7 @@ export default function CoordAcademica() {
               <div>
                 <div style={{ display:"flex", gap:14, marginBottom:18, alignItems:"center" }}>
                   <div style={{ width:56, height:56, borderRadius:"50%", background:B.primaryDim, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, fontWeight:700, color:B.primary, flexShrink:0 }}>
-                    {teacherModal.data.name.split(" ").map(n=>n[0]).join("").slice(0,2)}
+                    {(teacherModal.data?.name||"??").split(" ").map(n=>n[0]).join("").slice(0,2)}
                   </div>
                   <div>
                     <div style={{ fontSize:16, fontWeight:700, color:"var(--text-primary)" }}>{teacherModal.data.name}</div>
@@ -814,7 +814,7 @@ export default function CoordAcademica() {
                     </div>
                   ))}
                 </div>
-                {[["Email",teacherModal.data.email||"—"],["Teléfono",teacherModal.data.phone||"—"],["País",teacherModal.data.country||"—"],["Salario",teacherModal.data.salary?`$${teacherModal.data.salary}/mes`:"—"],["Grupos",teacherModal.data.groups.join(" · ")||"Sin grupos"]].map(([k,v])=>(
+                {[["Email",teacherModal.data.email||"—"],["Teléfono",teacherModal.data.phone||"—"],["País",teacherModal.data.country||"—"],["Salario",teacherModal.data.salary?`$${teacherModal.data.salary}/mes`:"—"],["Grupos",(teacherModal.data?.groups||[]).join(" · ")||"Sin grupos"]].map(([k,v])=>(
                   <div key={k} style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"8px 0", borderBottom:"1px solid var(--border)" }}>
                     <span style={{ color:"var(--text-secondary)" }}>{k}</span>
                     <span style={{ color:"var(--text-primary)", fontWeight:500 }}>{v}</span>

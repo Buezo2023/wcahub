@@ -143,6 +143,7 @@ function PipelineCard({ lead, stageColor, onClick, selected }) {
 
 // ─── Lead detail panel ────────────────────────────────────────────
 function LeadPanel({ lead, onClose, onStageChange, onConvert, onLost }) {
+  if (!lead) return null;
   const [noteText, setNoteText] = useState("");
   const isMobile = useMobile();
   const [sideOpen, setSideOpen] = useState(false);

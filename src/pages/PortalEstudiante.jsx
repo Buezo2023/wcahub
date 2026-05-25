@@ -325,7 +325,7 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
       if (session) {
         const { data: student } = await supabase.from("students").select("id")
           .eq("profile_id", session.user.id).maybeSingle();
-        if (student) {
+        if (student?.id) {
           await supabase.from("enrollments")
             .update({ exam_score: pct })
             .eq("student_id", student.id)

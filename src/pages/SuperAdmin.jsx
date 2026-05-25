@@ -425,13 +425,24 @@ export default function SuperAdmin() {
           <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", marginTop:2 }}>Control total del sistema</div>
         </div>
         <div style={{ flex:1, overflowY:"auto" }}>
-          {NAV.map(n=>(
-            <button key={n.id} onClick={()=>{setView(n.id);setSubView(n.id==="programs"?"progs":n.id==="hr"?"staff":"");}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 18px", border:"none", background:view===n.id?"rgba(255,255,255,.12)":"transparent", color:view===n.id?"#fff":"rgba(255,255,255,.45)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:`2px solid ${view===n.id?Y:"transparent"}`, transition:"all .15s", fontFamily:"inherit", fontWeight:view===n.id?600:400, width:"100%" }}>
+          {NAV.map(n => {
+            if (n.sep) return <div key={n.id} style={{ fontSize:11, color:"rgba(255,255,255,.25)", fontWeight:700, letterSpacing:1, padding:"16px 18px 6px", textTransform:"uppercase" }}>{n.label}</div>;
+            if (n.link) return (
+              <button key={n.id} onClick={()=>{navigate(n.id);if(isMobile)setSideOpen(false);}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 18px", border:"none", background:"transparent", color:"rgba(255,255,255,.4)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:"2px solid transparent", transition:"all .15s", fontFamily:"inherit", fontWeight:400, width:"100%" }}
+                onMouseEnter={e=>{e.currentTarget.style.color="#fff";e.currentTarget.style.background="rgba(255,255,255,.06)";}}
+                onMouseLeave={e=>{e.currentTarget.style.color="rgba(255,255,255,.4)";e.currentTarget.style.background="transparent";}}>
+                <i className={"ti "+n.icon} style={{ fontSize:14, width:18, textAlign:"center" }} aria-hidden="true"/>
+                {n.label}
+                <i className="ti ti-external-link" style={{ fontSize:11, marginLeft:"auto", opacity:0.4 }} aria-hidden="true"/>
+              </button>
+            );
+            return (
+            <button key={n.id} onClick={()=>{setView(n.id);setSubView(n.id==="programs"?"progs":n.id==="hr"?"staff":"");if(isMobile)setSideOpen(false);}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 18px", border:"none", background:view===n.id?"rgba(255,255,255,.12)":"transparent", color:view===n.id?"#fff":"rgba(255,255,255,.45)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:`2px solid ${view===n.id?Y:"transparent"}`, transition:"all .15s", fontFamily:"inherit", fontWeight:view===n.id?600:400, width:"100%" }}>
               <i className={"ti "+n.icon} style={{ fontSize:14, width:18, textAlign:"center" }} aria-hidden="true"/>
               {n.label}
-              {n.id==="bi" && <span style={{ marginLeft:"auto", fontSize:8, background:Y, color:PH, padding:"2px 5px", borderRadius:8, fontWeight:700 }}>EXCLUSIVO</span>}
             </button>
-          ))}
+            );
+          })}
         </div>
         <div style={{ padding:"14px 18px 0", borderTop:"1px solid rgba(255,255,255,.08)" }}>
           <div style={{ display:"flex", alignItems:"center", gap:9 }}>
@@ -1042,11 +1053,11 @@ export default function SuperAdmin() {
       {/* ── MODALES ── */}
 
       {staffModal && (
-        <Modal title={staffModal.mode==="add"?"Agregar personal":staffModal.mode==="edit"?"Editar empleado":staffModal.data.name} subtitle={staffModal.mode==="view"?staffModal.data.role:undefined} onClose={()=>setStaffModal(null)}>
+        <Modal title={staffModal.mode==="add"?"Agregar personal":staffModal.mode==="edit"?"Editar empleado":(staffModal.data?.name||"Empleado")} subtitle={staffModal.mode==="view"?staffModal.data?.role:undefined} onClose={()=>setStaffModal(null)}>
           {staffModal.mode==="view" ? (
             <div>
               <div style={{ display:"flex", gap:14, marginBottom:18 }}>
-                <div style={{ width:56, height:56, borderRadius:"50%", background:PD, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, fontWeight:700, color:P, flexShrink:0 }}>{staffModal.data.name.split(" ").map(n=>n[0]).join("").slice(0,2)}</div>
+                <div style={{ width:56, height:56, borderRadius:"50%", background:PD, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, fontWeight:700, color:P, flexShrink:0 }}>{(staffModal.data?.name||"??").split(" ").map(n=>n[0]).join("").slice(0,2)}</div>
                 <div><div style={{ fontSize:16, fontWeight:700, color:"var(--text-primary)" }}>{staffModal.data.name}</div><Badge text={staffModal.data.role} bg={(ROLE_COLORS[staffModal.data.role]||["var(--bg-surface-subtle)","var(--text-secondary)"])[0]} color={(ROLE_COLORS[staffModal.data.role]||["","var(--text-secondary)"])[1]}/></div>
               </div>
               {[["Email",staffModal.data.email],["Teléfono",staffModal.data.phone],["País",staffModal.data.country],["Salario",`$${staffModal.data.salary}/mes`],["Ingresó",staffModal.data.hired],["Estado",staffModal.data.status==="active"?"Activo":"Inactivo"]].map(([k,v])=>(
