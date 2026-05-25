@@ -21,7 +21,7 @@ const B = {
 
 // PAYMENT_HISTORY removed — using real Supabase data
 
-// OVERDUE removed — using real Supabase data
+// realOverdue removed — using real Supabase data
 
 // AUDIT_LOG removed — usar datos reales de Supabase
 // AUDIT_LOG_UNUSED removed — using real Supabase data
@@ -167,7 +167,6 @@ export default function GestorCobros() {
   // Merge: prefer real data, fallback to demo
   const displayPending = realPending;
   const displayHistory = realHistory;
-  const displayOverdue = realOverdue;
 
   const pending = displayPending.filter(t => !confirmed.includes(t.id));
   const filteredHist = useMemo(() => displayHistory.filter(p =>
@@ -231,8 +230,8 @@ export default function GestorCobros() {
             {item.id==="pending" && pending.length > 0 && (
               <span style={{ marginLeft:"auto", fontSize:11, background:B.secondary, color:B.dark, borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>{pending.length}</span>
             )}
-            {item.id==="overdue" && displayOverdue.length > 0 && (
-              <span style={{ marginLeft:"auto", fontSize:11, background:B.red, color:"var(--bg-surface)", borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>{OVERDUE.length}</span>
+            {item.id==="overdue" && realOverdue.length > 0 && (
+              <span style={{ marginLeft:"auto", fontSize:11, background:B.red, color:"var(--bg-surface)", borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>{realOverdue.length}</span>
             )}
           </button>
         ))}
@@ -266,7 +265,7 @@ export default function GestorCobros() {
           </div>
           <div style={{ display:"flex", gap:8 }}>
             {pending.length > 0 && <div style={{ fontSize:12, background:B.amberDim, color:"#92400e", padding:"3px 10px", borderRadius:20, fontWeight:600 }}>⏳ {pending.length} por confirmar</div>}
-            {OVERDUE.length > 0 && <div style={{ fontSize:12, background:B.redDim, color:B.red, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>⚠ {OVERDUE.length} vencidos</div>}
+            {realOverdue.length > 0 && <div style={{ fontSize:12, background:B.redDim, color:B.red, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>⚠ {realOverdue.length} vencidos</div>}
           </div>
         </div>
 
@@ -278,8 +277,8 @@ export default function GestorCobros() {
               <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)", gap:10, marginBottom:14 }}>
                 <Stat label="Cobrado hoy" value="$360" sub="3 pagos" color={B.green} icon="ti-trending-up" />
                 <Stat label="Por confirmar" value={pending.length} sub="Transferencias" color={B.amber} icon="ti-clock" />
-                <Stat label="Vencidos" value={OVERDUE.length} sub="+30 días" color={B.red} icon="ti-alert-circle" />
-                <Stat label="Cobrado (mes)" value={`$${realConfirmed.reduce((s,p)=>s+(p.amount||0),0).toLocaleString()}`} sub={`${realConfirmed.length} pagos`} color={B.primary} icon="ti-coin" />
+                <Stat label="Vencidos" value={realOverdue.length} sub="+30 días" color={B.red} icon="ti-alert-circle" />
+                <Stat label="Cobrado (mes)" value={`$${realHistory.filter(p=>p.status==="confirmed").reduce((s,p)=>s+(p.amount||0),0).toLocaleString()}`} sub={`${realHistory.filter(p=>p.status==="confirmed").length} pagos`} color={B.primary} icon="ti-coin" />
               </div>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
@@ -469,14 +468,14 @@ export default function GestorCobros() {
             </div>
           )}
 
-          {/* OVERDUE */}
+          {/* realOverdue */}
           {view==="overdue" && (
             <div>
               <div style={{ background:B.redDim, border:`1px solid ${B.red}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:13, color:B.red, display:"flex", gap:8 }}>
                 <i className="ti ti-alert-circle" style={{ fontSize:14, flexShrink:0, marginTop:1 }} aria-hidden="true" />
                 Estudiantes con pago vencido más de 30 días. Sus cuentas están suspendidas. Contáctalos para gestionar la regularización.
               </div>
-              {displayOverdue.map((o,i) => (
+              {realOverdue.map((o,i) => (
                 <div key={i} style={{ background:B.white, border:`1px solid ${B.red}40`, borderRadius:12, padding:16, marginBottom:10 }}>
                   <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
                     <div>

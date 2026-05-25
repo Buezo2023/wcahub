@@ -32,7 +32,7 @@ export class ErrorBoundary extends Component {
           fontFamily:"inherit" }}>
           Recargar página
         </button>
-        {this.props.showError && this.state.error && (
+        {this.state.error && (
           <pre style={{ fontSize:10, color:"#94a3b8", maxWidth:500, overflow:"auto",
             background:"var(--bg-surface-subtle,#f1f5f9)", padding:12, borderRadius:8,
             marginTop:8 }}>
