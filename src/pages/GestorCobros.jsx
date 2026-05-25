@@ -207,8 +207,13 @@ export default function GestorCobros() {
       {/* SIDEBAR */}
       <aside style={{ width:isMobile?260:196, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0, zIndex:isMobile?9990:1, transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none", transition:"transform .25s ease", maxWidth:isMobile?"80vw":"none" }}>
         <div style={{ padding:"18px 16px 16px", borderBottom:"1px solid rgba(255,255,255,.1)", marginBottom:8 }}>
-          <div style={{ fontSize:16, fontWeight:800, color:"var(--bg-surface)" }}>WCA <span style={{ color:B.secondary }}>Hub</span></div>
-          <div style={{ fontSize:11, color:"rgba(255,255,255,.4)", marginTop:2, letterSpacing:1, textTransform:"uppercase" }}>Gestor de Cobros</div>
+          <div style={{display:"flex",alignItems:"center",gap:11}}>
+              <svg viewBox="0 0 32 32" style={{width:34,height:34,flexShrink:0}}><rect width="32" height="32" rx="8" fill="#ffbb23"/><text x="16" y="23" fontFamily="sans-serif" fontSize="18" fontWeight="800" fill="#155266" textAnchor="middle">W</text></svg>
+              <div>
+                <div style={{fontSize:15,fontWeight:800,color:"#fff"}}>WCA <span style={{color:"#ffbb23"}}>Hub</span></div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>Gestor de Cobros</div>
+              </div>
+            </div>
         </div>
         {NAV.map(item => (
           <button key={item.id} onClick={() => { setView(item.id); setSelTransfer(null); }} style={{

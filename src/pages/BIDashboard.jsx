@@ -199,8 +199,13 @@ export default function BIDashboard() {
       {/* SIDEBAR */}
       <aside style={{ width:184, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0 }}>
         <div style={{ padding:"18px 16px 16px", borderBottom:"1px solid rgba(255,255,255,.1)", marginBottom:8 }}>
-          <div style={{ fontSize:11, color:B.secondary, fontWeight:700, letterSpacing:2, textTransform:"uppercase", marginBottom:4 }}>WCA Academy</div>
-          <div style={{ fontSize:16, fontWeight:800, color:"var(--bg-surface)" }}>Business<br />Intelligence</div>
+          <div style={{ display:"flex", alignItems:"center", gap:11 }}>
+              <svg viewBox="0 0 32 32" style={{ width:34, height:34, flexShrink:0 }}><rect width="32" height="32" rx="8" fill="#ffbb23"/><text x="16" y="23" fontFamily="sans-serif" fontSize="18" fontWeight="800" fill="#155266" textAnchor="middle">W</text></svg>
+              <div>
+                <div style={{ fontSize:15, fontWeight:800, color:"#fff" }}>WCA <span style={{ color:"#ffbb23" }}>Hub</span></div>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,.4)", letterSpacing:1, textTransform:"uppercase" }}>Business Intelligence</div>
+              </div>
+            </div>
         </div>
         {VIEWS.map(v => (
           <button key={v.id} onClick={() => setView(v.id)} style={{

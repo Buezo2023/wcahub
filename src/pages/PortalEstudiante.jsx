@@ -645,8 +645,13 @@ export default function PortalEstudiante(){
       {/* SIDEBAR */}
       <aside style={{width:isMobile?260:200,background:P,display:"flex",flexDirection:"column",padding:"0 0 16px",flexShrink:0,minHeight:"100vh",position:isMobile?"fixed":"sticky",top:0,left:0,bottom:0,zIndex:isMobile?9990:1,transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none",transition:"transform .25s ease",overflowY:"auto",maxWidth:isMobile?"80vw":"none"}}>
         <div style={{padding:"22px 18px 18px",borderBottom:"1px solid rgba(255,255,255,.08)",marginBottom:8}}>
-          <div style={{fontSize:17,fontWeight:800,color:"#fff"}}>WCA <span style={{color:Y}}>Hub</span></div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginTop:2,textTransform:"uppercase",letterSpacing:1}}>Portal del estudiante</div>
+          <div style={{display:"flex",alignItems:"center",gap:11}}>
+              <svg viewBox="0 0 32 32" style={{width:34,height:34,flexShrink:0}}><rect width="32" height="32" rx="8" fill="#ffbb23"/><text x="16" y="23" fontFamily="sans-serif" fontSize="18" fontWeight="800" fill="#155266" textAnchor="middle">W</text></svg>
+              <div>
+                <div style={{fontSize:15,fontWeight:800,color:"#fff"}}>WCA <span style={{color:"#ffbb23"}}>Hub</span></div>
+                <div style={{fontSize:11,color:"rgba(255,255,255,.4)",letterSpacing:1,textTransform:"uppercase"}}>Portal del estudiante</div>
+              </div>
+            </div>
         </div>
 
         {/* Enrolled programs in sidebar */}

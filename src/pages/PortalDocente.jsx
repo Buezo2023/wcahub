@@ -196,7 +196,13 @@ export default function TeacherPortal(){
       {/* SIDEBAR */}
       <aside style={{width:190,background:C.surface,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",padding:"18px 0",flexShrink:0}}>
         <div style={{padding:"0 18px 16px",borderBottom:`1px solid ${C.border}`,marginBottom:10}}>
-          <div style={{fontSize:16,fontWeight:800,color:C.textPri,letterSpacing:-0.5}}>WCA<span style={{color:C.accent}}> Hub</span></div>
+          <div style={{display:"flex",alignItems:"center",gap:10}}>
+              <svg viewBox="0 0 32 32" style={{width:32,height:32,flexShrink:0}}><rect width="32" height="32" rx="8" fill="#ffbb23"/><text x="16" y="23" fontFamily="sans-serif" fontSize="18" fontWeight="800" fill="#155266" textAnchor="middle">W</text></svg>
+              <div>
+                <div style={{fontSize:14,fontWeight:800,color:C.textPri}}>WCA <span style={{color:C.accent}}>Hub</span></div>
+                <div style={{fontSize:11,color:C.textSec,letterSpacing:1,textTransform:"uppercase"}}>Portal Docente</div>
+              </div>
+            </div>
           <div style={{fontSize:11,color:C.textTer,marginTop:2,letterSpacing:1,textTransform:"uppercase"}}>Portal Docente</div>
         </div>
         {NAV.map(item=>(
