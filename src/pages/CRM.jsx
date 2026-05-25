@@ -606,24 +606,21 @@ export default function CRM() {
     showToast("Creando estudiante…", "#0369a1");
 
     try {
-      // 1. Get session for auth
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) { showToast("Sesión expirada", R); return; }
 
-      // 2. Call invite endpoint to create profile + student
-      const res = await fetch("/api/auth/invite", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
-        body: JSON.stringify({
-          action: "student",
-          email: lead.email,
-          fullName: lead.name,
-          phone: lead.phone || null,
-          level: lead.level || "A1",
-          programId: lead.program || "en",
-        }),
-      });
-      const json = await res.json().catch(() => ({}));
+      let res, json;
+      try {
+        res = await fetch("/api/auth/invite", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
+          body: JSON.stringify({ action:"student", email:lead.email, fullName:lead.name, phone:lead.phone||null, level:lead.level||"A1", programId:lead.program||"en" }),
+        });
+        json = await res.json().catch(() => ({}));
+      } catch(netErr) {
+        showToast("Error de red — verificá tu conexión", R);
+        return;
+      }
 
       if (!res.ok || !json.ok) {
         showToast("Error: " + (json.error || json.message || "No se pudo crear"), R);

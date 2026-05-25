@@ -82,7 +82,6 @@ export default function AuthCallback() {
 
         if (profileError) {
           // Log but don't expose internal error — try to redirect anyway
-          console.error("Profile fetch error:", profileError);
           // Try to use session metadata as fallback
           const role = session.user.user_metadata?.role || "estudiante";
           clearTimeout(timeout);
@@ -112,7 +111,6 @@ export default function AuthCallback() {
 
       } catch (err) {
         clearTimeout(timeout);
-        console.error("Auth callback error:", err);
         setError(err.message || "Ocurrió un error inesperado. Por favor intentá de nuevo.");
       }
     }

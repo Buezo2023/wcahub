@@ -1013,13 +1013,28 @@ export default function AdminDashboard() {
                       .eq("email", actionModal.student.email).maybeSingle();
                     if (prof) {
                       if (actionModal.type === "suspend") {
-                        await supabase.from("profiles").update({active:false}).eq("id",prof.id);
-                        await supabase.from("enrollments").update({status:"suspended",suspended_at:new Date().toISOString()})
-                          .eq("student_id",(await supabase.from("students").select("id").eq("profile_id",prof.id).maybeSingle()).data?.id);
+                        // Use the API endpoint which has correct logic (checks other enrollments)
+                        const {data:{session:ss}} = await supabase.auth.getSession();
+                        const studentRow = await supabase.from("students").select("id,enrollments(id)").eq("profile_id",prof.id).maybeSingle();
+                        const enrollId = studentRow.data?.enrollments?.[0]?.id;
+                        if (enrollId) {
+                          await fetch("/api/enrollments/suspend", {
+                            method:"PATCH",
+                            headers:{"Content-Type":"application/json","Authorization":`Bearer ${ss?.access_token}`},
+                            body: JSON.stringify({enrollmentId:enrollId, action:"suspend", reason:actionNote||"Suspendido por admin"})
+                          });
+                        }
                       } else if (actionModal.type === "reactivate") {
-                        await supabase.from("profiles").update({active:true}).eq("id",prof.id);
-                        await supabase.from("enrollments").update({status:"active",suspended_at:null})
-                          .eq("student_id",(await supabase.from("students").select("id").eq("profile_id",prof.id).maybeSingle()).data?.id);
+                        const {data:{session:sr}} = await supabase.auth.getSession();
+                        const studentRow2 = await supabase.from("students").select("id,enrollments(id)").eq("profile_id",prof.id).maybeSingle();
+                        const enrollId2 = studentRow2.data?.enrollments?.[0]?.id;
+                        if (enrollId2) {
+                          await fetch("/api/enrollments/suspend", {
+                            method:"PATCH",
+                            headers:{"Content-Type":"application/json","Authorization":`Bearer ${sr?.access_token}`},
+                            body: JSON.stringify({enrollmentId:enrollId2, action:"reactivate"})
+                          });
+                        }
                       }
                       if (actionNote) {
                         const { data: st } = await supabase.from("students").select("id").eq("profile_id",prof.id).maybeSingle();

@@ -525,7 +525,6 @@ export default function OnboardingWizard() {
         }).catch(console.error);
       }
     } catch (e) {
-      console.error("Error saving onboarding:", e);
     }
     navigate("/portal", { replace: true });
   }

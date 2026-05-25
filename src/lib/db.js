@@ -35,7 +35,7 @@ export async function getStudents({ limit = 50, page = 0, search = '', level = '
   if (level)  query = query.eq('level', level);
 
   const { data, error, count } = await query;
-  if (error) { console.error('getStudents:', error); return { rows: [], total: 0 }; }
+  if (error) { console.warn('[db]', error); return { rows: [], total: 0 }; }
 
   let results = data || [];
 
@@ -95,14 +95,14 @@ export async function getPayments({ limit = 50, page = 0, status = '', search = 
         profile:profiles(full_name, email, phone)
       ),
       enrollment:enrollments(program_id)
-    `)
-    .limit(limit)
+    `, { count: 'exact' })
+    .range(page * limit, page * limit + limit - 1)
     .order('created_at', { ascending: false });
 
   if (status) query = query.eq('status', status);
 
-  const { data, error } = await query;
-  if (error) { console.error('getPayments:', error); return []; }
+  const { data, error, count } = await query;
+  if (error) { console.warn('[db]', error); return { rows: [], total: 0 }; }
 
   let results = data || [];
   if (search) {
@@ -113,7 +113,7 @@ export async function getPayments({ limit = 50, page = 0, status = '', search = 
       p.student?.student_code?.toLowerCase().includes(s)
     );
   }
-  return results;
+  return { rows: results, total: count || results.length };
 }
 
 export async function confirmPayment(paymentId, confirmerId) {
@@ -183,7 +183,7 @@ export async function getGroups({ programId = '', level = '' } = {}) {
   if (level)     query = query.eq('level', level);
 
   const { data, error } = await query;
-  if (error) { console.error('getGroups:', error); return []; }
+  if (error) { console.warn('[db]', error); return []; }
   return data || [];
 }
 
@@ -230,8 +230,8 @@ export async function getLeads({ search = '', stage = '', limit = 50, page = 0 }
 
   if (stage) query = query.eq('stage', stage);
 
-  const { data, error } = await query;
-  if (error) { console.error('getLeads:', error); return []; }
+  const { data, error, count } = await query;
+  if (error) { console.warn('[db]', error); return { rows: [], total: 0 }; }
 
   let results = data || [];
   if (search) {

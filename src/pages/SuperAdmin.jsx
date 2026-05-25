@@ -306,12 +306,19 @@ export default function SuperAdmin() {
         globalToast.info("Creando usuario…");
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) { globalToast.error("Sesión expirada — recargá la página"); setSaving(false); return; }
-        const res = await fetch("/api/auth/invite", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
-          body: JSON.stringify({ action:"staff", email:correo, fullName:nombre, role:staffForm.role||"Docente", salary:staffForm.salary||null, hireDate:new Date().toISOString().slice(0,10) }),
-        });
-        const json = await res.json().catch(()=>({}));
+        let res, json;
+        try {
+          res = await fetch("/api/auth/invite", {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
+            body: JSON.stringify({ action:"staff", email:correo, fullName:nombre, role:staffForm.role||"Docente", salary:staffForm.salary||null, hireDate:new Date().toISOString().slice(0,10) }),
+          });
+          json = await res.json().catch(()=>({}));
+        } catch(netErr) {
+          globalToast.error("Error de red — verificá tu conexión");
+          setSaving(false);
+          return;
+        }
         if (!res.ok || !json.ok) {
           globalToast.error("Error: " + (json.error || json.message || `HTTP ${res.status}`));
         } else {
