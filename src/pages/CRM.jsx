@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getLeads, createLead, updateLeadStage, createTask, toggleTask } from "../lib/db.js";
 import { toast as globalToast } from "../lib/toast.jsx";
+import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
 import { EmptyState } from "../lib/EmptyState.jsx";
 
@@ -143,6 +144,8 @@ function PipelineCard({ lead, stageColor, onClick, selected }) {
 // ─── Lead detail panel ────────────────────────────────────────────
 function LeadPanel({ lead, onClose, onStageChange, onConvert, onLost }) {
   const [noteText, setNoteText] = useState("");
+  const isMobile = useMobile();
+  const [sideOpen, setSideOpen] = useState(false);
   const [msgText, setMsgText] = useState("");
   const [showSent, setShowSent] = useState(false);
   const s = STAGES.find(x=>x.id===lead.stage);
@@ -423,7 +426,7 @@ function PlacementTestModal({ lead, onClose, onSave }) {
               El sistema detecta el nivel automáticamente: A1, A2, B1, B2 o C1.<br/>
               Tiempo estimado: <strong>5–8 minutos</strong>.
             </div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8, marginBottom:20 }}>
+            <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:8, marginBottom:20 }}>
               {[["📝","12 preguntas","A1 → C1"],["⏱","Sin límite de tiempo","A tu ritmo"],["🎯","Resultado inmediato","Nivel sugerido"]].map(([ic,t,s],i)=>(
                 <div key={i} style={{ background:"var(--bg-page)", borderRadius:10, padding:12, textAlign:"center" }}>
                   <div style={{ fontSize:22, marginBottom:4 }}>{ic}</div>
@@ -653,7 +656,7 @@ export default function CRM() {
 
   return (
     <>
-    <div style={{ display:"flex", minHeight:"100vh", background:"var(--bg-page)", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+    <div style={{ display:"flex",flexDirection:isMobile?"column":"row", minHeight:"100vh", background:"var(--bg-page)", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
 
       {/* SIDEBAR */}
       <aside style={{ width:196, background:PH, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0, minHeight:"100vh", position:"sticky", top:0 }}>
@@ -687,6 +690,8 @@ export default function CRM() {
           Cerrar sesión
         </button>
       </aside>
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+
 
       {/* MAIN */}
       <div style={{ flex:1, display:"flex", flexDirection:"column", minHeight:"100vh", overflow:"hidden" }}>
@@ -777,7 +782,7 @@ export default function CRM() {
                     {STAGES.map(stage=>{
                       const stageLeads = filteredLeads.filter(l=>l.stage===stage.id);
                       return (
-                        <div key={stage.id} style={{ width:200, flexShrink:0 }}>
+                        <div key={stage.id} style={{ width:isMobile?260:200, flexShrink:0 , zIndex:isMobile?9990:1, transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none", transition:"transform .25s ease", maxWidth:isMobile?"80vw":"none" }}>
                           <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:10, padding:"7px 10px", background:"var(--bg-surface)", borderRadius:9, border:"1px solid var(--border)" }}>
                             <div style={{ width:7, height:7, borderRadius:"50%", background:stage.color }}/>
                             <span style={{ fontSize:11, fontWeight:700, color:"var(--text-primary)", flex:1 }}>{stage.label}</span>
@@ -803,7 +808,7 @@ export default function CRM() {
             {view==="leads" && (
               <div>
                 <div style={{ background:"var(--bg-surface)", borderRadius:14, border:"1px solid var(--border)", overflow:"hidden", boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
-                  <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
+                  <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
                     <thead>
                       <tr style={{ background:"var(--bg-page)" }}>
                         {["Lead","Etapa","Score","Programa","Canal","Última actividad",""].map(h=>(
@@ -838,7 +843,7 @@ export default function CRM() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
               </div>
             )}
@@ -982,6 +987,7 @@ export default function CRM() {
           {toast.msg}
         </div>
       )}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:P,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
     {ptLead && (
       <PlacementTestModal

@@ -1,0 +1,137 @@
+/* ═══════════════════════════════════════════════════════════════
+   WCA Hub — Mobile Responsive Overrides
+   Fixes all sidebar, grid, table, and modal issues on mobile
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ── Mobile sidebar toggle button ── */
+.mobile-menu-btn {
+  display: none !important;
+  position: fixed; bottom: 20px; right: 20px; z-index: 9998;
+  width: 48px; height: 48px; border-radius: 50%;
+  background: #155266; color: #fff; border: none;
+  box-shadow: 0 4px 20px rgba(21,82,102,.35);
+  font-size: 22px; cursor: pointer;
+  align-items: center; justify-content: center;
+}
+
+/* ── Skeleton animation (used by Skeleton component) ── */
+@keyframes skeleton { 0%{opacity:.6} 50%{opacity:.3} 100%{opacity:.6} }
+.skeleton { background: var(--bg-surface-subtle, #f1f5f9); animation: skeleton 1.5s ease infinite; }
+
+/* ── Desktop: everything normal ── */
+@media (min-width: 769px) {
+  .mobile-only { display: none !important; }
+}
+
+/* ═══ MOBILE ═══ */
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .mobile-menu-btn { display: flex !important; }
+
+  /* ── Sidebars → hidden by default, slide in as drawer ── */
+  aside, [data-sidebar] {
+    position: fixed !important;
+    top: 0 !important; left: 0 !important; bottom: 0 !important;
+    width: 260px !important; max-width: 80vw !important;
+    z-index: 9990 !important;
+    transform: translateX(-100%) !important;
+    transition: transform .25s cubic-bezier(.4,0,.2,1) !important;
+    overflow-y: auto !important;
+  }
+  aside.open, [data-sidebar].open {
+    transform: translateX(0) !important;
+  }
+
+  /* Sidebar backdrop */
+  .sidebar-backdrop {
+    display: none; position: fixed; inset: 0; z-index: 9989;
+    background: rgba(0,0,0,.4); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px);
+  }
+  .sidebar-backdrop.open { display: block; }
+
+  /* ── Main content takes full width ── */
+  main, [data-main] {
+    width: 100% !important; margin-left: 0 !important;
+    padding: 16px !important; overflow-x: hidden !important;
+  }
+
+  /* ── Layout container: stack vertically ── */
+  body > div > div > div,
+  [style*="display:flex"][style*="minHeight"],
+  [style*="display: flex"][style*="min-height"],
+  .portal-layout {
+    flex-direction: column !important;
+  }
+
+  /* ── Tables: horizontal scroll ── */
+  table { font-size: 12px !important; }
+  .table-wrap, [style*="overflow"] {
+    overflow-x: auto !important; -webkit-overflow-scrolling: touch;
+  }
+  th, td { white-space: nowrap; padding: 8px 10px !important; }
+
+  /* ── Grids: 2 cols max on mobile ── */
+  [style*="gridTemplateColumns:\"repeat(4"],
+  [style*="gridTemplateColumns:\"repeat(3"],
+  [style*="grid-template-columns: repeat(4"],
+  [style*="grid-template-columns: repeat(3"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* ── Stats row: 2 cols ── */
+  [style*="gridTemplateColumns:\"repeat(4,1fr)"],
+  [style*="grid-template-columns: repeat(4, 1fr)"] {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* ── Modals: full width ── */
+  [role="dialog"] > div,
+  [aria-modal="true"] > div {
+    width: 95vw !important; max-width: 95vw !important;
+    margin: 10px !important; padding: 18px !important;
+    max-height: 90vh !important;
+    border-radius: 14px !important;
+  }
+
+  /* ── Side panels (student detail etc) ── */
+  [style*="width:280"],
+  [style*="width: 280"] {
+    width: 100% !important; min-width: 0 !important;
+  }
+
+  /* ── Header/toolbar: wrap ── */
+  [style*="justifyContent:\"space-between\""],
+  [style*="justify-content: space-between"] {
+    flex-wrap: wrap !important; gap: 8px !important;
+  }
+
+  /* ── Landing: full-width sections ── */
+  [style*="maxWidth:1200"],
+  [style*="max-width: 1200"] {
+    padding-left: 16px !important; padding-right: 16px !important;
+  }
+
+  /* ── CRM pipeline: horizontal scroll ── */
+  [style*="overflowX:\"auto\""],
+  [style*="overflow-x: auto"] {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Fix text overflow ── */
+  h1, h2, h3, [style*="fontSize:28"], [style*="fontSize:32"], [style*="fontSize:36"] {
+    font-size: 22px !important; word-break: break-word;
+  }
+
+  /* ── Fixed bottom bar spacing ── */
+  body { padding-bottom: 70px; }
+}
+
+/* ═══ SMALL MOBILE (iPhone SE etc) ═══ */
+@media (max-width: 380px) {
+  [style*="gridTemplateColumns:\"repeat(2"],
+  [style*="grid-template-columns: repeat(2"] {
+    grid-template-columns: 1fr !important;
+  }
+  main, [data-main] { padding: 12px !important; }
+  [role="dialog"] > div { padding: 14px !important; }
+}

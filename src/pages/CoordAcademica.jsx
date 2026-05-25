@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect} from "react";
 import { useNavigate } from 'react-router-dom';
 import { toast } from "../lib/toast.jsx";
+import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
 
 const B = {
@@ -70,6 +71,8 @@ export default function CoordAcademica() {
     return () => subscription.unsubscribe();
   }, [navigate]);
   const [view, setView]               = useState("home");
+  const isMobile = useMobile();
+  const [sideOpen, setSideOpen] = useState(false);
   const [selGroup, setSelGroup]       = useState(null);
   const [selTeacher, setSelTeacher]   = useState(null);
   const [selStudent, setSelStudent]   = useState(null);
@@ -165,7 +168,7 @@ export default function CoordAcademica() {
     <div style={{ display:"flex", minHeight: "100vh", height: "100vh", background:B.bg,  overflow:"hidden",  fontFamily:"'DM Sans','Segoe UI',sans-serif", position:"relative" }}>
 
       {/* SIDEBAR */}
-      <aside style={{ width:196, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0 }}>
+      <aside style={{ width:isMobile?260:196, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0 , zIndex:isMobile?9990:1, transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none", transition:"transform .25s ease", maxWidth:isMobile?"80vw":"none" }}>
         <div style={{ padding:"18px 16px 16px", borderBottom:"1px solid rgba(255,255,255,.1)", marginBottom:8 }}>
           <div style={{ fontSize:16, fontWeight:800, color:"var(--bg-surface)" }}>WCA <span style={{ color:B.secondary }}>Hub</span></div>
           <div style={{ fontSize:11, color:"rgba(255,255,255,.4)", marginTop:2, letterSpacing:1, textTransform:"uppercase" }}>Coordinación Académica</div>
@@ -208,6 +211,8 @@ export default function CoordAcademica() {
           Cerrar sesión
         </button>
       </aside>
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+
 
       {/* MAIN */}
       <main style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
@@ -226,7 +231,7 @@ export default function CoordAcademica() {
           {/* HOME */}
           {view==="home" && (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)", gap:10, marginBottom:14 }}>
                 <Stat label="Estudiantes activos" value={totalStudents} sub={realDbGroups.length > 0 ? `${realDbGroups.length} grupos activos` : "Sin grupos configurados"} color={B.primary} icon="ti-users" />
                 <Stat label="Docentes activos" value={teachers.length} sub="6 horarios cubiertos" color={B.teal} icon="ti-school" />
                 <Stat label="Asistencia promedio" value={`${avgAttendance}%`} sub="Todos los grupos" color={avgAttendance>=80?B.green:B.amber} icon="ti-calendar-check" />
@@ -315,7 +320,7 @@ export default function CoordAcademica() {
           {/* GROUPS */}
           {view==="groups" && (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10 }}>
+              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:10 }}>
                 {GROUPS.map(g => {
                   const teacher = TEACHERS.find(t=>t.id===g.teacher);
                   const pct = Math.round((g.students/g.cap)*100);
@@ -376,7 +381,7 @@ export default function CoordAcademica() {
                         <div style={{ fontSize:13, color:B.textSec }}>Docente · Niveles: {selTeacher.levels.join(", ")}</div>
                       </div>
                     </div>
-                    <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:14 }}>
+                    <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:10, marginBottom:14 }}>
                       {[
                         { label:"Grupos a cargo", value:selTeacher.groups.length, color:B.primary },
                         { label:"Asistencia", value:`${selTeacher.attendance}%`, color:attCol(selTeacher.attendance) },
@@ -464,7 +469,7 @@ export default function CoordAcademica() {
                   </select>
                 </div>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, overflow:"hidden", flex:1, overflowY:"auto" }}>
-                  <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
+                  <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
                     <thead style={{ position:"sticky", top:0 }}>
                       <tr style={{ background:B.bg }}>
                         {["Estudiante","Nivel","Grupo","Tipo","Asistencia","Promedio","Estado",""].map(h=>(
@@ -492,7 +497,7 @@ export default function CoordAcademica() {
                         </tr>
                       ))}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
               </div>
               {selStudent && (
@@ -937,6 +942,7 @@ export default function CoordAcademica() {
           </div>
         </div>
       )}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
   );
 }

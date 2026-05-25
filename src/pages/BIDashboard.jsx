@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from 'react-router-dom';
+import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
 
 // ─── BRAND ────────────────────────────────────────────────────────
@@ -125,6 +126,8 @@ export default function BIDashboard() {
     return () => subscription.unsubscribe();
   }, [navigate]);
   const [view, setView]       = useState("overview");
+  const isMobile = useMobile();
+  const [sideOpen, setSideOpen] = useState(false);
   const [period, setPeriod]   = useState("12m");
   const [animate, setAnimate] = useState(true);
   const [realStats,   setRealStats]   = useState(null);
@@ -235,6 +238,8 @@ export default function BIDashboard() {
           Cerrar sesión
         </button>
       </aside>
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+
 
       {/* MAIN */}
       <main style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
@@ -516,7 +521,7 @@ export default function BIDashboard() {
           {/* ── RETENTION ── */}
           {view === "retention" && (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:10, marginBottom:14 }}>
                 {[
                   { label:"Churn mensual", value:`${churnRate}%`, sub:"Promedio últimos 3m", color:parseFloat(churnRate)<5?B.green:B.red },
                   { label:"Retención M3",  value:"83%",  sub:"Cohorte promedio",  color:B.primary },
@@ -593,7 +598,7 @@ export default function BIDashboard() {
           {/* ── CHANNELS ── */}
           {view === "channels" && (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:10, marginBottom:14 }}>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:"14px 15px", borderTop:`3px solid ${B.primary}` }}>
                   <div style={{ fontSize:12, color:B.textSec, marginBottom:6 }}>Total leads (año)</div>
                   <div style={{ fontSize:24, fontWeight:800, color:B.text }}>407</div>
@@ -708,7 +713,7 @@ export default function BIDashboard() {
               {/* Teacher performance */}
               <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
                 <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Rendimiento de docentes</div>
-                <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8 }}>
+                <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:8 }}>
                   {[
                     { name:"Sofía Estrada",  level:"C1", att:100, rating:4.9, students:6  },
                     { name:"Ana Torres",     level:"B1", att:95,  rating:4.9, students:33 },
@@ -736,6 +741,7 @@ export default function BIDashboard() {
 
         </div>
       </main>
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
   );
 }

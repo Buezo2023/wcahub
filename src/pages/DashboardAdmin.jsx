@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { getStudents, getGroups, getPayments, updateGroupTeamsLink, getPrograms, getAuditLog } from "../lib/db.js";
 import { exportCSV } from "../lib/exportCSV.js";
 import { EmptyState } from "../lib/EmptyState.jsx";
+import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
 import { toast } from "../lib/toast.jsx";
 import { api } from "../lib/api.js";
@@ -307,7 +308,7 @@ function B2BSection({ supabase, B, Badge, Stat }) {
 
   return (
     <div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:14 }}>
+      <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:10, marginBottom:14 }}>
         <Stat label="Empresas activas" value={companies.length} sub={`${companies.reduce((a,c)=>a+c.seats_paid,0)} cupos totales`} color={B.primary} icon="ti-building" />
         <Stat label="Ingresos B2B (mes)" value={`$${totalRevenue.toLocaleString()}`} sub="Con descuentos aplicados" color={B.secondary} icon="ti-coin" />
         <Stat label="Próxima factura" value="1 del mes" sub={`${companies.length} empresa${companies.length!==1?"s":""}`} color={B.green} icon="ti-receipt" />
@@ -550,7 +551,7 @@ export default function AdminDashboard() {
     <div style={{ display:"flex", minHeight: "100vh", height: "100vh", background:B.bg,  overflow:"hidden",  fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
 
       {/* ── SIDEBAR ── */}
-      <aside style={{ width:200, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 16px", flexShrink:0 }}>
+      <aside style={{ width:isMobile?260:200, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 16px", flexShrink:0, position:isMobile?"fixed":"relative", top:0, left:0, bottom:0, zIndex:isMobile?9990:1, transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none", transition:"transform .25s ease", overflowY:"auto", maxWidth:isMobile?"80vw":"none", minHeight:isMobile?"100vh":"auto" }}>
         <div style={{ padding:"20px 18px 18px", borderBottom:"1px solid rgba(255,255,255,.1)", marginBottom:10 }}>
           <div style={{ fontSize:17, fontWeight:800, color:"var(--bg-surface)", letterSpacing:-0.5 }}>
             WCA <span style={{ color:B.secondary }}>Hub</span>
@@ -597,6 +598,8 @@ export default function AdminDashboard() {
           Cerrar sesión
         </button>
       </aside>
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+
 
       {/* ── MAIN ── */}
       <main style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
@@ -636,7 +639,7 @@ export default function AdminDashboard() {
               ))}
 
               {/* Stats */}
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, margin:"16px 0" }}>
+              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)", gap:10, margin:"16px 0" }}>
                 <Stat label="Estudiantes activos" value={active.length} sub="Este mes" color={B.primary} icon="ti-users" />
                 <Stat label="Ingresos confirmados" value={`$${(confirmed || []).reduce((s,p) => s + (p.amount||0), 0).toLocaleString()}`} sub="Pagos confirmados" color={B.secondary} icon="ti-coin" />
                 <Stat label="Pagos pendientes" value={PAYMENTS_PENDING.length} sub="Por confirmar" color={B.amber} icon="ti-clock" />
@@ -749,7 +752,7 @@ export default function AdminDashboard() {
 
                 {/* Table */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, overflow:"hidden", flex:1, overflowY:"auto" }}>
-                  <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
+                  <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:isMobile?12:13 }}>
                     <thead style={{ position:"sticky", top:0, zIndex:1 }}>
                       <tr style={{ background:B.bg, borderBottom:`1px solid ${B.border}` }}>
                         {["Estudiante","País","Nivel · Grupo","Programa","Tipo","Pago","Estado","Asist.",""].map(h => (
@@ -784,13 +787,13 @@ export default function AdminDashboard() {
                         );
                       })}
                     </tbody>
-                  </table>
+                  </table></div>
                 </div>
               </div>
 
               {/* Student detail panel */}
               {selStudent && (
-                <div style={{ width:280, background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16, flexShrink:0, overflow:"auto" }}>
+                <div style={{ width:isMobile?"100%":280, background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16, flexShrink:0, overflow:"auto" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
                     <div style={{ fontSize:14, fontWeight:700, color:B.text }}>{selStudent.name}</div>
                     <button onClick={() => setSelStudent(null)} style={{ background:"none", border:"none", cursor:"pointer", color:B.textSec, fontSize:16 }}>✕</button>
@@ -852,7 +855,7 @@ export default function AdminDashboard() {
                   </div>
                 </div>
               )}
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10 }}>
+              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:10 }}>
                 {displayGroups.map(g => (
                   <div key={g.id} style={{ background:B.white, border:`1px solid ${g.teamsSet?B.border:B.red}`, borderRadius:12, padding:14 }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
@@ -885,7 +888,7 @@ export default function AdminDashboard() {
           {/* ── PAYMENTS ── */}
           {view === "payments" && (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:16 }}>
+              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:10, marginBottom:16 }}>
                 <Stat label="Cobrado total" value={`$${confirmed.reduce((s,p)=>s+(p.amount||0),0).toLocaleString()}`} sub={`${confirmed.length} pagos`} color={B.green} icon="ti-trending-up" />
                 <Stat label="Transferencias pendientes" value={PAYMENTS_PENDING.length} sub="Requieren confirmación" color={B.amber} icon="ti-clock" />
                 <Stat label="Vencidos +30 días" value="2" sub="Acción urgente" color={B.red} icon="ti-alert-circle" />
@@ -1102,6 +1105,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
   );
 }

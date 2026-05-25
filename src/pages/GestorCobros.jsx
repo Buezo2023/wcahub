@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect} from "react";
 import { useNavigate } from 'react-router-dom';
 import { toast } from "../lib/toast.jsx";
+import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
 import { notify, Notifs } from "../lib/notify.js";
 
@@ -63,6 +64,8 @@ export default function GestorCobros() {
     return () => subscription.unsubscribe();
   }, [navigate]);
   const [view, setView]             = useState("home");
+  const isMobile = useMobile();
+  const [sideOpen, setSideOpen] = useState(false);
   const [selTransfer, setSelTransfer] = useState(null);
   const [confirmed, setConfirmed]   = useState([]);
   const [rejectModal, setRejectModal] = useState(null);
@@ -199,10 +202,10 @@ export default function GestorCobros() {
   const statusLabel = s => ({confirmed:"✓ Confirmado",refunded:"↩ Reembolsado",failed:"✗ Fallido",pending:"⏳ Pendiente"}[s]);
 
   return (
-    <div style={{ display:"flex", minHeight: "100vh", height: "100vh", background:B.bg,  overflow:"hidden",  fontFamily:"'DM Sans','Segoe UI',sans-serif", position:"relative" }}>
+    <div style={{ display:"flex", flexDirection:isMobile?"column":"row", minHeight:"100vh", height: "100vh", background:B.bg,  overflow:"hidden",  fontFamily:"'DM Sans','Segoe UI',sans-serif", position:"relative" }}>
 
       {/* SIDEBAR */}
-      <aside style={{ width:196, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0 }}>
+      <aside style={{ width:isMobile?260:196, background:B.primary, display:"flex", flexDirection:"column", padding:"0 0 14px", flexShrink:0, zIndex:isMobile?9990:1, transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none", transition:"transform .25s ease", maxWidth:isMobile?"80vw":"none" }}>
         <div style={{ padding:"18px 16px 16px", borderBottom:"1px solid rgba(255,255,255,.1)", marginBottom:8 }}>
           <div style={{ fontSize:16, fontWeight:800, color:"var(--bg-surface)" }}>WCA <span style={{ color:B.secondary }}>Hub</span></div>
           <div style={{ fontSize:11, color:"rgba(255,255,255,.4)", marginTop:2, letterSpacing:1, textTransform:"uppercase" }}>Gestor de Cobros</div>
@@ -245,6 +248,8 @@ export default function GestorCobros() {
           Cerrar sesión
         </button>
       </aside>
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+
 
       {/* MAIN */}
       <main style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
@@ -263,7 +268,7 @@ export default function GestorCobros() {
           {/* HOME */}
           {view==="home" && (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:10, marginBottom:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)", gap:10, marginBottom:14 }}>
                 <Stat label="Cobrado hoy" value="$360" sub="3 pagos" color={B.green} icon="ti-trending-up" />
                 <Stat label="Por confirmar" value={pending.length} sub="Transferencias" color={B.amber} icon="ti-clock" />
                 <Stat label="Vencidos" value={OVERDUE.length} sub="+30 días" color={B.red} icon="ti-alert-circle" />
@@ -684,6 +689,7 @@ export default function GestorCobros() {
           </div>
         </div>
       )}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
   );
 }

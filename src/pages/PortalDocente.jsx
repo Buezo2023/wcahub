@@ -1,6 +1,7 @@
 import { useState, useEffect} from "react";
 import { useNavigate } from 'react-router-dom';
 import { toast } from "../lib/toast.jsx";
+import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
 
 const C = {
@@ -158,6 +159,8 @@ export default function TeacherPortal(){
     return () => subscription.unsubscribe();
   }, [navigate]);
   const [view,setView]=useState("home");
+  const isMobile = useMobile();
+  const [sideOpen, setSideOpen] = useState(false);
   const [selGroup,setSelGroup]=useState(null); // set after groups load
   const [selUnit,setSelUnit]=useState(null);
   const [extraModal,setExtraModal]=useState(null);
@@ -233,6 +236,8 @@ export default function TeacherPortal(){
           Cerrar sesión
         </button>
       </aside>
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+
 
       {/* MAIN */}
       <main style={{flex:1,overflow:"hidden",display:"flex",flexDirection:"column"}}>
@@ -261,7 +266,7 @@ export default function TeacherPortal(){
                   <button onClick={()=>setView("examenes")} style={{fontSize:12,padding:"6px 14px",background:C.red,color:"var(--bg-surface)",border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit",whiteSpace:"nowrap"}}>Ver ahora →</button>
                 </div>
               )}
-              <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:16}}>
+              <div style={{display:"grid",gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:10,marginBottom:16}}>
                 <Stat label="Mis grupos" value={displayGroups.length} sub="Nivel A1" color={C.accent}/>
                 <Stat label="Estudiantes" value={allStudents.length} sub="Ambos horarios"/>
                 <Stat label="En riesgo" value={atRisk.length} sub="Necesitan apoyo" color={atRisk.length>0?C.amber:C.green}/>
@@ -348,7 +353,7 @@ export default function TeacherPortal(){
                 </div>
               </div>
               <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
-                <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
+                <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
                   <thead>
                     <tr style={{background:C.surfaceHigh}}>
                       {["Estudiante","Asistencia","Promedio","Intentos U9","Estado",""].map(h=>(
@@ -378,7 +383,7 @@ export default function TeacherPortal(){
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table></div>
               </div>
             </div>
           )}
@@ -602,6 +607,7 @@ export default function TeacherPortal(){
           ✓ {toastMsg.msg}
         </div>
       )}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:C.accent,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
 import { api } from "../lib/api.js";
 import { toast as globalToast } from "../lib/toast.jsx";
@@ -220,6 +221,8 @@ export default function SuperAdmin() {
     return () => subscription.unsubscribe();
   }, [navigate]);
   const [view,       setView]       = useState("overview");
+  const isMobile = useMobile();
+  const [sideOpen, setSideOpen] = useState(false);
   const [subView,    setSubView]    = useState("progs");
   const [staff,      setStaff]      = useState([]);
   const [programs,   setPrograms]   = useState([]);
@@ -400,10 +403,10 @@ export default function SuperAdmin() {
 
   return (
     <>
-    <div style={{ display:"flex", minHeight:"100vh", background:"var(--bg-page)", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+    <div style={{ display:"flex",flexDirection:isMobile?"column":"row", minHeight:"100vh", background:"var(--bg-page)", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
 
       {/* SIDEBAR */}
-      <aside style={{ width:218, background:PH, display:"flex", flexDirection:"column", padding:"0 0 16px", flexShrink:0, minHeight:"100vh", position:"sticky", top:0 }}>
+      <aside style={{ width:isMobile?260:218, background:PH, display:"flex", flexDirection:"column", padding:"0 0 16px", flexShrink:0, minHeight:"100vh", position:"sticky", top:0 , zIndex:isMobile?9990:1, transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none", transition:"transform .25s ease", maxWidth:isMobile?"80vw":"none" }}>
         <div style={{ padding:"22px 18px 18px", borderBottom:"1px solid rgba(255,255,255,.08)", marginBottom:8 }}>
           <div style={{ fontSize:11, color:Y, fontWeight:700, letterSpacing:2, textTransform:"uppercase", marginBottom:5 }}>World Connect Academy</div>
           <div style={{ fontSize:17, fontWeight:800, color:"#fff" }}>Super Admin</div>
@@ -437,6 +440,8 @@ export default function SuperAdmin() {
           Cerrar sesión
         </button>
       </aside>
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+
 
       {/* Toast: usa ToastContainer global en App.jsx */}
       {/* MAIN */}
@@ -1122,6 +1127,7 @@ export default function SuperAdmin() {
           </div>
         </Modal>
       )}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:P,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
     {ConfirmUI}
   </>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
 import { useSession } from "../lib/useSession.js";
 import { notifySelf, Notifs } from "../lib/notify.js";
@@ -630,7 +631,7 @@ export default function PortalEstudiante(){
   }
 
   return(
-    <div style={{display:"flex",minHeight:"100vh",background:"var(--bg-page)",fontFamily:"'DM Sans','Segoe UI',sans-serif"}}>
+    <div style={{display:"flex",flexDirection:isMobile?"column":"row",minHeight:"100vh",background:"var(--bg-page)",fontFamily:"'DM Sans','Segoe UI',sans-serif"}}>
       <style>{`
         @media (max-width:400px) {
           .wca-sidebar { display: none !important; }
@@ -642,7 +643,7 @@ export default function PortalEstudiante(){
       `}</style>
 
       {/* SIDEBAR */}
-      <aside style={{width:200,background:P,display:"flex",flexDirection:"column",padding:"0 0 16px",flexShrink:0,minHeight:"100vh",position:"sticky",top:0}}>
+      <aside style={{width:isMobile?260:200,background:P,display:"flex",flexDirection:"column",padding:"0 0 16px",flexShrink:0,minHeight:"100vh",position:isMobile?"fixed":"sticky",top:0,left:0,bottom:0,zIndex:isMobile?9990:1,transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none",transition:"transform .25s ease",overflowY:"auto",maxWidth:isMobile?"80vw":"none"}}>
         <div style={{padding:"22px 18px 18px",borderBottom:"1px solid rgba(255,255,255,.08)",marginBottom:8}}>
           <div style={{fontSize:17,fontWeight:800,color:"#fff"}}>WCA <span style={{color:Y}}>Hub</span></div>
           <div style={{fontSize:11,color:"rgba(255,255,255,.35)",marginTop:2,textTransform:"uppercase",letterSpacing:1}}>Portal del estudiante</div>
@@ -688,6 +689,8 @@ export default function PortalEstudiante(){
           Cerrar sesión
         </button>
       </aside>
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+
 
       {/* MAIN */}
       <main style={{flex:1,display:"flex",flexDirection:"column",minHeight:"100vh"}}>
@@ -1253,6 +1256,7 @@ export default function PortalEstudiante(){
 
         </div>
       </main>
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:P,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
   );
 }
