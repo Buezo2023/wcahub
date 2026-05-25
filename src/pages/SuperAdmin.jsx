@@ -53,6 +53,13 @@ const NAV = [
   { id:"notifications", icon:"ti-bell",              label:"Notificaciones"      },
   { id:"audit",         icon:"ti-list-details",      label:"Auditoría"           },
   { id:"banks",         icon:"ti-building-bank",     label:"Cuentas banco"       },
+  // ── Accesos directos a otros portales ──
+  { id:"_sep",          icon:"",                     label:"OTROS PORTALES", sep:true },
+  { id:"/admin",        icon:"ti-users",             label:"Estudiantes y Grupos", link:true },
+  { id:"/crm",          icon:"ti-briefcase",         label:"CRM · Leads",          link:true },
+  { id:"/cobros",       icon:"ti-credit-card",       label:"Cobros y Pagos",       link:true },
+  { id:"/coordinacion", icon:"ti-school",            label:"Coordinación",         link:true },
+  { id:"/bi",           icon:"ti-chart-bar",         label:"Business Intelligence",link:true },
 ];
 
 const ROLE_COLORS = {
