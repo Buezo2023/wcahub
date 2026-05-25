@@ -514,6 +514,8 @@ export default function PortalEstudiante(){
   const [user, setUser] = useState({ name:"", email:"", avatar:null });
   const [view,       setView]       = useState("inicio");
   const [activeProg, setActiveProg] = useState("en"); // current program in practice/exam
+  const isMobile = useMobile();
+  const [sideOpen, setSideOpen] = useState(false);
   const [enrolled,   setEnrolled]   = useState(Object.keys(ENROLLMENTS));
 
   useEffect(() => {
