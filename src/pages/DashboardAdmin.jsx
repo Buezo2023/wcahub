@@ -407,6 +407,8 @@ export default function AdminDashboard() {
     });
     return () => subscription.unsubscribe();
   }, [navigate]);
+  const isMobile = useMobile();
+  const [sideOpen, setSideOpen] = useState(false);
   const [view, setView] = useState("home");
   const [realStudents, setRealStudents] = useState([]);
   const [realGroups,   setRealGroups]   = useState([]);
