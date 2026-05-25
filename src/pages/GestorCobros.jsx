@@ -267,7 +267,7 @@ export default function GestorCobros() {
                 <Stat label="Cobrado hoy" value="$360" sub="3 pagos" color={B.green} icon="ti-trending-up" />
                 <Stat label="Por confirmar" value={pending.length} sub="Transferencias" color={B.amber} icon="ti-clock" />
                 <Stat label="Vencidos" value={OVERDUE.length} sub="+30 días" color={B.red} icon="ti-alert-circle" />
-                <Stat label="Cobrado (mes)" value="$18,420" sub="↑ 8% vs anterior" color={B.primary} icon="ti-coin" />
+                <Stat label="Cobrado (mes)" value={`$${realConfirmed.reduce((s,p)=>s+(p.amount||0),0).toLocaleString()}`} sub={`${realConfirmed.length} pagos`} color={B.primary} icon="ti-coin" />
               </div>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>

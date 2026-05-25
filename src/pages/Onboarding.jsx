@@ -192,7 +192,7 @@ function StepProgram({ selectedProgram, onSelect, onNext, onPrev }) {
               <div style={{ flex:1 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:2 }}>
                   <div style={{ fontSize:14, fontWeight:700, color:selectedProgram===p.id ? p.color : B.text }}>{p.title}</div>
-                  <span style={{ fontSize:10, padding:"2px 8px", borderRadius:20, background:selectedProgram===p.id?p.color:"#f1f5f9", color:selectedProgram===p.id?"#fff":B.textSec, fontWeight:600 }}>{p.price}</span>
+                  <span style={{ fontSize:11, padding:"2px 8px", borderRadius:20, background:selectedProgram===p.id?p.color:"#f1f5f9", color:selectedProgram===p.id?"#fff":B.textSec, fontWeight:600 }}>{p.price}</span>
                 </div>
                 <div style={{ fontSize:11, color:B.textSec, marginBottom:4, fontWeight:500 }}>{p.sub}</div>
                 <div style={{ fontSize:11, color:B.textSec, lineHeight:1.6 }}>{p.desc}</div>
@@ -332,7 +332,7 @@ function StepHow({ onNext, onPrev }) {
               <div style={{ flex:1 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:2 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:i===active?B.text:B.textSec }}>{h.title}</div>
-                  {i===active && <span style={{ fontSize:9, padding:"2px 8px", borderRadius:20, background:B.secondaryDim, color:"#92400e", fontWeight:600 }}>{h.tag}</span>}
+                  {i===active && <span style={{ fontSize:11, padding:"2px 8px", borderRadius:20, background:B.secondaryDim, color:"#92400e", fontWeight:600 }}>{h.tag}</span>}
                 </div>
                 {i===active && <div style={{ fontSize:12, color:B.textSec, lineHeight:1.7 }}>{h.desc}</div>}
               </div>
@@ -439,8 +439,8 @@ function StepReady({ name, program, level, onFinish, saving }) {
             <div key={i} style={{ display:"flex", gap:10, alignItems:"center", padding:"8px 0", borderBottom:i<arr.length-1?`1px solid ${B.border}`:"none" }}>
               <div style={{ width:20, height:20, borderRadius:"50%", background:item.done?B.green:"transparent", border:`1.5px solid ${item.done?B.green:B.border}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 {item.done
-                  ? <i className="ti ti-check" style={{ fontSize:10, color:"#fff" }} aria-hidden="true" />
-                  : <i className="ti ti-clock" style={{ fontSize:10, color:B.border }} aria-hidden="true" />
+                  ? <i className="ti ti-check" style={{ fontSize:11, color:"#fff" }} aria-hidden="true" />
+                  : <i className="ti ti-clock" style={{ fontSize:11, color:B.border }} aria-hidden="true" />
                 }
               </div>
               <span style={{ fontSize:12, color:item.done?B.text:B.textSec }}>{item.text}</span>
@@ -453,7 +453,7 @@ function StepReady({ name, program, level, onFinish, saving }) {
         <PrimaryBtn onClick={saving ? undefined : onFinish} disabled={saving} style={{ width:"100%", padding:"14px", fontSize:15 }}>
           {saving ? "Guardando…" : "Ir a mi portal →"}
         </PrimaryBtn>
-        <div style={{ fontSize:10, color:B.textSec, marginTop:8 }}>
+        <div style={{ fontSize:11, color:B.textSec, marginTop:8 }}>
           Mientras tanto, podés explorar tu portal. Tu acceso completo se activa al confirmar la matrícula.
         </div>
       </div>
@@ -552,10 +552,10 @@ export default function OnboardingWizard() {
 
         {/* Step indicator */}
         <div style={{ padding:"12px 20px 0", display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-          <div style={{ fontSize:10, color:B.textSec }}>{step + 1} / {totalSteps}</div>
+          <div style={{ fontSize:11, color:B.textSec }}>{step + 1} / {totalSteps}</div>
           <StepDots current={step} total={totalSteps} onGoTo={setStep} />
           {step > 0 && step < totalSteps - 1 && (
-            <button onClick={skip} style={{ fontSize:10, color:B.textSec, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit" }}>
+            <button onClick={skip} style={{ fontSize:11, color:B.textSec, background:"none", border:"none", cursor:"pointer", fontFamily:"inherit" }}>
               Saltar →
             </button>
           )}

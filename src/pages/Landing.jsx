@@ -148,7 +148,7 @@ export default function Landing() {
           </div>
           <div>
             <div style={{ fontSize:15, fontWeight:800, color:T.teal, letterSpacing:-.3 }}>WCA <span style={{ color:T.gold }}>Academy</span></div>
-            <div style={{ fontSize:9, color:T.muted, letterSpacing:1.5, textTransform:"uppercase" }}>Virtual Assistant Training</div>
+            <div style={{ fontSize:11, color:T.muted, letterSpacing:1.5, textTransform:"uppercase" }}>Virtual Assistant Training</div>
           </div>
         </div>
 
@@ -218,7 +218,7 @@ export default function Landing() {
             <div style={{ background:"rgba(255,255,255,.07)", backdropFilter:"blur(20px)", border:"1px solid rgba(255,255,255,.12)", borderRadius:24, padding:24 }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:20 }}>
                 <div style={{ fontSize:12, color:"rgba(255,255,255,.5)", fontWeight:600, letterSpacing:1 }}>MI PROGRESO</div>
-                <div style={{ fontSize:10, background:T.gold, color:T.deep, padding:"3px 10px", borderRadius:20, fontWeight:700 }}>ACTIVO</div>
+                <div style={{ fontSize:11, background:T.gold, color:T.deep, padding:"3px 10px", borderRadius:20, fontWeight:700 }}>ACTIVO</div>
               </div>
               {/* Progress rings */}
               <div style={{ display:"flex", gap:14, marginBottom:20 }}>
@@ -231,13 +231,13 @@ export default function Landing() {
                         transform="rotate(-90 30 30)" style={{transition:"stroke-dasharray 1s"}}/>
                       <text x={30} y={35} textAnchor="middle" fontSize={13} fontWeight="700" fill={c}>{pct}%</text>
                     </svg>
-                    <div style={{ fontSize:10, color:"rgba(255,255,255,.55)", fontWeight:500 }}>{l}</div>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,.55)", fontWeight:500 }}>{l}</div>
                   </div>
                 ))}
               </div>
               {/* Next class */}
               <div style={{ background:"rgba(255,187,35,.12)", border:"1px solid rgba(255,187,35,.25)", borderRadius:12, padding:"12px 14px", marginBottom:14 }}>
-                <div style={{ fontSize:10, color:T.gold, fontWeight:600, marginBottom:4 }}>PRÓXIMA CLASE EN VIVO</div>
+                <div style={{ fontSize:11, color:T.gold, fontWeight:600, marginBottom:4 }}>PRÓXIMA CLASE EN VIVO</div>
                 <div style={{ fontSize:14, fontWeight:700, color:"#fff" }}>Lunes · 6:00 PM</div>
                 <div style={{ fontSize:11, color:"rgba(255,255,255,.55)" }}>Unit 9: Future · con Ana Torres</div>
               </div>
@@ -338,8 +338,8 @@ export default function Landing() {
                 <div style={{ flex:1 }}>
                   <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
                     <div className="serif" style={{ fontSize:26, color:T.white }}>{p.name}</div>
-                    {p.popular && <span style={{ fontSize:10, background:T.gold, color:T.deep, padding:"3px 10px", borderRadius:20, fontWeight:700 }}>{p.tag}</span>}
-                    {!p.popular && p.tag && <span style={{ fontSize:10, background:"rgba(255,255,255,.1)", color:"rgba(255,255,255,.6)", padding:"3px 10px", borderRadius:20 }}>{p.tag}</span>}
+                    {p.popular && <span style={{ fontSize:11, background:T.gold, color:T.deep, padding:"3px 10px", borderRadius:20, fontWeight:700 }}>{p.tag}</span>}
+                    {!p.popular && p.tag && <span style={{ fontSize:11, background:"rgba(255,255,255,.1)", color:"rgba(255,255,255,.6)", padding:"3px 10px", borderRadius:20 }}>{p.tag}</span>}
                   </div>
                   <div style={{ fontSize:14, color:"rgba(255,255,255,.6)", lineHeight:1.7, marginBottom:20 }}>{p.desc}</div>
                   <div style={{ display:"flex", gap:12, alignItems:"center" }}>
@@ -437,7 +437,7 @@ export default function Landing() {
           {programs.slice(0,3).map((p,i)=>(
             <FadeIn key={i} delay={i*0.1}>
               <div className="hover-lift" style={{ background:p.popular?T.teal:T.white, border:`1.5px solid ${p.popular?T.teal:T.border}`, borderRadius:22, padding:"28px 24px", position:"relative", overflow:"hidden" }}>
-                {p.popular && <div style={{ position:"absolute", top:16, right:-24, background:T.gold, color:T.deep, fontSize:10, fontWeight:700, padding:"4px 36px", transform:"rotate(30deg)" }}>Popular</div>}
+                {p.popular && <div style={{ position:"absolute", top:16, right:-24, background:T.gold, color:T.deep, fontSize:11, fontWeight:700, padding:"4px 36px", transform:"rotate(30deg)" }}>Popular</div>}
                 <div style={{ fontSize:32, marginBottom:14 }}>{p.icon}</div>
                 <div className="serif" style={{ fontSize:20, color:p.popular?T.white:T.ink, marginBottom:8 }}>{p.name}</div>
                 <div style={{ fontSize:13, color:p.popular?"rgba(255,255,255,.6)":T.muted, lineHeight:1.7, marginBottom:20, minHeight:56 }}>{p.desc}</div>
@@ -508,7 +508,7 @@ export default function Landing() {
                 </svg>
                 <div>
                   <div style={{ fontSize:14, fontWeight:800, color:"#1e40af", letterSpacing:-.3 }}>BID <span style={{ color:"#60a5fa" }}>LAB</span></div>
-                  <div style={{ fontSize:9, color:"#93c5fd", fontWeight:500, letterSpacing:.5 }}>BANCO INTERAMERICANO</div>
+                  <div style={{ fontSize:11, color:"#93c5fd", fontWeight:500, letterSpacing:.5 }}>BANCO INTERAMERICANO</div>
                 </div>
               </div>
 
@@ -519,7 +519,7 @@ export default function Landing() {
                 </div>
                 <div>
                   <div style={{ fontSize:13, fontWeight:800, color:"#065f46", letterSpacing:-.2 }}>Región Plateada</div>
-                  <div style={{ fontSize:9, color:"#6ee7b7", fontWeight:600, letterSpacing:.5, textTransform:"uppercase" }}>Iniciativa de Impacto</div>
+                  <div style={{ fontSize:11, color:"#6ee7b7", fontWeight:600, letterSpacing:.5, textTransform:"uppercase" }}>Iniciativa de Impacto</div>
                 </div>
               </div>
 
@@ -541,7 +541,7 @@ export default function Landing() {
                 </div>
                 <div>
                   <div style={{ fontSize:13, fontWeight:800, color:"#5b21b6" }}>Iniciativa Dinámica</div>
-                  <div style={{ fontSize:9, color:"#c4b5fd", fontWeight:600, letterSpacing:.5, textTransform:"uppercase" }}>Aceleradora LATAM</div>
+                  <div style={{ fontSize:11, color:"#c4b5fd", fontWeight:600, letterSpacing:.5, textTransform:"uppercase" }}>Aceleradora LATAM</div>
                 </div>
               </div>
             </div>
@@ -564,7 +564,7 @@ export default function Landing() {
                 <div style={{ fontSize:28, lineHeight:1 }}>🇺🇸</div>
                 <div style={{ borderLeft:"1.5px solid #e2e8f0", paddingLeft:12 }}>
                   <div style={{ fontSize:12, fontWeight:800, color:"#1e3a8a", letterSpacing:-.2 }}>U.S. Embassy</div>
-                  <div style={{ fontSize:9, color:"#93c5fd", fontWeight:600, letterSpacing:.5, textTransform:"uppercase" }}>Tegucigalpa, Honduras</div>
+                  <div style={{ fontSize:11, color:"#93c5fd", fontWeight:600, letterSpacing:.5, textTransform:"uppercase" }}>Tegucigalpa, Honduras</div>
                 </div>
               </div>
 
@@ -575,7 +575,7 @@ export default function Landing() {
                 </div>
                 <div>
                   <div style={{ fontSize:12, fontWeight:800, color:"#92400e", letterSpacing:-.2 }}>Exchange Alumni</div>
-                  <div style={{ fontSize:9, color:"#d97706", fontWeight:600, letterSpacing:.4, textTransform:"uppercase" }}>Connect · Empower · Inspire</div>
+                  <div style={{ fontSize:11, color:"#d97706", fontWeight:600, letterSpacing:.4, textTransform:"uppercase" }}>Connect · Empower · Inspire</div>
                 </div>
               </div>
             </div>
@@ -715,7 +715,7 @@ export default function Landing() {
                 </div>
                 <div>
                   <div style={{ fontSize:14, fontWeight:800, color:"#fff" }}>WCA Academy</div>
-                  <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", letterSpacing:1.5 }}>VIRTUAL ASSISTANT TRAINING</div>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", letterSpacing:1.5 }}>VIRTUAL ASSISTANT TRAINING</div>
                 </div>
               </div>
               <p style={{ fontSize:13, color:"rgba(255,255,255,.35)", lineHeight:1.8, maxWidth:280 }}>

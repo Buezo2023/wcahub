@@ -426,9 +426,9 @@ export default function TeacherPortal(){
     if(records.length){
       try{
         await supabase.from("attendance").upsert(records, {onConflict:"student_id,date"});
-        showToast("✓ Asistencia guardada correctamente");
+        showToast("✓ Asistencia guardada localmente");
       }catch(e){ showToast("Error: "+e.message); }
-    } else { showToast("✓ Asistencia guardada"); }
+    } else { showToast("✓ Asistencia guardada localmente"); }
   }}>Guardar asistencia</button>
               </div>
             </div>
