@@ -345,7 +345,7 @@ export default function SuperAdmin() {
             active: staffForm.status === "active",
           }).eq("id", profile.id);
         }
-        setStaff(p => p.map(s => s.id === staffModal.data.id ? { ...s, ...staffForm } : s));
+        setStaff(p => p.map(s => s.id === staffModal.data?.id ? { ...s, ...staffForm } : s));
         showToast("Empleado actualizado correctamente");
       }
     } catch (e) {
@@ -399,8 +399,8 @@ export default function SuperAdmin() {
           price_monthly:    isMonthly ? priceVal : null,
           price_quarterly:  !isMonthly ? priceVal : null,
           active:           progForm.active,
-        }).eq("id", progModal.data.id);
-        setPrograms(p => p.map(x => x.id === progModal.data.id
+        }).eq("id", progModal.data?.id);
+        setPrograms(p => p.map(x => x.id === progModal.data?.id
           ? { ...x, ...progForm, price: priceVal } : x));
         showToast("Programa actualizado correctamente");
       }
@@ -1058,14 +1058,14 @@ export default function SuperAdmin() {
             <div>
               <div style={{ display:"flex", gap:14, marginBottom:18 }}>
                 <div style={{ width:56, height:56, borderRadius:"50%", background:PD, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, fontWeight:700, color:P, flexShrink:0 }}>{(staffModal.data?.name||"??").split(" ").map(n=>n[0]).join("").slice(0,2)}</div>
-                <div><div style={{ fontSize:16, fontWeight:700, color:"var(--text-primary)" }}>{staffModal.data.name}</div><Badge text={staffModal.data.role} bg={(ROLE_COLORS[staffModal.data.role]||["var(--bg-surface-subtle)","var(--text-secondary)"])[0]} color={(ROLE_COLORS[staffModal.data.role]||["","var(--text-secondary)"])[1]}/></div>
+                <div><div style={{ fontSize:16, fontWeight:700, color:"var(--text-primary)" }}>{staffModal.data?.name}</div><Badge text={staffModal.data?.role} bg={(ROLE_COLORS[staffModal.data?.role]||["var(--bg-surface-subtle)","var(--text-secondary)"])[0]} color={(ROLE_COLORS[staffModal.data?.role]||["","var(--text-secondary)"])[1]}/></div>
               </div>
-              {[["Email",staffModal.data.email],["Teléfono",staffModal.data.phone],["País",staffModal.data.country],["Salario",`$${staffModal.data.salary}/mes`],["Ingresó",staffModal.data.hired],["Estado",staffModal.data.status==="active"?"Activo":"Inactivo"]].map(([k,v])=>(
+              {[["Email",staffModal.data?.email],["Teléfono",staffModal.data?.phone],["País",staffModal.data?.country],["Salario",`$${staffModal.data?.salary}/mes`],["Ingresó",staffModal.data?.hired],["Estado",staffModal.data?.status==="active"?"Activo":"Inactivo"]].map(([k,v])=>(
                 <div key={k} style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"8px 0", borderBottom:"1px solid var(--border)" }}>
                   <span style={{ color:"var(--text-secondary)" }}>{k}</span><span style={{ color:"var(--text-primary)", fontWeight:500 }}>{v}</span>
                 </div>
               ))}
-              {staffModal.data.levels?.length>0 && <div style={{ marginTop:12 }}><div style={{ fontSize:11, color:"var(--text-tertiary)", marginBottom:6 }}>Niveles</div><div style={{ display:"flex", gap:6 }}>{staffModal.data.levels.map(l=><Badge key={l} text={l} bg={PD} color={P}/>)}</div></div>}
+              {staffModal.data?.levels?.length>0 && <div style={{ marginTop:12 }}><div style={{ fontSize:11, color:"var(--text-tertiary)", marginBottom:6 }}>Niveles</div><div style={{ display:"flex", gap:6 }}>{staffModal.data?.levels.map(l=><Badge key={l} text={l} bg={PD} color={P}/>)}</div></div>}
               <div style={{ display:"flex", gap:8, marginTop:18 }}>
                 <BtnGhost onClick={()=>setStaffModal(null)}>Cerrar</BtnGhost>
                 <BtnPrimary onClick={()=>openEditStaff(staffModal.data)} style={{ flex:1 }}>✎ Editar</BtnPrimary>

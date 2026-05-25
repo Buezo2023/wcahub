@@ -789,7 +789,7 @@ export default function CoordAcademica() {
           <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:460, maxWidth:"100%", border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)", maxHeight:"90vh", overflowY:"auto" }}>
             <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
               <div>
-                <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>{teacherModal.mode==="add"?"Agregar docente":teacherModal.mode==="edit"?"Editar docente":teacherModal.data.name}</div>
+                <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>{teacherModal.mode==="add"?"Agregar docente":teacherModal.mode==="edit"?"Editar docente":teacherModal.data?.name}</div>
                 {teacherModal.mode==="view"&&<div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:2 }}>Ficha del empleado</div>}
               </div>
               <button onClick={()=>setTeacherModal(null)} style={{ background:"none", border:"none", fontSize:20, cursor:"pointer", color:"var(--text-tertiary)" }}>✕</button>
@@ -802,19 +802,19 @@ export default function CoordAcademica() {
                     {(teacherModal.data?.name||"??").split(" ").map(n=>n[0]).join("").slice(0,2)}
                   </div>
                   <div>
-                    <div style={{ fontSize:16, fontWeight:700, color:"var(--text-primary)" }}>{teacherModal.data.name}</div>
-                    <div style={{ fontSize:12, color:"var(--text-secondary)" }}>Docente · Niveles: {teacherModal.data.levels.join(", ")}</div>
+                    <div style={{ fontSize:16, fontWeight:700, color:"var(--text-primary)" }}>{teacherModal.data?.name}</div>
+                    <div style={{ fontSize:12, color:"var(--text-secondary)" }}>Docente · Niveles: {teacherModal.data?.levels.join(", ")}</div>
                   </div>
                 </div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, marginBottom:14 }}>
-                  {[{l:"Asistencia",v:`${teacherModal.data.attendance}%`,c:attCol(teacherModal.data.attendance)},{l:"Calificación",v:`★ ${teacherModal.data.rating}`,c:B.amber},{l:"Horas/sem.",v:`${teacherModal.data.hours}h`,c:B.primary}].map((m,i)=>(
+                  {[{l:"Asistencia",v:`${teacherModal.data?.attendance}%`,c:attCol(teacherModal.data?.attendance)},{l:"Calificación",v:`★ ${teacherModal.data?.rating}`,c:B.amber},{l:"Horas/sem.",v:`${teacherModal.data?.hours}h`,c:B.primary}].map((m,i)=>(
                     <div key={i} style={{ background:"var(--bg-surface-subtle)", borderRadius:8, padding:"8px 10px", textAlign:"center" }}>
                       <div style={{ fontSize:16, fontWeight:700, color:m.c }}>{m.v}</div>
                       <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:2 }}>{m.l}</div>
                     </div>
                   ))}
                 </div>
-                {[["Email",teacherModal.data.email||"—"],["Teléfono",teacherModal.data.phone||"—"],["País",teacherModal.data.country||"—"],["Salario",teacherModal.data.salary?`$${teacherModal.data.salary}/mes`:"—"],["Grupos",(teacherModal.data?.groups||[]).join(" · ")||"Sin grupos"]].map(([k,v])=>(
+                {[["Email",teacherModal.data?.email||"—"],["Teléfono",teacherModal.data?.phone||"—"],["País",teacherModal.data?.country||"—"],["Salario",teacherModal.data?.salary?`$${teacherModal.data?.salary}/mes`:"—"],["Grupos",(teacherModal.data?.groups||[]).join(" · ")||"Sin grupos"]].map(([k,v])=>(
                   <div key={k} style={{ display:"flex", justifyContent:"space-between", fontSize:13, padding:"8px 0", borderBottom:"1px solid var(--border)" }}>
                     <span style={{ color:"var(--text-secondary)" }}>{k}</span>
                     <span style={{ color:"var(--text-primary)", fontWeight:500 }}>{v}</span>
@@ -822,7 +822,7 @@ export default function CoordAcademica() {
                 ))}
                 <div style={{ display:"flex", gap:8, marginTop:16 }}>
                   <button onClick={()=>setTeacherModal(null)} style={{ padding:"10px 16px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit", color:"var(--text-secondary)" }}>Cerrar</button>
-                  <button onClick={()=>{ setTeacherForm({...teacherModal.data,levels:[...teacherModal.data.levels]}); setTeacherModal({mode:'edit',data:teacherModal.data}); }} style={{ flex:1, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✎ Editar</button>
+                  <button onClick={()=>{ setTeacherForm({...teacherModal.data,levels:[...teacherModal.data?.levels]}); setTeacherModal({mode:'edit',data:teacherModal.data}); }} style={{ flex:1, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✎ Editar</button>
                 </div>
               </div>
             ) : (
@@ -888,7 +888,7 @@ export default function CoordAcademica() {
                     } else {
                       const {data:prof} = await supabase.from("profiles").select("id").eq("email",teacherForm.email).maybeSingle();
                       if(prof) await supabase.from("profiles").update({full_name:teacherForm.name}).eq("id",prof.id);
-                      setTeachers(t=>t.map(x=>x.id===teacherModal.data.id?{...x,...teacherForm}:x));
+                      setTeachers(t=>t.map(x=>x.id===teacherModal.data?.id?{...x,...teacherForm}:x));
                     }
                     setTeacherModal(null);
                   }} style={{ flex:1, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
