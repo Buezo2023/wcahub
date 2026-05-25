@@ -7,6 +7,12 @@ import { toast as globalToast } from "../lib/toast.jsx";
 import { useConfirm } from "../lib/ConfirmModal.jsx";
 import { getAuditLog, getPrograms } from "../lib/db.js";
 import { EstudiantesSection } from "../sections/EstudiantesSection.jsx";
+import { TeachersSection }  from "../sections/TeachersSection.jsx";
+import { AtRiskSection }    from "../sections/AtRiskSection.jsx";
+import { BecasSection }     from "../sections/BecasSection.jsx";
+import { B2BSection }       from "../sections/B2BSection.jsx";
+import { VencidosSection }  from "../sections/VencidosSection.jsx";
+import { BISection }        from "../sections/BISection.jsx";
 import { PagosSection }       from "../sections/PagosSection.jsx";
 import { LeadsSection }        from "../sections/LeadsSection.jsx";
 import { GruposSection }       from "../sections/GruposSection.jsx";
@@ -50,18 +56,38 @@ const XP_ACTIONS = [
 ];
 
 const NAV = [
-  { id:"overview",      icon:"ti-layout-dashboard", label:"Panel general"       },
-  { id:"programs",      icon:"ti-books",             label:"Académico"           },
-  { id:"hr",            icon:"ti-users-group",       label:"RRHH & Personal"     },
-  { id:"gamification",  icon:"ti-trophy",            label:"Gamificación"        },
-  { id:"notifications", icon:"ti-bell",              label:"Notificaciones"      },
-  { id:"audit",         icon:"ti-list-details",      label:"Auditoría"           },
-  { id:"banks",         icon:"ti-building-bank",     label:"Cuentas banco"       },
-  { id:"students",      icon:"ti-users",             label:"Estudiantes"         },
-  { id:"groups",        icon:"ti-grid-dots",         label:"Grupos"              },
-  { id:"payments",      icon:"ti-credit-card",       label:"Pagos"               },
-  { id:"leads",         icon:"ti-briefcase",         label:"CRM · Leads"         },
+  { id:"overview",  icon:"ti-layout-dashboard", label:"Panel general"   },
+  { id:"academia",  icon:"ti-school",            label:"Academia"        },
+  { id:"ventas",    icon:"ti-briefcase",         label:"Ventas & CRM"    },
+  { id:"contab",    icon:"ti-credit-card",       label:"Contabilidad"    },
+  { id:"bi",        icon:"ti-chart-bar",         label:"Reportes & BI"   },
+  { id:"rrhh",      icon:"ti-users-group",       label:"RRHH & Personal" },
+  { id:"sistema",   icon:"ti-settings",          label:"Sistema"         },
 ];
+
+// Sub-tabs per department
+const SUB_TABS = {
+  academia: [
+    ["progs","Programas"],["prices","Precios"],["cycle","Ciclo"],["holidays","Festivos"],
+    ["students","Estudiantes"],["groups","Grupos"],["teachers","Docentes"],
+    ["atrisk","En riesgo"],["becas","Becas"],
+  ],
+  ventas: [
+    ["leads","Pipeline CRM"],["all_leads","Todos los leads"],["tareas","Tareas"],["b2b","Empresas B2B"],
+  ],
+  contab: [
+    ["payments","Pagos pendientes"],["vencidos","Vencidos"],["history","Historial"],["banks","Cuentas banco"],
+  ],
+  bi: [
+    ["bi_overview","Métricas clave"],
+  ],
+  rrhh: [
+    ["staff","Personal"],["roles","Roles del sistema"],
+  ],
+  sistema: [
+    ["gamification","Gamificación"],["notifications","Notificaciones"],["audit","Auditoría"],
+  ],
+};
 
 const ROLE_COLORS = {
   "Docente":["#e8f3f6","#155266"], "Coordinadora":["#ede9fe","#6d28d9"],
@@ -445,7 +471,7 @@ export default function SuperAdmin() {
               </button>
             );
             return (
-            <button key={n.id} onClick={()=>{setView(n.id);setSubView(n.id==="programs"?"progs":n.id==="hr"?"staff":"");if(isMobile)setSideOpen(false);}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 18px", border:"none", background:view===n.id?"rgba(255,255,255,.12)":"transparent", color:view===n.id?"#fff":"rgba(255,255,255,.45)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:`2px solid ${view===n.id?Y:"transparent"}`, transition:"all .15s", fontFamily:"inherit", fontWeight:view===n.id?600:400, width:"100%" }}>
+            <button key={n.id} onClick={()=>{setView(n.id);setSubView((SUB_TABS[n.id]||[["",""]]) [0][0]);if(isMobile)setSideOpen(false);}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 18px", border:"none", background:view===n.id?"rgba(255,255,255,.12)":"transparent", color:view===n.id?"#fff":"rgba(255,255,255,.45)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:`2px solid ${view===n.id?Y:"transparent"}`, transition:"all .15s", fontFamily:"inherit", fontWeight:view===n.id?600:400, width:"100%" }}>
               <i className={"ti "+n.icon} style={{ fontSize:14, width:18, textAlign:"center" }} aria-hidden="true"/>
               {n.label}
             </button>
@@ -480,7 +506,7 @@ export default function SuperAdmin() {
         <div style={{ height:60, background:"var(--bg-surface)", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 24px", flexShrink:0, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
           <div>
             <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>
-              {{"overview":"Panel general","programs":"Gestión académica","hr":"RRHH & Personal","gamification":"Gamificación","notifications":"Notificaciones","audit":"Auditoría","banks":"Cuentas banco","students":"Estudiantes","groups":"Grupos y horarios","payments":"Pagos","leads":"CRM · Leads"}[view]}
+              {{"overview":"Panel general","academia":"Academia","ventas":"Ventas & CRM","contab":"Contabilidad","bi":"Reportes & BI","rrhh":"RRHH & Personal","sistema":"Sistema"}[view]}
             </div>
           </div>
           <div style={{ display:"flex", gap:8 }}>
@@ -501,6 +527,22 @@ export default function SuperAdmin() {
         </div>
 
         <div style={{ flex:1, overflowY:"auto", padding:24 }}>
+          {/* Sub-navigation tabs for departments */}
+          {SUB_TABS[view] && (
+            <div style={{ display:"flex", gap:6, marginBottom:18, flexWrap:"wrap" }}>
+              {SUB_TABS[view].map(([id,label])=>(
+                <button key={id} onClick={()=>setSubView(id)} style={{
+                  padding:"6px 14px", borderRadius:9, border:"none", fontSize:12,
+                  fontWeight:600, cursor:"pointer", fontFamily:"inherit",
+                  background: subView===id ? P : "var(--bg-surface-subtle)",
+                  color: subView===id ? "#fff" : "var(--text-secondary)",
+                }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+          )}
+
 
           {/* ── OVERVIEW ── */}
           {view==="overview" && <>
@@ -586,7 +628,7 @@ export default function SuperAdmin() {
           </>}
 
           {/* ── BI ── */}
-                    {view==="programs" && <>
+                    {(view==="academia") && <>
             {/* Sub-navigation: Programas | Precios | Ciclo | Festivos */}
             <div style={{ display:"flex", gap:6, marginBottom:16 }}>
               {[["progs","Programas"],["prices","Precios"],["cycle","Ciclo"],["holidays","Festivos"]].map(([id,label])=>(
@@ -594,7 +636,7 @@ export default function SuperAdmin() {
                   background: subView===id ? P : "var(--bg-surface-subtle)", color: subView===id ? "#fff" : "var(--text-secondary)" }}>{label}</button>
               ))}
             </div>
-            {subView==="progs" && <>
+            {(subView==="progs") && <>
             <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:14 }}>
               <BtnPrimary onClick={openAddProg} style={{ display:"flex", alignItems:"center", gap:7 }}>
                 <i className="ti ti-plus" style={{ fontSize:14 }} aria-hidden="true"/> Nuevo programa
@@ -640,11 +682,11 @@ export default function SuperAdmin() {
           </>}
 
           {/* ── HR ── */}
-          {view==="hr" && <>
+          {view==="rrhh" && <>
             <div style={{ display:"flex", gap:6, marginBottom:16 }}>
               {[["staff","Personal"],["roles","Roles del sistema"]].map(([id,label])=>(
                 <button key={id} onClick={()=>setSubView(id)} style={{ padding:"7px 16px", borderRadius:9, border:"none", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit",
-                  background: (subView==="staff"||subView==="roles"?subView:"staff")===id ? P : "var(--bg-surface-subtle)", color: (subView==="staff"||subView==="roles"?subView:"staff")===id ? "#fff" : "var(--text-secondary)" }}>{label}</button>
+                  background: subView===id ? P : "var(--bg-surface-subtle)", color: subView===id ? "#fff" : "var(--text-secondary)" }}>{label}</button>
               ))}
             </div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginBottom:16 }}>
@@ -712,14 +754,14 @@ export default function SuperAdmin() {
           </>}
 
           {/* ── ROLES ── */}
-          {view==="hr" && subView==="roles" && (
+          {view==="rrhh" && subView==="roles" && (
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:"14px 18px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, boxShadow:"var(--shadow-sm)" }}>
                 <div>
                   <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>Roles del sistema ({ROLES_DEF.length})</div>
                   <div style={{ fontSize:12, color:"var(--text-secondary)", marginTop:2 }}>Para crear usuarios con cada rol usá RRHH & Personal → Agregar empleado</div>
                 </div>
-                <button onClick={()=>{ setView("hr"); setTimeout(()=>setStaffModal({mode:"add"}),100); }} style={{ fontSize:12, padding:"9px 18px", background:PD, color:P, border:"none", borderRadius:9, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>
+                <button onClick={()=>{ setView("rrhh"); setSubView("staff"); setTimeout(()=>setStaffModal({mode:"add"}),100); }} style={{ fontSize:12, padding:"9px 18px", background:PD, color:P, border:"none", borderRadius:9, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>
                   + Nuevo usuario
                 </button>
               </div>
@@ -745,7 +787,7 @@ export default function SuperAdmin() {
                         {r.perms.map(p=><span key={p} style={{ fontSize:11, padding:"2px 8px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", borderRadius:6, border:"1px solid var(--border)" }}>{p}</span>)}
                       </div>
                     </div>
-                    <button onClick={()=>{ setStaffForm(f=>({...f, role: r.name==="Ventas / Asesor"?"Ventas":r.name==="Gestor de Cobros"?"Gestor de Cobros":r.name })); setView("hr"); setTimeout(()=>setStaffModal({mode:"add"}),100); }}
+                    <button onClick={()=>{ setStaffForm(f=>({...f, role: r.name==="Ventas / Asesor"?"Ventas":r.name==="Gestor de Cobros"?"Gestor de Cobros":r.name })); setView("rrhh"); setSubView("staff"); setTimeout(()=>setStaffModal({mode:"add"}),100); }}
                       style={{ fontSize:11, padding:"7px 14px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit", flexShrink:0, whiteSpace:"nowrap" }}>
                       Agregar usuario
                     </button>
@@ -756,7 +798,7 @@ export default function SuperAdmin() {
           )}
 
           {/* ── PRICES ── */}
-          {view==="programs" && subView==="prices" && (
+          {view==="academia" && subView==="prices" && (
             <div style={{ maxWidth:600 }}>
               <div style={{ background:AD, border:`1px solid ${A}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:12, color:A, display:"flex", gap:8 }}>
                 <i className="ti ti-info-circle" style={{ fontSize:14 }} aria-hidden="true"/> Los cambios aplican a nuevas inscripciones.
@@ -797,7 +839,7 @@ export default function SuperAdmin() {
           )}
 
           {/* ── CYCLE ── */}
-          {view==="programs" && subView==="cycle" && (
+          {view==="academia" && subView==="cycle" && (
             <div>
               <div style={{ background:RD, border:`1px solid ${R}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:12, color:R, display:"flex", gap:8 }}>
                 <i className="ti ti-alert-triangle" style={{ fontSize:14 }} aria-hidden="true"/> Reiniciar es irreversible.
@@ -832,7 +874,7 @@ export default function SuperAdmin() {
           )}
 
           {/* ── HOLIDAYS ── */}
-          {view==="programs" && subView==="holidays" && (
+          {view==="academia" && subView==="holidays" && (
             <div style={{ display:"grid", gridTemplateColumns:"1fr 310px", gap:14 }}>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
                 <div style={{ padding:"14px 18px", borderBottom:"1px solid var(--border)", fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>Festivos configurados</div>
@@ -866,7 +908,7 @@ export default function SuperAdmin() {
           )}
 
           {/* ── GAMIFICATION ── */}
-          {view==="gamification" && (
+          {view==="sistema" && subView==="gamification" && (
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:14 }}>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Puntos XP por acción</SectionTitle>
@@ -963,7 +1005,7 @@ export default function SuperAdmin() {
           )}
 
           {/* ── NOTIFICATIONS ── */}
-          {view==="notifications" && (
+          {view==="sistema" && subView==="notifications" && (
             <div>
               {[
                 { label:"Nueva unidad",     channel:"WhatsApp", trigger:"Lunes 00:00 CST",     preview:"🎓 Nueva unidad disponible: *{unit_title}*. Abre wcahub.com 📚" },
@@ -988,7 +1030,7 @@ export default function SuperAdmin() {
           )}
 
           {/* ── AUDIT ── */}
-          {view==="audit" && (
+          {view==="sistema" && subView==="audit" && (
             <div>
               <div style={{ display:"flex", gap:8, marginBottom:14 }}>
                 <div style={{ flex:1, display:"flex", alignItems:"center", gap:9, background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:10, padding:"9px 13px" }}>
@@ -1032,7 +1074,7 @@ export default function SuperAdmin() {
           )}
 
           {/* ── BANKS ── */}
-          {view==="banks" && (
+          {view==="contab"  && subView==="banks" && (
             <div style={{ maxWidth:580 }}>
               {[{name:"BAC Credomatic",acc:"0123-4567-8901",type:"Corriente",holder:"WCA Academy S.A.",active:true},{name:"BI Honduras",acc:"9876-5432-1098",type:"Ahorro",holder:"WCA Academy S.A.",active:true},{name:"Ficohsa",acc:"4455-6677-8899",type:"Corriente",holder:"WCA Academy S.A.",active:false}].map((b,i)=>(
                 <div key={i} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, marginBottom:10, display:"flex", alignItems:"center", gap:14, boxShadow:"var(--shadow-sm)", opacity:b.active?1:.6 }}>
