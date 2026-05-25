@@ -7,6 +7,7 @@ import { notifySelf, Notifs } from "../lib/notify.js";
 import { api } from "../lib/api.js";
 import { toast } from "../lib/toast.jsx";
 import { generateCertificate } from "../lib/certificate.js";
+import { StudentReport } from "../lib/StudentReport.jsx";
 import { useNotifications } from "../lib/useNotifications.js";
 import { LEVELS, UNITS, SKILLS_BY_LEVEL } from "../data/englishContent.js";
 
@@ -112,6 +113,7 @@ const NAV=[
   {id:"examen",  icon:"ti-writing",         label:"Examen"},
   {id:"progreso",icon:"ti-certificate",     label:"Mi progreso"},
   {id:"pagos",   icon:"ti-credit-card",     label:"Pagos"},
+  {id:"reporte", icon:"ti-file-analytics",   label:"Mi reporte"},
   {id:"perfil",  icon:"ti-user-circle",     label:"Mi perfil"},
 ];
 
@@ -1175,6 +1177,57 @@ export default function PortalEstudiante(){
           )}
 
           {/* ── PERFIL ── */}
+          {view==="reporte"&&(
+            <div style={{padding:"24px 28px"}}>
+              <div style={{fontSize:isMobile?17:22,fontWeight:800,color:"var(--text-primary)",marginBottom:4}}>Mi reporte académico</div>
+              <div style={{fontSize:13,color:"var(--text-secondary)",marginBottom:24}}>Ficha completa con tu progreso, habilidades y certificados</div>
+
+              {/* Preview card */}
+              <div style={{background:"var(--bg-surface)",borderRadius:16,border:"1px solid var(--border)",overflow:"hidden",marginBottom:20,boxShadow:"0 4px 20px rgba(0,0,0,.06)"}}>
+                <div style={{background:`linear-gradient(135deg,#0f3d4d,#155266)`,padding:"24px 28px",color:"#fff"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+                    <svg viewBox="0 0 32 32" style={{width:36,height:36}}><rect width="32" height="32" rx="8" fill="#ffbb23"/><text x="16" y="23" fontFamily="sans-serif" fontSize="18" fontWeight="800" fill="#0f3d4d" textAnchor="middle">W</text></svg>
+                    <div><div style={{fontSize:14,fontWeight:800}}>WCA <span style={{color:"#ffbb23"}}>Academy</span></div><div style={{fontSize:10,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>Reporte del estudiante</div></div>
+                  </div>
+                  <div style={{fontSize:22,fontWeight:800,letterSpacing:-0.3}}>{user?.name||"Estudiante"}</div>
+                  <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
+                    {enrolledProgs.map(p=>(
+                      <span key={p.id} style={{fontSize:11,padding:"3px 10px",borderRadius:20,background:"rgba(255,255,255,.12)",fontWeight:600}}>{p.shortName}</span>
+                    ))}
+                  </div>
+                </div>
+                <div style={{padding:"20px 28px",display:"grid",gridTemplateColumns:isMobile?"1fr 1fr":"repeat(4,1fr)",gap:16}}>
+                  {[
+                    {label:"Programas activos", value:enrolledProgs.length, icon:"📚"},
+                    {label:"Certificados", value:myCertificates.length, icon:"🏆"},
+                    {label:"Exámenes rendidos", value:progressHistory.filter(p=>p.exam_score>0).length, icon:"📝"},
+                    {label:"Unidad actual", value:`U${_baseEnroll.unit||1}/12`, icon:"🎯"},
+                  ].map((s,i)=>(
+                    <div key={i} style={{textAlign:"center",padding:12,background:"var(--bg-surface-subtle)",borderRadius:12}}>
+                      <div style={{fontSize:24}}>{s.icon}</div>
+                      <div style={{fontSize:18,fontWeight:800,color:"var(--text-primary)",lineHeight:1.2}}>{s.value}</div>
+                      <div style={{fontSize:11,color:"var(--text-secondary)",marginTop:2}}>{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Action */}
+              <button onClickCapture={(e)=>{e.stopPropagation();setShowReport(true);}} style={{
+                display:"flex",alignItems:"center",gap:10,padding:"14px 28px",
+                background:"#ffbb23",color:"#0f3d4d",border:"none",borderRadius:12,
+                fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",
+                boxShadow:"0 4px 20px rgba(255,187,35,.4)",
+              }}>
+                <i className="ti ti-file-analytics" style={{fontSize:18}} aria-hidden="true"/>
+                Ver reporte completo y descargar PDF
+              </button>
+              <p style={{fontSize:12,color:"var(--text-secondary)",marginTop:8}}>
+                El reporte incluye gráfico de habilidades, historial de exámenes, certificados y métricas de rendimiento.
+              </p>
+            </div>
+          )}
+
           {view==="perfil"&&(
             <div style={{padding:24,maxWidth:500}}>
               <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:16,padding:24,marginBottom:14,boxShadow:"var(--shadow-sm)"}}>
@@ -1262,6 +1315,16 @@ export default function PortalEstudiante(){
         </div>
       </main>
       {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:P,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
+      {showReport && (
+        <StudentReport
+          student={user}
+          enrollments={enrolledProgs.map(p=>({...p,...(realEnrollments[p.id]||{})}))}
+          certificates={myCertificates}
+          progressHistory={progressHistory}
+          skills={SKILLS[activeProg]||SKILLS.en}
+          onClose={()=>setShowReport(false)}
+        />
+      )}
     </div>
   );
 }
