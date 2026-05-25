@@ -52,7 +52,7 @@ export default function PlacementTest() {
           email:         form.email,
           phone:         form.phone || null,
           source:        "Placement Test Web",
-          stage:         "test",
+          stage:         "nuevo",
           test_score:    Math.round((correct/QUESTIONS.length)*100),
           level_interest: res.level,
           notes:         `Placement test público. Nivel detectado: ${res.level} (${res.label}). ${correct}/${QUESTIONS.length} correctas.`,

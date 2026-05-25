@@ -46,7 +46,7 @@ export default async function handler(req, res) {
       .from('payments')
       .insert({
         student_id:     studentId,
-        enrollment_id:  enrollmentId || student.enrollments?.[0]?.id || null,
+        enrollment_id:  enrollmentId || null, // Don't guess — cobros must select the correct enrollment
         amount:         Number(amount),
         currency:       'USD',
         method,

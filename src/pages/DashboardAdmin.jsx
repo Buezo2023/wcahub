@@ -459,13 +459,23 @@ export default function AdminDashboard() {
           .select("id, level, schedule, days, capacity, active_unit, teams_link, teacher_groups(staff(profiles(full_name)))")
           .eq("active", true);
         if (grps?.length) {
+          // Count enrolled students per group
+          const { data: enrollCounts } = await supabase.from("enrollments")
+            .select("group_id")
+            .eq("status", "active")
+            .not("group_id", "is", null);
+          const groupCounts = {};
+          (enrollCounts || []).forEach(e => {
+            groupCounts[e.group_id] = (groupCounts[e.group_id] || 0) + 1;
+          });
+
           const mappedG = grps.map(g => ({
             id:       g.id,
             level:    g.level,
             time:     g.schedule,
             days:     g.days,
             teacher:  g.teacher_groups?.[0]?.staff?.profiles?.full_name || "Sin asignar",
-            students: 0,
+            students: groupCounts[g.id] || 0,
             capacity: g.capacity,
             unit:     g.active_unit,
             teamsSet: !!g.teams_link,

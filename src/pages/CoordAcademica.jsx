@@ -140,7 +140,7 @@ export default function CoordAcademica() {
           id: g.id, level: g.level,
           time: g.schedule || "—",
           days: g.days || "L·M·V",
-          students: 0, capacity: g.capacity,
+          students: coordGroupCounts[g.id] || 0, capacity: g.capacity,
           teacher: g.teacher_groups?.[0]?.staff?.profiles?.full_name || "Sin asignar",
           unit: g.active_unit,
           teamsSet: !!g.teams_link,

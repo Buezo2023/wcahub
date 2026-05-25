@@ -268,8 +268,19 @@ function generateQuestions(unit, progId) {
     default:[{q:"Which sentence is correct?",opts:["I am studying English","I studying English","I are studying English","I is studying English"],ans:0},{q:"Complete: 'By next year I ___ English for two years'",opts:["will have studied","will study","am studying","have studied"],ans:0},{q:"What does 'although' mean?",opts:["A pesar de que","Por lo tanto","Sin embargo","Además"],ans:0},{q:"'The report ___ by the team last week'",opts:["was written","is written","wrote","writes"],ans:0},{q:"Which is more formal?",opts:["I would like to inquire","I want to ask","Can I ask?","Tell me about"],ans:0}],
   };
   const vaQ = [{q:"What is a Virtual Assistant?",opts:["A remote professional who provides support","A computer program","An office assistant","A translator"],ans:0},{q:"Which tool is commonly used for task management?",opts:["Trello","Instagram","Excel only","WhatsApp"],ans:0},{q:"'Asynchronous communication' means:",opts:["Not in real-time","Face to face","By phone","In the same timezone"],ans:0},{q:"What is a good practice when sending professional emails?",opts:["Use a clear subject line","Write in caps","Skip greetings","Use emojis always"],ans:0},{q:"Time management as a VA means:",opts:["Prioritizing tasks efficiently","Working 24 hours","Ignoring deadlines","Only working on urgent tasks"],ans:0}];
-  const questions = progId === "en" ? (enQ[unit] || enQ.default) : vaQ;
-  return questions;
+  const base = progId === "en" ? (enQ[unit] || enQ.default) : vaQ;
+  // Randomize question order and option positions per attempt
+  const shuffled = [...base].sort(() => Math.random() - 0.5).map(q => {
+    // Create indexed options to track correct answer
+    const indexed = q.opts.map((opt, i) => ({ opt, isCorrect: i === q.ans }));
+    const shuffledOpts = [...indexed].sort(() => Math.random() - 0.5);
+    return {
+      q: q.q,
+      opts: shuffledOpts.map(o => o.opt),
+      ans: shuffledOpts.findIndex(o => o.isCorrect),
+    };
+  });
+  return shuffled;
 }
 
 // ─── EXAM MODULE COMPONENT ────────────────────────────────────────
@@ -327,14 +338,49 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
             updated_at:   new Date().toISOString(),
           }, { onConflict: "student_id,program_id,unit" });
           if (pct >= 70) {
+            // ★ ADVANCE to next unit
+            const nextUnit = unit + 1;
+            const isComplete = nextUnit > 12;
+            await supabase.from("enrollments")
+              .update({
+                current_unit: isComplete ? 12 : nextUnit,
+                exam_score: pct,
+                ...(isComplete ? { status: "completed", completed_at: new Date().toISOString() } : {}),
+              })
+              .eq("student_id", student.id)
+              .eq("program_id", activeProg);
+
             await supabase.from("audit_log").insert({
-              action: "exam_passed",
+              action: isComplete ? "program_completed" : "exam_passed",
               entity: "enrollment",
-              metadata: { program: activeProg, unit, score: pct },
+              metadata: { program: activeProg, unit, score: pct, nextUnit: isComplete ? "DONE" : nextUnit },
             }).catch(() => {});
-            // Notify student
-            const n = Notifs.examPassed("nivel siguiente", unit, pct);
-            await notifySelf(n.type, n.title, n.body, n.link).catch(() => {});
+
+            // ★ Generate certificate if completed all 12 units
+            if (isComplete) {
+              try {
+                const { data: { session: certSess } } = await supabase.auth.getSession();
+                const profile = certSess?.user?.user_metadata;
+                const certData = {
+                  studentName: profile?.full_name || "Estudiante",
+                  programName: prog?.name || activeProg,
+                  level: enrollment?.level || "—",
+                  date: new Date().toLocaleDateString("es-HN", { day:"2-digit", month:"long", year:"numeric" }),
+                  score: pct,
+                };
+                await supabase.from("certificates").insert({
+                  student_id: student.id,
+                  program_id: activeProg,
+                  data: certData,
+                  issued_at: new Date().toISOString(),
+                });
+                const n2 = { type:"success", title:"🎓 ¡Programa completado!", body:`Completaste las 12 unidades de ${prog?.shortName}. Tu certificado está disponible.`, link:"/portal" };
+                await notifySelf(n2.type, n2.title, n2.body, n2.link).catch(() => {});
+              } catch(certErr) { console.error("Certificate:", certErr); }
+            } else {
+              const n = Notifs.examPassed("nivel siguiente", unit, pct);
+              await notifySelf(n.type, n.title, n.body, n.link).catch(() => {});
+            }
           } else {
             const n = Notifs.examFailed(unit, pct, MAX_ATTEMPTS - (attempts + 1));
             await notifySelf(n.type, n.title, n.body, n.link).catch(() => {});

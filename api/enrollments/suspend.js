@@ -38,23 +38,29 @@ export default async function handler(req, res) {
       .single();
     if (error) throw error;
 
-    // Also update profile active status if suspending
-    if (action === 'suspend') {
-      const { data: student } = await admin
-        .from('students')
-        .select('profile_id')
-        .eq('id', data.student_id)
-        .single();
-      if (student) {
-        await admin.from('profiles').update({ active: false }).eq('id', student.profile_id);
-      }
-    } else {
-      const { data: student } = await admin
-        .from('students')
-        .select('profile_id')
-        .eq('id', data.student_id)
-        .single();
-      if (student) {
+    // Only deactivate profile if ALL enrollments are suspended (not just this one)
+    const { data: student } = await admin
+      .from('students')
+      .select('profile_id')
+      .eq('id', data.student_id)
+      .single();
+
+    if (student) {
+      if (action === 'suspend') {
+        // Check if student has any other active enrollments
+        const { data: otherActive } = await admin
+          .from('enrollments')
+          .select('id')
+          .eq('student_id', data.student_id)
+          .eq('status', 'active')
+          .neq('id', enrollmentId);
+
+        // Only deactivate profile if NO active enrollments remain
+        if (!otherActive || otherActive.length === 0) {
+          await admin.from('profiles').update({ active: false }).eq('id', student.profile_id);
+        }
+      } else {
+        // Reactivating — always reactivate the profile
         await admin.from('profiles').update({ active: true }).eq('id', student.profile_id);
       }
     }

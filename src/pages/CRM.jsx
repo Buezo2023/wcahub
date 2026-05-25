@@ -594,14 +594,49 @@ export default function CRM() {
     }
   }
 
-  function convertLead(id) {
-    setLeads(ls => ls.map(l => l.id===id ? {...l,stage:"convertido",score:l.score||100} : l));
-    // Persist stage change
-    if(typeof id === "string" && id.length > 10) {
-      updateLeadStage(id, "convertido").catch(console.error);
+  async function convertLead(id) {
+    const lead = leads.find(l => l.id === id);
+    if (!lead) return;
+
+    showToast("Creando estudiante…", "#0369a1");
+
+    try {
+      // 1. Get session for auth
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { showToast("Sesión expirada", R); return; }
+
+      // 2. Call invite endpoint to create profile + student
+      const res = await fetch("/api/auth/invite", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
+        body: JSON.stringify({
+          action: "student",
+          email: lead.email,
+          fullName: lead.name,
+          phone: lead.phone || null,
+          level: lead.level || "A1",
+          programId: lead.program || "en",
+        }),
+      });
+      const json = await res.json().catch(() => ({}));
+
+      if (!res.ok || !json.ok) {
+        showToast("Error: " + (json.error || json.message || "No se pudo crear"), R);
+        return;
+      }
+
+      // 3. Update lead stage in DB
+      await updateLeadStage(id, "convertido").catch(() => {});
+
+      // 4. Update local state
+      setLeads(ls => ls.map(l => l.id === id ? { ...l, stage: "convertido" } : l));
+      if (selLead?.id === id) setSelLead(l => ({ ...l, stage: "convertido" }));
+
+      showToast(`🎉 ${lead.name} matriculado — invitación enviada a ${lead.email}`, G);
+
+    } catch (e) {
+      showToast("Error: " + e.message, R);
     }
-    showToast("🎉 ¡Lead convertido! Se creó la matrícula.", G);
-    if (selLead?.id===id) setSelLead(l => ({...l,stage:"convertido",score:l?.score||100}));
   }
 
   const filteredLeads = leads.filter(l => {
