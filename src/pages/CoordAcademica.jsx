@@ -25,8 +25,6 @@ const B = {
 
 // Scholarships derived from real students with scholarship=true
 
-const AT_RISK = sourceStudents.filter(s => (s.attendance||0) < 70 || (s.score||0) < 65);
-
 const NAV = [
   { id:"home",       icon:"ti-layout-dashboard", label:"Inicio"           },
   { id:"groups",     icon:"ti-grid-dots",         label:"Grupos"           },
@@ -153,6 +151,7 @@ export default function CoordAcademica() {
   }, []);
 
   const sourceStudents = realStudents;
+  const AT_RISK = sourceStudents.filter(s => (s.attendance||0) < 70 || (s.score||0) < 65);
   const filteredStudents = useMemo(() => sourceStudents.filter(s => {
     const ms = !search || s.name.toLowerCase().includes(search.toLowerCase());
     const ml = filterLevel==="all" || s.level===filterLevel;
