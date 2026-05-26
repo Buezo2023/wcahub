@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
+import { LMSPlayer } from "../components/lms/LMSPlayer.jsx";
 import { useSession } from "../lib/useSession.js";
 import { notifySelf, Notifs } from "../lib/notify.js";
 import { api } from "../lib/api.js";
@@ -849,130 +850,27 @@ export default function PortalEstudiante(){
 
           {/* ── PRÁCTICA 24/7 ── */}
           {view==="practica"&&(
-            <div>
-              {/* Program selector */}
-              <div style={{padding:"16px 24px",background:"var(--bg-surface)",borderBottom:"1px solid var(--border)",display:"flex",alignItems:"center",gap:10}}>
-                <div style={{fontSize:12,color:"var(--text-secondary)",marginRight:4}}>Programa:</div>
-                {enrolledProgs.map(p=><ProgramPill key={p.id} prog={p} active={activeProg===p.id} onClick={()=>setActiveProg(p.id)}/>)}
-              </div>
-
-              {/* Wide Angle / Program header bar */}
-              <div style={{background:prog?.color||Y,padding:"14px 24px",display:"flex",alignItems:"center",gap:14}}>
-                <div style={{width:40,height:40,borderRadius:8,background:"rgba(255,255,255,.25)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{prog?.icon}</div>
-                <div style={{fontSize:16,fontWeight:700,color:"#fff"}}>{prog?.name}</div>
-                {enrollment&&<div style={{marginLeft:"auto",fontSize:12,color:"rgba(255,255,255,.7)"}}>U{enrollment.unit}/12 · {enrollment.cycleProgress}% completado</div>}
-              </div>
-
-              {/* Overall Scores */}
-              <div style={{background:"var(--bg-surface)",borderBottom:"1px solid var(--border)",padding:"20px 24px 24px"}}>
-                <div style={{textAlign:"center",marginBottom:18}}>
-                  <div style={{width:46,height:46,background:"var(--bg-surface-subtle)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"center",margin:"0 auto 8px"}}>
-                    <i className="ti ti-chart-bar" style={{fontSize:22,color:"var(--text-primary)"}} aria-hidden="true"/>
-                  </div>
-                  <div style={{fontSize:17,fontWeight:700,color:"var(--text-primary)"}}>Overall scores</div>
-                  <div style={{height:1,background:"var(--border)",marginTop:12}}/>
-                </div>
-                <div style={{display:"flex",justifyContent:"center",gap:48,marginBottom:22}}>
-                  <div style={{display:"flex",alignItems:"center",gap:12}}>
-                    <div>
-                      <div style={{fontSize:20,fontWeight:800,color:"var(--text-primary)"}}><span style={{color:prog?.color||P}}>{totalDone}</span>/{totalActs}</div>
-                      <div style={{fontSize:12,color:"var(--text-secondary)"}}>Activities done</div>
-                    </div>
-                    <Ring pct={totalActs>0?Math.round(totalDone/totalActs*100):0} size={44} stroke={4} color={prog?.color||P}/>
-                  </div>
-                  <div style={{borderLeft:"1px solid var(--border)",paddingLeft:48}}>
-                    <div style={{fontSize:11,color:"var(--text-secondary)",marginBottom:3}}>Scores</div>
-                    <div style={{fontSize:isMobile?17:22,fontWeight:800,color:"var(--text-primary)"}}>{avgScore}%</div>
-                  </div>
-                  <div style={{borderLeft:"1px solid var(--border)",paddingLeft:48,display:"flex",alignItems:"center",gap:10}}>
-                    <i className="ti ti-clock" style={{fontSize:20,color:"var(--text-secondary)"}} aria-hidden="true"/>
-                    <div>
-                      <div style={{fontSize:11,color:"var(--text-secondary)"}}>Time on activities</div>
-                      <div style={{fontSize:18,fontWeight:700,color:"var(--text-primary)"}}>{activeProg==="en"?347:156}<span style={{fontSize:12,fontWeight:400}}>mins</span></div>
-                    </div>
+            <div style={{height:"calc(100vh - 120px)"}}>
+              {enrolledProgs.length === 0 ? (
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",gap:12,padding:24}}>
+                  <div style={{fontSize:48}}>📚</div>
+                  <div style={{fontSize:16,fontWeight:700,color:"var(--text-primary)"}}>Sin programa activo</div>
+                  <div style={{fontSize:13,color:"var(--text-secondary)",textAlign:"center"}}>
+                    Contactá a tu coordinador para que active tu matrícula.
                   </div>
                 </div>
-                {/* Skill cards */}
-                <div style={{display:"grid",gridTemplateColumns:isMobile?"1fr":`repeat(${Math.min(skills.length,4)},1fr)`,gap:10}}>
-                  {skills.map(s=><SkillCard key={s.name} skill={s}/>)}
-                </div>
-              </div>
-
-              {/* Units list */}
-              <div style={{padding:"18px 24px"}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,paddingBottom:12,borderBottom:"1px solid var(--border)"}}>
-                  <div style={{fontSize:14,fontWeight:600,color:"var(--text-secondary)",flex:1,textAlign:"center"}}>Online Practice</div>
-                  <div style={{display:"flex",gap:8}}>
-                    {[["Submit","Time off"],["Show","Last attempt"],["Scores","%"]].map(([pre,val],i)=>(
-                      <div key={i} style={{display:"flex",alignItems:"center",gap:5,padding:"6px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,cursor:"pointer",fontSize:12}}>
-                        <span style={{color:"var(--text-secondary)"}}>{pre}</span>
-                        <strong style={{color:"var(--text-primary)"}}>{val}</strong>
-                        <i className="ti ti-chevron-down" style={{fontSize:11,color:"var(--text-tertiary)"}} aria-hidden="true"/>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div style={{paddingBottom:24}}>
-                  {units.map(unit=>{
-                    const en2=enrollment;
-                    const prog2=progress[unit.n]||{actsDone:0,testDone:0,score:0};
-                    const isDone=unit.n<(en2?.unit||1)&&prog2.actsDone>0;
-                    const isActive=unit.n===(en2?.unit||1);
-                    const isLocked=unit.n>(en2?.unit||1);
-                    return(
-                      <UnitRow key={unit.n}
-                        unit={{
-                          ...unit,
-                          title: unit.title || unit.t || "",
-                          acts: unit.activities || (unit.n===en2?.unit?prog2.actsDone+13:20)
-                        }}
-                        prog={prog2}
-                        isActive={isActive} isDone={isDone} isLocked={isLocked}
-                        color={prog?.color||P}/>
-                    );
-                  })}
-                </div>
-              </div>
+              ) : (
+                <LMSPlayer
+                  programId={activeProg}
+                  profileId={user?.id}
+                  enrollment={enrollment}
+                  isMobile={isMobile}
+                />
+              )}
             </div>
           )}
 
-          {/* ── CLASES ── */}
-          {view==="clases"&&(
-            <div style={{padding:24}}>
-              {/* Program selector */}
-              <div style={{display:"flex",gap:8,marginBottom:16}}>
-                {enrolledProgs.map(p=><ProgramPill key={p.id} prog={p} active={activeProg===p.id} onClick={()=>setActiveProg(p.id)}/>)}
-              </div>
-              <div style={{background:`linear-gradient(135deg,${prog?.color||P},${PH})`,borderRadius:16,padding:24,marginBottom:20,color:"#fff"}}>
-                <div style={{fontSize:11,color:"rgba(255,255,255,.5)",marginBottom:4}}>Próxima clase en vivo · {prog?.shortName}</div>
-                <div style={{fontSize:isMobile?17:22,fontWeight:800,marginBottom:4}}>{enrollment?.nextClass}</div>
-                <div style={{fontSize:13,color:"rgba(255,255,255,.7)",marginBottom:18}}>Docente: {enrollment?.teacher} · U{enrollment?.unit}: {enrollment?.unitTitle}</div>
-                <button onClick={()=>{
-                  const link = enrollment?.teamsLink;
-                  if(link && link !== "#" && link.startsWith("http")) window.open(link, "_blank");
-                  else toast.info("Link de Teams no configurado aún — consultá con tu coordinadora");
-                }} style={{display:"inline-flex",alignItems:"center",gap:8,padding:"10px 22px",background:Y,color:PH,borderRadius:10,border:"none",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
-                  <i className="ti ti-video" style={{fontSize:15}} aria-hidden="true"/>
-                  {enrollment?.teamsLink && enrollment.teamsLink !== "#" ? "Unirme en Microsoft Teams" : "Link de clase no configurado aún"}
-                </button>
-              </div>
-              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,overflow:"hidden",boxShadow:"var(--shadow-sm)"}}>
-                <div style={{padding:"14px 18px",borderBottom:"1px solid var(--border)",fontSize:13,fontWeight:700,color:"var(--text-primary)"}}>Grabaciones disponibles</div>
-                {[{t:`U${(enrollment?.unit||1)-1}: Clase anterior`,d:"Hace 3 días",ok:true},{t:`U${(enrollment?.unit||1)-1}: Repaso`,d:"Hace 5 días",ok:true},{t:`U${(enrollment?.unit||2)-2}: Clase`,d:"Hace 10 días",ok:false}].map((r,i)=>(
-                  <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"13px 18px",borderBottom:"1px solid var(--border)",opacity:r.ok?1:.4}}>
-                    <div style={{width:40,height:40,borderRadius:9,background:r.ok?prog?.colorLight||PD:"var(--bg-surface-subtle)",display:"flex",alignItems:"center",justifyContent:"center"}}>
-                      <i className="ti ti-video" style={{fontSize:18,color:r.ok?prog?.color||P:"var(--text-tertiary)"}} aria-hidden="true"/>
-                    </div>
-                    <div style={{flex:1}}><div style={{fontSize:13,fontWeight:500,color:"var(--text-primary)"}}>{r.t}</div><div style={{fontSize:11,color:"var(--text-secondary)"}}>{r.d}</div></div>
-                    {r.ok?<button onClick={()=>setView("practica")} style={{fontSize:12,padding:"7px 14px",background:prog?.color||P,color:"#fff",border:"none",borderRadius:8,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>▶ Ver</button>:<span style={{fontSize:11,color:"var(--text-tertiary)"}}>Expirada</span>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* ── EXAMEN ── */}
-          {view==="examen"&&(
+          view==="examen"&&(
             <ExamModule
               prog={prog}
               enrollment={enrollment}
