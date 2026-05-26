@@ -283,7 +283,7 @@ export default function GestorCobros() {
 
 
       {/* MAIN */}
-      <main style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
+      <main  key={view}style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
         <div style={{ height:52, background:B.white, borderBottom:`1px solid ${B.border}`, display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 20px", flexShrink:0 }}>
           <div style={{ fontSize:14, fontWeight:700, color:B.text }}>
             {{ home:"Resumen del día", pending:"Transferencias pendientes", register:"Registrar pago", history:"Historial de cobros", overdue:"Pagos vencidos", receipts:"Recibos", audit:"Mi auditoría" }[view]}

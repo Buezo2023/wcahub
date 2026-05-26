@@ -51,6 +51,59 @@ function ReportCard({label,value,color,bg}){
   return <span style={{display:"inline-flex",alignItems:"center",gap:5,padding:"4px 12px",borderRadius:10,background:bg,color,fontSize:12,fontWeight:600,margin:"0 5px 5px 0"}}>{label}: <strong>{value}</strong></span>;
 }
 
+
+// ── Mini SVG Bar Chart ────────────────────────────────────────────
+function MiniBarChart({ data, color = "var(--wca-primary)", height = 80 }) {
+  if (!data?.length) return null;
+  const max = Math.max(...data.map(d => d.v), 1);
+  const w = 100 / data.length;
+  return (
+    <div>
+      <svg viewBox={`0 0 100 ${height}`} preserveAspectRatio="none" style={{ width:"100%", height, display:"block" }}>
+        {data.map((d, i) => {
+          const barH = (d.v / max) * (height - 20);
+          const x = i * w + 1;
+          return (
+            <g key={i}>
+              <rect x={x} y={height - barH - 16} width={w - 2} height={barH}
+                fill={color} rx="2" opacity=".85"/>
+              <text x={x + (w-2)/2} y={height - 2} textAnchor="middle"
+                fontSize="7" fill="var(--text-tertiary)">{d.l}</text>
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+// ── Mini Donut Chart ─────────────────────────────────────────────
+function MiniDonut({ segments, size = 80 }) {
+  const R = 28, cx = 40, cy = 40, stroke = 10;
+  const circumference = 2 * Math.PI * R;
+  const total = segments.reduce((a, s) => a + s.v, 0) || 1;
+  let offset = 0;
+  return (
+    <svg width={size} height={size} viewBox="0 0 80 80">
+      <circle cx={cx} cy={cy} r={R} fill="none" stroke="var(--border)" strokeWidth={stroke}/>
+      {segments.map((s, i) => {
+        const dash = (s.v / total) * circumference;
+        const gap  = circumference - dash;
+        const el = (
+          <circle key={i} cx={cx} cy={cy} r={R} fill="none"
+            stroke={s.color} strokeWidth={stroke}
+            strokeDasharray={`${dash} ${gap}`}
+            strokeDashoffset={-offset}
+            transform={`rotate(-90 ${cx} ${cy})`}
+            strokeLinecap="butt"/>
+        );
+        offset += dash;
+        return el;
+      })}
+    </svg>
+  );
+}
+
 // ── Finanzas Report ──────────────────────────────────────────────
 function FinanzasReport(){
   const [data,setData]=useState(null);
@@ -109,6 +162,29 @@ function FinanzasReport(){
         <Kpi label="Pendientes" value={data.pending.length} color={A} sub="Pagos sin confirmar"/>
         <Kpi label="Vencidos" value={data.overdue.length} color={data.overdue.length>0?R:G} sub="Sin pago activo"/>
       </div>
+      {/* ── MRR Visual ── */}
+      {data.enrolls.length > 0 && (
+        <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:16, marginBottom:12 }}>
+          <div style={{ fontSize:12, fontWeight:600, color:"var(--text-secondary)", marginBottom:8 }}>Distribución de ingresos por programa</div>
+          <div style={{ display:"flex", gap:12, alignItems:"center", flexWrap:"wrap" }}>
+            <MiniDonut segments={Object.entries(data.byProg).map(([k,v],i)=>({
+              v, color:["var(--wca-primary)","var(--green)","var(--purple)","var(--amber)"][i%4]
+            }))} size={80}/>
+            <div style={{ flex:1 }}>
+              {Object.entries(data.byProg).map(([prog,count],i)=>(
+                <div key={prog} style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
+                  <span style={{ display:"flex", alignItems:"center", gap:6, fontSize:12, color:"var(--text-secondary)" }}>
+                    <span style={{ width:8, height:8, borderRadius:"50%", background:["var(--wca-primary)","var(--green)","var(--purple)","var(--amber)"][i%4], flexShrink:0, display:"inline-block" }}/>
+                    {prog.toUpperCase()}
+                  </span>
+                  <span style={{ fontSize:12, fontWeight:600, color:"var(--text-primary)" }}>{count} activos</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       <SectionTitle>Cobros por método — este mes</SectionTitle>
       <div style={{marginBottom:12}}>
         {Object.entries(data.byMethod).map(([m,v])=>

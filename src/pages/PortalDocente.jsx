@@ -208,6 +208,7 @@ export default function TeacherPortal(){
           <button key={item.id} onClick={()=>setView(item.id)} style={{
             display:"flex",alignItems:"center",gap:9,padding:"11px 20px",border:"none",
             background:view===item.id?`${C.accent}18`:"transparent",
+            borderLeft:`3px solid ${view===item.id?C.accent:"transparent"}`,
             color:view===item.id?C.accent:C.textSec,fontSize:13,cursor:"pointer",
             textAlign:"left",borderLeft:`2px solid ${view===item.id?C.accent:"transparent"}`,
             transition:"all .15s",fontFamily:"inherit",fontWeight:view===item.id?600:400
@@ -263,7 +264,7 @@ export default function TeacherPortal(){
             <div>
               {blocked.length>0&&(
                 <div style={{background:C.redDim,border:`1px solid ${C.red}40`,borderRadius:12,padding:"11px 16px",marginBottom:16,display:"flex",gap:12,alignItems:"center"}}>
-                  <span style={{fontSize:16}}>🚨</span>
+                  <i className="ti ti-alert-triangle" style={{fontSize:16,color:"var(--red)"}} aria-hidden="true"/>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:600,color:C.red}}>{blocked.length} estudiante{blocked.length>1?"s":""} bloqueado{blocked.length>1?"s":""} — requieren tu acción</div>
                     <div style={{fontSize:12,color:"#fca5a5",marginTop:2}}>{blocked.map(s=>s.name).join(", ")} — agotaron 3 intentos</div>
@@ -271,6 +272,28 @@ export default function TeacherPortal(){
                   <button onClick={()=>setView("examenes")} style={{fontSize:12,padding:"6px 14px",background:C.red,color:"var(--bg-surface)",border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit",whiteSpace:"nowrap"}}>Ver ahora →</button>
                 </div>
               )}
+              {/* ── Quick action: Pasar lista hoy ── */}
+              {displayGroups.length > 0 && (
+                <div style={{ marginBottom:16 }}>
+                  <div style={{ fontSize:11, fontWeight:600, color:"var(--text-tertiary)", textTransform:"uppercase", letterSpacing:.5, marginBottom:8 }}>
+                    Acción rápida
+                  </div>
+                  <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
+                    {displayGroups.slice(0,3).map(g => (
+                      <button key={g.id}
+                        onClick={() => { setView("asistencia"); }}
+                        style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 16px",
+                          background:"var(--wca-primary)", color:"#fff", border:"none",
+                          borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer",
+                          fontFamily:"inherit" }}>
+                        <i className="ti ti-clipboard-check" style={{ fontSize:15 }} aria-hidden="true"/>
+                        Pasar lista — {g.level||"Grupo"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div style={{display:"grid",gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginBottom:16}}>
                 <Stat label="Mis grupos" value={displayGroups.length} sub="Nivel A1" color={C.accent}/>
                 <Stat label="Estudiantes" value={allStudents.length} sub="Ambos horarios"/>

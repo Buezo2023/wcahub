@@ -284,3 +284,36 @@ body {
   border-color: var(--wca-primary);
   color: var(--wca-primary);
 }
+
+/* ── VIEW TRANSITIONS (M1) ───────────────────────────────────────
+   Smooth fade when switching between portal sections             */
+@keyframes viewFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.view-transition {
+  animation: viewFadeIn 0.18s ease-out forwards;
+}
+
+/* ── SKELETON LOADING ─────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-surface-subtle) 25%, var(--border) 50%, var(--bg-surface-subtle) 75%);
+  background-size: 800px 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--radius-md);
+}
+
+/* ── FOCUS RINGS ──────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--wca-primary);
+  outline-offset: 2px;
+}
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible {
+  outline: 2px solid var(--wca-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

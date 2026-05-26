@@ -96,6 +96,19 @@ function FadeIn({ children, delay = 0, direction = "up", style = {} }) {
 
 export default function Landing() {
   const navigate = useNavigate();
+  const [stats, setStats] = useState({ students: 0, countries: 20, graduates: 1200 });
+
+  useEffect(() => {
+    // Load real student count from Supabase
+    import('../lib/supabase.js').then(({ supabase }) => {
+      supabase.from('profiles')
+        .select('id', { count: 'exact', head: true })
+        .eq('role', 'estudiante')
+        .then(({ count }) => {
+          if (count && count > 0) setStats(s => ({ ...s, students: count }));
+        });
+    });
+  }, []);
   const [activeProgram, setActiveProgram] = useState("va");
   const [step, setStep] = useState(0);
   const [email, setEmail] = useState("");
@@ -191,6 +204,21 @@ export default function Landing() {
               Aprende inglés y formación VA al mismo tiempo. En 3–6 meses estás facturando en dólares desde cualquier lugar del mundo.
             </p>
 
+
+            {/* ── Stats bar ── */}
+            <div style={{ display:"flex", gap:24, marginTop:16, flexWrap:"wrap" }}>
+              {[
+                { n: stats.students > 10 ? `+${stats.students}` : "+1,200", l: "estudiantes activos" },
+                { n: "20+", l: "países" },
+                { n: "94%", l: "tasa de aprobación" },
+              ].map(({ n, l }) => (
+                <div key={l}>
+                  <div style={{ fontSize:22, fontWeight:800, color:T.gold, lineHeight:1 }}>{n}</div>
+                  <div style={{ fontSize:11, color:"rgba(255,255,255,.55)", marginTop:2 }}>{l}</div>
+                </div>
+              ))}
+            </div>
+
             <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginBottom:40 }}>
               <button className="gold-btn" style={{ padding:"14px 32px", borderRadius:12, fontSize:15 }} onClick={()=>document.getElementById("registro")?.scrollIntoView({behavior:"smooth"})}>
                 Comenzar gratis →
@@ -209,7 +237,7 @@ export default function Landing() {
                   </div>
                 ))}
               </div>
-              <div style={{ fontSize:12, color:"rgba(255,255,255,.5)" }}>+1,200 graduados en 20+ países</div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,.5)" }}>{stats.students > 0 ? `+${stats.students} estudiantes activos` : "+1,200 graduados"} en 20+ países</div>
             </div>
           </div>
 

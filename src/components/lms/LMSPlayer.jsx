@@ -291,11 +291,29 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
                       ☰ Ver todas las unidades
                     </button>
                   )}
-                  <div style={{ fontSize:11, fontWeight:600, color:"var(--text-tertiary)", textTransform:"uppercase", letterSpacing:.5, marginBottom:4 }}>
-                    Unidad {unit.unit_number}
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:8 }}>
+                    <div style={{ fontSize:11, fontWeight:600, color:"var(--text-tertiary)", textTransform:"uppercase", letterSpacing:.5 }}>
+                      Unidad {unit.unit_number}
+                    </div>
+                    {unitActivities.length > 0 && (
+                      <div style={{ fontSize:11, color:"var(--text-tertiary)", fontWeight:500 }}>
+                        {unitActivities.filter(a => progress[a.id]?.completed).length}/{unitActivities.length} completadas
+                      </div>
+                    )}
                   </div>
                   <div style={{ fontSize:20, fontWeight:800, color:"var(--text-primary)", marginBottom:4 }}>{unit.title}</div>
-                  {unit.topic && <div style={{ fontSize:13, color:"var(--text-secondary)" }}>{unit.topic}</div>}
+                  {unit.topic && <div style={{ fontSize:13, color:"var(--text-secondary)", marginBottom:10 }}>{unit.topic}</div>}
+                  {unitActivities.length > 0 && (() => {
+                    const done = unitActivities.filter(a => progress[a.id]?.completed).length;
+                    const pct  = Math.round((done / unitActivities.length) * 100);
+                    return (
+                      <div style={{ marginBottom:4 }}>
+                        <div style={{ height:4, background:"var(--border)", borderRadius:2, overflow:"hidden" }}>
+                          <div style={{ height:"100%", width:`${pct}%`, background:"var(--wca-primary)", borderRadius:2, transition:"width .4s ease" }}/>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })()}

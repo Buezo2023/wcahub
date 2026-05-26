@@ -4,12 +4,14 @@
 // Analytics/marketing cookies are optional — currently none used.
 
 import { useState, useEffect } from "react";
+import { useMobile } from "./MobileLayout.jsx";
 
 const CONSENT_KEY = "wca_cookie_consent";
 const CONSENT_VERSION = "1"; // bump when policy changes
 
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);
+  const isMobile = useMobile();
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
@@ -65,7 +67,7 @@ export function CookieBanner() {
       boxShadow: "0 -4px 32px rgba(0,0,0,.3)",
       animation: "slideUpBanner .3s cubic-bezier(.16,1,.3,1)",
     }}>
-      <style>{`@keyframes slideUpBanner{from{transform:translateY(100%);opacity:0}to{transform:none;opacity:1}}`}</style>
+      <style>{`@keyframes slideUpBanner{from{transform:translateY(100%);opacity:0}to{transform:none;opacity:1}}@keyframes slideDownBanner{from{transform:translateY(-100%);opacity:0}to{transform:none;opacity:1}}`}</style>
 
       <div style={{ maxWidth: 960, margin: "0 auto" }}>
         <div style={{ display: "flex", gap: 16, alignItems: "flex-start", flexWrap: "wrap" }}>

@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 
-const DURATION = 3500;
+const DURATION = 4000;
 let _listeners = [];
 
 export const toast = {
