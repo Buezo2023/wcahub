@@ -246,3 +246,8 @@ CREATE INDEX IF NOT EXISTS idx_activities_type ON public.unit_activities(type);
 CREATE INDEX IF NOT EXISTS idx_notif_user_unread ON public.notifications(user_id, read)
   WHERE read = false;
 
+
+-- ── B2B: add program_id column ────────────────────────────────────
+ALTER TABLE public.b2b_companies
+  ADD COLUMN IF NOT EXISTS program_id text REFERENCES public.programs(id),
+  ADD COLUMN IF NOT EXISTS program_name text; -- cached name for display

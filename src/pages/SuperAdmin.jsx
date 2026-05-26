@@ -20,6 +20,7 @@ import { RecibosSection }        from "../sections/RecibosSection.jsx";
 import { LMSContentSection }     from "../sections/LMSContentSection.jsx";
 import { PagosSection }       from "../sections/PagosSection.jsx";
 import { LeadsSection }        from "../sections/LeadsSection.jsx";
+import { VentasSection }      from "../sections/VentasSection.jsx";
 import { GruposSection }       from "../sections/GruposSection.jsx";
 
 const P = "#155266", PH = "#0f3d4d", PD = "#e8f3f6";
@@ -80,7 +81,7 @@ const SUB_TABS = {
     ["horarios","Horarios"],["atrisk","En riesgo"],["becas","Becas"],
   ],
   ventas: [
-    ["leads","Pipeline CRM"],["b2b","Empresas B2B"],
+    ["resumen","Resumen CRM"],["leads","Todos los leads"],["b2b","Empresas B2B"],
   ],
   contab: [
     ["payments","Pagos pendientes"],["vencidos","Vencidos"],["register","Registrar pago"],
@@ -90,8 +91,8 @@ const SUB_TABS = {
     ["blast","Email masivo"],["recordatorios","Recordatorios"],["anuncios","Anuncios"],
   ],
   reportes: [
-    ["metricas","Métricas BI"],["reporte_estudiantes","Estudiantes"],
-    ["reporte_pagos","Pagos"],["reporte_academico","Académico"],
+    ["metricas","BI & KPIs"],["finanzas","Finanzas"],["academia","Academia"],
+    ["ventas","Ventas & CRM"],["rrhh","RRHH"],["lms","LMS"],
   ],
   rrhh: [
     ["staff","Personal"],["roles","Roles del sistema"],
@@ -1166,6 +1167,7 @@ export default function SuperAdmin() {
           {view==="academia" && subView==="becas"     && <BecasSection     showToast={showToast} />}
 
           {/* ══ VENTAS & CRM ══════════════════════════════════════════ */}
+          {view==="ventas"   && subView==="resumen"   && <VentasSection    showToast={showToast} />}
           {view==="ventas"   && subView==="leads"     && <LeadsSection     showToast={showToast} />}
           {view==="ventas"   && subView==="b2b"       && <B2BSection       showToast={showToast} />}
 
