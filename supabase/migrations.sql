@@ -328,7 +328,7 @@ CREATE POLICY "enrollments_docente_read" ON enrollments
   USING (
     EXISTS (
       SELECT 1 FROM teacher_groups tg
-      JOIN staff s ON s.id = tg.staff_id
+      JOIN staff s ON s.id = tg.teacher_id
       WHERE s.profile_id = auth.uid()
         AND tg.group_id = enrollments.group_id
     )
