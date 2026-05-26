@@ -29,7 +29,7 @@ const ALL_PROGRAMS = [
   },
   {
     id:"va", code:"VA", name:"Asistente Virtual General", shortName:"VA General",
-    icon:"💻", color:"#7c3aed", colorLight:"#ede9fe", price:75, interval:"mes",
+    icon:"💻", color:"#7c3aed", colorLight:"#ede9fe", price:95, interval:"mes",
     desc:"Formación completa como Asistente Virtual bilingüe. Herramientas digitales, comunicación profesional y gestión remota.",
     levels:"Módulos 1–4", units:12, prereq:null,
     skills:["Comunicación escrita","Herramientas digitales","Gestión de tareas","Inglés profesional","Atención al cliente","Productividad remota"],
@@ -1196,12 +1196,12 @@ export default function PortalEstudiante(){
                             const { data:{ session } } = await supabase.auth.getSession();
                             const uid = session?.user?.id;
                             const ext = file.name.split(".").pop();
-                            const path = `comprobantes/${uid}/${Date.now()}.${ext}`;
+                            const path = `proofs/${uid}/${Date.now()}.${ext}`;
                             const { error } = await supabase.storage
-                              .from("comprobantes")
+                              .from("proofs")
                               .upload(path, file, { upsert:true });
                             if(error) throw error;
-                            const { data:{ publicUrl } } = supabase.storage.from("comprobantes").getPublicUrl(path);
+                            const { data:{ publicUrl } } = supabase.storage.from("proofs").getPublicUrl(path);
                             // Record payment pending confirmation
                             if(uid){
                               const { data:st } = await supabase.from("students").select("id").eq("profile_id",uid).maybeSingle();

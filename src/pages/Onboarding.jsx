@@ -504,28 +504,40 @@ export default function OnboardingWizard() {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        // Save onboarding data to profile
-        await supabase.from("profiles").update({
-          onboarding_done: true,
-        }).eq("id", session.user.id);
+        // 1. Mark onboarding done
+        await supabase.from("profiles").update({ onboarding_done: true })
+          .eq("id", session.user.id);
 
-        // Save program/level preference as a note (for coordinator to see)
+        // 2. Save level to student record (coordinator sees it directly)
+        if (level) {
+          await supabase.from("students").update({ level })
+            .eq("profile_id", session.user.id)
+            .catch(() => {}); // non-fatal if student record not created yet
+        }
+
+        // 3. Log full onboarding data for coordinator
         const programNames = { en:"Inglés Completo", va:"Asistente Virtual", en_va:"Inglés + VA" };
+        const programLabel = programNames[program] || program;
+        // en_va means 2 separate enrollments — flag this for the coordinator
+        const needsDualEnroll = program === "en_va";
         await supabase.from("audit_log").insert({
           actor_id:  session.user.id,
           action:    "onboarding_completed",
           entity:    "profile",
           entity_id: session.user.id,
           metadata:  {
-            program:      program,
-            program_name: programNames[program],
+            program,
+            program_name: programLabel,
             level_preference: level,
+            needs_dual_enrollment: needsDualEnroll,
+            coordinator_note: needsDualEnroll
+              ? "Estudiante eligió Inglés+VA — crear 2 matrículas: en + va"
+              : null,
             completed_at: new Date().toISOString(),
           },
         }).catch(console.error);
       }
-    } catch (e) {
-    }
+    } catch (e) { console.error("Onboarding finish:", e); }
     navigate("/portal", { replace: true });
   }
 

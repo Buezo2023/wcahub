@@ -74,6 +74,17 @@ export default function AuthCallback() {
             .single();
 
           if (newProfile) {
+            // Log emergency profile creation so admin can review
+            supabase.from("audit_log").insert({
+              actor_id: session.user.id,
+              action: "emergency_profile_created",
+              entity: "profile",
+              entity_id: session.user.id,
+              metadata: {
+                email: session.user.email,
+                note: "Trigger on_auth_user_created may have failed — profile auto-created in AuthCallback",
+              },
+            }).catch(() => {});
             clearTimeout(timeout);
             return navigate("/onboarding", { replace: true });
           }

@@ -734,7 +734,7 @@ export default function CoordAcademica() {
                       <button onClick={()=>setView("students")} style={{ fontSize:11, padding:"3px 10px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver reporte</button>
                       <button onClick={()=>{
                         const headers = ["Nombre","Nivel","Grupo","Tipo","Asistencia","Promedio","Estado"];
-                        const rows = STUDENTS.map(s=>[s.name,s.level,groupLabel(s.group),s.type,s.attendance+"%",s.score+"%",s.state]);
+                        const rows = filteredStudents.map(s=>[s.name,s.level,groupLabel(s.group),s.type,s.attendance+"%",s.score+"%",s.state]);
                         const csv = [headers,...rows].map(row=>row.map(v=>`"${v}"`).join(",")).join("\n");
                         const a = document.createElement("a");
                         a.href = URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
@@ -933,7 +933,7 @@ export default function CoordAcademica() {
             <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>Grupo actual: {transferModal.level} · {transferModal.time}</div>
             <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:5 }}>Estudiante</label>
             <select style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit", marginBottom:10 }}>
-              {STUDENTS.filter(s=>s.group===transferModal.id).map(s=><option key={s.id}>{s.name}</option>)}
+              {filteredStudents.filter(s=>s.group===transferModal.id).map(s=><option key={s.id}>{s.name}</option>)}
             </select>
             <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:5 }}>Nuevo grupo</label>
             <select style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit", marginBottom:14 }}>

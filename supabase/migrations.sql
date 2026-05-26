@@ -124,6 +124,49 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+
+-- ── 11. onboarding_done (AuthCallback + Onboarding wizard) ───────
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS onboarding_done boolean DEFAULT false;
+
+-- ── 12. certificates (PortalEstudiante — generated on completion) ─
+CREATE TABLE IF NOT EXISTS public.certificates (
+  id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  student_id  uuid REFERENCES public.students(id) ON DELETE CASCADE,
+  program_id  text NOT NULL,
+  level       text,
+  data        jsonb,
+  issued_at   timestamptz DEFAULT now()
+);
+ALTER TABLE public.certificates ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "certs_own" ON public.certificates FOR SELECT USING (
+    EXISTS (SELECT 1 FROM students s WHERE s.id = student_id AND s.profile_id = auth.uid())
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  CREATE POLICY "certs_admin" ON public.certificates FOR ALL USING (
+    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid()
+      AND p.role IN ('admin','super_admin','coordinadora'))
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- ── 13. student_notes (DashboardAdmin — notas por estudiante) ─────
+CREATE TABLE IF NOT EXISTS public.student_notes (
+  id          uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+  student_id  uuid REFERENCES public.students(id) ON DELETE CASCADE,
+  author_id   uuid REFERENCES public.profiles(id),
+  note        text NOT NULL,
+  created_at  timestamptz DEFAULT now()
+);
+ALTER TABLE public.student_notes ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "notes_staff" ON public.student_notes FOR ALL USING (
+    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid()
+      AND p.role IN ('admin','super_admin','coordinadora','cobros','docente'))
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
 -- ── 10. Verify: show table status ────────────────────────────────
 SELECT table_name,
   (SELECT COUNT(*) FROM information_schema.columns

@@ -34,20 +34,33 @@ const ROLE_PORTALS = {
   directivo:     '/bi',
 };
 
+// ── Profile cache — avoids re-querying Supabase on every navigation ──
+const _profileCache = { data: null, uid: null };
+
 // ── PrivateRoute — verifica sesión activa + rol correcto ──────────
 function PrivateRoute({ element, allowedRoles }) {
   const [auth, setAuth] = React.useState({ ready: false, ok: false, redirect: null });
 
   React.useEffect(() => {
-    // Use static supabase import — guaranteed same instance as AuthCallback
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) { setAuth({ ready: true, ok: false, redirect: '/' }); return; }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role, active')
-        .eq('id', session.user.id)
-        .maybeSingle();
+      // Use cached profile if same user — avoids Supabase query on every nav
+      let profile = null;
+      if (_profileCache.uid === session.user.id && _profileCache.data) {
+        profile = _profileCache.data;
+      } else {
+        const { data } = await supabase
+          .from('profiles')
+          .select('role, active')
+          .eq('id', session.user.id)
+          .maybeSingle();
+        profile = data;
+        if (profile) {
+          _profileCache.uid  = session.user.id;
+          _profileCache.data = profile;
+        }
+      }
 
       if (!profile) { setAuth({ ready: true, ok: false, redirect: '/' }); return; }
 

@@ -664,7 +664,7 @@ export default function Landing() {
               <div style={{ fontSize:14, color:"rgba(255,255,255,.6)", marginBottom:20, fontWeight:500 }}>Registrate con tu cuenta</div>
               <div style={{ display:"flex", gap:12, marginBottom:20 }}>
                 {/* Microsoft */}
-                <button style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+                <button onClick={signInWithMicrosoft} style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
                   onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.14)";}}
                   onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.08)";}}>
                   <svg width="18" height="18" viewBox="0 0 21 21" fill="none">
@@ -674,7 +674,7 @@ export default function Landing() {
                   Continuar con Microsoft
                 </button>
                 {/* Google */}
-                <button style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+                <button onClick={signInWithGoogle} style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
                   onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.14)";}}
                   onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.08)";}}>
                   <svg width="18" height="18" viewBox="0 0 48 48">
@@ -694,7 +694,7 @@ export default function Landing() {
               <div style={{ display:"flex", gap:10, marginBottom:14 }}>
                 <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="tu@email.com" type="email" style={{ flex:1, padding:"13px 16px", borderRadius:12, border:"1px solid rgba(255,255,255,.15)", background:"rgba(255,255,255,.07)", color:"#fff", fontSize:14, fontFamily:"inherit", outline:"none" }}
                   onFocus={e=>{e.target.style.borderColor=T.gold;}} onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,.15)";}}/>
-                <button className="gold-btn" style={{ padding:"13px 24px", borderRadius:12, fontSize:14, whiteSpace:"nowrap" }}>
+                <button className="gold-btn" onClick={()=>{ if(email.trim()) signInWithGoogle(); else setRoleModal(true); }} style={{ padding:"13px 24px", borderRadius:12, fontSize:14, whiteSpace:"nowrap" }}>
                   Comenzar gratis
                 </button>
               </div>
