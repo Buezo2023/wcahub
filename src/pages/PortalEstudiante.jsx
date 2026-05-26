@@ -869,7 +869,7 @@ export default function PortalEstudiante(){
             </div>
           )}
 
-          view==="examen"&&(
+          {view==="examen"&&(
             <ExamModule
               prog={prog}
               enrollment={enrollment}

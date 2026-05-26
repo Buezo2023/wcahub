@@ -210,7 +210,7 @@ export default function TeacherPortal(){
             background:view===item.id?`${C.accent}18`:"transparent",
             borderLeft:`3px solid ${view===item.id?C.accent:"transparent"}`,
             color:view===item.id?C.accent:C.textSec,fontSize:13,cursor:"pointer",
-            textAlign:"left",borderLeft:`2px solid ${view===item.id?C.accent:"transparent"}`,
+            textAlign:"left",
             transition:"all .15s",fontFamily:"inherit",fontWeight:view===item.id?600:400
           }}>
             <span style={{fontSize:16,width:18,textAlign:"center"}}>{item.icon}</span>
