@@ -21,7 +21,8 @@ import { LMSContentSection }     from "../sections/LMSContentSection.jsx";
 import { PagosSection }       from "../sections/PagosSection.jsx";
 import { LeadsSection }        from "../sections/LeadsSection.jsx";
 import { VentasSection }      from "../sections/VentasSection.jsx";
-import { GruposSection }       from "../sections/GruposSection.jsx";
+import { GruposSection }             from "../sections/GruposSection.jsx";
+import { UserManagementSection }     from "../sections/UserManagementSection.jsx";
 
 const P = "#155266", PH = "#0f3d4d", PD = "#e8f3f6";
 const Y = "#ffbb23", YD = "#fff8e6";
@@ -95,7 +96,7 @@ const SUB_TABS = {
     ["ventas","Ventas & CRM"],["rrhh","RRHH"],["lms","LMS"],
   ],
   rrhh: [
-    ["staff","Personal"],["roles","Roles del sistema"],
+    ["usuarios","Todos los usuarios"],["staff","Personal"],["roles","Roles del sistema"],
   ],
   sistema: [
     ["gamification","Gamificación"],["notifications","Notificaciones"],["audit","Auditoría"],
@@ -698,12 +699,6 @@ export default function SuperAdmin() {
 
           {/* ── HR ── */}
           {view==="rrhh" && <>
-            <div style={{ display:"flex", gap:6, marginBottom:16 }}>
-              {[["staff","Personal"],["roles","Roles del sistema"]].map(([id,label])=>(
-                <button key={id} onClick={()=>setSubView(id)} style={{ padding:"7px 16px", borderRadius:9, border:"none", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit",
-                  background: subView===id ? P : "var(--bg-surface-subtle)", color: subView===id ? "#fff" : "var(--text-secondary)" }}>{label}</button>
-              ))}
-            </div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginBottom:16 }}>
               <Stat label="Personal total"   value={staff.length}                                   sub={`${staff.filter(s=>s.status==="active").length} activos`} color={P}  icon="ti-users-group"/>
               <Stat label="Docentes"         value={staff.filter(s=>s.role==="Docente").length}     sub="Activos"            color={A} icon="ti-school"/>
@@ -1177,7 +1172,8 @@ export default function SuperAdmin() {
           {/* ══ REPORTES ══════════════════════════════════════════════ */}
           {view==="reportes" && <ReportesSection showToast={showToast} subView={subView} />}
 
-          {/* ══ RRHH — extra sub-tab handled by inline code above ═══ */}
+          {/* ══ RRHH ════════════════════════════════════════════════ */}
+          {view==="rrhh" && subView==="usuarios" && <UserManagementSection showToast={showToast} />}
 
           {/* ══ SISTEMA — handled inline above ════════════════════════ */}
 
