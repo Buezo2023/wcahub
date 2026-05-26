@@ -96,14 +96,14 @@ function FadeIn({ children, delay = 0, direction = "up", style = {} }) {
 
 export default function Landing() {
   const navigate = useNavigate();
-  const [stats, setStats] = useState({ students: 0, countries: 20, graduates: 1200 });
+  const [liveStats, setLiveStats] = useState({ students: 0, graduates: 1200 });
 
   useEffect(() => {
     supabase.from('profiles')
       .select('id', { count: 'exact', head: true })
       .eq('role', 'estudiante')
       .then(({ count }) => {
-        if (count && count > 0) setStats(s => ({ ...s, students: count }));
+        if (count && count > 0) setLiveStats(s => ({ ...s, students: count }));
       }).catch(() => {});
   }, []);
   const [activeProgram, setActiveProgram] = useState("va");
@@ -205,7 +205,7 @@ export default function Landing() {
             {/* ── Stats bar ── */}
             <div style={{ display:"flex", gap:24, marginTop:16, flexWrap:"wrap" }}>
               {[
-                { n: stats.students > 10 ? `+${stats.students}` : "+1,200", l: "estudiantes activos" },
+                { n: liveStats.students > 10 ? `+${liveStats.students}` : "+1,200", l: "estudiantes activos" },
                 { n: "20+", l: "países" },
                 { n: "94%", l: "tasa de aprobación" },
               ].map(({ n, l }) => (
@@ -234,7 +234,7 @@ export default function Landing() {
                   </div>
                 ))}
               </div>
-              <div style={{ fontSize:12, color:"rgba(255,255,255,.5)" }}>{stats.students > 0 ? `+${stats.students} estudiantes activos` : "+1,200 graduados"} en 20+ países</div>
+              <div style={{ fontSize:12, color:"rgba(255,255,255,.5)" }}>{liveStats.students > 0 ? `+${liveStats.students} estudiantes activos` : "+1,200 graduados"} en 20+ países</div>
             </div>
           </div>
 
@@ -759,10 +759,20 @@ export default function Landing() {
             ].map((col,i)=>(
               <div key={i}>
                 <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,.4)", letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>{col.title}</div>
-                {col.links.map(l=><div key={l}
-                  onClick={()=>{const id=l.toLowerCase().replace(/[^a-z0-9]/g,"-");const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth"});}}
+                {col.links.map((l,j)=>{
+                  const label = typeof l==='string' ? l : l.label;
+                  const href  = typeof l==='object' ? l.href : null;
+                  return <div key={j}
+                  onClick={()=>{
+                    if(href && href.startsWith('/')) { window.location.href=href; return; }
+                    if(href) { window.location.href=href; return; }
+                    const id=label.toLowerCase().replace(/[^a-z0-9]/g,"-");
+                    const el=document.getElementById(id);
+                    if(el)el.scrollIntoView({behavior:"smooth"});
+                  }}
                   style={{ fontSize:13, color:"rgba(255,255,255,.3)", marginBottom:8, cursor:"pointer", transition:"color .15s" }}
-                  onMouseEnter={e=>e.target.style.color="#fff"} onMouseLeave={e=>e.target.style.color="rgba(255,255,255,.3)"}>{l}</div>)}
+                  onMouseEnter={e=>e.target.style.color="#fff"} onMouseLeave={e=>e.target.style.color="rgba(255,255,255,.3)"}>{label}</div>;
+                })}
               </div>
             ))}
           </div>
