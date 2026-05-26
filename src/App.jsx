@@ -55,12 +55,13 @@ function PrivateRoute({ element, allowedRoles }) {
   }, [loading, session, profile]);
 
   if (!auth.ready) return (
-    <div style={{ display:'flex', alignItems:'center', justifyContent:'center',
-      minHeight:'100vh', gap:12, color:'var(--text-secondary,#64748b)', fontSize:13 }}>
-      <div style={{ width:16, height:16, border:'2px solid #e2e8f0',
+    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+      minHeight:'100vh', gap:16, background:'var(--bg-page,#f8fafc)',
+      fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+      <div style={{ width:32, height:32, border:'3px solid #e2e8f0',
         borderTopColor:'#155266', borderRadius:'50%',
         animation:'spin .7s linear infinite' }}/>
-      Verificando acceso…
+      <div style={{ fontSize:14, color:'#475569', fontWeight:500 }}>Verificando acceso…</div>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
@@ -227,6 +228,14 @@ function NavHub() {
 function AppInner() {
   const search = useGlobalSearch();
 
+
+  // Catch uncaught errors that bypass ErrorBoundary
+  React.useEffect(() => {
+    const h = (e) => console.error("[WCA uncaught]", e.error || e.reason || e);
+    window.addEventListener("error", h);
+    window.addEventListener("unhandledrejection", h);
+    return () => { window.removeEventListener("error", h); window.removeEventListener("unhandledrejection", h); };
+  }, []);
   // SW update notification
   const [swUpdate, setSwUpdate] = React.useState(false);
   React.useEffect(() => {
@@ -237,7 +246,6 @@ function AppInner() {
 
   return (
     <>
-      <CookieBanner />
       <ConnectionGuard />
       <ToastContainer />
       <GlobalSearchModal search={search} />
@@ -264,6 +272,7 @@ function AppInner() {
         </div>
       )}
       <ErrorBoundary>
+      <CookieBanner />
       <Suspense fallback={<PageLoader />}>
         <Routes>
             <Route path="/hub"          element={<NavHub />} />

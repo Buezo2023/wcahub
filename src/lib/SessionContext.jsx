@@ -15,12 +15,19 @@ export function SessionProvider({ children }) {
     supabase.auth.getSession().then(async ({ data: { session: s } }) => {
       setSession(s);
       if (s?.user?.id) {
-        const { data } = await supabase.from("profiles")
-          .select("id, full_name, email, role, active, total_xp, xp_level, onboarding_done")
-          .eq("id", s.user.id)
-          .maybeSingle();
-        setProfile(data);
+        try {
+          const { data } = await supabase.from("profiles")
+            .select("id, full_name, email, role, active, total_xp, xp_level, onboarding_done")
+            .eq("id", s.user.id)
+            .maybeSingle();
+          setProfile(data);
+        } catch(e) {
+          console.error("[SessionContext] profile load failed:", e);
+        }
       }
+      setLoading(false);
+    }).catch(e => {
+      console.error("[SessionContext] session load failed:", e);
       setLoading(false);
     });
 
@@ -28,11 +35,15 @@ export function SessionProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, s) => {
       setSession(s);
       if (s?.user?.id && event !== "SIGNED_OUT") {
-        const { data } = await supabase.from("profiles")
-          .select("id, full_name, email, role, active, total_xp, xp_level, onboarding_done")
-          .eq("id", s.user.id)
-          .maybeSingle();
-        setProfile(data);
+        try {
+          const { data } = await supabase.from("profiles")
+            .select("id, full_name, email, role, active, total_xp, xp_level, onboarding_done")
+            .eq("id", s.user.id)
+            .maybeSingle();
+          setProfile(data);
+        } catch(e) {
+          console.error("[SessionContext] auth change profile load failed:", e);
+        }
       } else {
         setProfile(null);
       }
