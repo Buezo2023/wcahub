@@ -1,0 +1,27 @@
+#!/bin/sh
+# WCA Hub — pre-commit hook
+# Runs audit + build before every commit
+
+echo "🔍 Ejecutando audit..."
+node scripts/audit.js
+AUDIT_EXIT=$?
+
+if [ $AUDIT_EXIT -ne 0 ]; then
+  echo ""
+  echo "❌ Audit falló — commit cancelado."
+  echo "   Corregí los errores y volvé a hacer commit."
+  exit 1
+fi
+
+echo ""
+echo "🔨 Verificando build..."
+npm run build --silent
+BUILD_EXIT=$?
+
+if [ $BUILD_EXIT -ne 0 ]; then
+  echo ""
+  echo "❌ Build falló — commit cancelado."
+  exit 1
+fi
+
+echo "✅ Audit y build OK — continuando con el commit."
