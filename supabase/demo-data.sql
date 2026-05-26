@@ -1,113 +1,104 @@
 -- ═══════════════════════════════════════════════════════════════════
--- WCA Hub — Demo data: 1 estudiante completo para ver el Panel General
+-- WCA Hub — Demo data para Panel General
 -- ─────────────────────────────────────────────────────────────────
--- IMPORTANTE: Necesita que darwin.buezo2012@gmail.com ya exista en
--- auth.users (el super_admin). Este script usa su user_id como actor.
--- ─────────────────────────────────────────────────────────────────
--- Ejecutar DESPUÉS de migrations.sql
+-- NOTA: No se puede insertar en auth.users desde el SQL Editor.
+-- Este script crea el student/enrollment/payment usando el profile
+-- del super_admin (darwin.buezo2012@gmail.com) como estudiante demo.
+-- Esto hace que el Panel General muestre KPIs reales sin necesitar
+-- crear usuarios de auth adicionales.
+--
+-- Para ver datos en el panel hay DOS opciones:
+-- OPCIÓN A (este script): usa tu propio perfil como demo.
+-- OPCIÓN B: matriculá un estudiante real desde SuperAdmin → Academia
 -- ═══════════════════════════════════════════════════════════════════
 
 DO $$
 DECLARE
   v_actor_id    uuid;
-  v_student_uid uuid;
   v_student_id  uuid;
   v_enroll_id   uuid;
   v_group_id    uuid;
 BEGIN
 
-  -- Obtener el super_admin como actor
-  SELECT id INTO v_actor_id FROM auth.users WHERE email = 'darwin.buezo2012@gmail.com' LIMIT 1;
+  -- Obtener el super_admin existente
+  SELECT id INTO v_actor_id FROM auth.users
+  WHERE email = 'darwin.buezo2012@gmail.com' LIMIT 1;
+
   IF v_actor_id IS NULL THEN
-    RAISE NOTICE 'Super admin not found — skipping demo data';
+    RAISE NOTICE 'Super admin no encontrado — verificá el email en auth.users';
     RETURN;
   END IF;
 
-  -- ── 1. Crear auth user para el estudiante demo ──────────────────
-  INSERT INTO auth.users (
-    id, email, email_confirmed_at, created_at, updated_at,
-    raw_user_meta_data, role, aud
-  )
-  VALUES (
-    gen_random_uuid(), 'maria.garcia.demo@wcahub.dev',
-    now(), now(), now(),
-    '{"full_name":"María García Demo"}'::jsonb,
-    'authenticated', 'authenticated'
-  )
-  ON CONFLICT (email) DO NOTHING;
-
-  SELECT id INTO v_student_uid FROM auth.users WHERE email = 'maria.garcia.demo@wcahub.dev';
-  IF v_student_uid IS NULL THEN
-    RAISE NOTICE 'Demo user already exists — continuing';
-    SELECT id INTO v_student_uid FROM auth.users WHERE email = 'maria.garcia.demo@wcahub.dev';
-  END IF;
-
-  -- ── 2. Perfil ───────────────────────────────────────────────────
-  INSERT INTO public.profiles (id, email, full_name, phone, role, active)
-  VALUES (v_student_uid, 'maria.garcia.demo@wcahub.dev', 'María García Demo', '+504 9800-1234', 'estudiante', true)
-  ON CONFLICT (id) DO UPDATE SET full_name = 'María García Demo', active = true;
-
-  -- ── 3. Student record ───────────────────────────────────────────
+  -- Crear student record para el super_admin si no existe
   INSERT INTO public.students (profile_id, level, scholarship)
-  VALUES (v_student_uid, 'A1', false)
+  VALUES (v_actor_id, 'B1', false)
   ON CONFLICT (profile_id) DO NOTHING;
 
-  SELECT id INTO v_student_id FROM public.students WHERE profile_id = v_student_uid;
+  SELECT id INTO v_student_id FROM public.students WHERE profile_id = v_actor_id;
+  IF v_student_id IS NULL THEN
+    RAISE NOTICE 'No se pudo crear el student record';
+    RETURN;
+  END IF;
 
-  -- ── 4. Obtener un grupo activo ──────────────────────────────────
+  -- Obtener un grupo activo
   SELECT id INTO v_group_id FROM public.groups
-  WHERE program_id = 'en' AND level = 'A1' AND active = true LIMIT 1;
+  WHERE active = true LIMIT 1;
 
-  -- ── 5. Enrollment ───────────────────────────────────────────────
+  -- Enrollment activo
   INSERT INTO public.enrollments
     (student_id, program_id, group_id, status, current_unit, price_locked,
      enrolled_at, next_payment_date)
   VALUES
     (v_student_id, 'en', v_group_id, 'active', 3, 95,
-     now() - INTERVAL '45 days',
-     (date_trunc('month', now()) + INTERVAL '1 month')::date)
+     NOW() - INTERVAL '45 days',
+     (DATE_TRUNC('month', NOW()) + INTERVAL '1 month')::date)
   ON CONFLICT (student_id, program_id) DO UPDATE
-    SET status = 'active', next_payment_date =
-      (date_trunc('month', now()) + INTERVAL '1 month')::date;
+    SET status = 'active',
+        next_payment_date = (DATE_TRUNC('month', NOW()) + INTERVAL '1 month')::date;
 
   SELECT id INTO v_enroll_id FROM public.enrollments
   WHERE student_id = v_student_id AND program_id = 'en';
 
-  -- ── 6. Pago confirmado este mes ─────────────────────────────────
+  -- Pago confirmado este mes
   INSERT INTO public.payments
     (student_id, enrollment_id, amount, currency, method, status,
-     reference_code, confirmed_by, confirmed_at, period_start,
-     created_at)
-  VALUES
-    (v_student_id, v_enroll_id, 95.00, 'USD', 'transfer', 'confirmed',
-     'WCA-DEMO-2026', v_actor_id, now() - INTERVAL '5 days',
-     date_trunc('month', now())::date,
-     now() - INTERVAL '6 days')
-  ON CONFLICT DO NOTHING;
+     reference_code, confirmed_by, confirmed_at,
+     period_start, created_at)
+  SELECT
+    v_student_id, v_enroll_id, 95.00, 'USD', 'transfer', 'confirmed',
+    'WCA-DEMO-' || TO_CHAR(NOW(),'YYYYMM'),
+    v_actor_id, NOW() - INTERVAL '5 days',
+    DATE_TRUNC('month', NOW())::date,
+    NOW() - INTERVAL '6 days'
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.payments
+    WHERE student_id = v_student_id
+      AND period_start = DATE_TRUNC('month', NOW())::date
+  );
 
-  -- ── 7. Pago del mes anterior ────────────────────────────────────
+  -- Pago confirmado mes anterior
   INSERT INTO public.payments
     (student_id, enrollment_id, amount, currency, method, status,
-     reference_code, confirmed_by, confirmed_at, period_start,
-     created_at)
-  VALUES
-    (v_student_id, v_enroll_id, 95.00, 'USD', 'transfer', 'confirmed',
-     'WCA-DEMO-2026-M1', v_actor_id, now() - INTERVAL '35 days',
-     (date_trunc('month', now()) - INTERVAL '1 month')::date,
-     now() - INTERVAL '36 days')
-  ON CONFLICT DO NOTHING;
+     reference_code, confirmed_by, confirmed_at,
+     period_start, created_at)
+  SELECT
+    v_student_id, v_enroll_id, 95.00, 'USD', 'transfer', 'confirmed',
+    'WCA-DEMO-' || TO_CHAR(NOW() - INTERVAL '1 month','YYYYMM'),
+    v_actor_id, NOW() - INTERVAL '35 days',
+    DATE_TRUNC('month', NOW() - INTERVAL '1 month')::date,
+    NOW() - INTERVAL '36 days'
+  WHERE NOT EXISTS (
+    SELECT 1 FROM public.payments
+    WHERE student_id = v_student_id
+      AND period_start = DATE_TRUNC('month', NOW() - INTERVAL '1 month')::date
+  );
 
-  -- ── 8. Audit log ────────────────────────────────────────────────
-  INSERT INTO public.audit_log (actor_id, action, entity, metadata)
-  VALUES (v_actor_id, 'demo_data_created', 'system',
-    '{"message":"Demo student created for Panel General testing"}'::jsonb);
-
-  RAISE NOTICE 'Demo data created successfully for student: %', v_student_uid;
+  RAISE NOTICE 'Demo data OK — student_id: %', v_student_id;
 END $$;
 
--- Verificar resultados
+-- Verificar
 SELECT
   'students'    AS tabla, COUNT(*) AS total FROM public.students
-UNION ALL SELECT 'enrollments', COUNT(*) FROM public.enrollments
-UNION ALL SELECT 'payments',    COUNT(*) FROM public.payments
-UNION ALL SELECT 'leads',       COUNT(*) FROM public.leads;
+UNION ALL SELECT 'enrollments (active)', COUNT(*) FROM public.enrollments WHERE status = 'active'
+UNION ALL SELECT 'payments (confirmed)', COUNT(*) FROM public.payments WHERE status = 'confirmed'
+UNION ALL SELECT 'leads',               COUNT(*) FROM public.leads;

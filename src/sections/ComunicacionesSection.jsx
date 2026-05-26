@@ -35,8 +35,9 @@ export function ComunicacionesSection({ showToast, subView }) {
         const {data:{session}}=await supabase.auth.getSession();
         // Build recipient query
         let studentQuery = supabase.from("students")
-          .select("id,profile:profiles(email,full_name,active)")
-          .eq("profiles.active",true);
+          .select("id,profile:profiles(email,full_name,active)");
+          // Note: filter active students in JS (Supabase client doesn't support
+          // dot-notation filters on joined tables)
 
         if(target==="overdue"){
           const today=new Date().toISOString().slice(0,10);
@@ -62,6 +63,7 @@ export function ComunicacionesSection({ showToast, subView }) {
         let sent=0;
         for(const s of students){
           if(!s.profile?.email) continue;
+          if(s.profile?.active === false) continue; // skip inactive profiles
           const personalBody = body.replace("{nombre}",s.profile?.full_name?.split(" ")[0]||"Estudiante");
           await fetch("/api/emails?action=blast",{method:"POST",
             headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},

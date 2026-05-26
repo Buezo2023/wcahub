@@ -122,13 +122,21 @@ export default async function handler(req, res) {
             // Safety check: do NOT suspend if there's a pending payment in the last 5 days
             const fiveDaysAgo = new Date(today);
             fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-            const { data: recentPending } = await admin
-              .from('payments')
+            // Check by enrollment_id first; fall back to student_id if enrollment_id was null
+            let pendingQuery = admin.from('payments')
               .select('id')
-              .eq('enrollment_id', enroll.id)
               .eq('status', 'pending')
               .gte('created_at', fiveDaysAgo.toISOString())
               .limit(1);
+            pendingQuery = pendingQuery.eq('enrollment_id', enroll.id);
+            let { data: recentPending } = await pendingQuery;
+            // Fallback: check by student_id (covers payments without enrollment_id)
+            if (!recentPending?.length) {
+              const { data: byStudent } = await admin.from('payments')
+                .select('id').eq('student_id', enroll.student.id)
+                .eq('status', 'pending').gte('created_at', fiveDaysAgo.toISOString()).limit(1);
+              recentPending = byStudent;
+            }
             if (recentPending?.length) {
               await admin.from('audit_log').insert({
                 action: 'auto_suspend_skipped',

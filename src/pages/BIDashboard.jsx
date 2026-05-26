@@ -149,7 +149,7 @@ export default function BIDashboard() {
         });
         if (res.ok) {
           const json = await res.json();
-          setRealStats(json);
+          setRealStats(json.data || json);
         }
         // Load MRR history — group confirmed payments by month
         const { data: pays } = await supabase
