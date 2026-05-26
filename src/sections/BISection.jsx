@@ -29,8 +29,7 @@ export function BISection({ showToast }) {
   async function load(){
     setLoading(true);
     try{
-      const {data:{session}}=await supabase.auth.getSession();
-      const res=await fetch("/api/admin/stats",{headers:{Authorization:`Bearer ${session?.access_token}`}});
+      const res=await api.get("/api/admin/stats");
       if(res.ok){const json=await res.json();setStats(json.data||json);}
       // Load payment history for sparkline
       const {data:pays}=await supabase.from("payments")

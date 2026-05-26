@@ -43,17 +43,14 @@ export function PagosSection({ showToast, initialTab }) {
   },[tab,pending,confirmed,payments,search]);
 
   async function confirm(id) {
-    const {data:{session}} = await supabase.auth.getSession();
-    const res = await fetch("/api/payments/confirm",{method:"PATCH",headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},body:JSON.stringify({paymentId:id,action:"confirm"})});
-    const json = await res.json().catch(()=>({}));
+    const json = await api.patch("/api/payments/confirm",{paymentId:id,action:"confirm"}).catch(()=>({}));
     if (!res.ok||!json.ok) { showToast("Error: "+(json.error||json.message||""), R); return; }
     showToast("✓ Pago confirmado — email enviado al estudiante");
     await load();
   }
 
   async function reject(id) {
-    const {data:{session}} = await supabase.auth.getSession();
-    await fetch("/api/payments/confirm",{method:"PATCH",headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},body:JSON.stringify({paymentId:id,action:"reject",reason:"Rechazado por admin"})});
+    await api.patch("/api/payments/confirm",{paymentId:id,action:"reject",reason:"Rechazado por admin"}).catch(()=>{});
     showToast("Pago rechazado");
     await load();
   }
@@ -62,9 +59,7 @@ export function PagosSection({ showToast, initialTab }) {
     if (!form.studentId||!form.amount) { showToast("Estudiante y monto requeridos", R); return; }
     setSaving(true);
     try {
-      const {data:{session}} = await supabase.auth.getSession();
-      const res = await fetch("/api/payments/record",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},body:JSON.stringify({...form,autoConfirm:false})});
-      const json = await res.json().catch(()=>({}));
+      const json = await api.post("/api/payments/record",{...form,autoConfirm:false}).catch(()=>({}));
       if (!res.ok||!json.ok) { showToast("Error: "+(json.error||json.message), R); return; }
       showToast("✓ Pago registrado — pendiente de confirmación");
       setRegModal(false);

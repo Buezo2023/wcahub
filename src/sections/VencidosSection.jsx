@@ -34,7 +34,7 @@ export function VencidosSection({ showToast }) {
   async function runReminder(item){
     try{
       const {data:{session}}=await supabase.auth.getSession();
-      await fetch("/api/emails?action=reminders",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},body:JSON.stringify({studentIds:[item.id],daysOverdue:item.days})});
+      await api.post("/api/emails?action=reminders", {studentIds:[item.id],daysOverdue:item.days});
       showToast(`✓ Recordatorio enviado a ${item.name}`);
     }catch(e){showToast("Error: "+e.message,R);}
   }
@@ -42,7 +42,7 @@ export function VencidosSection({ showToast }) {
   async function triggerCycle(){
     try{
       const {data:{session}}=await supabase.auth.getSession();
-      const res=await fetch("/api/jobs/daily-billing",{headers:{"x-cron-secret":"manual-trigger","Authorization":`Bearer ${session?.access_token}`}});
+      const res=await api.get("/api/jobs/daily-billing", {headers:{"x-cron-secret":"manual-trigger"}});
       const json=await res.json().catch(()=>({}));
       showToast(`Ciclo ejecutado: ${json.results?.autoSuspended?.count||0} suspendidos`);
       await load();

@@ -33,11 +33,7 @@ export function TeachersSection({ showToast }) {
     if(!form.name||!form.email){showToast("Nombre y email requeridos",R);return;}
     setSaving(true);
     try{
-      const {data:{session}}=await supabase.auth.getSession();
-      const res=await fetch("/api/auth/invite",{method:"POST",
-        headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},
-        body:JSON.stringify({action:"staff",email:form.email,fullName:form.name,role:"Docente",phone:form.phone||null,salary:form.salary||null})
-      });
+      const res=await api.post("/api/auth/invite",{action:"staff",email:form.email,fullName:form.name,role:"Docente",phone:form.phone||null,salary:form.salary||null});
       const json=await res.json().catch(()=>({}));
       if(!res.ok||!json.ok){showToast("Error: "+(json.error||json.message),R);return;}
       showToast("✓ Docente invitado — recibirá email para acceder");

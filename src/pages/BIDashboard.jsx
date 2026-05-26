@@ -149,9 +149,7 @@ export default function BIDashboard() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) return;
-        const res = await fetch("/api/admin/stats", {
-          headers: { Authorization: `Bearer ${session.access_token}` }
-        });
+        const res = await api.get("/api/admin/stats");
         if (res.ok) {
           const json = await res.json();
           setRealStats(json.data || json);

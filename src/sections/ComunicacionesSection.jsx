@@ -66,10 +66,7 @@ export function ComunicacionesSection({ showToast, subView }) {
           if(!s.profile?.email) continue;
           if(s.profile?.active === false) continue; // skip inactive profiles
           const personalBody = body.replace("{nombre}",s.profile?.full_name?.split(" ")[0]||"Estudiante");
-          const blastRes = await fetch("/api/emails?action=blast",{method:"POST",
-            headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},
-            body:JSON.stringify({to:s.profile.email,toName:s.profile.full_name,subject,html:`<p style="font-family:sans-serif;line-height:1.7">${personalBody.replace(/\n/g,"<br>")}</p>`})
-          }).catch(()=>null);
+          const blastRes = await api.post("/api/emails?action=blast", {to:s.profile.email,toName:s.profile.full_name,subject,html:`<p style="font-family:sans-serif;line-height:1.7">${personalBody.replace(/\n/g,"<br>")}</p>`}).catch(()=>null);
           if(blastRes?.ok) { sent++; } // only count confirmed sends
           await new Promise(r=>setTimeout(r,150)); // slight rate limit
         }
@@ -150,12 +147,11 @@ export function ComunicacionesSection({ showToast, subView }) {
       try{
         const {data:{session}}=await supabase.auth.getSession();
         if(type==="manual"){
-          const res=await fetch("/api/jobs/daily-billing",{headers:{"x-cron-secret":"manual-trigger","Authorization":`Bearer ${session?.access_token}`}});
+          const res=await api.get("/api/jobs/daily-billing", {headers:{"x-cron-secret":"manual-trigger"}});
           const json=await res.json().catch(()=>({}));
           setResult({msg:`Ciclo ejecutado: ${json.results?.preReminders?.sent||0} pre-avisos, ${json.results?.dueToday?.sent||0} vencen hoy, ${json.results?.overdueWarning?.sent||0} vencidos, ${json.results?.autoSuspended?.count||0} suspendidos`});
         } else {
-          const res=await fetch("/api/emails?action=reminders",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},body:JSON.stringify({daysOverdue:0})});
-          const json=await res.json().catch(()=>({}));
+          const json=await api.post("/api/emails?action=reminders", {daysOverdue:0}).catch(()=>({}));
           setResult({msg:`Recordatorios enviados: ${json.data?.sent ?? json.sent ?? 0}`});
         }
       }catch(e){setResult({msg:"Error: "+e.message,error:true});}

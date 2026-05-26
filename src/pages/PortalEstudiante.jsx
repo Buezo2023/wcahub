@@ -528,7 +528,7 @@ export default function PortalEstudiante(){
       const uid = session.user.id;
       // Load profile
       supabase.from("profiles").select("full_name, email, avatar_url, phone, preferred_name")
-        .eq("id", uid).single()
+        .eq("id", uid).maybeSingle()
         .then(({ data }) => {
           if (data) {
             setUser({

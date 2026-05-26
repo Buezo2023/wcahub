@@ -138,7 +138,7 @@ export default function CoordAcademica() {
 
     // Load real groups
     supabase.from("groups")
-      .select("id, level, schedule, days, capacity, active_unit, teams_link, teacher_groups(staff(profiles(full_name)))")
+      .select("id, level, schedule, days, capacity, active_unit, teams_link, teacher_groups(staff(profiles(full_name))), enrollments(id)")
       .eq("active", true)
       .order("level")
       .then(({ data }) => {
@@ -146,7 +146,7 @@ export default function CoordAcademica() {
           id: g.id, level: g.level,
           time: g.schedule || "—",
           days: g.days || "L·M·V",
-          students: 0, capacity: g.capacity,
+          students: g.enrollments?.length ?? 0, capacity: g.capacity,
           teacher: g.teacher_groups?.[0]?.staff?.profiles?.full_name || "Sin asignar",
           unit: g.active_unit,
           teamsSet: !!g.teams_link,

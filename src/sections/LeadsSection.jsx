@@ -57,10 +57,7 @@ export function LeadsSection({ showToast }) {
     if(!lead) return;
     showToast("Creando estudiante...");
     try{
-      const {data:{session}}=await supabase.auth.getSession();
-      const res=await fetch("/api/auth/invite",{method:"POST",
-        headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},
-        body:JSON.stringify({action:"student",email:lead.email,fullName:lead.full_name,phone:lead.phone||null,level:lead.level_interest||"A1",programId:"en"})});
+      const res=await api.post("/api/auth/invite",{action:"student",email:lead.email,fullName:lead.full_name,phone:lead.phone||null,level:lead.level_interest||"A1",programId:"en"});
       const json=await res.json().catch(()=>({}));
       if(!res.ok||!json.ok){showToast("Error: "+(json.error||json.message),R);return;}
       await changeStage(lead.id,"convertido");
