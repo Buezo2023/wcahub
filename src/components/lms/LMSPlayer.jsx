@@ -1,12 +1,13 @@
 // ─── LMSPlayer — motor completo del LMS ────────────────────────
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
 import { supabase } from "../../lib/supabase.js";
-import { VideoActivity   } from "./VideoActivity.jsx";
-import { LessonActivity  } from "./LessonActivity.jsx";
-import { QuizActivity    } from "./QuizActivity.jsx";
-import { MatchingActivity} from "./MatchingActivity.jsx";
-import { FillBlankActivity} from "./FillBlankActivity.jsx";
-import { RoleplayActivity} from "./RoleplayActivity.jsx";
+
+const VideoActivity    = lazy(() => import("./VideoActivity.jsx").then(m => ({ default: m.VideoActivity })));
+const LessonActivity   = lazy(() => import("./LessonActivity.jsx").then(m => ({ default: m.LessonActivity })));
+const QuizActivity     = lazy(() => import("./QuizActivity.jsx").then(m => ({ default: m.QuizActivity })));
+const MatchingActivity = lazy(() => import("./MatchingActivity.jsx").then(m => ({ default: m.MatchingActivity })));
+const FillBlankActivity= lazy(() => import("./FillBlankActivity.jsx").then(m => ({ default: m.FillBlankActivity })));
+const RoleplayActivity = lazy(() => import("./RoleplayActivity.jsx").then(m => ({ default: m.RoleplayActivity })));
 
 const P="#155266",PD="#e8f3f6",G="#059669",GD="#ecfdf5",A="#d97706",R="#dc2626";
 
@@ -64,6 +65,21 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
       // Auto-select first unit
       if (unitData[0]) setSelectedUnit(unitData[0].id);
     } finally { setLoading(false); }
+
+    // Sync any offline progress saved in localStorage
+    const pending = JSON.parse(localStorage.getItem("wca_pending_progress") || "[]");
+    if (pending.length) {
+      const synced = [];
+      for (const p of pending) {
+        const { error } = await supabase.from("user_activity_progress")
+          .upsert(p, { onConflict: "profile_id,activity_id" });
+        if (!error) synced.push(p);
+      }
+      if (synced.length) {
+        const remaining = pending.filter(p => !synced.some(s => s.activity_id === p.activity_id));
+        localStorage.setItem("wca_pending_progress", JSON.stringify(remaining));
+      }
+    }
   }
 
   // Activities for selected unit, ordered
@@ -88,17 +104,27 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
 
   // Handle activity completion
   const handleComplete = useCallback(async (activityId, score, xpEarned) => {
-    // Upsert progress
-    await supabase.from("user_activity_progress").upsert({
-      profile_id: profileId,
-      activity_id: activityId,
-      completed: true,
-      score,
-      xp_earned: xpEarned,
+    // Upsert progress — optimistic update + retry up to 3 times
+    const progressData = {
+      profile_id: profileId, activity_id: activityId,
+      completed: true, score, xp_earned: xpEarned,
       attempts: (progress[activityId]?.attempts || 0) + 1,
       completed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
-    }, { onConflict: "profile_id,activity_id" });
+    };
+    let saved = false;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const { error } = await supabase.from("user_activity_progress")
+        .upsert(progressData, { onConflict: "profile_id,activity_id" });
+      if (!error) { saved = true; break; }
+      if (attempt < 2) await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+    }
+    if (!saved) {
+      // Store in localStorage as fallback so progress isn't lost
+      const pending = JSON.parse(localStorage.getItem("wca_pending_progress") || "[]");
+      pending.push(progressData);
+      localStorage.setItem("wca_pending_progress", JSON.stringify(pending));
+    }
 
     // Log XP
     if (xpEarned > 0) {
@@ -337,12 +363,14 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
             </div>
 
             {/* Activity renderer */}
-            {activeActivity.type === "video"      && <VideoActivity    content={activeActivity.content} completed={progress[activeActivity.id]?.completed} onComplete={(s,x) => handleComplete(activeActivity.id, s, x)} />}
-            {activeActivity.type === "lesson"     && <LessonActivity   content={activeActivity.content} completed={progress[activeActivity.id]?.completed} onComplete={(s,x) => handleComplete(activeActivity.id, s, x)} />}
-            {activeActivity.type === "quiz"       && <QuizActivity     content={activeActivity.content} completed={progress[activeActivity.id]?.completed} onComplete={(s,x) => handleComplete(activeActivity.id, s, x)} />}
-            {activeActivity.type === "matching"   && <MatchingActivity  content={activeActivity.content} completed={progress[activeActivity.id]?.completed} onComplete={(s,x) => handleComplete(activeActivity.id, s, x)} />}
-            {activeActivity.type === "fill_blank" && <FillBlankActivity content={activeActivity.content} completed={progress[activeActivity.id]?.completed} onComplete={(s,x) => handleComplete(activeActivity.id, s, x)} />}
-            {activeActivity.type === "roleplay"   && <RoleplayActivity  content={activeActivity.content} completed={progress[activeActivity.id]?.completed} onComplete={(s,x) => handleComplete(activeActivity.id, s, x)} />}
+            <Suspense fallback={<div style={{padding:32,textAlign:"center",color:"var(--text-secondary)",fontSize:13}}>Cargando actividad...</div>}>
+              {activeActivity.type === "video"      && <VideoActivity    content={activeActivity.content} completed={progress[activeActivity.id]?.completed} onComplete={(s,x) => handleComplete(activeActivity.id, s, x)} />}
+              {activeActivity.type === "lesson"     && <LessonActivity   content={activeActivity.content} completed={progress[activeActivity.id]?.completed} onComplete={(s,x) => handleComplete(activeActivity.id, s, x)} />}
+              {activeActivity.type === "quiz"       && <QuizActivity     content={activeActivity.content} completed={progress[activeActivity.id]?.completed} onComplete={(s,x) => handleComplete(activeActivity.id, s, x)} />}
+              {activeActivity.type === "matching"   && <MatchingActivity  content={activeActivity.content} completed={progress[activeActivity.id]?.completed} onComplete={(s,x) => handleComplete(activeActivity.id, s, x)} />}
+              {activeActivity.type === "fill_blank" && <FillBlankActivity content={activeActivity.content} completed={progress[activeActivity.id]?.completed} onComplete={(s,x) => handleComplete(activeActivity.id, s, x)} />}
+              {activeActivity.type === "roleplay"   && <RoleplayActivity  content={activeActivity.content} completed={progress[activeActivity.id]?.completed} onComplete={(s,x) => handleComplete(activeActivity.id, s, x)} />}
+            </Suspense>
           </div>
         )}
       </div>

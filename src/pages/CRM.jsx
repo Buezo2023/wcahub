@@ -160,7 +160,7 @@ function LeadPanel({ lead, onClose, onStageChange, onConvert, onLost }) {
   }
 
   return (
-    <div style={{ width:380, background:"var(--bg-surface)", borderLeft:"1px solid #e2e8f0", display:"flex", flexDirection:"column", height:"100%", flexShrink:0, overflowY:"auto" }}>
+    <div style={{ width:"min(380px,100vw - 32px)", background:"var(--bg-surface)", borderLeft:"1px solid #e2e8f0", display:"flex", flexDirection:"column", height:"100%", flexShrink:0, overflowY:"auto" }}>
       {/* Header */}
       <div style={{ padding:"18px 20px 16px", borderBottom:"1px solid #f1f5f9", background:s?.light||"#f8fafc" }}>
         <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>

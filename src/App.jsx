@@ -278,9 +278,11 @@ function AppInner() {
 export default function App() {
   return (
     <ThemeProvider>
+      <SessionProvider>
       <BrowserRouter>
         <AppInner />
       </BrowserRouter>
+    </SessionProvider>
     </ThemeProvider>
   );
 }

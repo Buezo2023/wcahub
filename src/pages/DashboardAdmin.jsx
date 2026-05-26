@@ -970,7 +970,7 @@ export default function AdminDashboard() {
       {actionModal && (
         <div role="dialog" aria-modal="true" style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}
           onClick={e=>{ if(e.target===e.currentTarget) setActionModal(null); }}>
-          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:420, border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)" }}>
+          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:"min(420px,100vw - 32px)", border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)" }}>
             <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)", marginBottom:4 }}>
               {({"reactivate":"Reactivar cuenta","suspend":"Suspender cuenta","upgrade":"Upgrade a Plan Completo","changeGroup":"Cambiar de grupo"})[actionModal.type]}
             </div>
@@ -1060,7 +1060,7 @@ export default function AdminDashboard() {
         <div role="dialog" aria-modal="true"
           onClick={e=>{ if(e.target===e.currentTarget) setEnrollModal(false); }}
           style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}>
-          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, width:440, border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
+          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, width:"min(440px,100vw - 32px)", border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:18 }}>
               <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>Nuevo estudiante</div>
               <button onClick={()=>setEnrollModal(false)} aria-label="Cerrar" style={{ background:"none", border:"none", cursor:"pointer", color:"var(--text-secondary)", fontSize:18 }}>✕</button>
@@ -1101,7 +1101,7 @@ export default function AdminDashboard() {
         <div role="dialog" aria-modal="true"
           onClick={e=>{ if(e.target===e.currentTarget) setTeamsModal(null); }}
           style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}>
-          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:24, width:400, border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
+          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:24, width:"min(400px,100vw - 32px)", border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:14 }}>
               <div>
                 <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>Configurar link de Teams</div>

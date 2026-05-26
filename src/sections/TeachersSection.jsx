@@ -88,7 +88,7 @@ export function TeachersSection({ showToast }) {
       {modal&&(
         <div style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
           onClick={e=>{if(e.target===e.currentTarget)setModal(null);}}>
-          <div style={{background:"var(--bg-surface)",borderRadius:18,padding:24,width:420,maxWidth:"100%",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)",maxHeight:"90vh",overflowY:"auto"}}>
+          <div style={{background:"var(--bg-surface)",borderRadius:18,padding:24,width:420,maxWidth:"100%",width:"100%",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)",maxHeight:"90vh",overflowY:"auto"}}>
             {modal.mode==="add"?(
               <>
                 <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:18}}>Agregar docente</div>

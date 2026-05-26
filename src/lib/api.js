@@ -1,59 +1,50 @@
-// ─── WCA Hub — API Client ─────────────────────────────────────────
-// Llama a los Vercel API routes con el token de Supabase automáticamente.
+// api.js — centralized fetch helper
+// Handles: auth token injection, 401 redirect, error parsing
+import { supabase } from "./supabase.js";
 
-import { supabase } from './supabase.js';
+let _onUnauthorized = null;
 
-const BASE = '/api';
-
-async function getToken() {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.access_token || '';
+export function setUnauthorizedHandler(fn) {
+  _onUnauthorized = fn;
 }
 
-async function request(method, path, body) {
-  const token = await getToken();
-  const res = await fetch(`${BASE}${path}`, {
-    method,
+export async function api(path, options = {}) {
+  // Get fresh token
+  const { data: { session } } = await supabase.auth.getSession();
+  const token = session?.access_token;
+
+  if (!token) {
+    _onUnauthorized?.();
+    throw new Error("No session");
+  }
+
+  const res = await fetch(path, {
+    ...options,
     headers: {
-      'Content-Type':  'application/json',
-      'Authorization': `Bearer ${token}`,
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {}),
     },
-    ...(body ? { body: JSON.stringify(body) } : {}),
   });
 
-  const data = await res.json();
-  if (!res.ok || !data.ok) throw new Error(data.error || `Error ${res.status}`);
-  return data.data;
+  // 401 = token expired or invalid → sign out and redirect
+  if (res.status === 401) {
+    await supabase.auth.signOut();
+    _onUnauthorized?.();
+    throw new Error("Sesión expirada. Por favor ingresá de nuevo.");
+  }
+
+  // Parse JSON safely
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(data.error || data.message || `Error ${res.status}`);
+  }
+
+  return data;
 }
 
-// ─── Auth ─────────────────────────────────────────────────────────
-export const api = {
-  auth: {
-    invite:      (body)  => request('POST', '/auth/invite', { action:'student', ...body }),
-    inviteStaff: (body)  => request('POST', '/auth/invite', { action:'staff',   ...body }),
-    resendInvite:(email) => request('POST', '/auth/invite', { action:'resend',   email }),
-    testEmail:   (to)    => request('POST', '/auth/invite', { action:'test-email', to }),
-    setRole: (userId, role) => request('PATCH', '/auth/role', { userId, role }),
-  },
-
-  enrollments: {
-    create:  (body)   => request('POST',  '/enrollments/create',  body),
-    suspend: (enrollmentId, reason) => request('PATCH', '/enrollments/suspend', { enrollmentId, action: 'suspend', reason }),
-    reactivate: (enrollmentId) => request('PATCH', '/enrollments/suspend', { enrollmentId, action: 'reactivate' }),
-  },
-
-  payments: {
-    record:  (body) => request('POST',  '/payments/record',  body),
-    confirm: (paymentId) => request('PATCH', '/payments/confirm', { paymentId, action: 'confirm' }),
-    reject:  (paymentId, reason) => request('PATCH', '/payments/confirm', { paymentId, action: 'reject', reason }),
-  },
-
-  emails: {
-    welcome:   ()    => request('POST', '/emails/welcome', {}),
-    reminders: (body) => request('POST', '/emails/reminders', body),
-  },
-
-  admin: {
-    stats: () => request('GET', '/admin/stats'),
-  },
-};
+// Convenience methods
+api.get  = (path, opts = {}) => api(path, { ...opts, method: "GET" });
+api.post = (path, body, opts = {}) => api(path, { ...opts, method: "POST", body: JSON.stringify(body) });
+api.patch= (path, body, opts = {}) => api(path, { ...opts, method: "PATCH", body: JSON.stringify(body) });

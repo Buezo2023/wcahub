@@ -202,3 +202,47 @@ FROM information_schema.tables t
 WHERE table_schema = 'public'
   AND table_type = 'BASE TABLE'
 ORDER BY table_name;
+
+-- ── 16. Performance indexes ───────────────────────────────────────
+-- Run these in Supabase SQL Editor for query performance at scale
+
+-- profiles
+CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
+CREATE INDEX IF NOT EXISTS idx_profiles_role  ON public.profiles(role);
+CREATE INDEX IF NOT EXISTS idx_profiles_active ON public.profiles(active) WHERE active = true;
+
+-- students
+CREATE INDEX IF NOT EXISTS idx_students_profile_id ON public.students(profile_id);
+
+-- enrollments
+CREATE INDEX IF NOT EXISTS idx_enrollments_student_id        ON public.enrollments(student_id);
+CREATE INDEX IF NOT EXISTS idx_enrollments_program_id        ON public.enrollments(program_id);
+CREATE INDEX IF NOT EXISTS idx_enrollments_status            ON public.enrollments(status);
+CREATE INDEX IF NOT EXISTS idx_enrollments_next_payment_date ON public.enrollments(next_payment_date)
+  WHERE status = 'active';
+CREATE INDEX IF NOT EXISTS idx_enrollments_group_id          ON public.enrollments(group_id);
+
+-- payments
+CREATE INDEX IF NOT EXISTS idx_payments_student_id    ON public.payments(student_id);
+CREATE INDEX IF NOT EXISTS idx_payments_enrollment_id ON public.payments(enrollment_id);
+CREATE INDEX IF NOT EXISTS idx_payments_status        ON public.payments(status);
+CREATE INDEX IF NOT EXISTS idx_payments_created_at    ON public.payments(created_at DESC);
+
+-- leads
+CREATE INDEX IF NOT EXISTS idx_leads_stage ON public.leads(stage);
+CREATE INDEX IF NOT EXISTS idx_leads_email ON public.leads(email);
+
+-- audit_log
+CREATE INDEX IF NOT EXISTS idx_audit_actor    ON public.audit_log(actor_id);
+CREATE INDEX IF NOT EXISTS idx_audit_created  ON public.audit_log(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_action   ON public.audit_log(action);
+
+-- LMS
+CREATE INDEX IF NOT EXISTS idx_units_program  ON public.units(program_id, level);
+CREATE INDEX IF NOT EXISTS idx_activities_unit ON public.unit_activities(unit_id, order_num);
+CREATE INDEX IF NOT EXISTS idx_activities_type ON public.unit_activities(type);
+
+-- notifications
+CREATE INDEX IF NOT EXISTS idx_notif_user_unread ON public.notifications(user_id, read)
+  WHERE read = false;
+

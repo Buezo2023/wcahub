@@ -753,7 +753,7 @@ export default function CoordAcademica() {
       {/* MODAL: Upgrade beca */}
       {upgradeModal && (
         <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}>
-          <div style={{ background:B.white, borderRadius:16, padding:24, width:380, border:`1px solid ${B.border}` }}>
+          <div style={{ background:B.white, borderRadius:16, padding:24, width:"min(380px,100vw - 32px)", border:`1px solid ${B.border}` }}>
             <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Upgrade a Plan Completo</div>
             <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>{upgradeModal.name} · Beca {upgradeModal.program}</div>
             <div style={{ background:B.secondaryDim, borderRadius:10, padding:12, marginBottom:14 }}>
@@ -787,7 +787,7 @@ export default function CoordAcademica() {
       {teacherModal && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}
           onClick={e=>{ if(e.target===e.currentTarget) setTeacherModal(null); }}>
-          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:460, maxWidth:"100%", border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)", maxHeight:"90vh", overflowY:"auto" }}>
+          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:460, maxWidth:"100%",width:"100%", border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)", maxHeight:"90vh", overflowY:"auto" }}>
             <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
               <div>
                 <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>{teacherModal.mode==="add"?"Agregar docente":teacherModal.mode==="edit"?"Editar docente":teacherModal.data?.name}</div>
@@ -906,7 +906,7 @@ export default function CoordAcademica() {
       {deleteTeacher && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000, padding:16 }}
           onClick={e=>{ if(e.target===e.currentTarget) setDeleteTeacher(null); }}>
-          <div style={{ background:"var(--bg-surface)", borderRadius:16, padding:24, width:380, border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)" }}>
+          <div style={{ background:"var(--bg-surface)", borderRadius:16, padding:24, width:"min(380px,100vw - 32px)", border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)" }}>
             <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)", marginBottom:6 }}>Eliminar docente</div>
             <div style={{ fontSize:12, color:"var(--text-secondary)", marginBottom:14 }}>{deleteTeacher.name} · {deleteTeacher.levels.join(", ")}</div>
             <div style={{ background:B.redDim, borderRadius:9, padding:"10px 14px", marginBottom:16, fontSize:12, color:B.red }}>

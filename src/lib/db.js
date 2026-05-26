@@ -35,7 +35,7 @@ export async function getStudents({ limit = 50, page = 0, search = '', level = '
   if (level)  query = query.eq('level', level);
 
   const { data, error, count } = await query;
-  if (error) { console.warn('[db]', error); return { rows: [], total: 0 }; }
+  if (error) { import.meta.env.DEV && console.warn('[db]', error); return { rows: [], total: 0 }; }
 
   let results = data || [];
 
@@ -67,7 +67,7 @@ export async function getStudent(studentId) {
     `)
     .eq('id', studentId)
     .single();
-  if (error) { console.error('getStudent:', error); return null; }
+  if (error) { import.meta.env.DEV && console.error('getStudent:', error); return null; }
   return data;
 }
 
@@ -102,7 +102,7 @@ export async function getPayments({ limit = 50, page = 0, status = '', search = 
   if (status) query = query.eq('status', status);
 
   const { data, error, count } = await query;
-  if (error) { console.warn('[db]', error); return { rows: [], total: 0 }; }
+  if (error) { import.meta.env.DEV && console.warn('[db]', error); return { rows: [], total: 0 }; }
 
   let results = data || [];
   if (search) {
@@ -183,7 +183,7 @@ export async function getGroups({ programId = '', level = '' } = {}) {
   if (level)     query = query.eq('level', level);
 
   const { data, error } = await query;
-  if (error) { console.warn('[db]', error); return []; }
+  if (error) { import.meta.env.DEV && console.warn('[db]', error); return []; }
   return data || [];
 }
 
@@ -211,7 +211,7 @@ export async function getStaff({ active = true, all = false } = {}) {
   }
 
   const { data, error } = await query;
-  if (error) { console.error('getStaff error:', error.message, error.code); return []; }
+  if (error) { import.meta.env.DEV && console.error('getStaff error:', error.message, error.code); return []; }
   return data || [];
 }
 
@@ -231,7 +231,7 @@ export async function getLeads({ search = '', stage = '', limit = 50, page = 0 }
   if (stage) query = query.eq('stage', stage);
 
   const { data, error, count } = await query;
-  if (error) { console.warn('[db]', error); return { rows: [], total: 0 }; }
+  if (error) { import.meta.env.DEV && console.warn('[db]', error); return { rows: [], total: 0 }; }
 
   let results = data || [];
   if (search) {
@@ -293,7 +293,7 @@ export async function getPrograms() {
     .from('programs')
     .select('*')
     .order('id');
-  if (error) { console.error('getPrograms:', error); return []; }
+  if (error) { import.meta.env.DEV && console.error('getPrograms:', error); return []; }
   return data || [];
 }
 
@@ -362,7 +362,7 @@ export async function getAttendance(groupId, dateFrom) {
     .eq('group_id', groupId)
     .gte('class_date', dateFrom || '2025-01-01')
     .order('class_date', { ascending: false });
-  if (error) { console.error('getAttendance:', error); return []; }
+  if (error) { import.meta.env.DEV && console.error('getAttendance:', error); return []; }
   return data || [];
 }
 
@@ -376,7 +376,7 @@ export async function getAuditLog({ limit = 50 } = {}) {
     `)
     .limit(limit)
     .order('created_at', { ascending: false });
-  if (error) { console.error('getAuditLog:', error); return []; }
+  if (error) { import.meta.env.DEV && console.error('getAuditLog:', error); return []; }
   return data || [];
 }
 

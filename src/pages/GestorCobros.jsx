@@ -630,7 +630,7 @@ export default function GestorCobros() {
       {rejectModal && (
         <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}
           onClick={e=>{ if(e.target===e.currentTarget) setRejectModal(null); }}>
-          <div style={{ background:B.white, borderRadius:16, padding:24, width:380, border:`1px solid ${B.border}`, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
+          <div style={{ background:B.white, borderRadius:16, padding:24, width:"min(380px,100vw - 32px)", border:`1px solid ${B.border}`, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:4 }}>
               <div style={{ fontSize:15, fontWeight:700, color:B.text }}>Rechazar transferencia</div>
               <button onClick={()=>setRejectModal(null)} style={{ background:"none", border:"none", cursor:"pointer", color:B.textSec, fontSize:18 }} aria-label="Cerrar">✕</button>
@@ -664,7 +664,7 @@ export default function GestorCobros() {
       {/* MODAL: Ver comprobante */}
       {proofModal && (
         <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}>
-          <div style={{ background:B.white, borderRadius:16, padding:24, width:380, border:`1px solid ${B.border}` }}>
+          <div style={{ background:B.white, borderRadius:16, padding:24, width:"min(380px,100vw - 32px)", border:`1px solid ${B.border}` }}>
             <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Comprobante de transferencia</div>
             <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>{proofModal.student} · ${proofModal.amount} · {proofModal.code}</div>
             {proofModal?.proofUrl ? (

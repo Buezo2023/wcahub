@@ -158,7 +158,7 @@ export function PagosSection({ showToast, initialTab }) {
       {regModal&&(
         <div style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
           onClick={e=>{if(e.target===e.currentTarget)setRegModal(false);}}>
-          <div style={{background:"var(--bg-surface)",borderRadius:18,padding:24,width:420,maxWidth:"100%",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)",maxHeight:"90vh",overflowY:"auto"}}>
+          <div style={{background:"var(--bg-surface)",borderRadius:18,padding:24,width:420,maxWidth:"100%",width:"100%",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)",maxHeight:"90vh",overflowY:"auto"}}>
             <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:18}}>Registrar pago</div>
             <div style={{marginBottom:12}}>
               <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Estudiante *</div>

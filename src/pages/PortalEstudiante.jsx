@@ -637,15 +637,7 @@ export default function PortalEstudiante(){
 
   return(
     <div style={{display:"flex",flexDirection:isMobile?"column":"row",minHeight:"100vh",background:"var(--bg-page)",fontFamily:"'DM Sans','Segoe UI',sans-serif"}}>
-      <style>{`
-        @media (max-width:400px) {
-          .wca-sidebar { display: none !important; }
-          .wca-mobile-only { display: flex !important; }
-        }
-        @media (min-width:401px) {
-          .wca-mobile-only { display: none !important; }
-        }
-      `}</style>
+      <style dangerouslySetInnerHTML={{__html:"@media(max-width:400px){.wca-sidebar{display:none!important}.wca-mobile-only{display:flex!important}}@media(min-width:401px){.wca-mobile-only{display:none!important}}"}}/>
 
       {/* SIDEBAR */}
       <aside style={{width:isMobile?260:200,background:P,display:"flex",flexDirection:"column",padding:"0 0 16px",flexShrink:0,minHeight:"100vh",position:isMobile?"fixed":"sticky",top:0,left:0,bottom:0,zIndex:isMobile?9990:1,transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none",transition:"transform .25s ease",overflowY:"auto",maxWidth:isMobile?"80vw":"none"}}>
@@ -749,7 +741,7 @@ export default function PortalEstudiante(){
         {/* Enroll success toast */}
         {showEnrollSuccess&&(
           <div style={{position:"fixed",top:20,right:90,background:G,color:"#fff",padding:"12px 20px",borderRadius:12,fontSize:13,fontWeight:600,zIndex:9998,boxShadow:"0 8px 24px rgba(5,150,105,.3)",display:"flex",alignItems:"center",gap:8,animation:"slideIn .3s ease"}}>
-            <style>{`@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}`}</style>
+            <style dangerouslySetInnerHTML={{__html:"@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}"}}></style>
             <i className="ti ti-check" style={{fontSize:16}} aria-hidden="true"/>
             ¡Inscripción confirmada en {ALL_PROGRAMS.find(p=>p.id===showEnrollSuccess)?.name}!
           </div>
