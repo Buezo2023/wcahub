@@ -7,6 +7,7 @@ import { supabase } from './lib/supabase.js';
 import { ErrorBoundary } from './lib/ErrorBoundary.jsx';
 import { ConnectionGuard } from './lib/ConnectionGuard.jsx';
 import { ThemeProvider, ThemeToggle, useTheme } from './ThemeContext.jsx';
+import { SessionProvider } from './lib/SessionContext.jsx';
 
 const Landing         = lazy(() => import('./pages/Landing.jsx'));
 const PortalEstudiante= lazy(() => import('./pages/PortalEstudiante.jsx'));
