@@ -725,7 +725,12 @@ export default function Landing() {
             {[
               { title:"Programas", links:["Inglés Completo","VA General","Marketing Digital","Legal Assistant","Cuidador Remoto"] },
               { title:"Empresa",   links:["Sobre WCA","Instructores","Metodología","B2B / Empresas","Blog"] },
-              { title:"Soporte",   links:["Centro de ayuda","Política de privacidad","Términos de uso","Contacto"] },
+              { title:"Soporte", links:[
+        {label:"Centro de ayuda",  href:"mailto:info@worldconnectacademy.com"},
+        {label:"Política de privacidad", href:"/privacidad"},
+        {label:"Términos de uso",  href:"/terminos"},
+        {label:"Contacto",         href:"mailto:info@worldconnectacademy.com"},
+      ]},
             ].map((col,i)=>(
               <div key={i}>
                 <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,.4)", letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>{col.title}</div>
@@ -794,7 +799,7 @@ export default function Landing() {
                 Al continuar aceptás los{" "}
                 <span style={{ color:T.teal, cursor:"pointer" }}>Términos de uso</span>
                 {" "}y la{" "}
-                <span style={{ color:T.teal, cursor:"pointer" }}>Política de privacidad</span>
+                <a href="/privacidad" style={{ color:"#ffbb23", cursor:"pointer", textDecoration:"underline", fontSize:"inherit" }}>Política de privacidad</a>
                 {" "}de WCA Academy.
               </p>
             </div>

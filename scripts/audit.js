@@ -4,7 +4,7 @@
 // Detecta patrones problemáticos conocidos antes de cada commit.
 // Ejecutar: node scripts/audit.js
 // ─────────────────────────────────────────────────────────────────
-import { readFileSync, readdirSync, statSync } from "fs";
+import { readFileSync, readdirSync, statSync, existsSync } from "fs";
 import { join, relative } from "path";
 
 const ROOT  = process.cwd();
@@ -232,6 +232,19 @@ if (fnCount > 12)
   err("api/", `${fnCount} funciones serverless — Vercel Hobby tiene límite de 12. Consolidar endpoints`);
 else if (fnCount >= 11)
   warn("api/", `${fnCount}/12 funciones serverless — cerca del límite de Vercel Hobby`);
+
+
+// ── P4: SW version must not be hardcoded ─────────────────────
+const swContent = read(join(ROOT, 'public/sw.js'));
+if (/wca-hub-v[0-9]/.test(swContent) && !swContent.includes('__WCA_BUILD_ID__')) {
+  warn('public/sw.js', 'Cache version hardcodeada — usar self.__WCA_BUILD_ID__ para auto-versionado en cada deploy');
+}
+
+// ── P5: Privacy/Terms pages exist ─────────────────────────────
+const privacyExists = existsSync(join(ROOT, 'src/pages/PrivacyPolicy.jsx'));
+const termsExists   = existsSync(join(ROOT, 'src/pages/TermsOfUse.jsx'));
+if (!privacyExists) warn('src/pages/', 'Falta PrivacyPolicy.jsx — requerida por GDPR/LGPD');
+if (!termsExists)   warn('src/pages/', 'Falta TermsOfUse.jsx — requerida para claridad legal');
 
 // ── P2: Duplicate meta tags in index.html ────────────────────
 const html = read(join(ROOT, "index.html"));

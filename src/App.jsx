@@ -8,6 +8,7 @@ import { ErrorBoundary } from './lib/ErrorBoundary.jsx';
 import { ConnectionGuard } from './lib/ConnectionGuard.jsx';
 import { ThemeProvider, ThemeToggle, useTheme } from './ThemeContext.jsx';
 import { SessionProvider, useSession } from './lib/SessionContext.jsx';
+import { CookieBanner } from './lib/CookieBanner.jsx';
 
 const Landing         = lazy(() => import('./pages/Landing.jsx'));
 const PortalEstudiante= lazy(() => import('./pages/PortalEstudiante.jsx'));
@@ -22,6 +23,8 @@ const BIDashboard     = lazy(() => import('./pages/BIDashboard.jsx'));
 const AuthCallback    = lazy(() => import('./pages/AuthCallback.jsx'));
 const PlatformPreview = lazy(() => import('./pages/PlatformPreview.jsx'));
 const PlacementTestPublic = lazy(() => import('./pages/PlacementTest.jsx'));
+const PrivacyPolicy        = lazy(() => import('./pages/PrivacyPolicy.jsx'));
+const TermsOfUse           = lazy(() => import('./pages/TermsOfUse.jsx'));
 
 // ── Role → portal map ────────────────────────────────────────────
 const ROLE_PORTALS = {

@@ -51,6 +51,11 @@ export function SessionProvider({ children }) {
 
   const signOut = async () => {
     await supabase.auth.signOut();
+    // Clear app-specific localStorage keys on logout
+    try {
+      localStorage.removeItem('wca_pending_progress');
+      // Keep wca-theme (user preference, not sensitive)
+    } catch(e) {}
     setProfile(null);
     setSession(null);
   };
