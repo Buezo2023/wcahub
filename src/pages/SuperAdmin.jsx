@@ -650,13 +650,7 @@ export default function SuperAdmin() {
 
           {/* ── BI ── */}
                     {(view==="academia") && <>
-            {/* Sub-navigation: Programas | Precios | Ciclo | Festivos */}
-            <div style={{ display:"flex", gap:6, marginBottom:16 }}>
-              {[["progs","Programas"],["prices","Precios"],["cycle","Ciclo"],["holidays","Festivos"]].map(([id,label])=>(
-                <button key={id} onClick={()=>setSubView(id)} style={{ padding:"7px 16px", borderRadius:9, border:"none", fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit",
-                  background: subView===id ? P : "var(--bg-surface-subtle)", color: subView===id ? "#fff" : "var(--text-secondary)" }}>{label}</button>
-              ))}
-            </div>
+
             {(subView==="progs") && <>
             <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:14 }}>
               <BtnPrimary onClick={openAddProg} style={{ display:"flex", alignItems:"center", gap:7 }}>
