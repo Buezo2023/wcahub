@@ -77,7 +77,7 @@ create table programs (
   price_monthly numeric(8,2),
   price_quarterly numeric(8,2),
   requires     program_id references programs(id),
-  active       boolean default true,
+  active       boolean default true,  -- si false no aparece en opciones de matrícula
   created_at   timestamptz default now()
 );
 
@@ -148,7 +148,8 @@ create table enrollments (
   exam_score   numeric(5,2),
   suspended_at timestamptz,
   suspended_reason text,
-  price_locked numeric(8,2),    -- precio al momento de matricularse
+  price_locked       numeric(8,2),    -- precio al momento de matricularse
+  next_payment_date  date,              -- próximo pago según ciclo de cobro
   unique(student_id, program_id)
 );
 
@@ -280,6 +281,52 @@ create table holidays (
   name         text not null,
   country      text default 'HN',
   created_at   timestamptz default now()
+);
+
+
+-- ─── BANK ACCOUNTS ────────────────────────────────────────────
+create table if not exists bank_accounts (
+  id         uuid default gen_random_uuid() primary key,
+  nombre     text not null,
+  banco      text,
+  cuenta     text,
+  titular    text,
+  tipo       text default 'ahorro',
+  active     boolean default true,
+  created_at timestamptz default now()
+);
+
+-- ─── APP CONFIG ───────────────────────────────────────────────
+create table if not exists app_config (
+  key        text primary key,
+  value      jsonb,
+  updated_at timestamptz default now()
+);
+
+-- ─── B2B COMPANIES ────────────────────────────────────────────
+create table if not exists b2b_companies (
+  id            uuid default gen_random_uuid() primary key,
+  name          text not null,
+  contact_name  text,
+  contact_email text,
+  contact_phone text,
+  seats_paid    int default 1,
+  discount_pct  numeric(5,2) default 0,
+  notes         text,
+  active        boolean default true,
+  created_at    timestamptz default now()
+);
+
+-- ─── NOTIFICATIONS ────────────────────────────────────────────
+create table if not exists notifications (
+  id         uuid default gen_random_uuid() primary key,
+  user_id    uuid references profiles(id) on delete cascade,
+  type       text default 'info',
+  title      text not null,
+  body       text,
+  link       text,
+  read       boolean default false,
+  created_at timestamptz default now()
 );
 
 -- ─── ÍNDICES para performance ──────────────────────────────────

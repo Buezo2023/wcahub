@@ -187,7 +187,7 @@ export default function SuperAdmin() {
         });
         if (res.ok) {
           const json = await res.json();
-          setRealStats(json);
+          setRealStats(json.data || json);
         }
       } catch(e) { console.error("Stats:", e); }
       finally { setStatsLoading(false); }

@@ -15,13 +15,13 @@ export function AtRiskSection({ showToast }) {
     setLoading(true);
     // Load enrollments with student_progress to compute risk
     const {data}=await supabase.from("enrollments")
-      .select("id,program_id,current_unit,student:students(id,level,scholarship,profile:profiles(full_name,email,phone)),groups(level,schedule),student_progress(exam_score,passed)")
+      .select("id,program_id,current_unit,student:students(id,level,scholarship,profile:profiles(full_name,email,phone)),groups(level,schedule),student_progress(score,completed)")
       .eq("status","active");
     if(data){
       const mapped = data.map(e=>{
-        const scores = e.student_progress?.map(p=>p.exam_score||0).filter(s=>s>0);
+        const scores = e.student_progress?.map(p=>p.score||0).filter(s=>s>0);
         const avg    = scores?.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : null;
-        const failed = e.student_progress?.filter(p=>!p.passed).length||0;
+        const failed = e.student_progress?.filter(p=>!p.completed).length||0;
         return {
           id: e.id, name: e.student?.profile?.full_name||"—",
           email: e.student?.profile?.email||"—",
