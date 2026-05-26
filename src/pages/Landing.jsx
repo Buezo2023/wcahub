@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { signInWithGoogle, signInWithMicrosoft } from "../lib/supabase.js";
+import { supabase, signInWithGoogle, signInWithMicrosoft } from "../lib/supabase.js";
 
 /* ─── Design direction: "Luxury EdTech Internacional"
    Fondo crema casi-blanco, sidebar de color sólido WCA verde-petróleo,
@@ -99,15 +99,12 @@ export default function Landing() {
   const [stats, setStats] = useState({ students: 0, countries: 20, graduates: 1200 });
 
   useEffect(() => {
-    // Load real student count from Supabase
-    import('../lib/supabase.js').then(({ supabase }) => {
-      supabase.from('profiles')
-        .select('id', { count: 'exact', head: true })
-        .eq('role', 'estudiante')
-        .then(({ count }) => {
-          if (count && count > 0) setStats(s => ({ ...s, students: count }));
-        });
-    });
+    supabase.from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .eq('role', 'estudiante')
+      .then(({ count }) => {
+        if (count && count > 0) setStats(s => ({ ...s, students: count }));
+      }).catch(() => {});
   }, []);
   const [activeProgram, setActiveProgram] = useState("va");
   const [step, setStep] = useState(0);

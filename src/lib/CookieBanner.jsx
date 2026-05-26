@@ -4,14 +4,18 @@
 // Analytics/marketing cookies are optional — currently none used.
 
 import { useState, useEffect } from "react";
-import { useMobile } from "./MobileLayout.jsx";
 
 const CONSENT_KEY = "wca_cookie_consent";
 const CONSENT_VERSION = "1"; // bump when policy changes
 
 export function CookieBanner() {
   const [visible, setVisible] = useState(false);
-  const isMobile = useMobile();
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
   const [showDetails, setShowDetails] = useState(false);
 
   useEffect(() => {
