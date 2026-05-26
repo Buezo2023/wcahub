@@ -253,3 +253,119 @@ CREATE INDEX IF NOT EXISTS idx_notif_user_unread ON public.notifications(user_id
 ALTER TABLE public.b2b_companies
   ADD COLUMN IF NOT EXISTS program_id text,       -- matches programs.id values (en, va, etc.)
   ADD COLUMN IF NOT EXISTS program_name text;      -- cached name for display
+
+-- ─── Migration: profiles XP + preferred_name ─────────────────────
+-- Run AFTER initial schema.sql
+-- Safe to run multiple times (IF NOT EXISTS)
+
+ALTER TABLE profiles
+  ADD COLUMN IF NOT EXISTS total_xp        integer DEFAULT 0 NOT NULL,
+  ADD COLUMN IF NOT EXISTS xp_level        integer DEFAULT 1 NOT NULL,
+  ADD COLUMN IF NOT EXISTS preferred_name  text;
+
+-- RPC: increment_xp
+-- Called by LMSPlayer.jsx when a student completes an activity
+-- Params: p_profile_id uuid, p_amount integer
+CREATE OR REPLACE FUNCTION increment_xp(p_profile_id uuid, p_amount integer)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  UPDATE profiles
+  SET
+    total_xp = COALESCE(total_xp, 0) + p_amount,
+    xp_level = GREATEST(1, FLOOR((COALESCE(total_xp, 0) + p_amount) / 500) + 1)
+  WHERE id = p_profile_id;
+END;
+$$;
+
+-- Grant execute to authenticated users (needed for SECURITY DEFINER to work from client)
+GRANT EXECUTE ON FUNCTION increment_xp(uuid, integer) TO authenticated;
+
+-- ─── Migration: Enable Row Level Security ────────────────────────
+-- Policies already exist in schema.sql — just enable enforcement.
+-- Test each table in staging before running in production.
+
+-- Sensitive tables: enable RLS
+ALTER TABLE profiles     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE students     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE enrollments  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE payments     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE leads        ENABLE ROW LEVEL SECURITY;
+
+-- Additional tables with policies in migrations.sql
+ALTER TABLE groups           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE programs         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE staff            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE teacher_groups   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE attendance       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE student_progress ENABLE ROW LEVEL SECURITY;
+ALTER TABLE audit_log        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bank_accounts    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE b2b_companies    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE certificates     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE student_notes    ENABLE ROW LEVEL SECURITY;
+
+-- ─── MISSING POLICY: profiles own UPDATE ─────────────────────────
+-- profiles_own only covers SELECT. Students need UPDATE for
+-- preferred_name, phone, avatar_url in PortalEstudiante.
+-- Safe: only own row, only non-sensitive columns enforced by app.
+DROP POLICY IF EXISTS "profiles_own_update" ON profiles;
+CREATE POLICY "profiles_own_update" ON profiles
+  FOR UPDATE
+  USING (auth.uid() = id)
+  WITH CHECK (auth.uid() = id);
+
+-- ─── MISSING POLICY: enrollments read for docente ────────────────
+-- PortalDocente reads enrollments (student_id, group_id) to list
+-- students in a group. enrollments_staff covers admin/coordinadora/cobros
+-- but NOT docente. Adding a read-only policy for docente.
+DROP POLICY IF EXISTS "enrollments_docente_read" ON enrollments;
+CREATE POLICY "enrollments_docente_read" ON enrollments
+  FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM teacher_groups tg
+      JOIN staff s ON s.id = tg.staff_id
+      WHERE s.profile_id = auth.uid()
+        AND tg.group_id = enrollments.group_id
+    )
+  );
+
+-- ─── MISSING POLICY: payments read for directivo (BI dashboard) ──
+-- BIDashboard reads payments for revenue charts.
+-- payments_staff covers cobros/admin/super_admin but NOT directivo.
+DROP POLICY IF EXISTS "payments_directivo_read" ON payments;
+CREATE POLICY "payments_directivo_read" ON payments
+  FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM profiles p
+      WHERE p.id = auth.uid()
+        AND p.role IN ('directivo', 'admin', 'super_admin')
+    )
+  );
+
+-- ─── MISSING POLICY: student_progress write for own student ──────
+-- LMSPlayer writes student_progress when completing activities.
+-- progress_staff covers admins/docentes, progress_own covers SELECT.
+-- Students need INSERT/UPDATE on their own progress rows.
+DROP POLICY IF EXISTS "progress_own_write" ON student_progress;
+CREATE POLICY "progress_own_write" ON student_progress
+  FOR ALL
+  USING (
+    EXISTS (
+      SELECT 1 FROM enrollments e
+      JOIN students s ON s.id = e.student_id
+      WHERE e.id = enrollment_id AND s.profile_id = auth.uid()
+    )
+  )
+  WITH CHECK (
+    EXISTS (
+      SELECT 1 FROM enrollments e
+      JOIN students s ON s.id = e.student_id
+      WHERE e.id = enrollment_id AND s.profile_id = auth.uid()
+    )
+  );
