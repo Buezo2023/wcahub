@@ -26,19 +26,33 @@ export class ErrorBoundary extends Component {
           Ocurrió un error inesperado. Tus datos están seguros.
           Intentá recargar la página.
         </div>
-        <button onClick={() => window.location.reload()} style={{
-          padding:"10px 24px", background:"#155266", color:"#fff", border:"none",
-          borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer",
-          fontFamily:"inherit" }}>
-          Recargar página
-        </button>
-        {this.state.error && (
+        <div style={{ display:"flex", gap:8 }}>
+          <button onClick={() => { window.location.href = "/"; }}
+            style={{ padding:"10px 20px", background:"transparent", color:"#155266",
+              border:"1px solid #155266", borderRadius:10, fontSize:13, fontWeight:600,
+              cursor:"pointer", fontFamily:"inherit" }}>
+            Ir al inicio
+          </button>
+          <button onClick={() => window.location.reload()}
+            style={{ padding:"10px 24px", background:"#155266", color:"#fff", border:"none",
+              borderRadius:10, fontSize:13, fontWeight:600, cursor:"pointer",
+              fontFamily:"inherit" }}>
+            Recargar página
+          </button>
+        </div>
+        {this.state.error && import.meta.env.DEV && (
           <pre style={{ fontSize:10, color:"#94a3b8", maxWidth:500, overflow:"auto",
             background:"var(--bg-surface-subtle,#f1f5f9)", padding:12, borderRadius:8,
             marginTop:8 }}>
             {this.state.error.toString()}
           </pre>
         )}
+        <button onClick={() => { this.setState({ hasError: false, error: null }); }}
+          style={{ padding:"8px 20px", background:"transparent", color:"#64748b",
+            border:"1px solid #e2e8f0", borderRadius:8, fontSize:12, cursor:"pointer",
+            fontFamily:"inherit" }}>
+          Volver al inicio
+        </button>
       </div>
     );
   }

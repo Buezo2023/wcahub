@@ -61,12 +61,9 @@ const ALL_PROGRAMS = [
   },
 ];
 
-// ─── THIS STUDENT'S ENROLLMENTS ──────────────────────────────────
-// María está inscrita en Inglés (activo, B1) + VA General (activo, U6)
-// VA completado → puede hacer especializaciones
-// ENROLLMENTS: use realEnrollments state (loaded from Supabase)
-
-const COMPLETED_PREREQS = {};  // computed from real enrollments // VA General completado → puede hacer especializaciones
+// ─── ENROLLMENTS ────────────────────────────────────────────────
+// Loaded from Supabase after auth — see loadStudentData()
+const COMPLETED_PREREQS = {}; // computed from realEnrollments after load
 
 // ─── UNITS per program ────────────────────────────────────────────
 // PROGRAM_UNITS uses imported UNITS data
@@ -516,7 +513,7 @@ export default function PortalEstudiante(){
   const [activeProg, setActiveProg] = useState(null) // set after enrollments load; // current program in practice/exam
   const isMobile = useMobile();
   const [sideOpen, setSideOpen] = useState(false);
-  const [enrolled,   setEnrolled]   = useState(Object.keys(ENROLLMENTS));
+  const [enrolled,   setEnrolled]   = useState([]); // populated from realEnrollments after load
 
   useEffect(() => {
     // Auth state listener — handles token expiry
