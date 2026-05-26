@@ -237,6 +237,11 @@ export default function SuperAdmin() {
     };
     loadStaff();
 
+    // Load banks from Supabase
+    supabase.from("bank_accounts").select("*").order("created_at").then(({ data }) => {
+      if (data) setBanks(data);
+    });
+
     getPrograms().then(data => {
       if (data.length > 0) {
         setPrograms(data.map(p => ({
@@ -273,6 +278,9 @@ export default function SuperAdmin() {
   const [holidays,   setHolidays]   = useState([]);
   const [cycleLevels, setCycleLevels] = useState([]);
   const [xpVals,     setXpVals]     = useState(Object.fromEntries(XP_ACTIONS.map(a=>[a.key,a.xp])));
+  const [banks,      setBanks]      = useState([]);
+  const [bankForm,   setBankForm]   = useState({nombre:"",banco:"",cuenta:"",titular:"",tipo:"ahorro"});
+  const [bankSaving, setBankSaving] = useState(false);
   const [leaderPct,  setLeaderPct]  = useState(15);
   const [newHoliday, setNewHoliday] = useState({ date:"", name:"", affects:true });
   const [editPrice,  setEditPrice]  = useState(null);
@@ -1086,35 +1094,60 @@ export default function SuperAdmin() {
           {/* ── BANKS ── */}
           {view==="contab"  && subView==="banks" && (
             <div style={{ maxWidth:580 }}>
-              {[{name:"BAC Credomatic",acc:"0123-4567-8901",type:"Corriente",holder:"WCA Academy S.A.",active:true},{name:"BI Honduras",acc:"9876-5432-1098",type:"Ahorro",holder:"WCA Academy S.A.",active:true},{name:"Ficohsa",acc:"4455-6677-8899",type:"Corriente",holder:"WCA Academy S.A.",active:false}].map((b,i)=>(
-                <div key={i} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, marginBottom:10, display:"flex", alignItems:"center", gap:14, boxShadow:"var(--shadow-sm)", opacity:b.active?1:.6 }}>
+              {/* Bank list from Supabase */}
+              {banks.length === 0 && <div style={{ color:"var(--text-secondary)", fontSize:13, marginBottom:12 }}>No hay cuentas configuradas. Agregá la primera abajo.</div>}
+              {banks.map((b)=>(
+                <div key={b.id} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, marginBottom:10, display:"flex", alignItems:"center", gap:14, boxShadow:"var(--shadow-sm)", opacity:b.active?1:.6 }}>
                   <div style={{ width:42, height:42, borderRadius:10, background:PD, display:"flex", alignItems:"center", justifyContent:"center" }}>
                     <i className="ti ti-building-bank" style={{ fontSize:22, color:P }} aria-hidden="true"/>
                   </div>
                   <div style={{ flex:1 }}>
-                    <div style={{ fontSize:14, fontWeight:600, color:"var(--text-primary)" }}>{b.name}</div>
-                    <div style={{ fontSize:12, color:"var(--text-secondary)", marginTop:2 }}>{b.type} · {b.acc}</div>
+                    <div style={{ fontSize:14, fontWeight:600, color:"var(--text-primary)" }}>{b.nombre}</div>
+                    <div style={{ fontSize:12, color:"var(--text-secondary)", marginTop:2 }}>{b.banco || b.tipo} · {b.cuenta}</div>
+                    {b.titular && <div style={{ fontSize:11, color:"var(--text-tertiary)", marginTop:1 }}>{b.titular}</div>}
                   </div>
                   <Badge text={b.active?"Activo":"Inactivo"} bg={b.active?GD:"var(--bg-surface-subtle)"} color={b.active?"#065f46":"var(--text-secondary)"}/>
                   <button onClick={async()=>{
-  const newState = !b.active;
-  await supabase.from("bank_accounts").update({active:newState}).eq("id",b.id);
-  setBanks(prev=>prev.map(x=>x.id===b.id?{...x,active:newState}:x));
-  showToast(newState ? "Banco activado" : "Banco desactivado");
-}} style={{ fontSize:12, padding:"7px 12px", background:b.active?RD:GD, color:b.active?R:G, border:"none", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>{b.active?"Desactivar":"Activar"}</button>
+                    const newState = !b.active;
+                    const { error } = await supabase.from("bank_accounts").update({ active: newState }).eq("id", b.id);
+                    if (error) { showToast("Error: " + error.message, R); return; }
+                    setBanks(prev => prev.map(x => x.id === b.id ? { ...x, active: newState } : x));
+                    showToast(newState ? "Banco activado" : "Banco desactivado");
+                  }} style={{ fontSize:12, padding:"7px 12px", background:b.active?RD:GD, color:b.active?R:G, border:"none", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>{b.active?"Desactivar":"Activar"}</button>
                 </div>
               ))}
+              {/* Add bank form — controlled state */}
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
-                <SectionTitle>Agregar banco</SectionTitle>
-                {["Nombre del banco","Número de cuenta","Titular"].map(l=><Field key={l} label={l}><Input value="" onChange={()=>{}} placeholder=""/></Field>)}
+                <SectionTitle>Agregar cuenta bancaria</SectionTitle>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
+                  {[["Nombre cuenta *","nombre"],["Banco","banco"],["Número de cuenta *","cuenta"],["Titular","titular"]].map(([label, key]) => (
+                    <Field key={key} label={label}>
+                      <Input value={bankForm[key]} onChange={v => setBankForm(f => ({...f, [key]: v}))} placeholder=""/>
+                    </Field>
+                  ))}
+                </div>
+                <Field label="Tipo">
+                  <select value={bankForm.tipo} onChange={e => setBankForm(f => ({...f, tipo: e.target.value}))}
+                    style={{ width:"100%", padding:"9px 12px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit", marginBottom:12 }}>
+                    <option value="ahorro">Ahorro</option>
+                    <option value="corriente">Corriente</option>
+                    <option value="digital">Digital / PayPal</option>
+                  </select>
+                </Field>
                 <BtnPrimary onClick={async()=>{
-                  const inputs = document.querySelectorAll("[data-bank]");
-                  const [nombre, cuenta, titular] = [...inputs].map(i=>i.value);
-                  if(!nombre||!cuenta) return showToast("Nombre y cuenta son requeridos",R);
-                  try{ const {data:{session:bs}} = await supabase.auth.getSession(); await supabase.from("audit_log").insert({actor_id:bs?.user?.id||null,action:"added_bank",entity:"bank",metadata:{nombre,cuenta,titular}}); }catch(_){}
-                  showToast("Banco agregado correctamente");
-                  inputs.forEach(i=>i.value="");
-                }} style={{ width:"100%", marginTop:4 }}>Agregar banco</BtnPrimary>
+                  if (!bankForm.nombre || !bankForm.cuenta) return showToast("Nombre y cuenta son requeridos", R);
+                  setBankSaving(true);
+                  try {
+                    const { data: newBank, error } = await supabase.from("bank_accounts")
+                      .insert({ nombre: bankForm.nombre, banco: bankForm.banco, cuenta: bankForm.cuenta, titular: bankForm.titular, tipo: bankForm.tipo, active: true })
+                      .select().single();
+                    if (error) throw error;
+                    setBanks(prev => [...prev, newBank]);
+                    setBankForm({ nombre:"", banco:"", cuenta:"", titular:"", tipo:"ahorro" });
+                    showToast("✓ Cuenta bancaria agregada");
+                  } catch(e) { showToast("Error: " + e.message, R); }
+                  finally { setBankSaving(false); }
+                }} disabled={bankSaving} style={{ width:"100%", marginTop:4 }}>{bankSaving ? "Guardando..." : "Agregar cuenta"}</BtnPrimary>
               </div>
             </div>
           )}
