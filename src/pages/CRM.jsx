@@ -249,7 +249,7 @@ function LeadPanel({ lead, onClose, onStageChange, onConvert, onLost }) {
         {lead.activity.map((a,i)=>(
           <div key={i} style={{ display:"flex", gap:8, paddingBottom:12, position:"relative" }}>
             {i<lead.activity.length-1 && <div style={{ position:"absolute", left:11, top:22, bottom:0, width:1.5, background:"var(--bg-surface-subtle)" }}/>}
-            <div style={{ width:22, height:22, borderRadius:"50%", background:"var(--bg-surface-subtle)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, flexShrink:0, zIndex:"var(--z-base)" }}>{ACT_ICON(a.type)}</div>
+            <div style={{ width:22, height:22, borderRadius:"50%", background:"var(--bg-surface-subtle)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, flexShrink:0, zIndex:1 }}>{ACT_ICON(a.type)}</div>
             <div style={{ flex:1 }}>
               <div style={{ fontSize:12, color:"var(--text-secondary)", lineHeight:1.5 }}>{a.text}</div>
               <div style={{ fontSize:11, color:"var(--text-tertiary)", marginTop:2 }}>{a.time}</div>
@@ -268,7 +268,7 @@ function NewLeadModal({ onSave, onClose }) {
   const valid = form.name && form.email;
 
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(15,23,42,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-dropdown)", padding:16 }}
+    <div style={{ position:"fixed", inset:0, background:"rgba(15,23,42,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:30, padding:16 }}
       onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
       <div style={{ background:"var(--bg-surface)", borderRadius:20, padding:28, width:480, maxWidth:"100%", boxShadow:"0 24px 60px rgba(0,0,0,.2)", maxHeight:"90vh", overflowY:"auto" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:20 }}>
@@ -412,7 +412,7 @@ function PlacementTestModal({ lead, onClose, onSave }) {
   const P = "#155266";
 
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-modal)", padding:16 }}
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, padding:16 }}
       onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
       <div style={{ background:"var(--bg-surface)", borderRadius:20, padding:28, width:520, maxWidth:"100%", maxHeight:"90vh", overflowY:"auto", boxShadow:"0 24px 60px rgba(0,0,0,.2)" }}>
 
@@ -694,7 +694,7 @@ export default function CRM() {
           Cerrar sesión
         </button>
       </aside>
-      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:"var(--z-overlay)",background:"rgba(0,0,0,.4)"}}/>}
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:40,background:"rgba(0,0,0,.4)"}}/>}
 
 
       {/* MAIN */}
@@ -986,12 +986,12 @@ export default function CRM() {
 
       {/* ── TOAST ── */}
       {toast && (
-        <div style={{ position:"fixed", top:20, right:90, background:toast.color, color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:"var(--z-modal)", boxShadow:"0 6px 20px rgba(0,0,0,.2)", display:"flex", gap:8, alignItems:"center", fontFamily:"'DM Sans','Segoe UI',sans-serif", animation:"slideIn .3s ease" }}>
+        <div style={{ position:"fixed", top:20, right:90, background:toast.color, color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:50, boxShadow:"0 6px 20px rgba(0,0,0,.2)", display:"flex", gap:8, alignItems:"center", fontFamily:"'DM Sans','Segoe UI',sans-serif", animation:"slideIn .3s ease" }}>
           <style>{`@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}`}</style>
           {toast.msg}
         </div>
       )}
-      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:"var(--z-overlay)",width:50,height:50,borderRadius:"50%",background:P,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:40,width:50,height:50,borderRadius:"50%",background:P,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
     {ptLead && (
       <PlacementTestModal

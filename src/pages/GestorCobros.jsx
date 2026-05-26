@@ -279,7 +279,7 @@ export default function GestorCobros() {
           Cerrar sesión
         </button>
       </aside>
-      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:"var(--z-overlay)",background:"rgba(0,0,0,.4)"}}/>}
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:40,background:"rgba(0,0,0,.4)"}}/>}
 
 
       {/* MAIN */}
@@ -633,7 +633,7 @@ export default function GestorCobros() {
 
       {/* MODAL: Rechazar transferencia */}
       {rejectModal && (
-        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-sticky)", borderRadius:16 }}
+        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:10, borderRadius:16 }}
           onClick={e=>{ if(e.target===e.currentTarget) setRejectModal(null); }}>
           <div style={{ background:B.white, borderRadius:16, padding:24, width:"min(380px,100vw - 32px)", border:`1px solid ${B.border}`, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:4 }}>
@@ -668,7 +668,7 @@ export default function GestorCobros() {
 
       {/* MODAL: Ver comprobante */}
       {proofModal && (
-        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-sticky)", borderRadius:16 }}>
+        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:10, borderRadius:16 }}>
           <div style={{ background:B.white, borderRadius:16, padding:24, width:"min(380px,100vw - 32px)", border:`1px solid ${B.border}` }}>
             <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Comprobante de transferencia</div>
             <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>{proofModal.student} · ${proofModal.amount} · {proofModal.code}</div>
@@ -707,7 +707,7 @@ export default function GestorCobros() {
 
       {/* MODAL: Anular pago */}
       {anulaModal && (
-        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-sticky)", borderRadius:16 }}>
+        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:10, borderRadius:16 }}>
           <div style={{ background:B.white, borderRadius:16, padding:24, width:380 }}>
             <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Anular pago</div>
             <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>{anulaModal.student} · ${anulaModal.amount} — esta acción queda en el log de auditoría.</div>
@@ -720,7 +720,7 @@ export default function GestorCobros() {
           </div>
         </div>
       )}
-      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:"var(--z-overlay)",width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:40,width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
   );
 }

@@ -15,7 +15,7 @@ export function ConnectionGuard() {
 
   return (
     <div style={{
-      position:"fixed", top:0, left:0, right:0, zIndex:"var(--z-cookie)",
+      position:"fixed", top:0, left:0, right:0, zIndex:70,
       background:"#dc2626", color:"#fff", padding:"8px 16px",
       fontSize:12, fontWeight:600, textAlign:"center",
       fontFamily:"'DM Sans','Segoe UI',sans-serif",

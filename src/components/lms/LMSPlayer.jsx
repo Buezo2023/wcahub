@@ -208,7 +208,7 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
       {xpAnim && (
         <div style={{
           position:"fixed", top:"20%", left:"50%", transform:"translateX(-50%)",
-          zIndex:"var(--z-toast)", pointerEvents:"none",
+          zIndex:60, pointerEvents:"none",
           animation:"xpPop .4s cubic-bezier(.17,.67,.35,1.3), xpFade 2s 0.4s forwards",
           background: xpAnim.bonus ? A : G,
           color:"#fff", borderRadius:20, padding:"10px 24px",
@@ -229,7 +229,7 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
           background:"var(--bg-surface)", borderRight:"1px solid var(--border)",
           overflowY:"auto", display:"flex", flexDirection:"column",
           position: isMobile ? "fixed" : "relative",
-          ...(isMobile ? { inset:0, zIndex:"var(--z-sidebar)" } : {}),
+          ...(isMobile ? { inset:0, zIndex:20 } : {}),
         }}>
           {/* XP header */}
           <div style={{ padding:"16px 14px", background: P, color:"#fff", flexShrink:0 }}>

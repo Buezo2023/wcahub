@@ -164,7 +164,7 @@ export function LeadsSection({ showToast }) {
 
       {/* Lead detail panel */}
       {sel&&(
-        <div style={{position:"fixed",top:80,right:20,zIndex:"var(--z-overlay)",width:280,background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:16,boxShadow:"0 8px 32px rgba(0,0,0,.15)",maxHeight:"80vh",overflowY:"auto"}}>
+        <div style={{position:"fixed",top:80,right:20,zIndex:40,width:280,background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:16,boxShadow:"0 8px 32px rgba(0,0,0,.15)",maxHeight:"80vh",overflowY:"auto"}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:12}}>
             <div style={{fontWeight:700,fontSize:14,color:"var(--text-primary)"}}>{sel.full_name}</div>
             <button onClick={()=>setSel(null)} style={{background:"none",border:"none",cursor:"pointer",fontSize:16,color:"var(--text-tertiary)"}}>✕</button>
@@ -197,7 +197,7 @@ export function LeadsSection({ showToast }) {
 
       {/* Add lead modal */}
       {addModal&&(
-        <div style={{position:"fixed",inset:0,zIndex:"var(--z-modal)",background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
+        <div style={{position:"fixed",inset:0,zIndex:50,background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
           onClick={e=>{if(e.target===e.currentTarget)setAddModal(false);}}>
           <div style={{background:"var(--bg-surface)",borderRadius:16,padding:24,width:"min(400px, calc(100vw - 32px))",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)"}}>
             <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:18}}>Nuevo lead</div>

@@ -140,13 +140,13 @@ export function StudentReport({ student, enrollments, certificates, progressHist
 
       {/* Backdrop */}
       <div onClick={onClose} style={{
-        position: "fixed", inset: 0, zIndex:"var(--z-modal)",
+        position: "fixed", inset: 0, zIndex:50,
         background: "rgba(0,0,0,.6)", backdropFilter: "blur(4px)",
       }} />
 
       {/* Report panel */}
       <div ref={ref} className="wca-report-print" style={{
-        position: "fixed", inset: 0, zIndex:"var(--z-modal)",
+        position: "fixed", inset: 0, zIndex:50,
         overflowY: "auto", padding: "20px 16px 40px",
         fontFamily: "'DM Sans','Segoe UI',sans-serif",
       }}>

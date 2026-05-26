@@ -104,7 +104,7 @@ export function GlobalSearchModal({ search: s }) {
 
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) s.close(); }}
-      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", zIndex:"var(--z-modal)",
+      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", zIndex:50,
                display:"flex", alignItems:"flex-start", justifyContent:"center", padding:"80px 16px 16px" }}>
       <div style={{ background:"var(--bg-surface)", borderRadius:16, width:"100%", maxWidth:560,
                     border:"1px solid var(--border)", boxShadow:"0 24px 60px rgba(0,0,0,.25)",

@@ -23,7 +23,7 @@ export function useConfirm() {
   const ConfirmUI = state ? (
     <div role="dialog" aria-modal="true"
       style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex",
-               alignItems:"center", justifyContent:"center", zIndex:"var(--z-modal)", padding:16 }}
+               alignItems:"center", justifyContent:"center", zIndex:50, padding:16 }}
       onClick={e => { if (e.target === e.currentTarget) handle(false); }}>
       <div style={{ background:"var(--bg-surface)", borderRadius:16, padding:24, width:360, maxWidth:"100%",
                     border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)",

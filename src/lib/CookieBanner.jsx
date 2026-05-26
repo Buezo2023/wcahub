@@ -63,7 +63,7 @@ export function CookieBanner() {
   return (
     <div style={{
       position: "fixed", bottom: 0, left: 0, right: 0,
-      zIndex:"var(--z-toast)",
+      zIndex:60,
       background: "#0f172a",
       borderTop: "1px solid rgba(255,255,255,.12)",
       padding: "16px 20px",

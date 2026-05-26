@@ -698,7 +698,7 @@ export default function PortalEstudiante(){
           Cerrar sesión
         </button>
       </aside>
-      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:"var(--z-overlay)",background:"rgba(0,0,0,.4)"}}/>}
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:40,background:"rgba(0,0,0,.4)"}}/>}
 
 
       {/* MAIN */}
@@ -717,7 +717,7 @@ export default function PortalEstudiante(){
               )}
             </button>
             {showNotifs && (
-              <div style={{position:"absolute",top:44,right:0,width:isMobile?"90vw":320,background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,boxShadow:"0 8px 32px rgba(0,0,0,.15)",zIndex:"var(--z-dropdown)",overflow:"hidden"}}>
+              <div style={{position:"absolute",top:44,right:0,width:isMobile?"90vw":320,background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,boxShadow:"0 8px 32px rgba(0,0,0,.15)",zIndex:30,overflow:"hidden"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 16px",borderBottom:"1px solid var(--border)"}}>
                   <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)"}}>Notificaciones</div>
                   {unread > 0 && <button onClick={markAllRead} style={{fontSize:11,color:P,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Marcar leídas</button>}
@@ -747,7 +747,7 @@ export default function PortalEstudiante(){
 
         {/* Enroll success toast */}
         {showEnrollSuccess&&(
-          <div style={{position:"fixed",top:20,right:90,background:G,color:"#fff",padding:"12px 20px",borderRadius:12,fontSize:13,fontWeight:600,zIndex:"var(--z-modal)",boxShadow:"0 8px 24px rgba(5,150,105,.3)",display:"flex",alignItems:"center",gap:8,animation:"slideIn .3s ease"}}>
+          <div style={{position:"fixed",top:20,right:90,background:G,color:"#fff",padding:"12px 20px",borderRadius:12,fontSize:13,fontWeight:600,zIndex:50,boxShadow:"0 8px 24px rgba(5,150,105,.3)",display:"flex",alignItems:"center",gap:8,animation:"slideIn .3s ease"}}>
             <style dangerouslySetInnerHTML={{__html:"@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}"}}></style>
             <i className="ti ti-check" style={{fontSize:16}} aria-hidden="true"/>
             ¡Inscripción confirmada en {ALL_PROGRAMS.find(p=>p.id===showEnrollSuccess)?.name}!
@@ -1277,7 +1277,7 @@ export default function PortalEstudiante(){
 
         </div>
       </main>
-      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:"var(--z-overlay)",width:50,height:50,borderRadius:"50%",background:P,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:40,width:50,height:50,borderRadius:"50%",background:P,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
       {showReport && (
         <StudentReport
           student={user}

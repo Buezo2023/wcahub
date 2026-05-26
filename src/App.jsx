@@ -244,7 +244,7 @@ function AppInner() {
       {swUpdate && (
         <div style={{
           position:"fixed", bottom:16, left:"50%", transform:"translateX(-50%)",
-          zIndex:"var(--z-toast)", background:"var(--wca-primary)", color:"#fff",
+          zIndex:60, background:"var(--wca-primary)", color:"#fff",
           padding:"10px 20px", borderRadius:12, fontSize:13, fontWeight:600,
           display:"flex", gap:12, alignItems:"center",
           boxShadow:"0 4px 20px rgba(0,0,0,.3)", whiteSpace:"nowrap",

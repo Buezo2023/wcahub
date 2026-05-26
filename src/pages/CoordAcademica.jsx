@@ -221,7 +221,7 @@ export default function CoordAcademica() {
           Cerrar sesión
         </button>
       </aside>
-      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:"var(--z-overlay)",background:"rgba(0,0,0,.4)"}}/>}
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:40,background:"rgba(0,0,0,.4)"}}/>}
 
 
       {/* MAIN */}
@@ -757,7 +757,7 @@ export default function CoordAcademica() {
 
       {/* MODAL: Upgrade beca */}
       {upgradeModal && (
-        <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-sticky)", borderRadius:16 }}>
+        <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:10, borderRadius:16 }}>
           <div style={{ background:B.white, borderRadius:16, padding:24, width:"min(380px,100vw - 32px)", border:`1px solid ${B.border}` }}>
             <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Upgrade a Plan Completo</div>
             <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>{upgradeModal.name} · Beca {upgradeModal.program}</div>
@@ -790,7 +790,7 @@ export default function CoordAcademica() {
 
       {/* ── MODAL: Teacher CRUD ── */}
       {teacherModal && (
-        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-dropdown)", padding:16 }}
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:30, padding:16 }}
           onClick={e=>{ if(e.target===e.currentTarget) setTeacherModal(null); }}>
           <div style={{ background:"var(--bg-surface)", borderRadius:16, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:"min(460px, calc(100vw - 32px))", border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)", maxHeight:"90vh", overflowY:"auto" }}>
             <div style={{ display:"flex", justifyContent:"space-between", marginBottom:16 }}>
@@ -909,7 +909,7 @@ export default function CoordAcademica() {
 
       {/* ── MODAL: Delete teacher confirm ── */}
       {deleteTeacher && (
-        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-modal)", padding:16 }}
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, padding:16 }}
           onClick={e=>{ if(e.target===e.currentTarget) setDeleteTeacher(null); }}>
           <div style={{ background:"var(--bg-surface)", borderRadius:16, padding:24, width:"min(380px,100vw - 32px)", border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)" }}>
             <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)", marginBottom:6 }}>Eliminar docente</div>
@@ -932,7 +932,7 @@ export default function CoordAcademica() {
 
       {/* MODAL: Transfer student */}
       {transferModal && (
-        <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-sticky)", borderRadius:16 }}>
+        <div style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:10, borderRadius:16 }}>
           <div style={{ background:B.white, borderRadius:16, padding:24, width:380 }}>
             <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Mover estudiante a otro grupo</div>
             <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>Grupo actual: {transferModal.level} · {transferModal.time}</div>
@@ -953,7 +953,7 @@ export default function CoordAcademica() {
           </div>
         </div>
       )}
-      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:"var(--z-overlay)",width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:40,width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
   );
 }

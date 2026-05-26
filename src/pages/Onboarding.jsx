@@ -327,7 +327,7 @@ function StepHow({ onNext, onPrev }) {
           {HOW.map((h,i) => (
             <div key={i} onClick={() => setActive(i)} style={{ display:"flex", gap:16, padding:"12px 0", cursor:"pointer", position:"relative" }}>
               {i < HOW.length-1 && <div style={{ position:"absolute", left:18, top:44, bottom:0, width:2, background:i===active?B.primary:B.border, transition:"background .3s" }}/>}
-              <div style={{ width:36, height:36, borderRadius:"50%", background:i===active?h.bg:"#f1f5f9", border:`2px solid ${i===active?h.bg:B.border}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all .25s", zIndex:"var(--z-base)" }}>
+              <div style={{ width:36, height:36, borderRadius:"50%", background:i===active?h.bg:"#f1f5f9", border:`2px solid ${i===active?h.bg:B.border}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all .25s", zIndex:1 }}>
                 <i className={`ti ${h.icon}`} style={{ fontSize:16, color:i===active?"#fff":B.textSec, transition:"color .25s" }} aria-hidden="true" />
               </div>
               <div style={{ flex:1 }}>
@@ -381,7 +381,7 @@ function StepNextSteps({ program, level, onNext, onPrev }) {
               {i < steps.length-1 && (
                 <div style={{ position:"absolute", left:19, top:40, bottom:-16, width:2, background:B.border }} />
               )}
-              <div style={{ width:40, height:40, borderRadius:"50%", background:`${s.color}15`, border:`2px solid ${s.color}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:"var(--z-base)" }}>
+              <div style={{ width:40, height:40, borderRadius:"50%", background:`${s.color}15`, border:`2px solid ${s.color}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:1 }}>
                 <i className={`ti ${s.icon}`} style={{ fontSize:16, color:s.color }} aria-hidden="true" />
               </div>
               <div style={{ flex:1, paddingTop:4 }}>

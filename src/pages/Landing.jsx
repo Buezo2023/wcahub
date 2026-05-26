@@ -151,7 +151,7 @@ export default function Landing() {
       `}</style>
 
       {/* ── NAV ────────────────────────────────────────────────── */}
-      <nav style={{ position:"sticky", top:0, zIndex:"var(--z-sticky)", background:"rgba(250,249,247,.95)", backdropFilter:"blur(12px)", borderBottom:`1px solid ${T.border}`, padding:"0 24px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+      <nav style={{ position:"sticky", top:0, zIndex:10, background:"rgba(250,249,247,.95)", backdropFilter:"blur(12px)", borderBottom:`1px solid ${T.border}`, padding:"0 24px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
           <div style={{ width:36, height:36, borderRadius:8, background:T.teal, display:"flex", alignItems:"center", justifyContent:"center" }}>
             <span style={{ fontSize:16, fontWeight:800, color:T.gold }}>W</span>
@@ -404,7 +404,7 @@ export default function Landing() {
                 {i < howItWorks.length-1 && (
                   <div style={{ position:"absolute", top:28, left:"60%", right:0, height:1, background:`linear-gradient(90deg,${T.gold},transparent)`, opacity:.3 }}/>
                 )}
-                <div style={{ width:56, height:56, borderRadius:"50%", background:T.teal, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px", position:"relative", zIndex:"var(--z-base)" }}>
+                <div style={{ width:56, height:56, borderRadius:"50%", background:T.teal, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px", position:"relative", zIndex:1 }}>
                   <span className="serif" style={{ fontSize:18, color:T.gold }}>{h.n}</span>
                 </div>
                 <div className="serif" style={{ fontSize:16, color:T.ink, marginBottom:8 }}>{h.title}</div>
@@ -780,7 +780,7 @@ export default function Landing() {
       {roleModal && (
         <div
           onClick={e=>{ if(e.target===e.currentTarget) setRoleModal(false); }}
-          style={{ position:"fixed", inset:0, background:"rgba(10,25,35,.7)", backdropFilter:"blur(8px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-modal)", padding:20 }}>
+          style={{ position:"fixed", inset:0, background:"rgba(10,25,35,.7)", backdropFilter:"blur(8px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, padding:20 }}>
           <div style={{ background:"var(--bg-surface)", borderRadius:24, padding:"36px 36px 28px", width:420, maxWidth:"100%", boxShadow:"0 32px 80px rgba(0,0,0,.3)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
 
             {/* Logo + header */}

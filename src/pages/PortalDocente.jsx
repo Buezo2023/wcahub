@@ -242,7 +242,7 @@ export default function TeacherPortal(){
           Cerrar sesión
         </button>
       </aside>
-      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:"var(--z-overlay)",background:"rgba(0,0,0,.4)"}}/>}
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:40,background:"rgba(0,0,0,.4)"}}/>}
 
 
       {/* MAIN */}
@@ -609,7 +609,7 @@ export default function TeacherPortal(){
 
       {/* MODAL Intento extra */}
       {extraModal&&(
-        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:"var(--z-sticky)",borderRadius:16}}>
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:10,borderRadius:16}}>
           <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:16,padding:24,width:360}}>
             <div style={{fontSize:15,fontWeight:700,color:C.textPri,marginBottom:4}}>Habilitar intento extra</div>
             <div style={{fontSize:13,color:C.textSec,marginBottom:16}}>{extraModal.name} — U{extraModal.currentUnit} · 3/3 intentos agotados</div>
@@ -631,11 +631,11 @@ export default function TeacherPortal(){
 
       {/* Toast notification */}
       {toastMsg && (
-        <div style={{ position:"fixed", top:20, right:90, background:toastMsg.color, color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:"var(--z-modal)", boxShadow:"0 6px 20px rgba(0,0,0,.2)", display:"flex", gap:8, alignItems:"center", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+        <div style={{ position:"fixed", top:20, right:90, background:toastMsg.color, color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:50, boxShadow:"0 6px 20px rgba(0,0,0,.2)", display:"flex", gap:8, alignItems:"center", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
           ✓ {toastMsg.msg}
         </div>
       )}
-      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:"var(--z-overlay)",width:50,height:50,borderRadius:"50%",background:C.accent,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:40,width:50,height:50,borderRadius:"50%",background:C.accent,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
   );
 }

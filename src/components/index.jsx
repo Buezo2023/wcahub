@@ -17,7 +17,7 @@ export function Modal({ title, subtitle, onClose, children, width = 460 }) {
   return (
     <div role="dialog" aria-modal="true" style={{ position:"fixed", inset:0,
       background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center",
-      justifyContent:"center", zIndex:"var(--z-modal)", padding:16 }}
+      justifyContent:"center", zIndex:50, padding:16 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={{ background:"var(--bg-surface,#fff)", borderRadius:16, padding:26,
         animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both",

@@ -18,13 +18,14 @@ export class ErrorBoundary extends Component {
         justifyContent:"center", gap:16, fontFamily:"'DM Sans','Segoe UI',sans-serif",
         background:"var(--bg-page,#f8fafc)", padding:24 }}>
         <div style={{ width:56, height:56, borderRadius:"50%", background:"#fef2f2",
-          display:"flex", alignItems:"center", justifyContent:"center", fontSize:28 }}>⚠️</div>
+          display:"flex", alignItems:"center", justifyContent:"center", fontSize:28 }}>
+          <i className="ti ti-alert-triangle" style={{color:"#dc2626",fontSize:28}}/>
+        </div>
         <div style={{ fontSize:16, fontWeight:700, color:"var(--text-primary,#0f172a)" }}>
           Algo salió mal
         </div>
         <div style={{ fontSize:13, color:"var(--text-secondary,#64748b)", textAlign:"center", maxWidth:360, lineHeight:1.6 }}>
           Ocurrió un error inesperado. Tus datos están seguros.
-          Intentá recargar la página.
         </div>
         <div style={{ display:"flex", gap:8 }}>
           <button onClick={() => { window.location.href = "/"; }}
@@ -40,19 +41,14 @@ export class ErrorBoundary extends Component {
             Recargar página
           </button>
         </div>
-        {this.state.error && import.meta.env.DEV && (
+        {/* Show error temporarily so we can diagnose — will remove once stable */}
+        {this.state.error && (
           <pre style={{ fontSize:11, color:"#94a3b8", maxWidth:500, overflow:"auto",
             background:"var(--bg-surface-subtle,#f1f5f9)", padding:12, borderRadius:8,
-            marginTop:8 }}>
+            marginTop:8, wordBreak:"break-word", whiteSpace:"pre-wrap" }}>
             {this.state.error.toString()}
           </pre>
         )}
-        <button onClick={() => { this.setState({ hasError: false, error: null }); }}
-          style={{ padding:"8px 20px", background:"transparent", color:"#64748b",
-            border:"1px solid #e2e8f0", borderRadius:8, fontSize:12, cursor:"pointer",
-            fontFamily:"inherit" }}>
-          Volver al inicio
-        </button>
       </div>
     );
   }

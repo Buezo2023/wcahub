@@ -41,7 +41,7 @@ export function ToastContainer() {
 
   return (
     <div style={{
-      position:"fixed", top:20, right:20, zIndex:"var(--z-toast)",
+      position:"fixed", top:20, right:20, zIndex:60,
       display:"flex", flexDirection:"column", gap:8,
       fontFamily:"'DM Sans','Segoe UI',sans-serif",
       pointerEvents:"none",

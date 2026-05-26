@@ -82,7 +82,7 @@ function AdminPrices() {
   return (
     <div style={{ maxWidth:620 }}>
       {saved && (
-        <div style={{ position:"fixed", top:20, right:90, background:"#059669", color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:"var(--z-modal)", boxShadow:"0 6px 20px rgba(5,150,105,.3)", display:"flex", gap:8 }}>
+        <div style={{ position:"fixed", top:20, right:90, background:"#059669", color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:50, boxShadow:"0 6px 20px rgba(5,150,105,.3)", display:"flex", gap:8 }}>
           ✓ Precio guardado correctamente
         </div>
       )}
@@ -606,7 +606,7 @@ export default function AdminDashboard() {
           Cerrar sesión
         </button>
       </aside>
-      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:"var(--z-overlay)",background:"rgba(0,0,0,.4)"}}/>}
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:40,background:"rgba(0,0,0,.4)"}}/>}
 
 
       {/* ── MAIN ── */}
@@ -761,7 +761,7 @@ export default function AdminDashboard() {
                 {/* Table */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, overflow:"hidden", flex:1, overflowY:"auto" }}>
                   <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:isMobile?12:13 }}>
-                    <thead style={{ position:"sticky", top:0, zIndex:"var(--z-base)" }}>
+                    <thead style={{ position:"sticky", top:0, zIndex:1 }}>
                       <tr style={{ background:B.bg, borderBottom:`1px solid ${B.border}` }}>
                         {["Estudiante","País","Nivel · Grupo","Programa","Tipo","Pago","Estado","Asist.",""].map(h => (
                           <th key={h} style={{ padding:"9px 10px", textAlign:"left", fontSize:11, fontWeight:600, color:B.textSec, letterSpacing:.5, textTransform:"uppercase", whiteSpace:"nowrap" }}>{h}</th>
@@ -961,7 +961,7 @@ export default function AdminDashboard() {
 
       {/* Action toast */}
       {actionDone && (
-        <div style={{ position:"fixed", top:20, right:90, background:"#059669", color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:"var(--z-modal)", boxShadow:"0 6px 20px rgba(5,150,105,.3)", display:"flex", gap:8, animation:"slideIn .3s ease" }}>
+        <div style={{ position:"fixed", top:20, right:90, background:"#059669", color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:50, boxShadow:"0 6px 20px rgba(5,150,105,.3)", display:"flex", gap:8, animation:"slideIn .3s ease" }}>
           <i className="ti ti-check" style={{ fontSize:15 }} aria-hidden="true"/>
           {actionDone}
         </div>
@@ -969,7 +969,7 @@ export default function AdminDashboard() {
 
       {/* Action modal */}
       {actionModal && (
-        <div role="dialog" aria-modal="true" style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-dropdown)", padding:16 }}
+        <div role="dialog" aria-modal="true" style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:30, padding:16 }}
           onClick={e=>{ if(e.target===e.currentTarget) setActionModal(null); }}>
           <div style={{ background:"var(--bg-surface)", borderRadius:16, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:"min(420px,100vw - 32px)", border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)" }}>
             <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)", marginBottom:4 }}>
@@ -1060,7 +1060,7 @@ export default function AdminDashboard() {
       {enrollModal && (
         <div role="dialog" aria-modal="true"
           onClick={e=>{ if(e.target===e.currentTarget) setEnrollModal(false); }}
-          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-dropdown)", padding:16 }}>
+          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:30, padding:16 }}>
           <div style={{ background:"var(--bg-surface)", borderRadius:16, padding:26, width:"min(440px,100vw - 32px)", border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:18 }}>
               <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>Nuevo estudiante</div>
@@ -1101,7 +1101,7 @@ export default function AdminDashboard() {
       {teamsModal && (
         <div role="dialog" aria-modal="true"
           onClick={e=>{ if(e.target===e.currentTarget) setTeamsModal(null); }}
-          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-dropdown)", padding:16 }}>
+          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:30, padding:16 }}>
           <div style={{ background:"var(--bg-surface)", borderRadius:16, padding:24, width:"min(400px,100vw - 32px)", border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:14 }}>
               <div>
@@ -1128,7 +1128,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:"var(--z-overlay)",width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:40,width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
   );
 }
