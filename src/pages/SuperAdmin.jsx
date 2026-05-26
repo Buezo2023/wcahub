@@ -12,7 +12,11 @@ import { AtRiskSection }    from "../sections/AtRiskSection.jsx";
 import { BecasSection }     from "../sections/BecasSection.jsx";
 import { B2BSection }       from "../sections/B2BSection.jsx";
 import { VencidosSection }  from "../sections/VencidosSection.jsx";
-import { BISection }        from "../sections/BISection.jsx";
+import { BISection }              from "../sections/BISection.jsx";
+import { HorariosSection }       from "../sections/HorariosSection.jsx";
+import { ComunicacionesSection } from "../sections/ComunicacionesSection.jsx";
+import { ReportesSection }       from "../sections/ReportesSection.jsx";
+import { RecibosSection }        from "../sections/RecibosSection.jsx";
 import { PagosSection }       from "../sections/PagosSection.jsx";
 import { LeadsSection }        from "../sections/LeadsSection.jsx";
 import { GruposSection }       from "../sections/GruposSection.jsx";
@@ -56,13 +60,14 @@ const XP_ACTIONS = [
 ];
 
 const NAV = [
-  { id:"overview",  icon:"ti-layout-dashboard", label:"Panel general"   },
-  { id:"academia",  icon:"ti-school",            label:"Academia"        },
-  { id:"ventas",    icon:"ti-briefcase",         label:"Ventas & CRM"    },
-  { id:"contab",    icon:"ti-credit-card",       label:"Contabilidad"    },
-  { id:"bi",        icon:"ti-chart-bar",         label:"Reportes & BI"   },
-  { id:"rrhh",      icon:"ti-users-group",       label:"RRHH & Personal" },
-  { id:"sistema",   icon:"ti-settings",          label:"Sistema"         },
+  { id:"overview",        icon:"ti-layout-dashboard", label:"Panel general"     },
+  { id:"academia",        icon:"ti-school",            label:"Academia"          },
+  { id:"ventas",          icon:"ti-briefcase",         label:"Ventas & CRM"      },
+  { id:"contab",          icon:"ti-credit-card",       label:"Contabilidad"      },
+  { id:"comunicaciones",  icon:"ti-send",              label:"Comunicaciones"    },
+  { id:"reportes",        icon:"ti-chart-bar",         label:"Reportes"          },
+  { id:"rrhh",            icon:"ti-users-group",       label:"RRHH & Personal"   },
+  { id:"sistema",         icon:"ti-settings",          label:"Sistema"           },
 ];
 
 // Sub-tabs per department
@@ -70,16 +75,21 @@ const SUB_TABS = {
   academia: [
     ["progs","Programas"],["prices","Precios"],["cycle","Ciclo"],["holidays","Festivos"],
     ["students","Estudiantes"],["groups","Grupos"],["teachers","Docentes"],
-    ["atrisk","En riesgo"],["becas","Becas"],
+    ["horarios","Horarios"],["atrisk","En riesgo"],["becas","Becas"],
   ],
   ventas: [
-    ["leads","Pipeline CRM"],["all_leads","Todos los leads"],["tareas","Tareas"],["b2b","Empresas B2B"],
+    ["leads","Pipeline CRM"],["b2b","Empresas B2B"],
   ],
   contab: [
-    ["payments","Pagos pendientes"],["vencidos","Vencidos"],["history","Historial"],["banks","Cuentas banco"],
+    ["payments","Pagos pendientes"],["vencidos","Vencidos"],["register","Registrar pago"],
+    ["recibos","Recibos"],["banks","Cuentas banco"],
   ],
-  bi: [
-    ["bi_overview","Métricas clave"],
+  comunicaciones: [
+    ["blast","Email masivo"],["recordatorios","Recordatorios"],["anuncios","Anuncios"],
+  ],
+  reportes: [
+    ["metricas","Métricas BI"],["reporte_estudiantes","Estudiantes"],
+    ["reporte_pagos","Pagos"],["reporte_academico","Académico"],
   ],
   rrhh: [
     ["staff","Personal"],["roles","Roles del sistema"],
@@ -506,7 +516,7 @@ export default function SuperAdmin() {
         <div style={{ height:60, background:"var(--bg-surface)", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 24px", flexShrink:0, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
           <div>
             <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>
-              {{"overview":"Panel general","academia":"Academia","ventas":"Ventas & CRM","contab":"Contabilidad","bi":"Reportes & BI","rrhh":"RRHH & Personal","sistema":"Sistema"}[view]}
+              {{"overview":"Panel general","academia":"Academia","ventas":"Ventas & CRM","contab":"Contabilidad","comunicaciones":"Comunicaciones","reportes":"Reportes","rrhh":"RRHH & Personal","sistema":"Sistema"}[view]}
             </div>
           </div>
           <div style={{ display:"flex", gap:8 }}>

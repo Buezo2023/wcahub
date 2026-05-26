@@ -6,12 +6,12 @@ import { exportCSV } from "../lib/exportCSV.js";
 
 const P="#155266",G="#059669",GD="#ecfdf5",R="#dc2626",RD="#fef2f2",A="#d97706",AD="#fffbeb";
 
-export function PagosSection({ showToast }) {
+export function PagosSection({ showToast, initialTab }) {
   const [payments, setPayments] = useState([]);
   const [students, setStudents] = useState([]);
   const [groups,   setGroups]   = useState([]);
   const [loading,  setLoading]  = useState(true);
-  const [tab,      setTab]      = useState("pending");
+  const [tab,      setTab]      = useState(initialTab==="register"?"pending":"pending");
   const [regModal, setRegModal] = useState(false);
   const [form,     setForm]     = useState({studentId:"",enrollmentId:"",amount:95,method:"transfer",bank:"",referenceCode:"",notes:""});
   const [saving,   setSaving]   = useState(false);
