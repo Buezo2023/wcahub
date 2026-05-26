@@ -43,14 +43,14 @@ export function PagosSection({ showToast, initialTab }) {
   },[tab,pending,confirmed,payments,search]);
 
   async function confirm(id) {
-    const json = await api.patch("/api/payments/confirm",{paymentId:id,action:"confirm"}).catch(()=>({}));
+    const json = await api.patch("/api/payments",{paymentId:id,action:"confirm"}).catch(()=>({}));
     if (!res.ok||!json.ok) { showToast("Error: "+(json.error||json.message||""), R); return; }
     showToast("✓ Pago confirmado — email enviado al estudiante");
     await load();
   }
 
   async function reject(id) {
-    await api.patch("/api/payments/confirm",{paymentId:id,action:"reject",reason:"Rechazado por admin"}).catch(()=>{});
+    await api.patch("/api/payments",{paymentId:id,action:"reject",reason:"Rechazado por admin"}).catch(()=>{});
     showToast("Pago rechazado");
     await load();
   }
@@ -59,7 +59,7 @@ export function PagosSection({ showToast, initialTab }) {
     if (!form.studentId||!form.amount) { showToast("Estudiante y monto requeridos", R); return; }
     setSaving(true);
     try {
-      const json = await api.post("/api/payments/record",{...form,autoConfirm:false}).catch(()=>({}));
+      const json = await api.post("/api/payments",{...form,autoConfirm:false}).catch(()=>({}));
       if (!res.ok||!json.ok) { showToast("Error: "+(json.error||json.message), R); return; }
       showToast("✓ Pago registrado — pendiente de confirmación");
       setRegModal(false);

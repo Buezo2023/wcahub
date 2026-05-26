@@ -41,17 +41,18 @@ export function useNotifications() {
 
   const markRead = useCallback(async (id) => {
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-    await supabase.from("notifications").update({ read: true }).eq("id", id);
+    supabase.from("notifications").update({ read: true }).eq("id", id).catch(e => console.warn("[notifs] markRead:", e.message));
   }, []);
 
   const markAllRead = useCallback(async () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
     const { data: { session } } = await supabase.auth.getSession();
     if (session) {
-      await supabase.from("notifications")
+      supabase.from("notifications")
         .update({ read: true })
         .eq("user_id", session.user.id)
-        .eq("read", false);
+        .eq("read", false)
+        .catch(e => console.warn("[notifs] markAllRead:", e.message));
     }
   }, []);
 

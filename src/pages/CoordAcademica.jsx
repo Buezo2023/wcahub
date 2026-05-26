@@ -893,7 +893,7 @@ export default function CoordAcademica() {
                       setTeachers(t=>[...t,{...teacherForm,id:Date.now(),rating:5.0,groups:[]}]);
                     } else {
                       const {data:prof} = await supabase.from("profiles").select("id").eq("email",teacherForm.email).maybeSingle();
-                      if(prof) await supabase.from("profiles").update({full_name:teacherForm.name}).eq("id",prof.id);
+                      if(prof){ const{error:upErr}=await supabase.from("profiles").update({full_name:teacherForm.name}).eq("id",prof.id); if(upErr) toast.error("Error al actualizar nombre"); }
                       setTeachers(t=>t.map(x=>x.id===teacherModal.data?.id?{...x,...teacherForm}:x));
                     }
                     setTeacherModal(null);

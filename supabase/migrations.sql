@@ -369,3 +369,34 @@ CREATE POLICY "progress_own_write" ON student_progress
       WHERE e.id = enrollment_id AND s.profile_id = auth.uid()
     )
   );
+
+-- ─── Migration: columnas faltantes en tablas existentes ──────────
+-- Fecha: 2026-05-26
+-- Ejecutar DESPUÉS de lms-schema.sql
+
+-- 1. student_progress: ExamModule escribe student_id, program_id, unit, exam_score, passed
+--    El schema actual usa enrollment_id + unit_id. Agregamos las columnas alternativas
+--    para que el upsert no falle en silencio.
+ALTER TABLE public.student_progress
+  ADD COLUMN IF NOT EXISTS student_id  uuid REFERENCES public.students(id) ON DELETE CASCADE,
+  ADD COLUMN IF NOT EXISTS program_id  text,
+  ADD COLUMN IF NOT EXISTS unit        int,
+  ADD COLUMN IF NOT EXISTS exam_score  numeric(5,2),
+  ADD COLUMN IF NOT EXISTS passed      boolean DEFAULT false;
+
+-- Índice para el onConflict="student_id,program_id,unit" que usa ExamModule
+CREATE UNIQUE INDEX IF NOT EXISTS idx_sp_student_prog_unit
+  ON public.student_progress(student_id, program_id, unit)
+  WHERE student_id IS NOT NULL;
+
+-- 2. enrollments: PortalEstudiante escribe completed_at cuando termina el programa
+ALTER TABLE public.enrollments
+  ADD COLUMN IF NOT EXISTS completed_at timestamptz;
+
+-- 3. student_notes: DashboardAdmin inserta type='general' pero la columna no existe
+ALTER TABLE public.student_notes
+  ADD COLUMN IF NOT EXISTS type text DEFAULT 'general';
+
+-- 4. author_id faltaba en el insert de DashboardAdmin — agregar NOT NULL con default null
+--    (ya existe la columna, solo verificar)
+-- ALTER TABLE public.student_notes ALTER COLUMN author_id DROP NOT NULL; -- solo si da error

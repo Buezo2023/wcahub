@@ -534,18 +534,12 @@ export default function GestorCobros() {
                       const phone = (o.contact||"").replace(/[\s\-()]/g,"");
                       // Try API first (Twilio), fallback to wa.me
                       try {
-                        const { data: { session } } = await supabase.auth.getSession();
-                        const res = await fetch("/api/whatsapp/send", {
-                          method: "POST",
-                          headers: { "Content-Type":"application/json", Authorization:`Bearer ${session?.access_token}` },
-                          body: JSON.stringify({
+                        const data = await api.post("/api/whatsapp/send", {
                             to: phone,
                             templateId: "paymentOverdue",
                             templateData: [o.student, o.amount, o.days],
-                          }),
-                        });
-                        const data = await res.json();
-                        if (data.data?.skipped || !res.ok) throw new Error("API not available");
+                          });
+                        if (data?.skipped) throw new Error("API not available");
                         toast.success("✓ WhatsApp enviado via Twilio");
                       } catch {
                         // Fallback to wa.me direct link

@@ -58,7 +58,8 @@ export function GruposSection({ showToast }) {
   }
 
   async function toggleGroup(id,active){
-    await supabase.from("groups").update({active:!active}).eq("id",id);
+    const {error:grpErr}=await supabase.from("groups").update({active:!active}).eq("id",id);
+    if(grpErr){toast.error("Error al cambiar estado del grupo");return;}
     showToast(!active?"Grupo activado":"Grupo desactivado");
     await load();
   }

@@ -1,6 +1,7 @@
 // ─── TeachersSection — Docentes para SuperAdmin ─────────────────
 import { useState, useEffect } from "react";
 import { api } from "../lib/api.js";
+import { toast } from "../lib/toast.jsx";
 import { supabase } from "../lib/supabase.js";
 import { EmptyState } from "../lib/EmptyState.jsx";
 
@@ -33,7 +34,7 @@ export function TeachersSection({ showToast }) {
     if(!form.name||!form.email){showToast("Nombre y email requeridos",R);return;}
     setSaving(true);
     try{
-      const res=await api.post("/api/auth/invite",{action:"staff",email:form.email,fullName:form.name,role:"Docente",phone:form.phone||null,salary:form.salary||null});
+      const res=await api.post("/api/auth",{action:"staff",email:form.email,fullName:form.name,role:"Docente",phone:form.phone||null,salary:form.salary||null});
       const json=await res.json().catch(()=>({}));
       if(!res.ok||!json.ok){showToast("Error: "+(json.error||json.message),R);return;}
       showToast("✓ Docente invitado — recibirá email para acceder");
@@ -45,8 +46,9 @@ export function TeachersSection({ showToast }) {
   }
 
   async function deactivate(t){
-    await supabase.from("staff").update({active:false}).eq("id",t.id);
-    await supabase.from("profiles").update({active:false}).eq("id",t.profileId);
+    const{error:t1}=await supabase.from("staff").update({active:false}).eq("id",t.id);
+    const{error:t2}=await supabase.from("profiles").update({active:false}).eq("id",t.profileId);
+    if(t1||t2){toast.error("Error al desactivar docente");return;}
     showToast("Docente desactivado");
     setModal(null);
     await load();

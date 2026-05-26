@@ -28,7 +28,8 @@ export function BecasSection({ showToast }) {
     if(newVal){
       const activeEnroll = s.enrollments?.find(e=>e.status==="active");
       if(activeEnroll){
-        await supabase.from("enrollments").update({price_locked:0}).eq("id",activeEnroll.id);
+        const {error:becaErr}=await supabase.from("enrollments").update({price_locked:0}).eq("id",activeEnroll.id);
+    if(becaErr){toast.error("Error al aplicar beca");return;}
       }
     }
     showToast(newVal?"✓ Beca otorgada — precio establecido en $0":"Beca retirada");

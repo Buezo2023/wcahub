@@ -128,6 +128,14 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
       const pending = JSON.parse(localStorage.getItem("wca_pending_progress") || "[]");
       pending.push(progressData);
       localStorage.setItem("wca_pending_progress", JSON.stringify(pending));
+      // Notify user their progress was saved locally
+      if (import.meta.env.DEV) console.warn("[LMSPlayer] progress saved to localStorage — will sync on reconnect");
+      // Show subtle warning (non-blocking — don't interrupt the learning flow)
+      const el = document.createElement("div");
+      el.style.cssText = "position:fixed;bottom:70px;left:50%;transform:translateX(-50%);background:#92400e;color:#fffbeb;padding:8px 16px;border-radius:8px;font-size:12px;z-index:60;font-family:inherit;pointer-events:none;animation:viewFadeIn .2s ease";
+      el.textContent = "⚠ Sin conexión — tu progreso se guardó localmente y se sincronizará al reconectarte";
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 5000);
     }
 
     // Log XP

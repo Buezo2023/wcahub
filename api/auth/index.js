@@ -376,7 +376,26 @@ export default async function handler(req, res) {
         requireRole(actor, 'admin', 'super_admin');
         return ok(res, await handleTestEmail(req, actor));
 
-      default:
+      // ── change-role (merged from api/auth/role.js) ────────────
+    case 'change-role': {
+      requireRole(actor, 'super_admin');
+      const { userId, role: newRole } = req.body;
+      if (!userId || !newRole) return err(res, { status: 400, message: 'userId y role son requeridos' });
+      const VALID_ROLES = ['estudiante','docente','admin','super_admin','asesor_ventas','cobros','coordinadora','directivo'];
+      if (!VALID_ROLES.includes(newRole)) return err(res, { status: 400, message: `Rol inválido. Opciones: ${VALID_ROLES.join(', ')}` });
+      const adminCR = getSupabaseAdmin();
+      const { data: updated, error: roleErr } = await adminCR.from('profiles')
+        .update({ role: newRole }).eq('id', userId)
+        .select('id, email, full_name, role').single();
+      if (roleErr) throw roleErr;
+      await adminCR.from('audit_log').insert({
+        actor_id: actor.id, action: 'changed_role', entity: 'profile',
+        entity_id: userId, metadata: { new_role: newRole },
+      });
+      return ok(res, { message: `Rol actualizado a ${newRole}`, profile: updated });
+    }
+
+    default:
         return err(res, { status: 400, message: `action desconocida: ${action}` });
     }
   } catch(e) { return err(res, e); }

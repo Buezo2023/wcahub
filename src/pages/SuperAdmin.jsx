@@ -364,7 +364,7 @@ export default function SuperAdmin() {
         if (!session) { globalToast.error("Sesión expirada — recargá la página"); setSaving(false); return; }
         let res, json;
         try {
-          res = await fetch("/api/auth/invite", {
+          res = await fetch("/api/auth", {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
             body: JSON.stringify({ action:"staff", email:correo, fullName:nombre, role:staffForm.role||"Docente", salary:staffForm.salary||null, hireDate:new Date().toISOString().slice(0,10) }),
@@ -750,7 +750,7 @@ export default function SuperAdmin() {
                             try {
                               showToast("Enviando invitación…", "#0369a1");
                               const {data:{session}} = await supabase.auth.getSession();
-                              const r = await fetch("/api/auth/invite",{
+                              const r = await fetch("/api/auth",{
                                 method:"POST",
                                 headers:{"Content-Type":"application/json",Authorization:`Bearer ${session?.access_token}`},
                                 body:JSON.stringify({action:"resend-supabase", email:s.email})
@@ -984,7 +984,7 @@ export default function SuperAdmin() {
                       try {
                         const {data:{session}} = await supabase.auth.getSession();
                         showToast("Enviando email de prueba…", "#0369a1");
-                        const r = await fetch("/api/auth/invite",{
+                        const r = await fetch("/api/auth",{
                           method:"POST",
                           headers:{"Content-Type":"application/json",Authorization:`Bearer ${session?.access_token}`},
                           body:JSON.stringify({ action:"test-email", to: session?.user?.email }),

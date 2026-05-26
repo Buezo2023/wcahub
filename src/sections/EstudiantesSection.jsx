@@ -52,7 +52,7 @@ export function EstudiantesSection({ showToast }) {
     if (!enrollForm.name || !enrollForm.email) { showToast("Nombre y email requeridos", R); return; }
     setEnrolling(true);
     try {
-      const res = await api.post("/api/auth/invite", {action:"student",...enrollForm,fullName:enrollForm.name,scholarship:enrollForm.scholarship||false});
+      const res = await api.post("/api/auth", {action:"student",...enrollForm,fullName:enrollForm.name,scholarship:enrollForm.scholarship||false});
       const json = await res.json().catch(()=>({}));
       if (!res.ok||!json.ok) { showToast("Error: "+(json.error||json.message), R); return; }
       showToast("✓ Estudiante matriculado — invitación enviada");
@@ -68,9 +68,10 @@ export function EstudiantesSection({ showToast }) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!newActive) {
       const en = s.enrollments?.[0]?.id;
-      if (en) await api.patch("/api/enrollments/suspend", {enrollmentId:en,action:"suspend",reason:"Suspendido por admin"});
+      if (en) await api.patch("/api/enrollments", {enrollmentId:en,action:"suspend",reason:"Suspendido por admin"});
     } else {
-      await supabase.from("profiles").update({active:true}).eq("id",s.profile?.id);
+      const{error:actErr}=await supabase.from("profiles").update({active:true}).eq("id",s.profile?.id);
+      if(actErr)toast.error("Error al reactivar perfil");
     }
     showToast(newActive ? "Estudiante reactivado" : "Estudiante suspendido");
     setSel(null);

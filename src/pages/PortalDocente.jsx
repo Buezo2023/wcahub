@@ -144,7 +144,7 @@ export default function TeacherPortal(){
         }
       }
     }
-    loadTeacherData();
+    loadTeacherData().finally(()=>setLoading(false));
   }, []);
 
   const navigate = useNavigate();
@@ -158,6 +158,7 @@ export default function TeacherPortal(){
     });
     return () => subscription.unsubscribe();
   }, [navigate]);
+  const [loading,setLoading]=useState(true);
   const [view,setView]=useState("home");
   const isMobile = useMobile();
   const [sideOpen, setSideOpen] = useState(false);
@@ -189,6 +190,14 @@ export default function TeacherPortal(){
   const atRisk  = allStudents.filter(s => s.flags?.includes("at-risk"));
   const blocked = allStudents.filter(s => s.flags?.includes("blocked"));
   const group   = displayGroups.find(g => String(g.id) === String(selGroupId)) || displayGroups[0] || { id:0, level:"—", schedule:"Sin asignar", days:"—", teacher:"—", students:0, color:"#94a3b8", dbId:null };
+
+  if (loading) return (
+    <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",gap:12,color:"var(--text-secondary)",fontFamily:"'DM Sans','Segoe UI',sans-serif",background:"var(--bg-page)"}}>
+      <div style={{width:24,height:24,border:"2px solid var(--border)",borderTopColor:"#155266",borderRadius:"50%",animation:"spin .7s linear infinite"}}/>
+      <span style={{fontSize:13}}>Cargando portal docente…</span>
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  );
 
   return(
     <div style={{display:"flex",minHeight: "100vh", height: "100vh",background:C.bg,overflow:"hidden",border:`1px solid ${C.border}`,fontFamily:"'DM Sans','Outfit','Segoe UI',sans-serif",position:"relative"}}>

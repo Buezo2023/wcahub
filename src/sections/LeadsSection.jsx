@@ -34,7 +34,8 @@ export function LeadsSection({ showToast }) {
   }
 
   async function changeStage(id,stage){
-    await supabase.from("leads").update({stage,updated_at:new Date().toISOString()}).eq("id",id);
+    const {error:stageErr}=await supabase.from("leads").update({stage,updated_at:new Date().toISOString()}).eq("id",id);
+    if(stageErr) { toast.error("Error al mover el lead"); return; }
     setLeads(ls=>ls.map(l=>l.id===id?{...l,stage}:l));
     if(sel?.id===id) setSel(l=>({...l,stage}));
   }
@@ -57,7 +58,7 @@ export function LeadsSection({ showToast }) {
     if(!lead) return;
     showToast("Creando estudiante...");
     try{
-      const res=await api.post("/api/auth/invite",{action:"student",email:lead.email,fullName:lead.full_name,phone:lead.phone||null,level:lead.level_interest||"A1",programId:"en"});
+      const res=await api.post("/api/auth",{action:"student",email:lead.email,fullName:lead.full_name,phone:lead.phone||null,level:lead.level_interest||"A1",programId:"en"});
       const json=await res.json().catch(()=>({}));
       if(!res.ok||!json.ok){showToast("Error: "+(json.error||json.message),R);return;}
       await changeStage(lead.id,"convertido");

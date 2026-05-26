@@ -51,7 +51,8 @@ export function VentasSection({ showToast }) {
   }
 
   async function toggleTask(id,done){
-    await supabase.from("crm_tasks").update({done:!done,done_at:!done?new Date().toISOString():null}).eq("id",id);
+    const {error:taskErr}=await supabase.from("crm_tasks").update({done:!done,done_at:!done?new Date().toISOString():null}).eq("id",id);
+    if(taskErr) toast.error("Error al actualizar tarea");
     setTasks(ts=>ts.map(t=>t.id===id?{...t,done:!done}:t));
   }
 

@@ -616,12 +616,7 @@ export default function CRM() {
 
       let res, json;
       try {
-        res = await fetch("/api/auth/invite", {
-          method: "POST",
-          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${session.access_token}` },
-          body: JSON.stringify({ action:"student", email:lead.email, fullName:lead.name, phone:lead.phone||null, level:lead.level||"A1", programId:lead.program||"en" }),
-        });
-        json = await res.json().catch(() => ({}));
+        json = await api.post("/api/auth", { action:"student", email:lead.email, fullName:lead.name, phone:lead.phone||null, level:lead.level||"A1", programId:lead.program||"en" }).catch(() => ({}));
       } catch(netErr) {
         showToast("Error de red — verificá tu conexión", R);
         return;

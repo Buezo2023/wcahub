@@ -348,7 +348,8 @@ function B2BSection({ supabase, B, Badge, Stat }) {
             </button>
             <button onClick={async()=>{
               {
-                await supabase.from("b2b_companies").update({active:false}).eq("id",co.id);
+                const{error:b2bErr}=await supabase.from("b2b_companies").update({active:false}).eq("id",co.id);
+      if(b2bErr){showToast("Error al desactivar empresa","red");return;}
                 setCompanies(cs=>cs.filter(c=>c.id!==co.id));
                 toast.success(`${co.name} desactivada`);
               }
@@ -1021,7 +1022,7 @@ export default function AdminDashboard() {
                         const studentRow = await supabase.from("students").select("id,enrollments(id)").eq("profile_id",prof.id).maybeSingle();
                         const enrollId = studentRow.data?.enrollments?.[0]?.id;
                         if (enrollId) {
-                          await fetch("/api/enrollments/suspend", {
+                          await fetch("/api/enrollments", {
                             method:"PATCH",
                             headers:{"Content-Type":"application/json","Authorization":`Bearer ${ss?.access_token}`},
                             body: JSON.stringify({enrollmentId:enrollId, action:"suspend", reason:actionNote||"Suspendido por admin"})
@@ -1032,7 +1033,7 @@ export default function AdminDashboard() {
                         const studentRow2 = await supabase.from("students").select("id,enrollments(id)").eq("profile_id",prof.id).maybeSingle();
                         const enrollId2 = studentRow2.data?.enrollments?.[0]?.id;
                         if (enrollId2) {
-                          await fetch("/api/enrollments/suspend", {
+                          await fetch("/api/enrollments", {
                             method:"PATCH",
                             headers:{"Content-Type":"application/json","Authorization":`Bearer ${sr?.access_token}`},
                             body: JSON.stringify({enrollmentId:enrollId2, action:"reactivate"})
@@ -1041,7 +1042,7 @@ export default function AdminDashboard() {
                       }
                       if (actionNote) {
                         const { data: st } = await supabase.from("students").select("id").eq("profile_id",prof.id).maybeSingle();
-                        if (st) await supabase.from("student_notes").insert({student_id:st.id,note:actionNote,type:"general"});
+                        if (st) { const{error:noteErr}=await supabase.from("student_notes").insert({student_id:st.id,note:actionNote,type:"general",author_id:ss?.user?.id||null}); if(noteErr) console.error("[DashboardAdmin] student_notes insert:",noteErr.message); }
                       }
                     }
                   }
@@ -1118,7 +1119,8 @@ export default function AdminDashboard() {
               <button onClick={()=>{ setTeamsModal(null); setTeamsLink(""); }} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:8, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
               <button onClick={async()=>{
   if(teamsModal?.dbId && teamsLink) {
-    await supabase.from("groups").update({teams_link:teamsLink}).eq("id",teamsModal.dbId);
+    const{error:tlErr}=await supabase.from("groups").update({teams_link:teamsLink}).eq("id",teamsModal.dbId);
+      if(tlErr){showToast("Error al guardar enlace","red");return;}
     setRealGroups(gs => gs.map(g => g.id===teamsModal.dbId ? {...g,teamsSet:true,teamsLink} : g));
   }
   setTeamsModal(null); setTeamsLink(""); setActionDone("✓ Link de Teams guardado"); setTimeout(()=>setActionDone(null),3000);
