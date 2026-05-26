@@ -33,7 +33,7 @@ export function VencidosSection({ showToast }) {
   async function runReminder(item){
     try{
       const {data:{session}}=await supabase.auth.getSession();
-      await fetch("/api/emails/reminders",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},body:JSON.stringify({studentIds:[item.id],daysOverdue:item.days})});
+      await fetch("/api/emails?action=reminders",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},body:JSON.stringify({studentIds:[item.id],daysOverdue:item.days})});
       showToast(`✓ Recordatorio enviado a ${item.name}`);
     }catch(e){showToast("Error: "+e.message,R);}
   }

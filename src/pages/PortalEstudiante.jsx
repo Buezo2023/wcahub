@@ -1139,7 +1139,7 @@ export default function PortalEstudiante(){
                             if (upErr) throw upErr;
                             const { data: urlData } = supabase.storage.from("proofs").getPublicUrl(path);
                             const {data:{session}} = await supabase.auth.getSession();
-                            await fetch("/api/payments/upload-proof",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},body:JSON.stringify({paymentId:p.id,proofUrl:urlData.publicUrl})});
+                            await fetch("/api/payments/record",{method:"PATCH",headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},body:JSON.stringify({paymentId:p.id,proofUrl:urlData.publicUrl})});
                             toast.success("✓ Comprobante enviado — cobros lo revisará en breve");
                             setRealPayments(ps=>ps.map(x=>x.id===p.id?{...x,proof_url:urlData.publicUrl}:x));
                           } catch(err){ toast.error("Error al subir: "+err.message); }

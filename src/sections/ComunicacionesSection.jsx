@@ -63,7 +63,7 @@ export function ComunicacionesSection({ showToast, subView }) {
         for(const s of students){
           if(!s.profile?.email) continue;
           const personalBody = body.replace("{nombre}",s.profile?.full_name?.split(" ")[0]||"Estudiante");
-          await fetch("/api/emails/welcome",{method:"POST",
+          await fetch("/api/emails?action=welcome",{method:"POST",
             headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},
             body:JSON.stringify({to:s.profile.email,toName:s.profile.full_name,subject,html:`<p style="font-family:sans-serif;line-height:1.7">${personalBody.replace(/\n/g,"<br>")}</p>`})
           }).catch(()=>{});
@@ -151,7 +151,7 @@ export function ComunicacionesSection({ showToast, subView }) {
           const json=await res.json().catch(()=>({}));
           setResult({msg:`Ciclo ejecutado: ${json.results?.preReminders?.sent||0} pre-avisos, ${json.results?.dueToday?.sent||0} vencen hoy, ${json.results?.overdueWarning?.sent||0} vencidos, ${json.results?.autoSuspended?.count||0} suspendidos`});
         } else {
-          const res=await fetch("/api/emails/reminders",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},body:JSON.stringify({daysOverdue:0})});
+          const res=await fetch("/api/emails?action=reminders",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},body:JSON.stringify({daysOverdue:0})});
           const json=await res.json().catch(()=>({}));
           setResult({msg:`Recordatorios enviados: ${json.sent||0}`});
         }
