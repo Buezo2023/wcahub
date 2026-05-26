@@ -27,7 +27,7 @@ export function SuperAdminBar() {
       display: "flex", alignItems: "center", gap: 12,
       fontSize: 12, color: "rgba(255,255,255,.7)",
       fontFamily: "'DM Sans','Segoe UI',sans-serif",
-      flexShrink: 0, zIndex: 100,
+      flexShrink: 0, zIndex:"var(--z-sticky)",
     }}>
       <svg viewBox="0 0 32 32" style={{ width:20, height:20, flexShrink:0 }}>
         <rect width="32" height="32" rx="6" fill="#ffbb23"/>

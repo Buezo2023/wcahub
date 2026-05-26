@@ -15,7 +15,7 @@ const PROGRAMS=[
 
 function Kpi({label,value,color,icon}){
   return(
-    <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
+    <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",gap:8}}>
       <i className={`ti ${icon}`} style={{fontSize:22,color}}/>
       <div><div style={{fontSize:18,fontWeight:800,color:"var(--text-primary)",lineHeight:1}}>{value}</div>
         <div style={{fontSize:11,color:"var(--text-secondary)"}}>{label}</div></div>
@@ -118,7 +118,7 @@ export function B2BSection({ showToast }) {
   return(
     <div>
       {/* KPIs */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:14}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:16}}>
         <Kpi label="Empresas activas" value={companies.length} color={P} icon="ti-building"/>
         <Kpi label="Cupos B2B"        value={totalSeats}       color={G} icon="ti-users"/>
         <Kpi label="Ingresos/mes"     value={`$${totalRevenue.toLocaleString()}`} color={A} icon="ti-coin"/>
@@ -135,7 +135,7 @@ export function B2BSection({ showToast }) {
           <i className="ti ti-download"/> CSV
         </button>
         <button onClickCapture={e=>{e.stopPropagation();openAdd();}}
-          style={{padding:"9px 18px",background:P,color:"#fff",border:"none",borderRadius:9,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+          style={{padding:"8px 16px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
           + Nueva empresa
         </button>
       </div>
@@ -152,11 +152,11 @@ export function B2BSection({ showToast }) {
                   <div>
                     <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>{c.name}</div>
                     <div style={{fontSize:12,color:"var(--text-secondary)"}}>{c.contact_name} · {c.contact_email}</div>
-                    <div style={{display:"flex",gap:6,marginTop:4,flexWrap:"wrap"}}>
-                      <span style={{fontSize:10,padding:"2px 8px",borderRadius:10,background:PD,color:P,fontWeight:600}}>
+                    <div style={{display:"flex",gap:8,marginTop:4,flexWrap:"wrap"}}>
+                      <span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:PD,color:P,fontWeight:600}}>
                         {c.program_name||c.program_id?.toUpperCase()||"—"}
                       </span>
-                      {(c.discount_pct||0)>0&&<span style={{fontSize:10,padding:"2px 8px",borderRadius:10,background:"#fffbeb",color:A,fontWeight:600}}>
+                      {(c.discount_pct||0)>0&&<span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:"#fffbeb",color:A,fontWeight:600}}>
                         {c.discount_pct}% desc.
                       </span>}
                     </div>
@@ -167,7 +167,7 @@ export function B2BSection({ showToast }) {
                   </div>
                 </div>
                 {c.notes&&<div style={{fontSize:11,color:"var(--text-secondary)",background:"var(--bg-surface-subtle)",borderRadius:8,padding:"6px 10px",marginBottom:8}}>{c.notes}</div>}
-                <div style={{display:"flex",gap:6}}>
+                <div style={{display:"flex",gap:8}}>
                   <button onClickCapture={e=>{e.stopPropagation();openEdit(c);}}
                     style={{flex:1,fontSize:12,padding:"6px",background:PD,color:P,border:"none",borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>✎ Editar</button>
                   <button onClick={()=>exportCSV([{Empresa:c.name,Programa:c.program_name,Cupos:c.seats_paid,Factura:`$${monthly(c)}`}],`factura-${c.name}.csv`)}
@@ -180,9 +180,9 @@ export function B2BSection({ showToast }) {
 
       {/* Modal */}
       {modal&&(
-        <div style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
+        <div style={{position:"fixed",inset:0,zIndex:"var(--z-modal)",background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
           onClick={e=>{if(e.target===e.currentTarget)setModal(null);}}>
-          <div style={{background:"var(--bg-surface)",borderRadius:18,padding:24,width:"min(460px,100vw - 32px)",maxWidth:"100%",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)",maxHeight:"90vh",overflowY:"auto"}}>
+          <div style={{background:"var(--bg-surface)",borderRadius:16,padding:24,width:"min(460px,100vw - 32px)",maxWidth:"100%",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)",maxHeight:"90vh",overflowY:"auto"}}>
             <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:18}}>
               {modal.mode==="edit"?"Editar empresa B2B":"Nueva empresa B2B"}
             </div>
@@ -191,7 +191,7 @@ export function B2BSection({ showToast }) {
             <div style={{marginBottom:12,background:PD,border:`1px solid ${P}30`,borderRadius:10,padding:"10px 12px"}}>
               <div style={{fontSize:11,fontWeight:700,color:P,marginBottom:6,textTransform:"uppercase",letterSpacing:.5}}>Programa al que se matricula el equipo</div>
               <select value={form.program_id} onChange={e=>setForm(f=>({...f,program_id:e.target.value}))}
-                style={{width:"100%",padding:"9px 12px",border:`1px solid ${P}40`,borderRadius:8,fontSize:13,fontWeight:600,background:"white",color:P,fontFamily:"inherit"}}>
+                style={{width:"100%",padding:"8px 12px",border:`1px solid ${P}40`,borderRadius:8,fontSize:13,fontWeight:600,background:"white",color:P,fontFamily:"inherit"}}>
                 {PROGRAMS.map(p=><option key={p.id} value={p.id}>{p.name} — ${p.price}/cupo/mes</option>)}
               </select>
             </div>
@@ -205,20 +205,20 @@ export function B2BSection({ showToast }) {
               <div key={k} style={{marginBottom:10}}>
                 <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:4}}>{l}</div>
                 <input type={t} value={form[k]||""} placeholder={ph} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))}
-                  style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+                  style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
               </div>
             ))}
 
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:10}}>
               <div>
                 <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:4}}>Cupos pagados</div>
                 <input type="number" min="1" value={form.seats_paid} onChange={e=>setForm(f=>({...f,seats_paid:Math.max(1,+e.target.value)}))}
-                  style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+                  style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
               </div>
               <div>
                 <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:4}}>Descuento (%)</div>
                 <input type="number" min="0" max="100" value={form.discount_pct} onChange={e=>setForm(f=>({...f,discount_pct:Math.min(100,Math.max(0,+e.target.value))}))}
-                  style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+                  style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
               </div>
             </div>
 
@@ -226,7 +226,7 @@ export function B2BSection({ showToast }) {
             {(()=>{
               const prog=PROGRAMS.find(p=>p.id===form.program_id)||{price:95};
               const mo=Math.round((form.seats_paid||1)*prog.price*(1-((form.discount_pct||0)/100)));
-              return<div style={{background:GD,border:`1px solid ${G}40`,borderRadius:9,padding:"8px 12px",marginBottom:12,fontSize:13,color:G,fontWeight:700}}>
+              return<div style={{background:GD,border:`1px solid ${G}40`,borderRadius:8,padding:"8px 12px",marginBottom:12,fontSize:13,color:G,fontWeight:700}}>
                 Factura estimada: ${mo}/mes · {form.seats_paid} cupos · {form.program_id?.toUpperCase()}
               </div>;
             })()}
@@ -234,17 +234,17 @@ export function B2BSection({ showToast }) {
             <div style={{marginBottom:16}}>
               <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:4}}>Notas</div>
               <textarea value={form.notes||""} onChange={e=>setForm(f=>({...f,notes:e.target.value}))} rows={2}
-                style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",resize:"none"}}/>
+                style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",resize:"none"}}/>
             </div>
 
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>setModal(null)} style={{flex:1,padding:"10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:9,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>Cancelar</button>
+              <button onClick={()=>setModal(null)} style={{flex:1,padding:"10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>Cancelar</button>
               {modal.mode==="edit"&&modal.data?.id&&(
                 <button onClickCapture={e=>{e.stopPropagation();deactivate(modal.data.id);}}
-                  style={{padding:"10px 14px",background:R,color:"#fff",border:"none",borderRadius:9,fontSize:13,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>Eliminar</button>
+                  style={{padding:"10px 14px",background:R,color:"#fff",border:"none",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>Eliminar</button>
               )}
               <button onClickCapture={e=>{e.stopPropagation();save();}} disabled={saving}
-                style={{flex:2,padding:"10px",background:P,color:"#fff",border:"none",borderRadius:9,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:saving?.6:1}}>
+                style={{flex:2,padding:"10px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:saving?.6:1}}>
                 {saving?"Guardando...":"Guardar empresa"}
               </button>
             </div>

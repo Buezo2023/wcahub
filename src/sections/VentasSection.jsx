@@ -17,7 +17,7 @@ const STAGES=[
 
 function StageTag({stage}){
   const s=STAGES.find(x=>x.id===stage)||STAGES[0];
-  return <span style={{fontSize:10,padding:"2px 8px",borderRadius:10,background:s.bg,color:s.color,fontWeight:700,whiteSpace:"nowrap"}}>{s.label}</span>;
+  return <span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:s.bg,color:s.color,fontWeight:700,whiteSpace:"nowrap"}}>{s.label}</span>;
 }
 
 export function VentasSection({ showToast }) {
@@ -81,11 +81,11 @@ export function VentasSection({ showToast }) {
   return(
     <div>
       {/* Sub-nav */}
-      <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+      <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
         {TABS.map(([id,label])=>(
-          <button key={id} onClick={()=>setTab(id)} style={{padding:"7px 16px",borderRadius:9,border:"none",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",background:tab===id?P:"var(--bg-surface-subtle)",color:tab===id?"#fff":"var(--text-secondary)"}}>
+          <button key={id} onClick={()=>setTab(id)} style={{padding:"7px 16px",borderRadius:8,border:"none",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",background:tab===id?P:"var(--bg-surface-subtle)",color:tab===id?"#fff":"var(--text-secondary)"}}>
             {label}
-            {id==="tasks"&&pendingTasks.length>0&&<span style={{marginLeft:5,background:overdueTasks.length>0?R:A,color:"#fff",borderRadius:9,fontSize:9,padding:"1px 5px"}}>{pendingTasks.length}</span>}
+            {id==="tasks"&&pendingTasks.length>0&&<span style={{marginLeft:5,background:overdueTasks.length>0?R:A,color:"#fff",borderRadius:8,fontSize:11,padding:"1px 5px"}}>{pendingTasks.length}</span>}
           </button>
         ))}
         <button onClick={()=>exportCSV(leads.map(l=>({Nombre:l.full_name,Email:l.email,Teléfono:l.phone||"—",Stage:l.stage,Fuente:l.source||"—",Score:l.test_score||0,Interés:l.level_interest||l.program_interest||"—",Fecha:new Date(l.created_at).toLocaleDateString("es-HN")})),`leads-${new Date().toISOString().slice(0,10)}.csv`)}
@@ -100,7 +100,7 @@ export function VentasSection({ showToast }) {
       {tab==="overview"&&(
         <div>
           {/* KPIs */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:20}}>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:20}}>
             {[
               {l:"Total leads",    v:funnel.total,    c:P,  i:"ti-users"},
               {l:"Activos",        v:funnel.active,   c:A,  i:"ti-activity"},
@@ -108,7 +108,7 @@ export function VentasSection({ showToast }) {
               {l:"Tasa conversión",v:`${funnel.convRate}%`, c:G, i:"ti-chart-bar"},
               {l:"Tareas pendientes",v:pendingTasks.length, c:overdueTasks.length>0?R:A, i:"ti-checklist"},
             ].map((k,i)=>(
-              <div key={i} style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",gap:10}}>
+              <div key={i} style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",gap:8}}>
                 <i className={`ti ${k.i}`} style={{fontSize:20,color:k.c}}/>
                 <div><div style={{fontSize:20,fontWeight:800,color:"var(--text-primary)",lineHeight:1}}>{k.v}</div>
                   <div style={{fontSize:11,color:"var(--text-secondary)"}}>{k.l}</div></div>
@@ -117,12 +117,12 @@ export function VentasSection({ showToast }) {
           </div>
 
           {/* Funnel stages */}
-          <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,padding:18,marginBottom:16}}>
-            <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:14}}>Funnel de conversión</div>
+          <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:18,marginBottom:16}}>
+            <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:16}}>Funnel de conversión</div>
             {funnel.byStage.map((s,i)=>{
               const pct=funnel.total>0?Math.round((s.count/funnel.total)*100):0;
               return(
-                <div key={s.id} style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+                <div key={s.id} style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
                   <div style={{width:90,fontSize:11,fontWeight:600,color:s.color,flexShrink:0}}>{s.label}</div>
                   <div style={{flex:1,height:8,background:"var(--bg-surface-subtle)",borderRadius:4,overflow:"hidden"}}>
                     <div style={{height:"100%",width:`${pct}%`,background:s.color,borderRadius:4,transition:"width .5s"}}/>
@@ -135,11 +135,11 @@ export function VentasSection({ showToast }) {
           </div>
 
           {/* Sources */}
-          <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,padding:18}}>
-            <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:14}}>Fuentes de leads</div>
+          <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:18}}>
+            <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:16}}>Fuentes de leads</div>
             <div style={{display:"flex",flexWrap:"wrap",gap:8}}>
               {Object.entries(funnel.bySource).sort((a,b)=>b[1]-a[1]).map(([src,count])=>(
-                <div key={src} style={{background:PD,border:`1px solid ${P}20`,borderRadius:9,padding:"6px 12px",fontSize:12}}>
+                <div key={src} style={{background:PD,border:`1px solid ${P}20`,borderRadius:8,padding:"6px 12px",fontSize:12}}>
                   <span style={{fontWeight:700,color:P}}>{count}</span>
                   <span style={{color:"var(--text-secondary)",marginLeft:5}}>{src}</span>
                 </div>
@@ -154,35 +154,35 @@ export function VentasSection({ showToast }) {
         <div>
           <div style={{display:"flex",gap:8,marginBottom:12,flexWrap:"wrap"}}>
             <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar lead..."
-              style={{flex:1,minWidth:160,padding:"8px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+              style={{flex:1,minWidth:160,padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
             <select value={filterStage} onChange={e=>setFilterStage(e.target.value)}
-              style={{padding:"8px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:12,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit"}}>
+              style={{padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:12,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit"}}>
               <option value="all">Todos los stages</option>
               {STAGES.map(s=><option key={s.id} value={s.id}>{s.label}</option>)}
             </select>
           </div>
           {filtered.length===0
             ?<EmptyState icon="💼" title="Sin leads" subtitle="No hay leads con esos filtros."/>
-            :<div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,overflow:"hidden"}}>
+            :<div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden"}}>
               <div style={{overflowX:"auto"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
                   <thead><tr style={{background:"var(--bg-surface-subtle)"}}>
                     {["Nombre","Email","Stage","Test","Fuente","Interés","Fecha"].map(h=>(
-                      <th key={h} style={{padding:"9px 12px",textAlign:"left",fontSize:10,fontWeight:700,color:"var(--text-tertiary)",textTransform:"uppercase",letterSpacing:.5,whiteSpace:"nowrap"}}>{h}</th>
+                      <th key={h} style={{padding:"8px 12px",textAlign:"left",fontSize:11,fontWeight:700,color:"var(--text-tertiary)",textTransform:"uppercase",letterSpacing:.5,whiteSpace:"nowrap"}}>{h}</th>
                     ))}
                   </tr></thead>
                   <tbody>
                     {filtered.map(l=>(
                       <tr key={l.id} style={{borderTop:"1px solid var(--border-tertiary)"}}>
-                        <td style={{padding:"9px 12px",fontWeight:600,color:"var(--text-primary)"}}>{l.full_name}</td>
-                        <td style={{padding:"9px 12px",fontSize:11,color:"var(--text-secondary)"}}>{l.email||"—"}</td>
-                        <td style={{padding:"9px 12px"}}><StageTag stage={l.stage}/></td>
-                        <td style={{padding:"9px 12px",fontSize:12,color:l.test_score>=70?"#059669":l.test_score>0?"#d97706":"var(--text-tertiary)",fontWeight:l.test_score>0?600:400}}>
+                        <td style={{padding:"8px 12px",fontWeight:600,color:"var(--text-primary)"}}>{l.full_name}</td>
+                        <td style={{padding:"8px 12px",fontSize:11,color:"var(--text-secondary)"}}>{l.email||"—"}</td>
+                        <td style={{padding:"8px 12px"}}><StageTag stage={l.stage}/></td>
+                        <td style={{padding:"8px 12px",fontSize:12,color:l.test_score>=70?"#059669":l.test_score>0?"#d97706":"var(--text-tertiary)",fontWeight:l.test_score>0?600:400}}>
                           {l.test_score>0?`${l.test_score}%`:"—"}
                         </td>
-                        <td style={{padding:"9px 12px",fontSize:11,color:"var(--text-secondary)"}}>{l.source||"—"}</td>
-                        <td style={{padding:"9px 12px",fontSize:11,color:"var(--text-secondary)"}}>{l.level_interest||l.program_interest||"—"}</td>
-                        <td style={{padding:"9px 12px",fontSize:11,color:"var(--text-secondary)",whiteSpace:"nowrap"}}>
+                        <td style={{padding:"8px 12px",fontSize:11,color:"var(--text-secondary)"}}>{l.source||"—"}</td>
+                        <td style={{padding:"8px 12px",fontSize:11,color:"var(--text-secondary)"}}>{l.level_interest||l.program_interest||"—"}</td>
+                        <td style={{padding:"8px 12px",fontSize:11,color:"var(--text-secondary)",whiteSpace:"nowrap"}}>
                           {new Date(l.created_at).toLocaleDateString("es-HN",{day:"2-digit",month:"short"})}
                         </td>
                       </tr>
@@ -222,7 +222,7 @@ export function VentasSection({ showToast }) {
                         </span>}
                       </div>
                     </div>
-                    {t.priority&&<span style={{fontSize:10,padding:"2px 7px",borderRadius:9,background:t.priority==="high"?RD:AD,color:t.priority==="high"?R:A,fontWeight:700}}>{t.priority==="high"?"Alta":"Media"}</span>}
+                    {t.priority&&<span style={{fontSize:11,padding:"2px 7px",borderRadius:8,background:t.priority==="high"?RD:AD,color:t.priority==="high"?R:A,fontWeight:700}}>{t.priority==="high"?"Alta":"Media"}</span>}
                   </div>
                 );
               })}
@@ -233,26 +233,26 @@ export function VentasSection({ showToast }) {
 
       {/* PIPELINE Kanban */}
       {tab==="pipeline"&&(
-        <div style={{display:"flex",gap:10,overflowX:"auto",paddingBottom:8}}>
+        <div style={{display:"flex",gap:8,overflowX:"auto",paddingBottom:8}}>
           {STAGES.map(stage=>{
             const stagLeads=leads.filter(l=>l.stage===stage.id);
             return(
               <div key={stage.id} style={{minWidth:180,flexShrink:0}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8,padding:"6px 10px",background:stage.bg,borderRadius:8}}>
                   <span style={{fontSize:11,fontWeight:700,color:stage.color}}>{stage.label}</span>
-                  <span style={{fontSize:10,background:"rgba(0,0,0,.1)",padding:"1px 6px",borderRadius:9,color:stage.color,fontWeight:700}}>{stagLeads.length}</span>
+                  <span style={{fontSize:11,background:"rgba(0,0,0,.1)",padding:"1px 6px",borderRadius:8,color:stage.color,fontWeight:700}}>{stagLeads.length}</span>
                 </div>
                 <div style={{display:"flex",flexDirection:"column",gap:5}}>
                   {stagLeads.map(lead=>(
-                    <div key={lead.id} style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:9,padding:"9px 11px",boxShadow:"0 1px 3px rgba(0,0,0,.06)"}}>
+                    <div key={lead.id} style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,padding:"9px 11px",boxShadow:"0 1px 3px rgba(0,0,0,.06)"}}>
                       <div style={{fontSize:12,fontWeight:600,color:"var(--text-primary)",marginBottom:2}}>{lead.full_name}</div>
-                      <div style={{fontSize:10,color:"var(--text-secondary)"}}>{lead.source||"—"}</div>
-                      {lead.test_score>0&&<div style={{fontSize:10,marginTop:3,color:lead.test_score>=70?G:A,fontWeight:600}}>Test: {lead.test_score}%</div>}
+                      <div style={{fontSize:11,color:"var(--text-secondary)"}}>{lead.source||"—"}</div>
+                      {lead.test_score>0&&<div style={{fontSize:11,marginTop:3,color:lead.test_score>=70?G:A,fontWeight:600}}>Test: {lead.test_score}%</div>}
                       {stage.id!=="convertido"&&stage.id!=="perdido"&&(
                         <div style={{display:"flex",gap:3,marginTop:6}}>
                           {STAGES.filter(s=>s.id!==stage.id&&s.id!=="convertido").slice(0,2).map(s=>(
                             <button key={s.id} onClick={()=>changeStage(lead.id,s.id)}
-                              style={{flex:1,fontSize:9,padding:"2px 4px",borderRadius:6,border:`1px solid ${s.color}`,background:s.bg,color:s.color,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>
+                              style={{flex:1,fontSize:11,padding:"2px 4px",borderRadius:6,border:`1px solid ${s.color}`,background:s.bg,color:s.color,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>
                               {s.label}
                             </button>
                           ))}

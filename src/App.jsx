@@ -162,7 +162,7 @@ function NavHub() {
           <div style={{ fontSize:14, color: dark?'#475569':'#64748b', marginBottom:28 }}>
             Plataforma de gestión académica · Demo interactivo
           </div>
-          <div style={{ display:'flex', gap:10, justifyContent:'center', flexWrap:'wrap' }}>
+          <div style={{ display:'flex', gap:8, justifyContent:'center', flexWrap:'wrap' }}>
             <Link to="/" style={{ textDecoration:'none' }}>
               <div style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'10px 24px', background:'#155266', borderRadius:30, color:'#fff', fontSize:13, fontWeight:700 }}>
                 🌐 Ver Landing Page →
@@ -184,7 +184,7 @@ function NavHub() {
           {[['10','Portales'],['36','Secciones spec'],['26','Entidades BD'],['11','Roles']].map(([v,l],i) => (
             <div key={i} style={{ flex:1, textAlign:'center', borderRight:i<3?`1px solid ${dark?'#1e293b':'#e2e8f0'}`:undefined }}>
               <div style={{ fontSize:24, fontWeight:800, color:'#ffbb23' }}>{v}</div>
-              <div style={{ fontSize:10, color: dark?'#475569':'#94a3b8', marginTop:3 }}>{l}</div>
+              <div style={{ fontSize:11, color: dark?'#475569':'#94a3b8', marginTop:3 }}>{l}</div>
             </div>
           ))}
         </div>
@@ -199,15 +199,15 @@ function NavHub() {
                 borderRadius:16, padding:'18px 20px', cursor:'pointer',
                 boxShadow: dark?'none':'0 1px 4px rgba(0,0,0,.05)',
                 transition:'all .2s',
-                display:'flex', gap:14, alignItems:'flex-start',
+                display:'flex', gap:16, alignItems:'flex-start',
               }}
               onMouseEnter={e=>{ e.currentTarget.style.borderColor=p.color; e.currentTarget.style.boxShadow=`0 4px 16px ${p.color}20`; e.currentTarget.style.transform='translateY(-2px)'; }}
               onMouseLeave={e=>{ e.currentTarget.style.borderColor=dark?'#334155':'#e2e8f0'; e.currentTarget.style.boxShadow=dark?'none':'0 1px 4px rgba(0,0,0,.05)'; e.currentTarget.style.transform='none'; }}>
                 <div style={{ fontSize:26, lineHeight:1, flexShrink:0 }}>{p.icon}</div>
                 <div>
                   <div style={{ fontSize:13, fontWeight:700, color: dark?'#f1f5f9':'#0f172a', marginBottom:4 }}>{p.label}</div>
-                  <code style={{ fontSize:10, color: dark?'#475569':'#94a3b8', display:'block', marginBottom:5 }}>{p.path}</code>
-                  <span style={{ fontSize:10, padding:'2px 8px', borderRadius:20, background:`${p.color}15`, color:p.color, fontWeight:600 }}>{p.role}</span>
+                  <code style={{ fontSize:11, color: dark?'#475569':'#94a3b8', display:'block', marginBottom:5 }}>{p.path}</code>
+                  <span style={{ fontSize:11, padding:'2px 8px', borderRadius:20, background:`${p.color}15`, color:p.color, fontWeight:600 }}>{p.role}</span>
                 </div>
               </div>
             </Link>

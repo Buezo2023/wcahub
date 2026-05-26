@@ -34,7 +34,7 @@ function TableWrap({headers,rows,empty="Sin datos"}){
     <div style={{overflowX:"auto"}}>
       <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
         <thead><tr style={{background:"var(--bg-surface-subtle)"}}>
-          {headers.map(h=><th key={h} style={{padding:"8px 12px",textAlign:"left",fontSize:10,fontWeight:700,color:"var(--text-tertiary)",textTransform:"uppercase",letterSpacing:.5,whiteSpace:"nowrap"}}>{h}</th>)}
+          {headers.map(h=><th key={h} style={{padding:"8px 12px",textAlign:"left",fontSize:11,fontWeight:700,color:"var(--text-tertiary)",textTransform:"uppercase",letterSpacing:.5,whiteSpace:"nowrap"}}>{h}</th>)}
         </tr></thead>
         <tbody>
           {rows.map((row,i)=>(
@@ -102,7 +102,7 @@ function FinanzasReport(){
       <div style={{display:"flex",justifyContent:"flex-end",marginBottom:10}}>
         <button onClick={exp} style={{padding:"7px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:6}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:6}}>
         <Kpi label="MRR" value={`$${data.mrr.toLocaleString()}`} color={P} sub="Ingresos recurrentes/mes"/>
         <Kpi label="ARR" value={`$${(data.mrr*12).toLocaleString()}`} color={P} sub="Ingresos anuales proj."/>
         <Kpi label="Cobrado este mes" value={`$${data.collected.toLocaleString()}`} color={G}/>
@@ -180,7 +180,7 @@ function AcademiaReport(){
       <div style={{display:"flex",justifyContent:"flex-end",marginBottom:10}}>
         <button onClick={exp} style={{padding:"7px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:6}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:6}}>
         <Kpi label="Matrículas activas" value={data.activeCount} color={P}/>
         <Kpi label="Grupos activos" value={data.groups.length} color={G}/>
         <Kpi label="Asistencia promedio" value={`${data.attRate}%`} color={data.attRate>=75?G:A}/>
@@ -259,7 +259,7 @@ function VentasReport(){
       <div style={{display:"flex",justifyContent:"flex-end",marginBottom:10}}>
         <button onClick={exp} style={{padding:"7px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:6}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:6}}>
         <Kpi label="Total leads" value={data.leads.length} color={P}/>
         <Kpi label="Convertidos" value={data.byStage.convertido||0} color={G}/>
         <Kpi label="Tasa conversión" value={`${data.convRate}%`} color={data.convRate>=20?G:A}/>
@@ -268,12 +268,12 @@ function VentasReport(){
         <Kpi label="Tareas vencidas" value={data.ovTasks.length} color={data.ovTasks.length>0?R:G}/>
       </div>
       <SectionTitle>Funnel de conversión</SectionTitle>
-      <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:14,marginBottom:12}}>
+      <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:12,marginBottom:12}}>
         {STAGES.map(sid=>{
           const count=data.byStage[sid]||0;
           const pct=data.leads.length>0?Math.round((count/data.leads.length)*100):0;
           return(
-            <div key={sid} style={{display:"flex",alignItems:"center",gap:10,marginBottom:7}}>
+            <div key={sid} style={{display:"flex",alignItems:"center",gap:8,marginBottom:7}}>
               <div style={{width:80,fontSize:11,fontWeight:600,color:"var(--text-secondary)",textTransform:"capitalize"}}>{sid}</div>
               <div style={{flex:1,height:7,background:"var(--bg-surface-subtle)",borderRadius:4,overflow:"hidden"}}>
                 <div style={{height:"100%",width:`${pct}%`,background:P,borderRadius:4}}/>
@@ -333,7 +333,7 @@ function RRHHReport(){
       <div style={{display:"flex",justifyContent:"flex-end",marginBottom:10}}>
         <button onClick={exp} style={{padding:"7px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:6}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:6}}>
         <Kpi label="Total usuarios" value={data.total} color={P}/>
         <Kpi label="Activos" value={data.active} color={G}/>
         <Kpi label="Personal (staff)" value={data.staff.length} color={A}/>
@@ -394,7 +394,7 @@ function LMSReport(){
   if(!data) return null;
   return(
     <div>
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:10,marginBottom:6}}>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:6}}>
         <Kpi label="XP total otorgado" value={data.totalXP.toLocaleString()} color={A}/>
         <Kpi label="Actividades completadas" value={data.completedActs} color={G}/>
         <Kpi label="Estudiantes activos LMS" value={data.uniqueLearners} color={P}/>
@@ -431,14 +431,14 @@ export function ReportesSection({ showToast, subView }) {
       <div style={{display:"flex",gap:5,marginBottom:16,flexWrap:"wrap"}}>
         {DEPTS.map(d=>(
           <button key={d.id} onClick={()=>setActiveDept(d.id)}
-            style={{padding:"7px 14px",borderRadius:9,border:"none",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",background:current===d.id?P:"var(--bg-surface-subtle)",color:current===d.id?"#fff":"var(--text-secondary)"}}>
+            style={{padding:"7px 14px",borderRadius:8,border:"none",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",background:current===d.id?P:"var(--bg-surface-subtle)",color:current===d.id?"#fff":"var(--text-secondary)"}}>
             {d.label}
           </button>
         ))}
       </div>
 
       {/* Active dept desc */}
-      <div style={{fontSize:12,color:"var(--text-secondary)",marginBottom:14}}>
+      <div style={{fontSize:12,color:"var(--text-secondary)",marginBottom:16}}>
         {DEPTS.find(d=>d.id===current)?.desc}
       </div>
 

@@ -75,7 +75,7 @@ export function FillBlankActivity({ content, onComplete, completed }) {
         return (
           <div key={i} style={{
             background:"var(--bg-surface)", border:`2px solid ${isCorrect ? G : isWrong ? R : "var(--border)"}`,
-            borderRadius:12, padding:14, marginBottom:10,
+            borderRadius:12, padding:12, marginBottom:10,
           }}>
             <div style={{ fontSize:14, color:"var(--text-primary)", lineHeight:2, marginBottom:8, whiteSpace:"pre-line" }}>
               {parts.map((part, pi) => (

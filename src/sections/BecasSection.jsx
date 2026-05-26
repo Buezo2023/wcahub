@@ -51,7 +51,7 @@ export function BecasSection({ showToast }) {
 
   return(
     <div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
         <div style={{background:PD,border:`1px solid ${P}20`,borderRadius:12,padding:"12px 16px",display:"flex",gap:12,alignItems:"center"}}>
           <i className="ti ti-certificate" style={{fontSize:24,color:P}}/>
           <div><div style={{fontSize:22,fontWeight:800,color:P}}>{scholars.length}</div><div style={{fontSize:11,color:"var(--text-secondary)"}}>Con beca activa</div></div>
@@ -63,7 +63,7 @@ export function BecasSection({ showToast }) {
       </div>
 
       <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar estudiante..."
-        style={{width:"100%",padding:"9px 13px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit",marginBottom:12}}/>
+        style={{width:"100%",padding:"9px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit",marginBottom:12}}/>
 
       {loading?<div style={{padding:32,textAlign:"center",color:"var(--text-secondary)",fontSize:13}}>Cargando...</div>
       :filtered.length===0?<EmptyState icon="🏅" title="Sin becas" subtitle="Los estudiantes con promedio ≥85% y unidad 3+ aparecen como elegibles."/>
@@ -74,7 +74,7 @@ export function BecasSection({ showToast }) {
           const avg = scores.length ? Math.round(scores.reduce((a,b)=>a+b,0)/scores.length) : null;
           const isEligible = eligible.some(e=>e.id===s.id);
           return(
-            <div key={s.id} style={{background:"var(--bg-surface)",border:`1px solid ${s.scholarship?"#fbbf24":isEligible?`${A}40`:"var(--border)"}`,borderRadius:12,padding:14,display:"flex",gap:14,alignItems:"center"}}>
+            <div key={s.id} style={{background:"var(--bg-surface)",border:`1px solid ${s.scholarship?"#fbbf24":isEligible?`${A}40`:"var(--border)"}`,borderRadius:12,padding:12,display:"flex",gap:16,alignItems:"center"}}>
               <div style={{width:40,height:40,borderRadius:"50%",background:s.scholarship?AD:PD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color:s.scholarship?A:P,flexShrink:0}}>
                 {(s.profile?.full_name||"?").split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase()}
               </div>
@@ -82,8 +82,8 @@ export function BecasSection({ showToast }) {
                 <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)"}}>{s.profile?.full_name||"—"}</div>
                 <div style={{fontSize:11,color:"var(--text-secondary)"}}>{s.level} · U{prog?.current_unit||1}/12 · {avg!==null?`Promedio ${avg}%`:"Sin exámenes"}</div>
               </div>
-              {s.scholarship&&<span style={{fontSize:10,padding:"3px 8px",borderRadius:12,background:AD,color:A,fontWeight:700}}>BECADO</span>}
-              {isEligible&&!s.scholarship&&<span style={{fontSize:10,padding:"3px 8px",borderRadius:12,background:GD,color:G,fontWeight:700}}>ELEGIBLE</span>}
+              {s.scholarship&&<span style={{fontSize:11,padding:"3px 8px",borderRadius:12,background:AD,color:A,fontWeight:700}}>BECADO</span>}
+              {isEligible&&!s.scholarship&&<span style={{fontSize:11,padding:"3px 8px",borderRadius:12,background:GD,color:G,fontWeight:700}}>ELEGIBLE</span>}
               <button onClickCapture={e=>{e.stopPropagation();toggleScholarship(s);}} style={{fontSize:11,padding:"6px 12px",background:s.scholarship?R:"#e8f3f6",color:s.scholarship?"#fff":P,border:"none",borderRadius:8,cursor:"pointer",fontFamily:"inherit",fontWeight:600,flexShrink:0}}>
                 {s.scholarship?"Retirar beca":"Otorgar beca"}
               </button>

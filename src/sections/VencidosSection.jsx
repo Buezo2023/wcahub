@@ -51,12 +51,12 @@ export function VencidosSection({ showToast }) {
 
   return(
     <div>
-      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:8}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,flexWrap:"wrap",gap:8}}>
         <div style={{background:RD,border:`1px solid ${R}30`,borderRadius:10,padding:"8px 14px",fontSize:13,color:R,display:"flex",gap:8,flex:1}}>
           <i className="ti ti-alert-circle" style={{fontSize:14,flexShrink:0,marginTop:1}}/>
           {overdue.length} estudiante{overdue.length!==1?"s":""} con pago vencido · el sistema auto-suspende a los 15 días
         </div>
-        <button onClickCapture={e=>{e.stopPropagation();triggerCycle();}} style={{padding:"8px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:9,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)",fontWeight:600}}>
+        <button onClickCapture={e=>{e.stopPropagation();triggerCycle();}} style={{padding:"8px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)",fontWeight:600}}>
           ▶ Ejecutar ciclo ahora
         </button>
       </div>
@@ -64,7 +64,7 @@ export function VencidosSection({ showToast }) {
       {loading?<div style={{padding:32,textAlign:"center",color:"var(--text-secondary)",fontSize:13}}>Cargando...</div>
       :overdue.length===0?(
         <div style={{textAlign:"center",padding:"40px 20px"}}>
-          <div style={{fontSize:48,marginBottom:12}}>✅</div>
+          <div style={{marginBottom:12}}><i className="ti ti-circle-check" style={{fontSize:48,color:"var(--green)"}} aria-hidden="true"/></div>
           <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>Sin pagos vencidos</div>
           <div style={{fontSize:13,color:"var(--text-secondary)",marginTop:4}}>Todos los estudiantes están al día</div>
         </div>
@@ -78,12 +78,12 @@ export function VencidosSection({ showToast }) {
               </div>
               <div style={{textAlign:"right"}}>
                 <div style={{fontSize:20,fontWeight:800,color:o.days>=15?R:A}}>${o.amount}</div>
-                <div style={{fontSize:10,padding:"2px 8px",borderRadius:12,background:o.days>=15?RD:"#fffbeb",color:o.days>=15?R:A,fontWeight:700,marginTop:4}}>
+                <div style={{fontSize:11,padding:"2px 8px",borderRadius:12,background:o.days>=15?RD:"#fffbeb",color:o.days>=15?R:A,fontWeight:700,marginTop:4}}>
                   {o.days>=15?"⛔ Suspender":"⚠ Vencido"}
                 </div>
               </div>
             </div>
-            <div style={{display:"flex",gap:6}}>
+            <div style={{display:"flex",gap:8}}>
               <button onClickCapture={e=>{e.stopPropagation();runReminder(o);}} style={{flex:1,fontSize:12,padding:"6px",background:P,color:"#fff",border:"none",borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>✉ Recordatorio</button>
               {o.phone&&<a href={`https://wa.me/${o.phone.replace(/\D/g,"")}?text=${encodeURIComponent(`Hola ${o.name}, tu pago de $${o.amount} lleva ${o.days} días vencido en WCA Academy.`)}`} target="_blank" rel="noopener noreferrer" style={{flex:1,fontSize:12,padding:"6px",background:GD,color:G,border:"none",borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:600,textAlign:"center",textDecoration:"none"}}>💬 WhatsApp</a>}
             </div>

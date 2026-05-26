@@ -231,19 +231,19 @@ function UpsellBanner({prog,canEnroll,onEnroll}){
   return(
     <div style={{background:"var(--bg-surface)",border:`1.5px solid ${prog.color}30`,borderRadius:16,padding:20,display:"flex",gap:16,alignItems:"flex-start",boxShadow:"var(--shadow-sm)",position:"relative",overflow:"hidden"}}>
       <div style={{position:"absolute",top:0,right:0,width:100,height:100,background:`${prog.color}08`,borderRadius:"0 16px 0 100%"}}/>
-      <div style={{width:52,height:52,borderRadius:14,background:prog.colorLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0}}>{prog.icon}</div>
+      <div style={{width:52,height:52,borderRadius:12,background:prog.colorLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:26,flexShrink:0}}>{prog.icon}</div>
       <div style={{flex:1}}>
         <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:4}}>
           <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>{prog.name}</div>
           {prog.tag&&<span style={{fontSize:11,padding:"2px 8px",borderRadius:20,background:prog.color,color:"#fff",fontWeight:700}}>{prog.tag}</span>}
         </div>
         <div style={{fontSize:12,color:"var(--text-secondary)",lineHeight:1.6,marginBottom:10}}>{prog.desc}</div>
-        <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:12}}>
+        <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:12}}>
           {prog.skills.slice(0,4).map(s=><span key={s} style={{fontSize:11,padding:"3px 9px",borderRadius:20,background:prog.colorLight,color:prog.color,fontWeight:500}}>{s}</span>)}
           {prog.skills.length>4&&<span style={{fontSize:11,padding:"3px 9px",borderRadius:20,background:"var(--bg-surface-subtle)",color:"var(--text-tertiary)"}}>+{prog.skills.length-4} más</span>}
         </div>
         {prog.prereq&&!canEnroll&&(
-          <div style={{fontSize:11,color:A,background:AD,padding:"6px 12px",borderRadius:8,marginBottom:10,display:"flex",gap:6}}>
+          <div style={{fontSize:11,color:A,background:AD,padding:"6px 12px",borderRadius:8,marginBottom:10,display:"flex",gap:8}}>
             <i className="ti ti-lock" style={{fontSize:12}} aria-hidden="true"/>
             Requiere completar <strong>VA General</strong> primero
           </div>
@@ -414,9 +414,9 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
             Último intento: {enrollment.examScore}% {enrollment.examScore>=70?"✓ Aprobado":"✗ No aprobado"}
           </div>
         )}
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:20 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8, marginBottom:20 }}>
           {[["Preguntas", questions.length,"var(--text-primary)"],["Para aprobar","≥ 70%",G],["Tiempo límite","30 min",P]].map(([l,v,c],i) => (
-            <div key={i} style={{ background:"var(--bg-surface-subtle)", borderRadius:9, padding:"12px 14px" }}>
+            <div key={i} style={{ background:"var(--bg-surface-subtle)", borderRadius:8, padding:"12px 14px" }}>
               <div style={{ fontSize:20, fontWeight:800, color:c }}>{v}</div>
               <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:3 }}>{l}</div>
             </div>
@@ -447,7 +447,7 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
       </div>
       <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
         {questions.map((q, qi) => (
-          <div key={qi} style={{ background:"var(--bg-surface)", border:`1.5px solid ${answers[qi]!==undefined?P+"60":"var(--border)"}`, borderRadius:14, padding:20 }}>
+          <div key={qi} style={{ background:"var(--bg-surface)", border:`1.5px solid ${answers[qi]!==undefined?P+"60":"var(--border)"}`, borderRadius:12, padding:20 }}>
             <div style={{ fontSize:14, fontWeight:600, color:"var(--text-primary)", marginBottom:14 }}>
               <span style={{ color:P, marginRight:8, fontWeight:800 }}>{qi+1}.</span>{q.q}
             </div>
@@ -456,7 +456,7 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
                 const selected = answers[qi] === oi;
                 return (
                   <button key={oi} onClick={() => setAnswers(a => ({...a,[qi]:oi}))}
-                    style={{ display:"flex", alignItems:"center", gap:12, padding:"11px 16px", background:selected?`${P}12`:"var(--bg-surface-subtle)", border:`1.5px solid ${selected?P:"var(--border)"}`, borderRadius:9, cursor:"pointer", textAlign:"left", fontFamily:"inherit", fontSize:13, color:selected?P:"var(--text-primary)", fontWeight:selected?600:400, transition:"all .15s" }}>
+                    style={{ display:"flex", alignItems:"center", gap:12, padding:"11px 16px", background:selected?`${P}12`:"var(--bg-surface-subtle)", border:`1.5px solid ${selected?P:"var(--border)"}`, borderRadius:8, cursor:"pointer", textAlign:"left", fontFamily:"inherit", fontSize:13, color:selected?P:"var(--text-primary)", fontWeight:selected?600:400, transition:"all .15s" }}>
                     <div style={{ width:20, height:20, borderRadius:"50%", border:`2px solid ${selected?P:"var(--border)"}`, background:selected?P:"transparent", flexShrink:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
                       {selected && <div style={{ width:8, height:8, borderRadius:"50%", background:"#fff" }}/>}
                     </div>
@@ -487,7 +487,7 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
         {saving && <div style={{ fontSize:12, color:"var(--text-tertiary)", marginTop:8 }}>Guardando resultado…</div>}
         {confirmed && <div style={{ fontSize:12, color:G, marginTop:8 }}>✓ Resultado guardado en tu historial</div>}
       </div>
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:16 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:16 }}>
         {[["Correctas",`${questions.filter((_,i)=>answers[i]===questions[i].ans).length}/${questions.length}`,passed?G:R],["Porcentaje",`${score}%`,passed?G:R],["Resultado",passed?"Aprobado":"Reprobado",passed?G:R],["Intentos usados",`${attempts}/${MAX_ATTEMPTS}`,A]].map(([l,v,c],i)=>(
           <div key={i} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:10, padding:"12px 14px" }}>
             <div style={{ fontSize:16, fontWeight:800, color:c }}>{v}</div>
@@ -662,7 +662,7 @@ export default function PortalEstudiante(){
         <div style={{padding:"8px 12px",marginBottom:4}}>
           <div style={{fontSize:11,color:"rgba(255,255,255,.3)",fontWeight:700,letterSpacing:1,textTransform:"uppercase",marginBottom:8}}>Mis programas</div>
           {enrolledProgs.map(p=>(
-            <button key={p.id} onClick={()=>{setActiveProg(p.id);setView("practica");}} style={{width:"100%",display:"flex",alignItems:"center",gap:7,padding:"8px 9px",border:"none",background:activeProg===p.id?"rgba(255,255,255,.15)":"rgba(255,255,255,.05)",color:activeProg===p.id?"#fff":"rgba(255,255,255,.55)",borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontSize:11,marginBottom:4,textAlign:"left",fontWeight:activeProg===p.id?600:400,borderLeft:`2px solid ${activeProg===p.id?Y:"transparent"}`,transition:"all .15s"}}>
+            <button key={p.id} onClick={()=>{setActiveProg(p.id);setView("practica");}} style={{width:"100%",display:"flex",alignItems:"center",gap:7,padding:"8px 9px",border:"none",background:activeProg===p.id?"rgba(255,255,255,.15)":"rgba(255,255,255,.05)",color:activeProg===p.id?"#fff":"rgba(255,255,255,.55)",borderRadius:8,cursor:"pointer",fontFamily:"inherit",fontSize:11,marginBottom:4,textAlign:"left",fontWeight:activeProg===p.id?600:400,borderLeft:`2px solid ${activeProg===p.id?Y:"transparent"}`,transition:"all .15s"}}>
               <span style={{fontSize:14}}>{p.icon}</span>
               <span style={{flex:1}}>{p.shortName}</span>
               {activeProg===p.id&&<div style={{width:6,height:6,borderRadius:"50%",background:Y,flexShrink:0}}/>}
@@ -673,7 +673,7 @@ export default function PortalEstudiante(){
         <div style={{height:1,background:"rgba(255,255,255,.08)",margin:"4px 12px 8px"}}/>
 
         {NAV.map(n=>(
-          <button key={n.id} onClick={()=>setView(n.id)} style={{display:"flex",alignItems:"center",gap:10,padding:"10px 18px",border:"none",background:view===n.id?"rgba(255,255,255,.12)":"transparent",color:view===n.id?"#fff":"rgba(255,255,255,.45)",fontSize:12,cursor:"pointer",textAlign:"left",borderLeft:`2px solid ${view===n.id?Y:"transparent"}`,transition:"all .15s",fontFamily:"inherit",fontWeight:view===n.id?600:400,width:"100%"}}>
+          <button key={n.id} onClick={()=>setView(n.id)} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 18px",border:"none",background:view===n.id?"rgba(255,255,255,.12)":"transparent",color:view===n.id?"#fff":"rgba(255,255,255,.45)",fontSize:12,cursor:"pointer",textAlign:"left",borderLeft:`2px solid ${view===n.id?Y:"transparent"}`,transition:"all .15s",fontFamily:"inherit",fontWeight:view===n.id?600:400,width:"100%"}}>
             <i className={"ti "+n.icon} style={{fontSize:14,width:18,textAlign:"center"}} aria-hidden="true"/>
             {n.label}
           </button>
@@ -698,7 +698,7 @@ export default function PortalEstudiante(){
           Cerrar sesión
         </button>
       </aside>
-      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:"var(--z-overlay)",background:"rgba(0,0,0,.4)"}}/>}
 
 
       {/* MAIN */}
@@ -717,7 +717,7 @@ export default function PortalEstudiante(){
               )}
             </button>
             {showNotifs && (
-              <div style={{position:"absolute",top:44,right:0,width:isMobile?"90vw":320,background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,boxShadow:"0 8px 32px rgba(0,0,0,.15)",zIndex:999,overflow:"hidden"}}>
+              <div style={{position:"absolute",top:44,right:0,width:isMobile?"90vw":320,background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,boxShadow:"0 8px 32px rgba(0,0,0,.15)",zIndex:"var(--z-dropdown)",overflow:"hidden"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"12px 16px",borderBottom:"1px solid var(--border)"}}>
                   <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)"}}>Notificaciones</div>
                   {unread > 0 && <button onClick={markAllRead} style={{fontSize:11,color:P,background:"none",border:"none",cursor:"pointer",fontFamily:"inherit"}}>Marcar leídas</button>}
@@ -729,7 +729,7 @@ export default function PortalEstudiante(){
                     </div>
                   ) : notifications.map(n=>(
                     <div key={n.id} onClick={()=>markRead(n.id)}
-                      style={{display:"flex",gap:10,padding:"11px 16px",borderBottom:"1px solid var(--border)",background:n.read?"transparent":`${P}08`,cursor:"pointer"}}>
+                      style={{display:"flex",gap:8,padding:"11px 16px",borderBottom:"1px solid var(--border)",background:n.read?"transparent":`${P}08`,cursor:"pointer"}}>
                       <div style={{width:7,height:7,borderRadius:"50%",background:n.read?"var(--border)":P,flexShrink:0,marginTop:5}}/>
                       <div style={{flex:1}}>
                         <div style={{fontSize:12,fontWeight:n.read?400:600,color:"var(--text-primary)"}}>{n.title}</div>
@@ -747,7 +747,7 @@ export default function PortalEstudiante(){
 
         {/* Enroll success toast */}
         {showEnrollSuccess&&(
-          <div style={{position:"fixed",top:20,right:90,background:G,color:"#fff",padding:"12px 20px",borderRadius:12,fontSize:13,fontWeight:600,zIndex:9998,boxShadow:"0 8px 24px rgba(5,150,105,.3)",display:"flex",alignItems:"center",gap:8,animation:"slideIn .3s ease"}}>
+          <div style={{position:"fixed",top:20,right:90,background:G,color:"#fff",padding:"12px 20px",borderRadius:12,fontSize:13,fontWeight:600,zIndex:"var(--z-modal)",boxShadow:"0 8px 24px rgba(5,150,105,.3)",display:"flex",alignItems:"center",gap:8,animation:"slideIn .3s ease"}}>
             <style dangerouslySetInnerHTML={{__html:"@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}"}}></style>
             <i className="ti ti-check" style={{fontSize:16}} aria-hidden="true"/>
             ¡Inscripción confirmada en {ALL_PROGRAMS.find(p=>p.id===showEnrollSuccess)?.name}!
@@ -793,8 +793,8 @@ export default function PortalEstudiante(){
                       <div key={p.id} onClick={()=>{setActiveProg(p.id);setView("practica");}} style={{background:"var(--bg-surface)",border:`1.5px solid ${p.color}40`,borderRadius:16,padding:18,cursor:"pointer",boxShadow:"var(--shadow-sm)",transition:"all .2s"}}
                         onMouseEnter={e=>{e.currentTarget.style.boxShadow=`0 6px 20px ${p.color}25`;e.currentTarget.style.transform="translateY(-2px)";}}
                         onMouseLeave={e=>{e.currentTarget.style.boxShadow="var(--shadow-sm)";e.currentTarget.style.transform="none";}}>
-                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
-                          <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
+                          <div style={{display:"flex",gap:8,alignItems:"center"}}>
                             <div style={{width:42,height:42,borderRadius:11,background:p.colorLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{p.icon}</div>
                             <div>
                               <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)"}}>{p.shortName}</div>
@@ -821,7 +821,7 @@ export default function PortalEstudiante(){
               {/* Upsell banners — programas no inscritos */}
               {unenrolledProgs.length>0&&(
                 <div>
-                  <div style={{display:"flex",alignItems:"center",gap:10,marginBottom:14}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
                     <div style={{flex:1,height:1,background:"var(--border)"}}/>
                     <div style={{fontSize:12,fontWeight:600,color:"var(--text-secondary)",padding:"0 10px",whiteSpace:"nowrap"}}>🚀 Amplía tu perfil profesional</div>
                     <div style={{flex:1,height:1,background:"var(--border)"}}/>
@@ -838,7 +838,7 @@ export default function PortalEstudiante(){
 
               {/* All enrolled → show completion message */}
               {unenrolledProgs.length===0&&(
-                <div style={{background:GD,border:`1px solid ${G}40`,borderRadius:14,padding:20,textAlign:"center"}}>
+                <div style={{background:GD,border:`1px solid ${G}40`,borderRadius:12,padding:20,textAlign:"center"}}>
                   <div style={{fontSize:isMobile?22:32,marginBottom:8}}>🏆</div>
                   <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:4}}>¡Estás inscrita en todos los programas!</div>
                   <div style={{fontSize:13,color:"var(--text-secondary)"}}>Sigue practicando para completar cada uno.</div>
@@ -896,8 +896,8 @@ export default function PortalEstudiante(){
                   const cyclePct = Math.round(((realUnit-1)/12)*100);
                   if (!enrolled.includes(p.id)) return null;
                   return(
-                    <div key={p.id} style={{background:"var(--bg-surface)",border:`1.5px solid ${p.color}40`,borderRadius:14,padding:18,boxShadow:"var(--shadow-sm)"}}>
-                      <div style={{display:"flex",gap:12,alignItems:"center",marginBottom:14}}>
+                    <div key={p.id} style={{background:"var(--bg-surface)",border:`1.5px solid ${p.color}40`,borderRadius:12,padding:18,boxShadow:"var(--shadow-sm)"}}>
+                      <div style={{display:"flex",gap:12,alignItems:"center",marginBottom:16}}>
                         <div style={{width:42,height:42,borderRadius:11,background:p.colorLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{p.icon}</div>
                         <div>
                           <div style={{fontSize:14,fontWeight:700,color:"var(--text-primary)"}}>{p.shortName}</div>
@@ -929,7 +929,7 @@ export default function PortalEstudiante(){
               </div>
 
               {/* Prereq map */}
-              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,padding:20,marginBottom:14,boxShadow:"var(--shadow-sm)"}}>
+              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:20,marginBottom:16,boxShadow:"var(--shadow-sm)"}}>
                 <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:16}}>🗺 Ruta de certificaciones WCA</div>
                 <div style={{display:"flex",alignItems:"center",gap:0,overflowX:"auto"}}>
                   {ALL_PROGRAMS.map((p,i)=>{
@@ -959,7 +959,7 @@ export default function PortalEstudiante(){
               {enrolledProgs.map(p=>{
                 const prog2=ALL_PROGRAMS.find(x=>x.id===p.id);
                 return(
-                  <div key={p.id} style={{background:"var(--bg-surface)",border:`1px solid ${p.color}30`,borderRadius:14,padding:18,marginBottom:12,boxShadow:"var(--shadow-sm)"}}>
+                  <div key={p.id} style={{background:"var(--bg-surface)",border:`1px solid ${p.color}30`,borderRadius:12,padding:18,marginBottom:12,boxShadow:"var(--shadow-sm)"}}>
                     <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:12}}>
                       <span style={{fontSize:22}}>{p.icon}</span>
                       <div style={{flex:1}}>
@@ -1009,7 +1009,7 @@ export default function PortalEstudiante(){
                         if(data.data?.url) window.open(data.data.url, "_blank");
                         else toast.error("Error al iniciar pago: " + (data.error||"Stripe no configurado"));
                       }catch(e){ toast.error("Error: "+e.message); }
-                    }} style={{width:"100%",padding:"9px",background:P,color:"#fff",border:"none",borderRadius:9,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginTop:10}}>
+                    }} style={{width:"100%",padding:"9px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginTop:10}}>
                       💳 Pagar con Stripe
                     </button>
                   </div>
@@ -1017,7 +1017,7 @@ export default function PortalEstudiante(){
               })}
               {/* Upload proof for pending payments */}
               {realPayments.filter(p=>p.status==="pending").map(p=>(
-                <div key={p.id} style={{background:AD,border:`1px solid ${A}40`,borderRadius:12,padding:"14px 18px",marginBottom:10,display:"flex",alignItems:"center",gap:12}}>
+                <div key={p.id} style={{background:AD,border:`1px solid ${A}40`,borderRadius:12,padding:"12px 16px",marginBottom:10,display:"flex",alignItems:"center",gap:12}}>
                   <div style={{flex:1}}>
                     <div style={{fontSize:13,fontWeight:700,color:A}}>⏳ Pago pendiente de confirmación</div>
                     <div style={{fontSize:11,color:"var(--text-secondary)",marginTop:2}}>${Number(p.amount).toFixed(2)} · {new Date(p.created_at).toLocaleDateString("es-HN",{day:"2-digit",month:"long"})}</div>
@@ -1047,7 +1047,7 @@ export default function PortalEstudiante(){
               ))}
 
               {/* Payment history by month */}
-              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,overflow:"hidden",boxShadow:"var(--shadow-sm)"}}>
+              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",boxShadow:"var(--shadow-sm)"}}>
                 <div style={{padding:"13px 18px",borderBottom:"1px solid var(--border)",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <div style={{fontSize:12,fontWeight:700,color:"var(--text-primary)"}}>Historial de pagos</div>
                   <div style={{fontSize:11,color:"var(--text-secondary)"}}>{realPayments.filter(p=>p.status==="confirmed").length} pagos confirmados</div>
@@ -1059,14 +1059,14 @@ export default function PortalEstudiante(){
                   const statusBg    = p.status==="confirmed"?GD:p.status==="pending"?AD:RD;
                   const statusText  = p.status==="confirmed"?"✓ Confirmado":p.status==="pending"?"Pendiente":"Rechazado";
                   return(
-                  <div key={p.id||i} style={{display:"flex",alignItems:"center",gap:14,padding:"12px 18px",borderBottom:"1px solid var(--border)"}}>
+                  <div key={p.id||i} style={{display:"flex",alignItems:"center",gap:16,padding:"12px 18px",borderBottom:"1px solid var(--border)"}}>
                     <div style={{width:40,height:40,borderRadius:10,background:statusBg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:18,flexShrink:0}}>
                       {p.status==="confirmed"?"✓":p.status==="pending"?"⏳":"✗"}
                     </div>
                     <div style={{flex:1}}><div style={{fontSize:13,color:"var(--text-primary)",fontWeight:500}}>{fecha}</div><div style={{fontSize:11,color:"var(--text-secondary)"}}>{p.method||"Transferencia"} · {p.reference_code||"—"}</div></div>
                     <div style={{textAlign:"right"}}>
                       <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>${Number(p.amount).toFixed(2)}</div>
-                      <div style={{fontSize:10,padding:"2px 7px",background:statusBg,color:statusColor,borderRadius:12,fontWeight:600,marginTop:2}}>{statusText}</div>
+                      <div style={{fontSize:11,padding:"2px 7px",background:statusBg,color:statusColor,borderRadius:12,fontWeight:600,marginTop:2}}>{statusText}</div>
                     </div>
                   </div>);
                 }) : (
@@ -1076,9 +1076,9 @@ export default function PortalEstudiante(){
                 )}
               </div>
               {/* ── Subida de comprobante ── */}
-              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,padding:18,marginTop:12,boxShadow:"var(--shadow-sm)"}}>
+              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:18,marginTop:12,boxShadow:"var(--shadow-sm)"}}>
                 <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:4}}>Subir comprobante de pago</div>
-                <div style={{fontSize:12,color:"var(--text-secondary)",marginBottom:14}}>Si pagaste por transferencia bancaria, sube la foto o captura del comprobante para que el equipo lo confirme.</div>
+                <div style={{fontSize:12,color:"var(--text-secondary)",marginBottom:16}}>Si pagaste por transferencia bancaria, sube la foto o captura del comprobante para que el equipo lo confirme.</div>
                 {uploadState.done ? (
                   <div style={{background:GD,borderRadius:10,padding:"12px 14px",fontSize:13,color:"#065f46",fontWeight:600}}>✓ Comprobante enviado correctamente. Te confirmamos en 24h.</div>
                 ) : (
@@ -1150,7 +1150,7 @@ export default function PortalEstudiante(){
                 <div style={{background:`linear-gradient(135deg,#0f3d4d,#155266)`,padding:"24px 28px",color:"#fff"}}>
                   <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
                     <svg viewBox="0 0 32 32" style={{width:36,height:36}}><rect width="32" height="32" rx="8" fill="#ffbb23"/><text x="16" y="23" fontFamily="sans-serif" fontSize="18" fontWeight="800" fill="#0f3d4d" textAnchor="middle">W</text></svg>
-                    <div><div style={{fontSize:14,fontWeight:800}}>WCA <span style={{color:"#ffbb23"}}>Academy</span></div><div style={{fontSize:10,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>Reporte del estudiante</div></div>
+                    <div><div style={{fontSize:14,fontWeight:800}}>WCA <span style={{color:"#ffbb23"}}>Academy</span></div><div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>Reporte del estudiante</div></div>
                   </div>
                   <div style={{fontSize:22,fontWeight:800,letterSpacing:-0.3}}>{user?.name||"Estudiante"}</div>
                   <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
@@ -1177,7 +1177,7 @@ export default function PortalEstudiante(){
 
               {/* Action */}
               <button onClickCapture={(e)=>{e.stopPropagation();setShowReport(true);}} style={{
-                display:"flex",alignItems:"center",gap:10,padding:"14px 28px",
+                display:"flex",alignItems:"center",gap:8,padding:"14px 28px",
                 background:"#ffbb23",color:"#0f3d4d",border:"none",borderRadius:12,
                 fontSize:14,fontWeight:700,cursor:"pointer",fontFamily:"inherit",
                 boxShadow:"0 4px 20px rgba(255,187,35,.4)",
@@ -1193,7 +1193,7 @@ export default function PortalEstudiante(){
 
           {view==="perfil"&&(
             <div style={{padding:24,maxWidth:500}}>
-              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:16,padding:24,marginBottom:14,boxShadow:"var(--shadow-sm)"}}>
+              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:16,padding:24,marginBottom:16,boxShadow:"var(--shadow-sm)"}}>
                 <div style={{display:"flex",alignItems:"center",gap:16,marginBottom:20}}>
                   <div style={{width:64,height:64,borderRadius:"50%",background:PD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,fontWeight:800,color:P,flexShrink:0}}>
                     {user.avatar
@@ -1217,11 +1217,11 @@ export default function PortalEstudiante(){
                       value={profileForm[f.key]||""}
                       onChange={e=>setProfileForm(p=>({...p,[f.key]:e.target.value}))}
                       placeholder={f.placeholder}
-                      style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}
+                      style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}
                     />
                   </div>
                 ))}
-                {profileSaved && <div style={{background:GD,borderRadius:9,padding:"9px 12px",fontSize:12,color:"#065f46",fontWeight:600,marginBottom:12}}>✓ Perfil actualizado correctamente</div>}
+                {profileSaved && <div style={{background:GD,borderRadius:8,padding:"8px 12px",fontSize:12,color:"#065f46",fontWeight:600,marginBottom:12}}>✓ Perfil actualizado correctamente</div>}
                 <button
                   disabled={profileSaving}
                   onClick={async()=>{
@@ -1244,7 +1244,7 @@ export default function PortalEstudiante(){
                   {profileSaving?"Guardando…":"Guardar cambios"}
                 </button>
               </div>
-              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,padding:18,boxShadow:"var(--shadow-sm)"}}>
+              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:18,boxShadow:"var(--shadow-sm)"}}>
                 <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:12}}>Mis certificados</div>
                 {enrolledProgs.map(p=>{
                   const en2 = realEnrollments[p.id]||{};
@@ -1277,7 +1277,7 @@ export default function PortalEstudiante(){
 
         </div>
       </main>
-      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:P,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:"var(--z-overlay)",width:50,height:50,borderRadius:"50%",background:P,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
       {showReport && (
         <StudentReport
           student={user}

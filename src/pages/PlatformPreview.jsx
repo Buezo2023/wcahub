@@ -158,24 +158,24 @@ function PortalCard({ portal, selected, onClick }) {
     <div onClick={onClick} style={{
       background: selected ? portal.color : B.white,
       border: `1.5px solid ${selected ? portal.color : B.border}`,
-      borderRadius:14, padding:"14px 16px", cursor:"pointer",
+      borderRadius:12, padding:"14px 16px", cursor:"pointer",
       transition:"all .2s", transform: selected ? "scale(1.02)" : "scale(1)",
       boxShadow: selected ? `0 8px 24px ${portal.color}30` : "none",
     }}>
-      <div style={{ display:"flex", gap:10, alignItems:"flex-start", marginBottom:10 }}>
+      <div style={{ display:"flex", gap:8, alignItems:"flex-start", marginBottom:10 }}>
         <div style={{ fontSize:22, lineHeight:1 }}>{portal.icon}</div>
         <div style={{ flex:1 }}>
           <div style={{ fontSize:12, fontWeight:700, color: selected ? "#fff" : B.text, marginBottom:2 }}>{portal.label}</div>
-          <code style={{ fontSize:9, color: selected ? "rgba(255,255,255,.6)" : B.textSec }}>{portal.route}</code>
+          <code style={{ fontSize:11, color: selected ? "rgba(255,255,255,.6)" : B.textSec }}>{portal.route}</code>
         </div>
-        <span style={{ fontSize:9, padding:"2px 8px", borderRadius:20, background: selected ? "rgba(255,255,255,.2)" : portal.roleColor+"18", color: selected ? "#fff" : portal.roleColor, fontWeight:600, flexShrink:0 }}>{portal.role}</span>
+        <span style={{ fontSize:11, padding:"2px 8px", borderRadius:20, background: selected ? "rgba(255,255,255,.2)" : portal.roleColor+"18", color: selected ? "#fff" : portal.roleColor, fontWeight:600, flexShrink:0 }}>{portal.role}</span>
       </div>
-      <div style={{ fontSize:10, color: selected ? "rgba(255,255,255,.75)" : B.textSec, lineHeight:1.6, marginBottom:10 }}>{portal.desc}</div>
+      <div style={{ fontSize:11, color: selected ? "rgba(255,255,255,.75)" : B.textSec, lineHeight:1.6, marginBottom:10 }}>{portal.desc}</div>
       <div style={{ display:"flex", gap:10 }}>
         {portal.stats.map((s,i) => (
           <div key={i} style={{ flex:1, textAlign:"center", background: selected ? "rgba(255,255,255,.1)" : B.bg, borderRadius:7, padding:"5px 4px" }}>
             <div style={{ fontSize:14, fontWeight:800, color: selected ? "#fff" : portal.color }}>{s.v}</div>
-            <div style={{ fontSize:8, color: selected ? "rgba(255,255,255,.5)" : B.textSec, marginTop:1 }}>{s.l}</div>
+            <div style={{ fontSize:12, color: selected ? "rgba(255,255,255,.5)" : B.textSec, marginTop:1 }}>{s.l}</div>
           </div>
         ))}
       </div>
@@ -193,7 +193,7 @@ function MockPortal({ portal }) {
         <div style={{ display:"flex", gap:4 }}>
           {["#ff5f57","#febc2e","#28c840"].map(c => <div key={c} style={{ width:9, height:9, borderRadius:"50%", background:c }} />)}
         </div>
-        <div style={{ flex:1, background:"#3d3d3d", borderRadius:5, padding:"3px 10px", fontSize:10, color:"#999", textAlign:"center" }}>
+        <div style={{ flex:1, background:"#3d3d3d", borderRadius:5, padding:"3px 10px", fontSize:11, color:"#999", textAlign:"center" }}>
           wcahub.com{portal.route}
         </div>
       </div>
@@ -206,22 +206,22 @@ function MockPortal({ portal }) {
             <div style={{ padding:"0 12px" }}>
               <div style={{ fontSize:12, fontWeight:800, color:B.primary, marginBottom:12 }}>WCA <span style={{ color:B.secondary }}>Hub</span></div>
               {["Programas","Metodología","Precios","Testimonios"].map(l => (
-                <div key={l} style={{ fontSize:9, color:B.textSec, padding:"5px 0", borderBottom:`1px solid ${B.borderLight}` }}>{l}</div>
+                <div key={l} style={{ fontSize:11, color:B.textSec, padding:"5px 0", borderBottom:`1px solid ${B.borderLight}` }}>{l}</div>
               ))}
-              <div style={{ marginTop:10, padding:"7px 10px", background:B.primary, borderRadius:7, fontSize:10, color:"#fff", fontWeight:600, textAlign:"center" }}>Comenzar gratis</div>
+              <div style={{ marginTop:10, padding:"7px 10px", background:B.primary, borderRadius:7, fontSize:11, color:"#fff", fontWeight:600, textAlign:"center" }}>Comenzar gratis</div>
             </div>
           ) : (
             <>
               <div style={{ padding:"0 12px 10px", borderBottom:"1px solid rgba(255,255,255,.1)", marginBottom:6 }}>
                 <div style={{ fontSize:11, fontWeight:800, color:"#fff" }}>WCA <span style={{ color:B.secondary }}>Hub</span></div>
-                <div style={{ fontSize:7, color:"rgba(255,255,255,.4)", letterSpacing:1, textTransform:"uppercase", marginTop:2 }}>{portal.role}</div>
+                <div style={{ fontSize:12, color:"rgba(255,255,255,.4)", letterSpacing:1, textTransform:"uppercase", marginTop:2 }}>{portal.role}</div>
               </div>
               {portal.sections.map((s,i) => (
                 <button key={i} onClick={() => setTab(i)} style={{
                   display:"flex", alignItems:"center", gap:7, padding:"7px 12px", border:"none",
                   background: tab===i ? "rgba(255,255,255,.15)" : "transparent",
                   color: tab===i ? "#fff" : "rgba(255,255,255,.5)",
-                  fontSize:10, cursor:"pointer", textAlign:"left",
+                  fontSize:11, cursor:"pointer", textAlign:"left",
                   borderLeft:`2px solid ${tab===i ? B.secondary : "transparent"}`,
                   fontFamily:"'DM Sans','Segoe UI',sans-serif", fontWeight: tab===i?600:400,
                 }}>
@@ -258,7 +258,7 @@ function MockContent({ portal, section }) {
       {items.map(([v,l,c],i) => (
         <div key={i} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:8, padding:"10px 12px", borderTop:`2px solid ${c}` }}>
           <div style={{ fontSize:16, fontWeight:800, color:c }}>{v}</div>
-          <div style={{ fontSize:9, color:B.textSec, marginTop:2 }}>{l}</div>
+          <div style={{ fontSize:11, color:B.textSec, marginTop:2 }}>{l}</div>
         </div>
       ))}
     </div>
@@ -284,7 +284,7 @@ function MockContent({ portal, section }) {
   const table = (color, rows=4) => (
     <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:8, overflow:"hidden", marginBottom:8 }}>
       <div style={{ background:B.bg, display:"flex", gap:0 }}>
-        {["Nombre","Nivel","Estado",""].map((h,i) => <div key={i} style={{ flex:i===3?0:1, padding:"6px 8px", fontSize:8, fontWeight:600, color:B.textSec, minWidth:i===3?30:0 }}>{h}</div>)}
+        {["Nombre","Nivel","Estado",""].map((h,i) => <div key={i} style={{ flex:i===3?0:1, padding:"6px 8px", fontSize:12, fontWeight:600, color:B.textSec, minWidth:i===3?30:0 }}>{h}</div>)}
       </div>
       {Array.from({length:rows},(_,i) => (
         <div key={i} style={{ display:"flex", alignItems:"center", borderTop:`1px solid ${B.borderLight}` }}>
@@ -298,10 +298,10 @@ function MockContent({ portal, section }) {
   );
 
   const kanban = (color) => (
-    <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:6, marginBottom:8 }}>
+    <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8, marginBottom:8 }}>
       {["Nuevo","Contactado","Propuesta"].map((col,ci) => (
         <div key={ci} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:8, padding:8 }}>
-          <div style={{ fontSize:8, fontWeight:600, color, marginBottom:6 }}>{col} · {3-ci}</div>
+          <div style={{ fontSize:12, fontWeight:600, color, marginBottom:6 }}>{col} · {3-ci}</div>
           {Array.from({length:3-ci},(_,i) => (
             <div key={i} style={{ background:B.bg, borderRadius:5, padding:6, marginBottom:4, border:`1px solid ${B.border}` }}>
               <div style={{ height:6, background:`${color}30`, borderRadius:2, marginBottom:3, width:["75%","55%","65%"][i] }} />
@@ -319,7 +319,7 @@ function MockContent({ portal, section }) {
   if (portal.id === "landing") {
     return (
       <div>
-        <div style={{ background:`linear-gradient(135deg,${B.primary},${B.dark})`, borderRadius:10, padding:14, marginBottom:8 }}>
+        <div style={{ background:`linear-gradient(135deg,${B.primary},${B.dark})`, borderRadius:10, padding:12, marginBottom:8 }}>
           <div style={{ height:8, background:"rgba(255,255,255,.2)", borderRadius:3, width:"60%", marginBottom:6 }} />
           <div style={{ height:12, background:"rgba(255,255,255,.3)", borderRadius:3, width:"80%", marginBottom:6 }} />
           <div style={{ height:6, background:"rgba(255,255,255,.15)", borderRadius:3, width:"70%", marginBottom:10 }} />
@@ -328,7 +328,7 @@ function MockContent({ portal, section }) {
             <div style={{ height:26, flex:1, background:"rgba(255,255,255,.15)", borderRadius:7 }} />
           </div>
         </div>
-        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:6, marginBottom:8 }}>
+        <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8, marginBottom:8 }}>
           {[["¿Cómo funciona?",B.primary],["Programas",B.dark],["Testimonios",B.green]].map(([t,col],i)=>(
             <div key={i} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:8, padding:10 }}>
               <div style={{ width:24, height:24, borderRadius:"50%", background:`${col}20`, margin:"0 auto 6px" }} />
@@ -413,7 +413,7 @@ export default function PlatformPreview() {
         <div style={{ display:"flex", alignItems:"center", gap:12 }}>
           <div>
             <div style={{ fontSize:15, fontWeight:800, color:"#fff", letterSpacing:-0.5 }}>WCA <span style={{ color:B.secondary }}>Hub</span></div>
-            <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", letterSpacing:1 }}>PLATFORM PREVIEW · 10 MÓDULOS</div>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", letterSpacing:1 }}>PLATFORM PREVIEW · 10 MÓDULOS</div>
           </div>
         </div>
         <div style={{ display:"flex", gap:6 }}>
@@ -422,12 +422,12 @@ export default function PlatformPreview() {
             { id:"flujo",    label:"🔗 Flujo operativo" },
             { id:"mapa",     label:"🗺 Mapa de rutas" },
           ].map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)} style={{ padding:"5px 14px", border:`1px solid ${tab===t.id?"rgba(255,187,35,.5)":"rgba(255,255,255,.1)"}`, borderRadius:8, background: tab===t.id?"rgba(255,187,35,.12)":"transparent", color: tab===t.id?B.secondary:"rgba(255,255,255,.4)", fontSize:10, cursor:"pointer", fontFamily:"inherit", fontWeight:tab===t.id?600:400 }}>{t.label}</button>
+            <button key={t.id} onClick={() => setTab(t.id)} style={{ padding:"5px 14px", border:`1px solid ${tab===t.id?"rgba(255,187,35,.5)":"rgba(255,255,255,.1)"}`, borderRadius:8, background: tab===t.id?"rgba(255,187,35,.12)":"transparent", color: tab===t.id?B.secondary:"rgba(255,255,255,.4)", fontSize:11, cursor:"pointer", fontFamily:"inherit", fontWeight:tab===t.id?600:400 }}>{t.label}</button>
           ))}
         </div>
         <div style={{ display:"flex", gap:8 }}>
-          <div style={{ fontSize:10, background:"rgba(5,150,105,.15)", color:B.green, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>✅ 10 módulos listos</div>
-          <div style={{ fontSize:10, background:"rgba(255,187,35,.15)", color:B.secondary, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>5 835 líneas</div>
+          <div style={{ fontSize:11, background:"rgba(5,150,105,.15)", color:B.green, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>✅ 10 módulos listos</div>
+          <div style={{ fontSize:11, background:"rgba(255,187,35,.15)", color:B.secondary, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>5 835 líneas</div>
         </div>
       </div>
 
@@ -437,7 +437,7 @@ export default function PlatformPreview() {
 
           {/* Left: portal list */}
           <div style={{ width:310, borderRight:"1px solid rgba(255,255,255,.06)", overflow:"auto", padding:12, background:"#0d1f2d", flexShrink:0 }}>
-            <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", letterSpacing:1, textTransform:"uppercase", marginBottom:10, padding:"0 4px" }}>Selecciona un módulo</div>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", letterSpacing:1, textTransform:"uppercase", marginBottom:10, padding:"0 4px" }}>Selecciona un módulo</div>
             {PORTALS.map(p => (
               <PortalCard key={p.id} portal={p} selected={selected===p.id} onClick={() => setSelected(p.id)} />
             ))}
@@ -445,18 +445,18 @@ export default function PlatformPreview() {
           </div>
 
           {/* Right: mock portal */}
-          <div style={{ flex:1, padding:14, display:"flex", flexDirection:"column", gap:10, overflow:"hidden" }}>
+          <div style={{ flex:1, padding:12, display:"flex", flexDirection:"column", gap:8, overflow:"hidden" }}>
 
             {/* Header strip */}
             <div style={{ background:"rgba(255,255,255,.04)", border:"1px solid rgba(255,255,255,.06)", borderRadius:10, padding:"10px 16px", display:"flex", alignItems:"center", gap:12, flexShrink:0 }}>
               <div style={{ fontSize:22 }}>{portal.icon}</div>
               <div style={{ flex:1 }}>
                 <div style={{ fontSize:13, fontWeight:700, color:"#fff" }}>{portal.label}</div>
-                <div style={{ fontSize:10, color:"rgba(255,255,255,.4)", marginTop:1 }}>{portal.desc}</div>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,.4)", marginTop:1 }}>{portal.desc}</div>
               </div>
               <div style={{ display:"flex", gap:6 }}>
                 {portal.sections.map((s,i) => (
-                  <div key={i} style={{ fontSize:8, padding:"2px 8px", borderRadius:20, background:`${portal.color}20`, color:"rgba(255,255,255,.5)", fontWeight:500 }}>{s}</div>
+                  <div key={i} style={{ fontSize:12, padding:"2px 8px", borderRadius:20, background:`${portal.color}20`, color:"rgba(255,255,255,.5)", fontWeight:500 }}>{s}</div>
                 ))}
               </div>
             </div>
@@ -479,23 +479,23 @@ export default function PlatformPreview() {
             {FLOW.map((f,i) => (
               <div key={i} onMouseEnter={() => setHoveredFlow(i)} onMouseLeave={() => setHoveredFlow(null)}
                 style={{ display:"flex", alignItems:"center", opacity: hoveredFlow===null||hoveredFlow===i?1:.3, transition:"opacity .2s" }}>
-                <div style={{ flex:1, background: hoveredFlow===i?f.color+"30":"rgba(255,255,255,.04)", border:`1px solid ${hoveredFlow===i?f.color:"rgba(255,255,255,.08)"}`, borderRadius:10, padding:"10px 14px", display:"flex", alignItems:"center", gap:10, transition:"all .2s" }}>
+                <div style={{ flex:1, background: hoveredFlow===i?f.color+"30":"rgba(255,255,255,.04)", border:`1px solid ${hoveredFlow===i?f.color:"rgba(255,255,255,.08)"}`, borderRadius:10, padding:"10px 14px", display:"flex", alignItems:"center", gap:8, transition:"all .2s" }}>
                   <div style={{ width:36, height:36, borderRadius:"50%", background:f.color+"20", border:`1.5px solid ${f.color}40`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                     <span style={{ fontSize:14 }}>{PORTALS.find(p=>p.label.includes(f.from.split(" ")[0]))||{icon:"👤"} ?.icon || "👤"}</span>
                   </div>
                   <div style={{ flex:1 }}>
                     <div style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{f.from}</div>
-                    <div style={{ fontSize:9, color:"rgba(255,255,255,.4)" }}>origen</div>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,.4)" }}>origen</div>
                   </div>
                   <div style={{ display:"flex", alignItems:"center", gap:8, flex:2 }}>
                     <div style={{ flex:1, height:1, background:f.color+"40" }} />
-                    <div style={{ fontSize:9, padding:"3px 10px", borderRadius:20, background:f.color+"20", color:f.color, fontWeight:600, whiteSpace:"nowrap", border:`1px solid ${f.color}30` }}>{f.via}</div>
+                    <div style={{ fontSize:11, padding:"3px 10px", borderRadius:20, background:f.color+"20", color:f.color, fontWeight:600, whiteSpace:"nowrap", border:`1px solid ${f.color}30` }}>{f.via}</div>
                     <div style={{ flex:1, height:1, background:f.color+"40" }} />
                     <div style={{ color:f.color, fontSize:14 }}>→</div>
                   </div>
                   <div style={{ flex:1, textAlign:"right" }}>
                     <div style={{ fontSize:12, fontWeight:700, color:"#fff" }}>{f.to}</div>
-                    <div style={{ fontSize:9, color:"rgba(255,255,255,.4)" }}>destino</div>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,.4)" }}>destino</div>
                   </div>
                 </div>
               </div>
@@ -504,7 +504,7 @@ export default function PlatformPreview() {
 
           {/* Role matrix */}
           <div style={{ maxWidth:700, margin:"20px auto 0" }}>
-            <div style={{ fontSize:10, color:"rgba(255,255,255,.3)", letterSpacing:1, textTransform:"uppercase", marginBottom:12, textAlign:"center" }}>Roles y sus portales</div>
+            <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", letterSpacing:1, textTransform:"uppercase", marginBottom:12, textAlign:"center" }}>Roles y sus portales</div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(5,1fr)", gap:8 }}>
               {[
                 { role:"Estudiante", portals:["Portal Estudiante","Onboarding"], color:B.primary },
@@ -518,10 +518,10 @@ export default function PlatformPreview() {
                 { role:"IT",         portals:["Super Admin (parcial)"],         color:B.dark },
                 { role:"Soporte",    portals:["Admin (parcial)"],               color:B.green },
               ].map((r,i) => (
-                <div key={i} style={{ background:"rgba(255,255,255,.04)", border:`1px solid ${r.color}30`, borderRadius:9, padding:"10px 10px" }}>
-                  <div style={{ fontSize:9, fontWeight:700, color:r.color, marginBottom:6, textTransform:"uppercase", letterSpacing:.5 }}>{r.role}</div>
+                <div key={i} style={{ background:"rgba(255,255,255,.04)", border:`1px solid ${r.color}30`, borderRadius:8, padding:"10px 10px" }}>
+                  <div style={{ fontSize:11, fontWeight:700, color:r.color, marginBottom:6, textTransform:"uppercase", letterSpacing:.5 }}>{r.role}</div>
                   {r.portals.map(p => (
-                    <div key={p} style={{ fontSize:8, color:"rgba(255,255,255,.5)", padding:"2px 0", display:"flex", gap:4 }}>
+                    <div key={p} style={{ fontSize:12, color:"rgba(255,255,255,.5)", padding:"2px 0", display:"flex", gap:4 }}>
                       <span style={{ color:r.color }}>→</span>{p}
                     </div>
                   ))}
@@ -536,9 +536,9 @@ export default function PlatformPreview() {
       {tab === "mapa" && (
         <div style={{ flex:1, padding:20, overflow:"auto" }}>
           <div style={{ fontSize:11, color:"rgba(255,255,255,.4)", marginBottom:20, textAlign:"center" }}>Mapa completo de rutas — wcahub.com</div>
-          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:10, maxWidth:800, margin:"0 auto" }}>
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:8, maxWidth:800, margin:"0 auto" }}>
             <div>
-              <div style={{ fontSize:9, color:B.secondary, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Rutas MVP — Diseñadas ✅</div>
+              <div style={{ fontSize:11, color:B.secondary, fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Rutas MVP — Diseñadas ✅</div>
               {[
                 { route:"/",                   module:"Landing + Placement Test + Autoinscripción",  role:"Público",    color:B.green },
                 { route:"/portal",             module:"Portal del Estudiante (7 secciones)",          role:"Estudiante", color:B.primary },
@@ -553,14 +553,14 @@ export default function PlatformPreview() {
               ].map((r,i) => (
                 <div key={i} style={{ display:"flex", gap:8, alignItems:"center", padding:"7px 10px", border:`1px solid ${r.color}30`, borderRadius:8, marginBottom:5, background:`${r.color}08`, cursor:"pointer" }}
                   onClick={() => { setSelected(PORTALS.find(p=>p.route===r.route.split("/")[1]||r.route==="/"&&p.id==="landing"||p.route===r.route)?.id || PORTALS[0].id); setTab("portales"); }}>
-                  <code style={{ fontSize:10, color:r.color, fontWeight:700, minWidth:130, flexShrink:0 }}>{r.route}</code>
-                  <div style={{ flex:1, fontSize:10, color:"rgba(255,255,255,.6)" }}>{r.module}</div>
-                  <span style={{ fontSize:8, padding:"1px 7px", borderRadius:20, background:`${r.color}20`, color:r.color, fontWeight:600, flexShrink:0 }}>{r.role}</span>
+                  <code style={{ fontSize:11, color:r.color, fontWeight:700, minWidth:130, flexShrink:0 }}>{r.route}</code>
+                  <div style={{ flex:1, fontSize:11, color:"rgba(255,255,255,.6)" }}>{r.module}</div>
+                  <span style={{ fontSize:12, padding:"1px 7px", borderRadius:20, background:`${r.color}20`, color:r.color, fontWeight:600, flexShrink:0 }}>{r.role}</span>
                 </div>
               ))}
             </div>
             <div>
-              <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Rutas Fase 2 — Especificadas ○</div>
+              <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Rutas Fase 2 — Especificadas ○</div>
               {[
                 { route:"/contabilidad",   module:"Portal Contabilidad",       color:B.amber },
                 { route:"/marketing",      module:"Dashboard Marketing",        color:B.amber },
@@ -569,15 +569,15 @@ export default function PlatformPreview() {
                 { route:"/verify/:code",   module:"Verificación certificados", color:B.amber },
               ].map((r,i) => (
                 <div key={i} style={{ display:"flex", gap:8, alignItems:"center", padding:"7px 10px", border:"1px solid rgba(255,255,255,.06)", borderRadius:8, marginBottom:5, opacity:.5 }}>
-                  <code style={{ fontSize:10, color:B.amber, fontWeight:700, minWidth:130 }}>{r.route}</code>
-                  <div style={{ flex:1, fontSize:10, color:"rgba(255,255,255,.4)" }}>{r.module}</div>
-                  <span style={{ fontSize:8, padding:"1px 7px", borderRadius:20, background:"rgba(255,187,35,.1)", color:B.amber, fontWeight:600 }}>Fase 2</span>
+                  <code style={{ fontSize:11, color:B.amber, fontWeight:700, minWidth:130 }}>{r.route}</code>
+                  <div style={{ flex:1, fontSize:11, color:"rgba(255,255,255,.4)" }}>{r.module}</div>
+                  <span style={{ fontSize:12, padding:"1px 7px", borderRadius:20, background:"rgba(255,187,35,.1)", color:B.amber, fontWeight:600 }}>Fase 2</span>
                 </div>
               ))}
 
               {/* Stack tech summary */}
               <div style={{ marginTop:16 }}>
-                <div style={{ fontSize:9, color:"rgba(255,255,255,.3)", fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Stack tecnológico recomendado</div>
+                <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", fontWeight:700, letterSpacing:1, textTransform:"uppercase", marginBottom:8 }}>Stack tecnológico recomendado</div>
                 {[
                   { layer:"Frontend",  tech:"React + Tailwind + react-router-dom",     color:B.primary },
                   { layer:"Backend",   tech:"Node.js + Express / Django REST",          color:B.green },
@@ -589,8 +589,8 @@ export default function PlatformPreview() {
                   { layer:"Deploy",    tech:"Vercel (front) + Railway/Render (back)",   color:B.green },
                 ].map((s,i) => (
                   <div key={i} style={{ display:"flex", gap:8, alignItems:"center", padding:"5px 8px", borderBottom:"1px solid rgba(255,255,255,.04)" }}>
-                    <div style={{ fontSize:9, color:s.color, fontWeight:600, width:70, flexShrink:0 }}>{s.layer}</div>
-                    <div style={{ fontSize:9, color:"rgba(255,255,255,.5)" }}>{s.tech}</div>
+                    <div style={{ fontSize:11, color:s.color, fontWeight:600, width:70, flexShrink:0 }}>{s.layer}</div>
+                    <div style={{ fontSize:11, color:"rgba(255,255,255,.5)" }}>{s.tech}</div>
                   </div>
                 ))}
               </div>
@@ -602,7 +602,7 @@ export default function PlatformPreview() {
             {[["10","Portales diseñados"],["36","Secciones de spec"],["26","Entidades en ERD"],["5 835","Líneas de código"],["0","Pendientes abiertos"]].map(([v,l]) => (
               <div key={l} style={{ textAlign:"center" }}>
                 <div style={{ fontSize:18, fontWeight:800, color:B.secondary }}>{v}</div>
-                <div style={{ fontSize:8, color:"rgba(255,255,255,.4)", marginTop:1 }}>{l}</div>
+                <div style={{ fontSize:12, color:"rgba(255,255,255,.4)", marginTop:1 }}>{l}</div>
               </div>
             ))}
           </div>

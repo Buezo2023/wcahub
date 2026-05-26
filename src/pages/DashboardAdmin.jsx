@@ -82,13 +82,13 @@ function AdminPrices() {
   return (
     <div style={{ maxWidth:620 }}>
       {saved && (
-        <div style={{ position:"fixed", top:20, right:90, background:"#059669", color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:9999, boxShadow:"0 6px 20px rgba(5,150,105,.3)", display:"flex", gap:8 }}>
+        <div style={{ position:"fixed", top:20, right:90, background:"#059669", color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:"var(--z-modal)", boxShadow:"0 6px 20px rgba(5,150,105,.3)", display:"flex", gap:8 }}>
           ✓ Precio guardado correctamente
         </div>
       )}
-      <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
+      <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
         {progs.map((p,i) => (
-          <div key={p.id} style={{ display:"flex", alignItems:"center", gap:14, padding:"18px 20px", borderBottom:i<progs.length-1?"1px solid var(--border)":"none" }}>
+          <div key={p.id} style={{ display:"flex", alignItems:"center", gap:16, padding:"18px 20px", borderBottom:i<progs.length-1?"1px solid var(--border)":"none" }}>
             <span style={{ fontSize:22 }}>{p.icon}</span>
             <div style={{ flex:1 }}>
               <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)" }}>{p.name}</div>
@@ -123,7 +123,7 @@ function AdminPrices() {
 // ─── Shared loading/error UI ──────────────────────────────────
 function LoadingBar({ label = "Cargando datos…" }) {
   return (
-    <div style={{ display:"flex", alignItems:"center", gap:10, padding:"16px 0", color:"var(--text-secondary)", fontSize:13 }}>
+    <div style={{ display:"flex", alignItems:"center", gap:8, padding:"16px 0", color:"var(--text-secondary)", fontSize:13 }}>
       <div style={{ width:16, height:16, border:"2px solid var(--border)", borderTopColor:"#155266",
                     borderRadius:"50%", animation:"spin .7s linear infinite", flexShrink:0 }}/>
       {label}
@@ -164,7 +164,7 @@ function EnrollForm({ groups, onSubmit, onCancel }) {
         </div>
         );
       })}
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:10 }}>
         <div>
           <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>Programa</label>
           <select value={form.programId} onChange={e=>set("programId",e.target.value)}
@@ -194,9 +194,9 @@ function EnrollForm({ groups, onSubmit, onCancel }) {
           style={{ width:"100%", padding:"8px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, color:"var(--text-primary)", background:"var(--bg-surface-subtle)", fontFamily:"inherit" }}/>
       </div>
       <div style={{ display:"flex", gap:8 }}>
-        <button onClick={onCancel} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
+        <button onClick={onCancel} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:8, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
         <button disabled={!valid||saving} onClick={async()=>{ setSaving(true); await onSubmit(form); setSaving(false); }}
-          style={{ flex:2, padding:"10px", background:valid?"#155266":"var(--bg-surface-subtle)", color:valid?"#fff":"var(--text-tertiary)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:valid?"pointer":"not-allowed", fontFamily:"inherit" }}>
+          style={{ flex:2, padding:"10px", background:valid?"#155266":"var(--bg-surface-subtle)", color:valid?"#fff":"var(--text-tertiary)", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:valid?"pointer":"not-allowed", fontFamily:"inherit" }}>
           {saving?"Matriculando…":"Crear matrícula"}
         </button>
       </div>
@@ -270,7 +270,7 @@ function B2BSection({ supabase, B, Badge, Stat }) {
   if (selCompany) return (
     <div>
       <button onClick={() => { setSelCompany(null); setEmployees([]); }}
-        style={{ display:"flex", alignItems:"center", gap:6, fontSize:13, padding:"7px 14px",
+        style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, padding:"7px 14px",
                  background:"transparent", border:`1px solid ${B.border}`, borderRadius:8,
                  cursor:"pointer", color:B.textSec, fontFamily:"inherit", marginBottom:14 }}>
         ← Volver a empresas
@@ -309,7 +309,7 @@ function B2BSection({ supabase, B, Badge, Stat }) {
 
   return (
     <div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:10, marginBottom:14 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:8, marginBottom:14 }}>
         <Stat label="Empresas activas" value={companies.length} sub={`${companies.reduce((a,c)=>a+c.seats_paid,0)} cupos totales`} color={B.primary} icon="ti-building" />
         <Stat label="Ingresos B2B (mes)" value={`$${totalRevenue.toLocaleString()}`} sub="Con descuentos aplicados" color={B.secondary} icon="ti-coin" />
         <Stat label="Próxima factura" value="1 del mes" sub={`${companies.length} empresa${companies.length!==1?"s":""}`} color={B.green} icon="ti-receipt" />
@@ -361,7 +361,7 @@ function B2BSection({ supabase, B, Badge, Stat }) {
       {newCoForm ? (
         <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:18, marginTop:8 }}>
           <div style={{ fontSize:14, fontWeight:700, color:B.text, marginBottom:14 }}>Nueva empresa B2B</div>
-          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:12 }}>
+          <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:12 }}>
             {[["Nombre empresa","name","text","TechCorp HN"],["Contacto principal","contact_name","text","Juan Pérez"],
               ["Email contacto","contact_email","email","juan@empresa.com"],["Teléfono","contact_phone","tel","+504 9900-0000"],
               ["Cupos pagados","seats_paid","number","5"],["Descuento %","discount_pct","number","10"]
@@ -376,11 +376,11 @@ function B2BSection({ supabase, B, Badge, Stat }) {
           </div>
           <div style={{display:"flex",gap:8}}>
             <button onClick={()=>setNewCoForm(null)}
-              style={{flex:1,padding:"9px",background:B.bg,border:`1px solid ${B.border}`,borderRadius:9,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:B.textSec}}>
+              style={{flex:1,padding:"9px",background:B.bg,border:`1px solid ${B.border}`,borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:B.textSec}}>
               Cancelar
             </button>
             <button onClick={()=>newCoForm.name&&newCoForm.contact_email&&saveCompany(newCoForm)}
-              style={{flex:2,padding:"9px",background:B.primary,color:"var(--bg-surface)",border:"none",borderRadius:9,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+              style={{flex:2,padding:"9px",background:B.primary,color:"var(--bg-surface)",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
               Crear empresa
             </button>
           </div>
@@ -568,7 +568,7 @@ export default function AdminDashboard() {
 
         {NAV.map(item => (
           <button key={item.id} onClick={() => { setView(item.id); setSelStudent(null); }} style={{
-            display:"flex", alignItems:"center", gap:10, padding:"11px 20px",
+            display:"flex", alignItems:"center", gap:8, padding:"11px 20px",
             border:"none", background: view===item.id ? "rgba(255,255,255,.12)" : "transparent",
             color: view===item.id ? "var(--bg-surface)" : "rgba(255,255,255,.5)",
             fontSize:13, cursor:"pointer", textAlign:"left",
@@ -605,7 +605,7 @@ export default function AdminDashboard() {
           Cerrar sesión
         </button>
       </aside>
-      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:"var(--z-overlay)",background:"rgba(0,0,0,.4)"}}/>}
 
 
       {/* ── MAIN ── */}
@@ -638,7 +638,7 @@ export default function AdminDashboard() {
             <div>
               {/* Alerts */}
               {[...(suspended.length>0?[{type:"red",icon:"ti-alert-circle",text:`${suspended.length} estudiante${suspended.length>1?"s":""} con cuenta suspendida`,action:"Ver estudiantes"}]:[]),...(displayGroups.filter(g=>!g.teamsSet).length>0?[{type:"amber",icon:"ti-user-exclamation",text:`${displayGroups.filter(g=>!g.teamsSet).length} grupo(s) sin link de Teams`,action:"Configurar"}]:[])].map((a, i) => (
-                <div key={i} style={{ background: a.type==="red"?B.redDim:a.type==="amber"?B.amberDim:B.primaryDim, border:`1px solid ${a.type==="red"?B.red:a.type==="amber"?B.amber:B.border}`, borderRadius:10, padding:"9px 14px", marginBottom:7, display:"flex", alignItems:"center", gap:10 }}>
+                <div key={i} style={{ background: a.type==="red"?B.redDim:a.type==="amber"?B.amberDim:B.primaryDim, border:`1px solid ${a.type==="red"?B.red:a.type==="amber"?B.amber:B.border}`, borderRadius:10, padding:"8px 14px", marginBottom:7, display:"flex", alignItems:"center", gap:10 }}>
                   <i className={`ti ${a.icon}`} style={{ fontSize:16, color:a.type==="red"?B.red:a.type==="amber"?"#92400e":B.primary, flexShrink:0 }} aria-hidden="true" />
                   <div style={{ flex:1, fontSize:13, color:B.text }}>{a.text}</div>
                   {a.action && <button onClick={() => setView(a.action==="Ver estudiantes"?"students":a.action==="Ver pagos"?"payments":"groups")} style={{ fontSize:12, padding:"4px 10px", background:B.white, border:`1px solid ${B.border}`, borderRadius:6, cursor:"pointer", color:B.primary, fontWeight:600, fontFamily:"inherit", whiteSpace:"nowrap" }}>{a.action} →</button>}
@@ -646,7 +646,7 @@ export default function AdminDashboard() {
               ))}
 
               {/* Stats */}
-              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)", gap:10, margin:"16px 0" }}>
+              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)", gap:8, margin:"16px 0" }}>
                 <Stat label="Estudiantes activos" value={active.length} sub="Este mes" color={B.primary} icon="ti-users" />
                 <Stat label="Ingresos confirmados" value={`$${(confirmed || []).reduce((s,p) => s + (p.amount||0), 0).toLocaleString()}`} sub="Pagos confirmados" color={B.secondary} icon="ti-coin" />
                 <Stat label="Pagos pendientes" value={PAYMENTS_PENDING.length} sub="Por confirmar" color={B.amber} icon="ti-clock" />
@@ -663,7 +663,7 @@ export default function AdminDashboard() {
                     <button onClick={() => setView("cycle")} style={{ fontSize:11, padding:"3px 8px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>Ver todo</button>
                   </div>
                   {(realCycleStatus.length > 0 ? realCycleStatus : []).map(c => (
-                    <div key={c.level} style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 0", borderTop:`1px solid ${B.borderLight}` }}>
+                    <div key={c.level} style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 0", borderTop:`1px solid ${B.borderLight}` }}>
                       <div style={{ width:32, height:32, borderRadius:8, background:B.primaryDim, display:"flex", alignItems:"center", justifyContent:"center", fontSize:13, fontWeight:700, color:B.primary, flexShrink:0 }}>{c.level}</div>
                       <div style={{ flex:1 }}>
                         <div style={{ fontSize:13, fontWeight:600, color:B.text }}>U{c.unit} — {c.title}</div>
@@ -686,7 +686,7 @@ export default function AdminDashboard() {
                     const tx = a.action==="sin_actividad" ? "Sin actividad reciente" : `${a.action.replace(/_/g," ")}${a.metadata?.email ? " — "+a.metadata.email : a.metadata?.fullName ? " — "+a.metadata.fullName : ""}`;
                     const ago = a.created_at ? (()=>{const m=Math.floor((Date.now()-new Date(a.created_at).getTime())/60000);return m<60?`Hace ${m}min`:m<1440?`Hace ${Math.floor(m/60)}h`:`Hace ${Math.floor(m/1440)}d`;})() : "";
                     return (
-                    <div key={a.id||i} style={{ display:"flex", gap:10, padding:"7px 0", borderTop: i>0?`1px solid ${B.borderLight}`:"none" }}>
+                    <div key={a.id||i} style={{ display:"flex", gap:8, padding:"7px 0", borderTop: i>0?`1px solid ${B.borderLight}`:"none" }}>
                       <div style={{ width:28, height:28, borderRadius:"50%", background:B.bg, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                         <i className={`ti ${ic}`} style={{ fontSize:15, color:cl }} aria-hidden="true" />
                       </div>
@@ -706,7 +706,7 @@ export default function AdminDashboard() {
                     <Badge text={`${PAYMENTS_PENDING.length} pendientes`} bg={B.amberDim} color="#92400e" />
                   </div>
                   {PAYMENTS_PENDING.map(p => (
-                    <div key={p.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 10px", background:B.amberDim, borderRadius:8, marginBottom:7, border:`1px solid ${B.amber}40` }}>
+                    <div key={p.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"9px 10px", background:B.amberDim, borderRadius:8, marginBottom:7, border:`1px solid ${B.amber}40` }}>
                       <div style={{ flex:1 }}>
                         <div style={{ fontSize:13, fontWeight:600, color:B.text }}>{p.student}</div>
                         <div style={{ fontSize:12, color:B.textSec, marginTop:1 }}>{p.amount} · Código: {p.code} · {p.date}</div>
@@ -723,7 +723,7 @@ export default function AdminDashboard() {
                     <Badge text={`${suspended.length} suspendidos`} bg={B.redDim} color={B.red} />
                   </div>
                   {suspended.map(s => (
-                    <div key={s.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 10px", background:B.redDim, borderRadius:8, marginBottom:7, border:`1px solid ${B.red}40` }}>
+                    <div key={s.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"9px 10px", background:B.redDim, borderRadius:8, marginBottom:7, border:`1px solid ${B.red}40` }}>
                       <div style={{ flex:1 }}>
                         <div style={{ fontSize:13, fontWeight:600, color:B.text }}>{s.name}</div>
                         <div style={{ fontSize:12, color:B.textSec, marginTop:1 }}>{s.level} · {s.attendance}% asistencia</div>
@@ -738,20 +738,20 @@ export default function AdminDashboard() {
 
           {/* ── STUDENTS ── */}
           {view === "students" && (
-            <div style={{ display:"flex", gap:14, height:"100%" }}>
+            <div style={{ display:"flex", gap:16, height:"100%" }}>
               <div style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
                 {/* Filters */}
                 <div style={{ display:"flex", gap:8, marginBottom:12 }}>
-                  <div style={{ flex:1, display:"flex", alignItems:"center", gap:8, background:B.white, border:`1px solid ${B.border}`, borderRadius:9, padding:"7px 12px" }}>
+                  <div style={{ flex:1, display:"flex", alignItems:"center", gap:8, background:B.white, border:`1px solid ${B.border}`, borderRadius:8, padding:"7px 12px" }}>
                     <i className="ti ti-search" style={{ color:B.textSec, fontSize:15 }} aria-hidden="true" />
                     <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar por nombre o email..." style={{ border:"none", outline:"none", fontSize:13, background:"transparent", color:B.text, flex:1, fontFamily:"inherit" }} />
                   </div>
-                  <select value={filterState} onChange={e=>setFilterState(e.target.value)} style={{ padding:"7px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.white, color:B.text, fontFamily:"inherit" }}>
+                  <select value={filterState} onChange={e=>setFilterState(e.target.value)} style={{ padding:"7px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.white, color:B.text, fontFamily:"inherit" }}>
                     <option value="all">Todos los estados</option>
                     <option value="active">Activos</option>
                     <option value="suspended">Suspendidos</option>
                   </select>
-                  <select value={filterLevel} onChange={e=>setFilterLevel(e.target.value)} style={{ padding:"7px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.white, color:B.text, fontFamily:"inherit" }}>
+                  <select value={filterLevel} onChange={e=>setFilterLevel(e.target.value)} style={{ padding:"7px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.white, color:B.text, fontFamily:"inherit" }}>
                     <option value="all">Todos los niveles</option>
                     {["A1","A2","B1","B2","C1"].map(l => <option key={l} value={l}>{l}</option>)}
                   </select>
@@ -760,7 +760,7 @@ export default function AdminDashboard() {
                 {/* Table */}
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, overflow:"hidden", flex:1, overflowY:"auto" }}>
                   <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:isMobile?12:13 }}>
-                    <thead style={{ position:"sticky", top:0, zIndex:1 }}>
+                    <thead style={{ position:"sticky", top:0, zIndex:"var(--z-base)" }}>
                       <tr style={{ background:B.bg, borderBottom:`1px solid ${B.border}` }}>
                         {["Estudiante","País","Nivel · Grupo","Programa","Tipo","Pago","Estado","Asist.",""].map(h => (
                           <th key={h} style={{ padding:"9px 10px", textAlign:"left", fontSize:11, fontWeight:600, color:B.textSec, letterSpacing:.5, textTransform:"uppercase", whiteSpace:"nowrap" }}>{h}</th>
@@ -836,7 +836,7 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   </div>
-                  <div style={{ display:"flex", flexDirection:"column", gap:6, marginTop:12 }}>
+                  <div style={{ display:"flex", flexDirection:"column", gap:8, marginTop:12 }}>
                     {selStudent.state === "suspended" && (
                       <button onClick={()=>setActionModal({type:"reactivate",student:selStudent})} style={{ padding:"8px", background:B.green, color:"var(--bg-surface)", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Reactivar cuenta</button>
                     )}
@@ -855,7 +855,7 @@ export default function AdminDashboard() {
           {view === "groups" && (
             <div>
               {displayGroups.filter(g=>!g.teamsSet).length > 0 && (
-                <div style={{ background:B.redDim, border:`1px solid ${B.red}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, display:"flex", gap:10, alignItems:"center" }}>
+                <div style={{ background:B.redDim, border:`1px solid ${B.red}40`, borderRadius:10, padding:"10px 14px", marginBottom:16, display:"flex", gap:8, alignItems:"center" }}>
                   <i className="ti ti-alert-circle" style={{ color:B.red, fontSize:16, flexShrink:0 }} aria-hidden="true" />
                   <div style={{ flex:1, fontSize:13, color:B.text }}>
                     <strong>{displayGroups.filter(g=>!g.teamsSet).length} grupo(s)</strong> sin link de Teams configurado. Los estudiantes no pueden unirse a clase.
@@ -864,7 +864,7 @@ export default function AdminDashboard() {
               )}
               <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:10 }}>
                 {displayGroups.map(g => (
-                  <div key={g.id} style={{ background:B.white, border:`1px solid ${g.teamsSet?B.border:B.red}`, borderRadius:12, padding:14 }}>
+                  <div key={g.id} style={{ background:B.white, border:`1px solid ${g.teamsSet?B.border:B.red}`, borderRadius:12, padding:12 }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
                       <div>
                         <div style={{ fontSize:16, fontWeight:800, color:B.primary }}>{g.level}</div>
@@ -895,7 +895,7 @@ export default function AdminDashboard() {
           {/* ── PAYMENTS ── */}
           {view === "payments" && (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:10, marginBottom:16 }}>
+              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:8, marginBottom:16 }}>
                 <Stat label="Cobrado total" value={`$${confirmed.reduce((s,p)=>s+(p.amount||0),0).toLocaleString()}`} sub={`${confirmed.length} pagos`} color={B.green} icon="ti-trending-up" />
                 <Stat label="Transferencias pendientes" value={PAYMENTS_PENDING.length} sub="Requieren confirmación" color={B.amber} icon="ti-clock" />
                 <Stat label="Vencidos +30 días" value="2" sub="Acción urgente" color={B.red} icon="ti-alert-circle" />
@@ -916,7 +916,7 @@ export default function AdminDashboard() {
               <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16 }}>
                 <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Historial reciente</div>
                 {realStudents.slice(0,6).map((s,i) => (
-                  <div key={s.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 0", borderTop:i>0?`1px solid ${B.borderLight}`:"none" }}>
+                  <div key={s.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"9px 0", borderTop:i>0?`1px solid ${B.borderLight}`:"none" }}>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:13, fontWeight:500, color:B.text }}>{s.name}</div>
                       <div style={{ fontSize:12, color:B.textSec }}>{s.program} · Mensual</div>
@@ -960,7 +960,7 @@ export default function AdminDashboard() {
 
       {/* Action toast */}
       {actionDone && (
-        <div style={{ position:"fixed", top:20, right:90, background:"#059669", color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:9999, boxShadow:"0 6px 20px rgba(5,150,105,.3)", display:"flex", gap:8, animation:"slideIn .3s ease" }}>
+        <div style={{ position:"fixed", top:20, right:90, background:"#059669", color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:"var(--z-modal)", boxShadow:"0 6px 20px rgba(5,150,105,.3)", display:"flex", gap:8, animation:"slideIn .3s ease" }}>
           <i className="ti ti-check" style={{ fontSize:15 }} aria-hidden="true"/>
           {actionDone}
         </div>
@@ -968,33 +968,33 @@ export default function AdminDashboard() {
 
       {/* Action modal */}
       {actionModal && (
-        <div role="dialog" aria-modal="true" style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}
+        <div role="dialog" aria-modal="true" style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-dropdown)", padding:16 }}
           onClick={e=>{ if(e.target===e.currentTarget) setActionModal(null); }}>
-          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:"min(420px,100vw - 32px)", border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)" }}>
+          <div style={{ background:"var(--bg-surface)", borderRadius:16, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:"min(420px,100vw - 32px)", border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)" }}>
             <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)", marginBottom:4 }}>
               {({"reactivate":"Reactivar cuenta","suspend":"Suspender cuenta","upgrade":"Upgrade a Plan Completo","changeGroup":"Cambiar de grupo"})[actionModal.type]}
             </div>
             <div style={{ fontSize:12, color:"var(--text-secondary)", marginBottom:14 }}>{actionModal.student?.name} · {actionModal.student?.level}</div>
 
             {actionModal.type==="suspend" && (
-              <div style={{ background:"#fef2f2", border:"1px solid #fca5a5", borderRadius:9, padding:"10px 14px", marginBottom:14, fontSize:12, color:"#dc2626" }}>
+              <div style={{ background:"#fef2f2", border:"1px solid #fca5a5", borderRadius:8, padding:"10px 14px", marginBottom:16, fontSize:12, color:"#dc2626" }}>
                 El estudiante perderá acceso inmediatamente. Su progreso se conserva.
               </div>
             )}
             {actionModal.type==="reactivate" && (
-              <div style={{ background:"#ecfdf5", border:"1px solid #6ee7b7", borderRadius:9, padding:"10px 14px", marginBottom:14, fontSize:12, color:"#059669" }}>
+              <div style={{ background:"#ecfdf5", border:"1px solid #6ee7b7", borderRadius:8, padding:"10px 14px", marginBottom:16, fontSize:12, color:"#059669" }}>
                 El estudiante recuperará acceso a su portal de inmediato.
               </div>
             )}
             {actionModal.type==="upgrade" && (
-              <div style={{ background:"#fff8e6", border:"1px solid #ffbb23", borderRadius:9, padding:"10px 14px", marginBottom:14, fontSize:12, color:"#d97706" }}>
+              <div style={{ background:"#fff8e6", border:"1px solid #ffbb23", borderRadius:8, padding:"10px 14px", marginBottom:16, fontSize:12, color:"#d97706" }}>
                 Se habilitarán todos los niveles hasta C1. Nueva suscripción: $95 por mes.
               </div>
             )}
             {actionModal.type==="changeGroup" && (
               <div style={{ marginBottom:14 }}>
                 <label style={{ fontSize:11, color:"var(--text-secondary)", display:"block", marginBottom:5 }}>Nuevo grupo</label>
-                <select style={{ width:"100%", padding:"10px 12px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", fontFamily:"inherit", color:"var(--text-primary)" }}>
+                <select style={{ width:"100%", padding:"10px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", fontFamily:"inherit", color:"var(--text-primary)" }}>
                   {["A1 · 6:00 PM","A1 · 7:00 PM","A1 · 8:00 PM","A2 · 7:00 PM","B1 · 6:00 PM"].map(g=><option key={g}>{g}</option>)}
                 </select>
               </div>
@@ -1002,11 +1002,11 @@ export default function AdminDashboard() {
 
             <div>
               <label style={{ fontSize:11, color:"var(--text-secondary)", display:"block", marginBottom:5 }}>Nota interna (opcional)</label>
-              <input value={actionNote} onChange={e=>setActionNote(e.target.value)} placeholder="Motivo o comentario..." style={{ width:"100%", padding:"10px 12px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit", marginBottom:16 }}/>
+              <input value={actionNote} onChange={e=>setActionNote(e.target.value)} placeholder="Motivo o comentario..." style={{ width:"100%", padding:"10px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit", marginBottom:16 }}/>
             </div>
 
             <div style={{ display:"flex", gap:8 }}>
-              <button onClick={()=>{ setActionModal(null); setActionNote(""); }} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit", color:"var(--text-secondary)" }}>Cancelar</button>
+              <button onClick={()=>{ setActionModal(null); setActionNote(""); }} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:8, fontSize:12, cursor:"pointer", fontFamily:"inherit", color:"var(--text-secondary)" }}>Cancelar</button>
               <button onClick={async()=>{
                 const msgs = {reactivate:"Cuenta reactivada correctamente",suspend:"Cuenta suspendida",upgrade:"Solicitud registrada",changeGroup:"Cambio registrado"};
                 try {
@@ -1048,7 +1048,7 @@ export default function AdminDashboard() {
                 setActionDone(msgs[actionModal.type]);
                 setActionModal(null); setActionNote("");
                 setTimeout(()=>setActionDone(null), 3000);
-              }} style={{ flex:2, padding:"10px", background:actionModal.type==="suspend"?"#dc2626":"#155266", color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
+              }} style={{ flex:2, padding:"10px", background:actionModal.type==="suspend"?"#dc2626":"#155266", color:"#fff", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
                 Confirmar
               </button>
             </div>
@@ -1059,8 +1059,8 @@ export default function AdminDashboard() {
       {enrollModal && (
         <div role="dialog" aria-modal="true"
           onClick={e=>{ if(e.target===e.currentTarget) setEnrollModal(false); }}
-          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}>
-          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, width:"min(440px,100vw - 32px)", border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
+          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-dropdown)", padding:16 }}>
+          <div style={{ background:"var(--bg-surface)", borderRadius:16, padding:26, width:"min(440px,100vw - 32px)", border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:18 }}>
               <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>Nuevo estudiante</div>
               <button onClick={()=>setEnrollModal(false)} aria-label="Cerrar" style={{ background:"none", border:"none", cursor:"pointer", color:"var(--text-secondary)", fontSize:18 }}>✕</button>
@@ -1075,7 +1075,7 @@ export default function AdminDashboard() {
                 <input type={f.type} aria-label={f.label} placeholder={f.ph} style={{ width:"100%", padding:"8px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, color:"var(--text-primary)", background:"var(--bg-surface-subtle)", fontFamily:"inherit" }} />
               </div>
             ))}
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:14 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:14 }}>
               <div>
                 <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>Programa</label>
                 <select aria-label="Programa" style={{ width:"100%", padding:"8px 10px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", fontFamily:"inherit" }}>
@@ -1100,8 +1100,8 @@ export default function AdminDashboard() {
       {teamsModal && (
         <div role="dialog" aria-modal="true"
           onClick={e=>{ if(e.target===e.currentTarget) setTeamsModal(null); }}
-          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}>
-          <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:24, width:"min(400px,100vw - 32px)", border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
+          style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-dropdown)", padding:16 }}>
+          <div style={{ background:"var(--bg-surface)", borderRadius:16, padding:24, width:"min(400px,100vw - 32px)", border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:14 }}>
               <div>
                 <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>Configurar link de Teams</div>
@@ -1112,22 +1112,22 @@ export default function AdminDashboard() {
             <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:4 }}>Link de Microsoft Teams</label>
             <input aria-label="Link de Teams" value={teamsLink} onChange={e=>setTeamsLink(e.target.value)}
               placeholder="https://teams.microsoft.com/l/meetup-join/..."
-              style={{ width:"100%", padding:"9px 12px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit", marginBottom:14 }} />
+              style={{ width:"100%", padding:"8px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit", marginBottom:14 }} />
             <div style={{ display:"flex", gap:8 }}>
-              <button onClick={()=>{ setTeamsModal(null); setTeamsLink(""); }} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
+              <button onClick={()=>{ setTeamsModal(null); setTeamsLink(""); }} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:8, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
               <button onClick={async()=>{
   if(teamsModal?.dbId && teamsLink) {
     await supabase.from("groups").update({teams_link:teamsLink}).eq("id",teamsModal.dbId);
     setRealGroups(gs => gs.map(g => g.id===teamsModal.dbId ? {...g,teamsSet:true,teamsLink} : g));
   }
   setTeamsModal(null); setTeamsLink(""); setActionDone("✓ Link de Teams guardado"); setTimeout(()=>setActionDone(null),3000);
-}} style={{ flex:2, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Guardar link</button>
+}} style={{ flex:2, padding:"10px", background:B.primary, color:"#fff", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Guardar link</button>
             </div>
           </div>
         </div>
       )}
 
-      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:"var(--z-overlay)",width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
   );
 }

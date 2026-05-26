@@ -41,7 +41,7 @@ export class ErrorBoundary extends Component {
           </button>
         </div>
         {this.state.error && import.meta.env.DEV && (
-          <pre style={{ fontSize:10, color:"#94a3b8", maxWidth:500, overflow:"auto",
+          <pre style={{ fontSize:11, color:"#94a3b8", maxWidth:500, overflow:"auto",
             background:"var(--bg-surface-subtle,#f1f5f9)", padding:12, borderRadius:8,
             marginTop:8 }}>
             {this.state.error.toString()}

@@ -75,6 +75,10 @@ function StageChip({ stage }) {
 function ScoreRing({ score, size=40 }) {
   const r = size/2-4, circ = 2*Math.PI*r, dash = (score/100)*circ;
   const c = SCORE_COLOR(score);
+  if (loading) return (<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:300,flexDirection:"column",gap:12,color:"var(--text-secondary)"}}>
+        <div style={{width:24,height:24,border:"2px solid var(--border)",borderTopColor:"var(--wca-primary)",borderRadius:"50%",animation:"spin .7s linear infinite"}}/>
+        <span style={{fontSize:13}}>Cargando...</span>
+      </div>);
   return (
     <div style={{ position:"relative", width:size, height:size, flexShrink:0 }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
@@ -127,7 +131,7 @@ function PipelineCard({ lead, stageColor, onClick, selected }) {
       {lead.program && <div style={{ fontSize:11, color:P, fontWeight:500, marginBottom:6 }}>📚 {lead.program}</div>}
       <div style={{ display:"flex", gap:5, flexWrap:"wrap" }}>
         <span style={{ fontSize:11, color:"var(--text-tertiary)" }}>{lead.source}</span>
-        <span style={{ color:"#cbd5e1", fontSize:10 }}>·</span>
+        <span style={{ color:"#cbd5e1", fontSize:11 }}>·</span>
         <span style={{ fontSize:11, color:"var(--text-tertiary)" }}>{lead.date}</span>
         {lead.tags.map(t => {
           const [bg,col] = TAG_COLORS[t]||[PD,P];
@@ -182,7 +186,7 @@ function LeadPanel({ lead, onClose, onStageChange, onConvert, onLost }) {
       </div>
 
       {/* Contact info */}
-      <div style={{ padding:"14px 20px", borderBottom:"1px solid #f1f5f9" }}>
+      <div style={{ padding:"12px 20px", borderBottom:"1px solid #f1f5f9" }}>
         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
           {[["📧",lead.email],["📱",lead.phone],["📚",lead.program||"Sin programa"],["🎯",lead.level?`Nivel ${lead.level}`:"Sin test"]].map(([icon,val],i)=>(
             <div key={i} style={{ display:"flex", gap:7, alignItems:"center", background:"var(--bg-page)", borderRadius:8, padding:"8px 10px" }}>
@@ -195,14 +199,14 @@ function LeadPanel({ lead, onClose, onStageChange, onConvert, onLost }) {
 
       {/* Actions */}
       <div style={{ padding:"12px 20px", borderBottom:"1px solid #f1f5f9", display:"flex", gap:7, flexWrap:"wrap" }}>
-        <button onClick={()=>{const stages=STAGES.map(s=>s.id);const i=stages.indexOf(lead.stage);if(i<stages.length-2)onStageChange(stages[i+1]);}} style={{ flex:1, padding:"8px 10px", background:P, color:"#fff", border:"none", borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
+        <button onClick={()=>{const stages=STAGES.map(s=>s.id);const i=stages.indexOf(lead.stage);if(i<stages.length-2)onStageChange(stages[i+1]);}} style={{ flex:1, padding:"8px 10px", background:P, color:"#fff", border:"none", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
           Avanzar etapa →
         </button>
-        {lead.stage!=="convertido" && <button onClick={onConvert} style={{ flex:1, padding:"8px 10px", background:GD, color:G, border:`1px solid ${G}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>🎉 Convertir</button>}
-        <button style={{ padding:"8px 12px", background:"#ecfdf5", color:"#16a34a", border:"none", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
+        {lead.stage!=="convertido" && <button onClick={onConvert} style={{ flex:1, padding:"8px 10px", background:GD, color:G, border:`1px solid ${G}40`, borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>🎉 Convertir</button>}
+        <button style={{ padding:"8px 12px", background:"#ecfdf5", color:"#16a34a", border:"none", borderRadius:8, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
           <i className="ti ti-brand-whatsapp" style={{ fontSize:14 }} aria-hidden="true"/>
         </button>
-        <button onClick={()=>setView("pipeline")} style={{ padding:"8px 12px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", border:"none", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
+        <button onClick={()=>setView("pipeline")} style={{ padding:"8px 12px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", border:"none", borderRadius:8, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>
           <i className="ti ti-send" style={{ fontSize:14 }} aria-hidden="true"/>
         </button>
       </div>
@@ -223,8 +227,8 @@ function LeadPanel({ lead, onClose, onStageChange, onConvert, onLost }) {
       <div style={{ padding:"12px 20px", borderBottom:"1px solid #f1f5f9" }}>
         <div style={{ fontSize:11, color:"var(--text-tertiary)", marginBottom:7 }}>Enviar mensaje</div>
         <div style={{ display:"flex", gap:7 }}>
-          <input aria-label="Mensaje" value={msgText} onChange={e=>setMsgText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendMsg()} placeholder="Escribe un mensaje..." style={{ flex:1, padding:"8px 11px", border:"1px solid var(--border)", borderRadius:9, fontSize:12, fontFamily:"inherit", color:"var(--text-primary)", background:"var(--bg-page)", outline:"none" }}/>
-          <button onClick={sendMsg} style={{ padding:"8px 14px", background:P, color:"#fff", border:"none", borderRadius:9, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>→</button>
+          <input aria-label="Mensaje" value={msgText} onChange={e=>setMsgText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&sendMsg()} placeholder="Escribe un mensaje..." style={{ flex:1, padding:"8px 11px", border:"1px solid var(--border)", borderRadius:8, fontSize:12, fontFamily:"inherit", color:"var(--text-primary)", background:"var(--bg-page)", outline:"none" }}/>
+          <button onClick={sendMsg} style={{ padding:"8px 14px", background:P, color:"#fff", border:"none", borderRadius:8, fontSize:12, cursor:"pointer", fontFamily:"inherit" }}>→</button>
         </div>
         {showSent && <div style={{ marginTop:7, fontSize:11, color:G, fontWeight:600 }}>✓ Mensaje enviado por WhatsApp</div>}
       </div>
@@ -240,12 +244,12 @@ function LeadPanel({ lead, onClose, onStageChange, onConvert, onLost }) {
       </div>
 
       {/* Activity timeline */}
-      <div style={{ padding:"14px 20px", flex:1 }}>
+      <div style={{ padding:"12px 20px", flex:1 }}>
         <div style={{ fontSize:11, fontWeight:700, color:"var(--text-tertiary)", textTransform:"uppercase", letterSpacing:.8, marginBottom:12 }}>Actividad</div>
         {lead.activity.map((a,i)=>(
-          <div key={i} style={{ display:"flex", gap:10, paddingBottom:12, position:"relative" }}>
+          <div key={i} style={{ display:"flex", gap:8, paddingBottom:12, position:"relative" }}>
             {i<lead.activity.length-1 && <div style={{ position:"absolute", left:11, top:22, bottom:0, width:1.5, background:"var(--bg-surface-subtle)" }}/>}
-            <div style={{ width:22, height:22, borderRadius:"50%", background:"var(--bg-surface-subtle)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, flexShrink:0, zIndex:1 }}>{ACT_ICON(a.type)}</div>
+            <div style={{ width:22, height:22, borderRadius:"50%", background:"var(--bg-surface-subtle)", display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, flexShrink:0, zIndex:"var(--z-base)" }}>{ACT_ICON(a.type)}</div>
             <div style={{ flex:1 }}>
               <div style={{ fontSize:12, color:"var(--text-secondary)", lineHeight:1.5 }}>{a.text}</div>
               <div style={{ fontSize:11, color:"var(--text-tertiary)", marginTop:2 }}>{a.time}</div>
@@ -264,7 +268,7 @@ function NewLeadModal({ onSave, onClose }) {
   const valid = form.name && form.email;
 
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(15,23,42,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:999, padding:16 }}
+    <div style={{ position:"fixed", inset:0, background:"rgba(15,23,42,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-dropdown)", padding:16 }}
       onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
       <div style={{ background:"var(--bg-surface)", borderRadius:20, padding:28, width:480, maxWidth:"100%", boxShadow:"0 24px 60px rgba(0,0,0,.2)", maxHeight:"90vh", overflowY:"auto" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:20 }}>
@@ -276,31 +280,31 @@ function NewLeadModal({ onSave, onClose }) {
           {[["Nombre completo","name","text","María Rodríguez"],["Email","email","email","maria@gmail.com"],["Teléfono","phone","tel","+504 9900-0000"],["País","country","text","🇭🇳 Honduras"]].map(([label,key,type,ph])=>(
             <div key={key} style={{ gridColumn:key==="name"?"1/-1":undefined }}>
               <label style={{ fontSize:11, color:"var(--text-secondary)", display:"block", marginBottom:5, fontWeight:500 }}>{label}</label>
-              <input type={type} value={form[key]} onChange={e=>set(key,e.target.value)} placeholder={ph} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, fontFamily:"inherit", color:"var(--text-primary)", background:"var(--bg-page)", outline:"none" }}
+              <input type={type} value={form[key]} onChange={e=>set(key,e.target.value)} placeholder={ph} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, fontFamily:"inherit", color:"var(--text-primary)", background:"var(--bg-page)", outline:"none" }}
                 onFocus={e=>{e.target.style.borderColor=P;}} onBlur={e=>{e.target.style.borderColor="#e2e8f0";}}/>
             </div>
           ))}
           <div>
             <label style={{ fontSize:11, color:"var(--text-secondary)", display:"block", marginBottom:5, fontWeight:500 }}>Canal de origen</label>
-            <select value={form.source} onChange={e=>set("source",e.target.value)} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, fontFamily:"inherit", color:"var(--text-primary)", background:"var(--bg-page)" }}>
+            <select value={form.source} onChange={e=>set("source",e.target.value)} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, fontFamily:"inherit", color:"var(--text-primary)", background:"var(--bg-page)" }}>
               {["Instagram","Referido","Google Ads","WhatsApp","LinkedIn","Orgánico"].map(s=><option key={s}>{s}</option>)}
             </select>
           </div>
           <div>
             <label style={{ fontSize:11, color:"var(--text-secondary)", display:"block", marginBottom:5, fontWeight:500 }}>Programa de interés</label>
-            <select value={form.program} onChange={e=>set("program",e.target.value)} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, fontFamily:"inherit", color:"var(--text-primary)", background:"var(--bg-page)" }}>
+            <select value={form.program} onChange={e=>set("program",e.target.value)} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, fontFamily:"inherit", color:"var(--text-primary)", background:"var(--bg-page)" }}>
               <option value="">Sin definir</option>
               {["Inglés","VA General","Inglés + VA","VA · Marketing Digital","VA · Legal Assistant","VA · Cuidador Remoto"].map(p=><option key={p}>{p}</option>)}
             </select>
           </div>
           <div style={{ gridColumn:"1/-1" }}>
             <label style={{ fontSize:11, color:"var(--text-secondary)", display:"block", marginBottom:5, fontWeight:500 }}>Nota inicial</label>
-            <textarea id="crm-new-lead-note" placeholder="Cómo llegó, qué busca, detalles relevantes..." rows={3} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, fontFamily:"inherit", color:"var(--text-primary)", background:"var(--bg-page)", resize:"vertical", outline:"none" }}
+            <textarea id="crm-new-lead-note" placeholder="Cómo llegó, qué busca, detalles relevantes..." rows={3} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, fontFamily:"inherit", color:"var(--text-primary)", background:"var(--bg-page)", resize:"vertical", outline:"none" }}
               onFocus={e=>{e.target.style.borderColor=P;}} onBlur={e=>{e.target.style.borderColor="#e2e8f0";}}/>
           </div>
         </div>
 
-        <div style={{ display:"flex", gap:10, marginTop:20 }}>
+        <div style={{ display:"flex", gap:8, marginTop:20 }}>
           <button onClick={onClose} style={{ flex:1, padding:"11px", background:"var(--bg-surface-subtle)", color:"var(--text-secondary)", border:"none", borderRadius:10, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>
           <button onClick={async()=>{
             if(!valid) return;
@@ -408,7 +412,7 @@ function PlacementTestModal({ lead, onClose, onSave }) {
   const P = "#155266";
 
   return (
-    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:1000, padding:16 }}
+    <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-modal)", padding:16 }}
       onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
       <div style={{ background:"var(--bg-surface)", borderRadius:20, padding:28, width:520, maxWidth:"100%", maxHeight:"90vh", overflowY:"auto", boxShadow:"0 24px 60px rgba(0,0,0,.2)" }}>
 
@@ -466,7 +470,7 @@ function PlacementTestModal({ lead, onClose, onSave }) {
                       const sel = answers[qi]===oi;
                       return (
                         <button key={oi} onClick={()=>setAnswers(a=>({...a,[qi]:oi}))}
-                          style={{ padding:"9px 12px", background:sel?"#e8f3f6":"#f8fafc", border:`1.5px solid ${sel?"#155266":"#e2e8f0"}`, borderRadius:8, fontSize:13, cursor:"pointer", textAlign:"left", color:sel?"#155266":"#475569", fontWeight:sel?600:400, fontFamily:"inherit", transition:"all .15s" }}>
+                          style={{ padding:"8px 12px", background:sel?"#e8f3f6":"#f8fafc", border:`1.5px solid ${sel?"#155266":"#e2e8f0"}`, borderRadius:8, fontSize:13, cursor:"pointer", textAlign:"left", color:sel?"#155266":"#475569", fontWeight:sel?600:400, fontFamily:"inherit", transition:"all .15s" }}>
                           {opt}
                         </button>
                       );
@@ -486,11 +490,11 @@ function PlacementTestModal({ lead, onClose, onSave }) {
         {/* RESULT */}
         {phase === "result" && result && (
           <div style={{ textAlign:"center" }}>
-            <div style={{ fontSize:56, marginBottom:8 }}>🎯</div>
+            <div style={{ marginBottom:8 }}><i className="ti ti-target" style={{fontSize:56,color:"var(--wca-primary)"}} aria-hidden="true"/></div>
             <div style={{ fontSize:13, color:"var(--text-secondary)", marginBottom:4 }}>Nivel detectado</div>
             <div style={{ fontSize:40, fontWeight:800, color:result.color, marginBottom:4 }}>{result.level}</div>
             <div style={{ fontSize:18, fontWeight:600, color:"var(--text-primary)", marginBottom:16 }}>{result.label}</div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, maxWidth:280, margin:"0 auto 20px" }}>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, maxWidth:280, margin:"0 auto 20px" }}>
               <div style={{ background:"var(--bg-page)", borderRadius:10, padding:12 }}>
                 <div style={{ fontSize:22, fontWeight:800, color:P }}>{result.correct}/{total}</div>
                 <div style={{ fontSize:11, color:"var(--text-secondary)" }}>correctas</div>
@@ -665,7 +669,7 @@ export default function CRM() {
           <div style={{ fontSize:16, fontWeight:800, color:"#fff" }}>CRM Ventas</div>
         </div>
         {NAV.map(n=>(
-          <button key={n.id} onClick={()=>{setView(n.id);setSelLead(null);}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 18px", border:"none", background:view===n.id?"rgba(255,255,255,.12)":"transparent", color:view===n.id?"#fff":"rgba(255,255,255,.45)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:`2px solid ${view===n.id?Y:"transparent"}`, transition:"all .15s", fontFamily:"inherit", fontWeight:view===n.id?600:400, width:"100%" }}>
+          <button key={n.id} onClick={()=>{setView(n.id);setSelLead(null);}} style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 18px", border:"none", background:view===n.id?"rgba(255,255,255,.12)":"transparent", color:view===n.id?"#fff":"rgba(255,255,255,.45)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:`2px solid ${view===n.id?Y:"transparent"}`, transition:"all .15s", fontFamily:"inherit", fontWeight:view===n.id?600:400, width:"100%" }}>
             <i className={"ti "+n.icon} style={{ fontSize:14, width:18, textAlign:"center" }} aria-hidden="true"/>
             {n.label}
             {n.id==="tasks" && pendingTasks>0 && <span style={{ marginLeft:"auto", fontSize:11, background:R, color:"#fff", borderRadius:"50%", width:16, height:16, display:"flex", alignItems:"center", justifyContent:"center", fontWeight:700 }}>{pendingTasks}</span>}
@@ -690,7 +694,7 @@ export default function CRM() {
           Cerrar sesión
         </button>
       </aside>
-      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:"var(--z-overlay)",background:"rgba(0,0,0,.4)"}}/>}
 
 
       {/* MAIN */}
@@ -711,7 +715,7 @@ export default function CRM() {
             ) : null}
           </div>
           <div style={{ display:"flex", gap:10 }}>
-            <button onClick={()=>setShowNewLead(true)} style={{ display:"flex", alignItems:"center", gap:7, padding:"9px 18px", background:P, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit", boxShadow:`0 2px 8px ${P}30` }}>
+            <button onClick={()=>setShowNewLead(true)} style={{ display:"flex", alignItems:"center", gap:7, padding:"8px 16px", background:P, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit", boxShadow:`0 2px 8px ${P}30` }}>
               <i className="ti ti-plus" style={{ fontSize:15 }} aria-hidden="true"/> Nuevo lead
             </button>
           </div>
@@ -726,7 +730,7 @@ export default function CRM() {
             { label:"Score avg",   value:avgScore,   color:PURPLE,icon:"ti-flame"        },
             { label:"Tareas hoy",  value:pendingTasks,color:R,    icon:"ti-checkbox"     },
           ].map((k,i)=>(
-            <div key={i} style={{ flex:1, padding:"12px 16px", borderRight:i<4?"1px solid #f1f5f9":"none", display:"flex", gap:10, alignItems:"center" }}>
+            <div key={i} style={{ flex:1, padding:"12px 16px", borderRight:i<4?"1px solid #f1f5f9":"none", display:"flex", gap:8, alignItems:"center" }}>
               <div style={{ width:32, height:32, borderRadius:8, background:`${k.color}12`, display:"flex", alignItems:"center", justifyContent:"center" }}>
                 <i className={"ti "+k.icon} style={{ fontSize:15, color:k.color }} aria-hidden="true"/>
               </div>
@@ -744,7 +748,7 @@ export default function CRM() {
 
             {/* ── PIPELINE ── */}
             {view==="pipeline" && !selLead && (
-              <div style={{ display:"flex", gap:14, minWidth:"min-content", padding:20 }}>
+              <div style={{ display:"flex", gap:16, minWidth:"min-content", padding:20 }}>
                 {STAGES.map(stage=>{
                   const stageLeads = filteredLeads.filter(l=>l.stage===stage.id);
                   return (
@@ -778,12 +782,12 @@ export default function CRM() {
             {view==="pipeline" && selLead && (
               <>
                 <div style={{ flex:1, overflowX:"auto", overflowY:"auto", padding:20 }}>
-                  <div style={{ display:"flex", gap:14, minWidth:"min-content" }}>
+                  <div style={{ display:"flex", gap:16, minWidth:"min-content" }}>
                     {STAGES.map(stage=>{
                       const stageLeads = filteredLeads.filter(l=>l.stage===stage.id);
                       return (
                         <div key={stage.id} style={{ width:isMobile?260:200, flexShrink:0 , zIndex:isMobile?9990:1, transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none", transition:"transform .25s ease", maxWidth:isMobile?"80vw":"none" }}>
-                          <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:10, padding:"7px 10px", background:"var(--bg-surface)", borderRadius:9, border:"1px solid var(--border)" }}>
+                          <div style={{ display:"flex", alignItems:"center", gap:7, marginBottom:10, padding:"7px 10px", background:"var(--bg-surface)", borderRadius:8, border:"1px solid var(--border)" }}>
                             <div style={{ width:7, height:7, borderRadius:"50%", background:stage.color }}/>
                             <span style={{ fontSize:11, fontWeight:700, color:"var(--text-primary)", flex:1 }}>{stage.label}</span>
                             <span style={{ fontSize:11, padding:"2px 7px", borderRadius:20, background:stage.light, color:stage.color, fontWeight:700 }}>{stageLeads.length}</span>
@@ -807,7 +811,7 @@ export default function CRM() {
             {/* ── TODOS LOS LEADS ── */}
             {view==="leads" && (
               <div>
-                <div style={{ background:"var(--bg-surface)", borderRadius:14, border:"1px solid var(--border)", overflow:"hidden", boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
+                <div style={{ background:"var(--bg-surface)", borderRadius:12, border:"1px solid var(--border)", overflow:"hidden", boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
                   <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
                     <thead>
                       <tr style={{ background:"var(--bg-page)" }}>
@@ -822,7 +826,7 @@ export default function CRM() {
                           onMouseEnter={e=>e.currentTarget.style.background="#f8fafc"}
                           onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
                           <td style={{ padding:"14px 16px" }}>
-                            <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+                            <div style={{ display:"flex", gap:8, alignItems:"center" }}>
                               <Avatar name={l.name} color={STAGES.find(s=>s.id===l.stage)?.color||P} size={34}/>
                               <div>
                                 <div style={{ fontWeight:600, color:"var(--text-primary)" }}>{l.name}</div>
@@ -868,11 +872,11 @@ export default function CRM() {
                       }, ...ts]);
                       showToast("✓ Tarea creada");
                     } catch(e) { showToast("Error: "+e.message, R); }
-                  }} style={{ fontSize:12, padding:"7px 14px", background:P, color:"#fff", border:"none", borderRadius:9, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>+ Nueva tarea</button>
+                  }} style={{ fontSize:12, padding:"7px 14px", background:P, color:"#fff", border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>+ Nueva tarea</button>
                 </div>
                 <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
                   {tasks.map((t,i)=>(
-                    <div key={t.id} style={{ display:"flex", gap:12, alignItems:"center", background:"var(--bg-surface)", border:`1px solid ${t.done?"#e2e8f0":t.priority==="high"?`${R}30`:"#e2e8f0"}`, borderRadius:12, padding:"14px 18px", boxShadow:"0 1px 4px rgba(0,0,0,.04)", opacity:t.done?.5:1 }}>
+                    <div key={t.id} style={{ display:"flex", gap:12, alignItems:"center", background:"var(--bg-surface)", border:`1px solid ${t.done?"#e2e8f0":t.priority==="high"?`${R}30`:"#e2e8f0"}`, borderRadius:12, padding:"12px 16px", boxShadow:"0 1px 4px rgba(0,0,0,.04)", opacity:t.done?.5:1 }}>
                       <input type="checkbox" checked={t.done} onChange={async()=>{
   setTasks(ts=>ts.map(x=>x.id===t.id?{...x,done:!x.done}:x));
   if(t.id && typeof t.id === "string" && t.id.length > 10) {
@@ -891,8 +895,8 @@ export default function CRM() {
                     </div>
                   ))}
                   {pendingTasks===0 && (
-                    <div style={{ textAlign:"center", padding:"40px 20px", background:"var(--bg-surface)", borderRadius:14, border:"1px solid var(--border)" }}>
-                      <div style={{ fontSize:isMobile?22:32, marginBottom:10 }}>✅</div>
+                    <div style={{ textAlign:"center", padding:"40px 20px", background:"var(--bg-surface)", borderRadius:12, border:"1px solid var(--border)" }}>
+                      <div style={{ marginBottom:10 }}><i className="ti ti-circle-check" style={{fontSize:isMobile?22:32,color:"var(--green)"}} aria-hidden="true"/></div>
                       <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>¡Todo al día!</div>
                       <div style={{ fontSize:13, color:"var(--text-tertiary)" }}>No tenés tareas pendientes para hoy.</div>
                     </div>
@@ -904,9 +908,9 @@ export default function CRM() {
             {/* ── MÉTRICAS ── */}
             {view==="metrics" && (
               <div>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14, marginBottom:14 }}>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:14 }}>
                   {/* Funnel */}
-                  <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:20, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
+                  <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:20, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
                     <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)", marginBottom:16 }}>Funnel de conversión</div>
                     {STAGES.filter(s=>s.id!=="perdido").map(stage=>{
                       const count = leads.filter(l=>l.stage===stage.id).length;
@@ -921,7 +925,7 @@ export default function CRM() {
                   </div>
 
                   {/* Sources */}
-                  <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:20, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
+                  <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:20, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
                     <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)", marginBottom:16 }}>Canales de adquisición</div>
                     {(leads.reduce((acc,l)=>{const src=l.source||"Otro";acc[src]=(acc[src]||0)+1;return acc;},{}))&&Object.entries(leads.reduce((acc,l)=>{const src=l.source||"Otro";acc[src]=(acc[src]||0)+1;return acc;},{})).map(([src,count],i)=>(
                       <div key={s.label} style={{ display:"flex", alignItems:"center", gap:12, marginBottom:10 }}>
@@ -930,13 +934,13 @@ export default function CRM() {
                         <div style={{ fontSize:11, color:"var(--text-tertiary)", width:50, textAlign:"right" }}>{s.pct}% ({s.count})</div>
                       </div>
                     ))}
-                    <div style={{ marginTop:14, background:"#ecfdf5", border:"1px solid #6ee7b7", borderRadius:9, padding:"8px 12px", fontSize:11, color:"#065f46" }}>
+                    <div style={{ marginTop:16, background:"#ecfdf5", border:"1px solid #6ee7b7", borderRadius:8, padding:"8px 12px", fontSize:11, color:"#065f46" }}>
                       💡 Los referidos convierten al <strong>42%</strong> — el canal más eficiente de WCA
                     </div>
                   </div>
 
                   {/* Score distribution */}
-                  <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:20, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
+                  <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:20, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
                     <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)", marginBottom:16 }}>Distribución de scores</div>
                     <div style={{ display:"flex", gap:10 }}>
                       {[{label:"Calientes 🔥",min:80,color:G},{label:"Tibios 🌡",min:50,color:A},{label:"Fríos ❄️",min:0,color:R}].map(({label,min,color},i,arr)=>{
@@ -953,12 +957,12 @@ export default function CRM() {
                   </div>
 
                   {/* Programs */}
-                  <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:20, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
+                  <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:20, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
                     <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)", marginBottom:16 }}>Interés por programa</div>
                     {["Inglés","VA General","Inglés + VA","VA · Marketing Digital"].map(prog=>{
                       const cnt = leads.filter(l=>l.program===prog).length;
                       return (
-                        <div key={prog} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:9 }}>
+                        <div key={prog} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:9 }}>
                           <div style={{ fontSize:12, flex:1, color:"var(--text-secondary)" }}>{prog}</div>
                           <MiniBar pct={(cnt/totalLeads)*100} color={P}/>
                           <div style={{ fontSize:12, fontWeight:600, color:"var(--text-primary)", width:16 }}>{cnt}</div>
@@ -982,12 +986,12 @@ export default function CRM() {
 
       {/* ── TOAST ── */}
       {toast && (
-        <div style={{ position:"fixed", top:20, right:90, background:toast.color, color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:9999, boxShadow:"0 6px 20px rgba(0,0,0,.2)", display:"flex", gap:8, alignItems:"center", fontFamily:"'DM Sans','Segoe UI',sans-serif", animation:"slideIn .3s ease" }}>
+        <div style={{ position:"fixed", top:20, right:90, background:toast.color, color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:"var(--z-modal)", boxShadow:"0 6px 20px rgba(0,0,0,.2)", display:"flex", gap:8, alignItems:"center", fontFamily:"'DM Sans','Segoe UI',sans-serif", animation:"slideIn .3s ease" }}>
           <style>{`@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}`}</style>
           {toast.msg}
         </div>
       )}
-      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:P,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:"var(--z-overlay)",width:50,height:50,borderRadius:"50%",background:P,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
     {ptLead && (
       <PlacementTestModal

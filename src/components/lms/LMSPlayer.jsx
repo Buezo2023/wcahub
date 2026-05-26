@@ -208,7 +208,7 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
       {xpAnim && (
         <div style={{
           position:"fixed", top:"20%", left:"50%", transform:"translateX(-50%)",
-          zIndex:99999, pointerEvents:"none",
+          zIndex:"var(--z-toast)", pointerEvents:"none",
           animation:"xpPop .4s cubic-bezier(.17,.67,.35,1.3), xpFade 2s 0.4s forwards",
           background: xpAnim.bonus ? A : G,
           color:"#fff", borderRadius:20, padding:"10px 24px",
@@ -229,7 +229,7 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
           background:"var(--bg-surface)", borderRight:"1px solid var(--border)",
           overflowY:"auto", display:"flex", flexDirection:"column",
           position: isMobile ? "fixed" : "relative",
-          ...(isMobile ? { inset:0, zIndex:9000 } : {}),
+          ...(isMobile ? { inset:0, zIndex:"var(--z-sidebar)" } : {}),
         }}>
           {/* XP header */}
           <div style={{ padding:"16px 14px", background: P, color:"#fff", flexShrink:0 }}>
@@ -261,7 +261,7 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
                     <div style={{ fontSize:12, fontWeight:700, color: isSel ? P : "var(--text-primary)" }}>
                       U{unit.unit_number}. {unit.title}
                     </div>
-                    <div style={{ fontSize:10, fontWeight:700, color: pct===100 ? G : "var(--text-tertiary)", flexShrink:0, marginLeft:6 }}>
+                    <div style={{ fontSize:11, fontWeight:700, color: pct===100 ? G : "var(--text-tertiary)", flexShrink:0, marginLeft:6 }}>
                       {pct===100 ? "✓" : `${pct}%`}
                     </div>
                   </div>
@@ -303,7 +303,7 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
             {/* Activities */}
             {unitActivities.length === 0 ? (
               <div style={{ textAlign:"center", padding:"40px 20px" }}>
-                <div style={{ fontSize:40, marginBottom:12 }}>📖</div>
+                <div style={{ marginBottom:12 }}><i className="ti ti-book-open" style={{fontSize:40,color:"var(--wca-primary)"}} aria-hidden="true"/></div>
                 <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)", marginBottom:6 }}>
                   Contenido en preparación
                 </div>
@@ -323,10 +323,10 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
                       onClick={() => !locked && setActiveActivity(act)}
                       style={{
                         background:"var(--bg-surface)", border:"1px solid var(--border)",
-                        borderRadius:14, padding:"14px 16px", cursor: locked ? "not-allowed" : "pointer",
+                        borderRadius:12, padding:"14px 16px", cursor: locked ? "not-allowed" : "pointer",
                         opacity: locked ? 0.5 : 1, transition:"all .15s",
                         borderLeft:`4px solid ${done ? G : locked ? "var(--border)" : P}`,
-                        display:"flex", alignItems:"center", gap:14,
+                        display:"flex", alignItems:"center", gap:16,
                       }}>
                       {/* Icon */}
                       <div style={{
@@ -358,7 +358,7 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
           <div style={{ padding:isMobile?12:20, maxWidth:680, width:"100%", margin:"0 auto" }}>
             {/* Back button */}
             <button onClick={() => setActiveActivity(null)} style={{
-              display:"flex", alignItems:"center", gap:6, background:"none", border:"none",
+              display:"flex", alignItems:"center", gap:8, background:"none", border:"none",
               cursor:"pointer", color:"var(--text-secondary)", fontSize:13, fontFamily:"inherit",
               marginBottom:16, padding:0,
             }}>

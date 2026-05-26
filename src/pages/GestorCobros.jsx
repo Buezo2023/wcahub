@@ -41,6 +41,10 @@ function Badge({ text, bg, color }) {
   return <span style={{ fontSize:11, padding:"2px 8px", borderRadius:20, background:bg, color, fontWeight:600, whiteSpace:"nowrap" }}>{text}</span>;
 }
 function Stat({ label, value, sub, color, icon }) {
+  if (dataLoading) return (<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:300,flexDirection:"column",gap:12,color:"var(--text-secondary)"}}>
+        <div style={{width:24,height:24,border:"2px solid var(--border)",borderTopColor:"var(--wca-primary)",borderRadius:"50%",animation:"spin .7s linear infinite"}}/>
+        <span style={{fontSize:13}}>Cargando...</span>
+      </div>);
   return (
     <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:"13px 15px", borderTop:`3px solid ${color}` }}>
       <div style={{ display:"flex", justifyContent:"space-between", marginBottom:6 }}>
@@ -275,7 +279,7 @@ export default function GestorCobros() {
           Cerrar sesión
         </button>
       </aside>
-      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:"var(--z-overlay)",background:"rgba(0,0,0,.4)"}}/>}
 
 
       {/* MAIN */}
@@ -295,18 +299,18 @@ export default function GestorCobros() {
           {/* HOME */}
           {view==="home" && (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)", gap:10, marginBottom:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)", gap:8, marginBottom:14 }}>
                 <Stat label="Cobrado hoy" value="$360" sub="3 pagos" color={B.green} icon="ti-trending-up" />
                 <Stat label="Por confirmar" value={pending.length} sub="Transferencias" color={B.amber} icon="ti-clock" />
                 <Stat label="Vencidos" value={realOverdue.length} sub="+30 días" color={B.red} icon="ti-alert-circle" />
                 <Stat label="Cobrado (mes)" value={`$${realHistory.filter(p=>p.status==="confirmed").reduce((s,p)=>s+(p.amount||0),0).toLocaleString()}`} sub={`${realHistory.filter(p=>p.status==="confirmed").length} pagos`} color={B.primary} icon="ti-coin" />
               </div>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
-                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
+                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:12 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:10 }}>Transferencias pendientes hoy</div>
                   {pending.length === 0 && <div style={{ fontSize:13, color:B.textSec, textAlign:"center", padding:"16px 0" }}>✓ Todo confirmado</div>}
                   {pending.map(t => (
-                    <div key={t.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 10px", background:t.urgent?B.redDim:B.amberDim, borderRadius:9, marginBottom:7, border:`1px solid ${t.urgent?B.red:B.amber}40` }}>
+                    <div key={t.id} style={{ display:"flex", alignItems:"center", gap:8, padding:"9px 10px", background:t.urgent?B.redDim:B.amberDim, borderRadius:8, marginBottom:7, border:`1px solid ${t.urgent?B.red:B.amber}40` }}>
                       <div style={{ flex:1 }}>
                         <div style={{ fontSize:13, fontWeight:600, color:B.text }}>{t.student}</div>
                         <div style={{ fontSize:11, color:B.textSec }}>
@@ -321,7 +325,7 @@ export default function GestorCobros() {
                     </div>
                   ))}
                 </div>
-                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
+                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:12 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:10 }}>Últimas acciones</div>
                   {realHistory.slice(0,5).map((p,i) => (
                     <div key={i} style={{ display:"flex", gap:9, padding:"7px 0", borderTop:i>0?`1px solid ${B.borderLight}`:"none" }}>
@@ -350,7 +354,7 @@ export default function GestorCobros() {
                 )}
                 {pending.map(t => (
                   <div key={t.id} onClick={() => setSelTransfer(selTransfer?.id===t.id?null:t)}
-                    style={{ background:B.white, border:`1px solid ${selTransfer?.id===t.id?B.primary:t.urgent?B.red:B.border}`, borderRadius:12, padding:14, marginBottom:10, cursor:"pointer", transition:"border-color .15s" }}>
+                    style={{ background:B.white, border:`1px solid ${selTransfer?.id===t.id?B.primary:t.urgent?B.red:B.border}`, borderRadius:12, padding:12, marginBottom:10, cursor:"pointer", transition:"border-color .15s" }}>
                     <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:10 }}>
                       <div>
                         <div style={{ fontSize:14, fontWeight:700, color:B.text }}>{t.student}</div>
@@ -361,7 +365,7 @@ export default function GestorCobros() {
                         {t.urgent && <Badge text="Sin comprobante" bg={B.redDim} color={B.red} />}
                       </div>
                     </div>
-                    <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:10 }}>
+                    <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:10 }}>
                       <Badge text={t.bank} bg={B.bg} color={B.textSec} />
                       <Badge text={t.code} bg={B.primaryDim} color={B.primary} />
                       <Badge text={t.proof?"Comprobante subido":"Sin comprobante"} bg={t.proof?B.greenDim:B.redDim} color={t.proof?"#065f46":B.red} />
@@ -385,7 +389,7 @@ export default function GestorCobros() {
                   <div style={{ fontSize:40, marginBottom:12 }}>✅</div>
                   <div style={{ fontSize:16, fontWeight:700, color:B.text, marginBottom:6 }}>Pago registrado</div>
                   <div style={{ fontSize:13, color:B.textSec, marginBottom:20 }}>El acceso del estudiante ha sido activado y el recibo fue generado automáticamente.</div>
-                  <button onClick={() => { setRegSuccess(false); setRegForm({ student:"", amount:"", method:"Efectivo", bank:"", note:"", code:"" }); }} style={{ padding:"9px 20px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Registrar otro pago</button>
+                  <button onClick={() => { setRegSuccess(false); setRegForm({ student:"", amount:"", method:"Efectivo", bank:"", note:"", code:"" }); }} style={{ padding:"9px 20px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Registrar otro pago</button>
                 </div>
               ) : (
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:20 }}>
@@ -396,20 +400,20 @@ export default function GestorCobros() {
                   ].map(f => (
                     <div key={f.key} style={{ marginBottom:12 }}>
                       <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>{f.label}</label>
-                      <input type={f.type} value={registerForm[f.key]} onChange={e=>setRegForm(r=>({...r,[f.key]:e.target.value}))} placeholder={f.ph} style={{ width:"100%", padding:"9px 12px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.bg, fontFamily:"inherit", color:B.text }} />
+                      <input type={f.type} value={registerForm[f.key]} onChange={e=>setRegForm(r=>({...r,[f.key]:e.target.value}))} placeholder={f.ph} style={{ width:"100%", padding:"8px 12px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit", color:B.text }} />
                     </div>
                   ))}
-                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:12 }}>
+                  <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:12 }}>
                     <div>
                       <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>Método</label>
-                      <select value={registerForm.method} onChange={e=>setRegForm(r=>({...r,method:e.target.value}))} style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.bg, fontFamily:"inherit" }}>
+                      <select value={registerForm.method} onChange={e=>setRegForm(r=>({...r,method:e.target.value}))} style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit" }}>
                         <option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option>
                       </select>
                     </div>
                     {registerForm.method === "Transferencia" && (
                       <div>
                         <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>Banco</label>
-                        <select value={registerForm.bank} onChange={e=>setRegForm(r=>({...r,bank:e.target.value}))} style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.bg, fontFamily:"inherit" }}>
+                        <select value={registerForm.bank} onChange={e=>setRegForm(r=>({...r,bank:e.target.value}))} style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit" }}>
                           <option>BAC Credomatic</option><option>BI Honduras</option><option>Ficohsa</option>
                         </select>
                       </div>
@@ -417,9 +421,9 @@ export default function GestorCobros() {
                   </div>
                   <div style={{ marginBottom:12 }}>
                     <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>Nota interna (visible en auditoría)</label>
-                    <input value={registerForm.note} onChange={e=>setRegForm(r=>({...r,note:e.target.value}))} placeholder="Ej: Pagó en sede, entregó comprobante físico..." style={{ width:"100%", padding:"9px 12px", border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, background:B.bg, fontFamily:"inherit", color:B.text }} />
+                    <input value={registerForm.note} onChange={e=>setRegForm(r=>({...r,note:e.target.value}))} placeholder="Ej: Pagó en sede, entregó comprobante físico..." style={{ width:"100%", padding:"8px 12px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit", color:B.text }} />
                   </div>
-                  <div style={{ background:B.primaryDim, borderRadius:9, padding:"9px 12px", fontSize:13, color:B.primary, marginBottom:14, display:"flex", gap:6 }}>
+                  <div style={{ background:B.primaryDim, borderRadius:8, padding:"8px 12px", fontSize:13, color:B.primary, marginBottom:16, display:"flex", gap:6 }}>
                     <i className="ti ti-info-circle" style={{ fontSize:13, flexShrink:0 }} aria-hidden="true" />
                     Al confirmar se activará el acceso del estudiante y se generará el recibo automáticamente.
                   </div>
@@ -435,7 +439,7 @@ export default function GestorCobros() {
           {view==="history" && (
             <div>
               <div style={{ display:"flex", gap:8, marginBottom:12 }}>
-                <div style={{ flex:1, display:"flex", alignItems:"center", gap:8, background:B.white, border:`1px solid ${B.border}`, borderRadius:9, padding:"7px 12px" }}>
+                <div style={{ flex:1, display:"flex", alignItems:"center", gap:8, background:B.white, border:`1px solid ${B.border}`, borderRadius:8, padding:"7px 12px" }}>
                   <i className="ti ti-search" style={{ color:B.textSec, fontSize:15 }} aria-hidden="true" />
                   <input value={searchHist} onChange={e=>setSearchHist(e.target.value)} placeholder="Buscar por estudiante o código..." style={{ border:"none", outline:"none", fontSize:13, background:"transparent", flex:1, fontFamily:"inherit", color:B.text }} />
                 </div>
@@ -449,7 +453,7 @@ export default function GestorCobros() {
                   a.href = URL.createObjectURL(blob);
                   a.download = `cobros-${new Date().toISOString().slice(0,10)}.csv`;
                   a.click();
-                }} style={{ padding:"7px 14px", background:B.white, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", color:B.textSec, fontFamily:"inherit" }}>↓ Excel</button>
+                }} style={{ padding:"7px 14px", background:B.white, border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, cursor:"pointer", color:B.textSec, fontFamily:"inherit" }}>↓ Excel</button>
               </div>
               <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, overflow:"hidden" }}>
                 <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
@@ -492,7 +496,7 @@ export default function GestorCobros() {
           {/* realOverdue */}
           {view==="overdue" && (
             <div>
-              <div style={{ background:B.redDim, border:`1px solid ${B.red}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:13, color:B.red, display:"flex", gap:8 }}>
+              <div style={{ background:B.redDim, border:`1px solid ${B.red}40`, borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:13, color:B.red, display:"flex", gap:8 }}>
                 <i className="ti ti-alert-circle" style={{ fontSize:14, flexShrink:0, marginTop:1 }} aria-hidden="true" />
                 Estudiantes con pago vencido más de 30 días. Sus cuentas están suspendidas. Contáctalos para gestionar la regularización.
               </div>
@@ -549,7 +553,7 @@ export default function GestorCobros() {
             <div>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10 }}>
                 {displayHistory.filter(p=>p.status==="confirmed").slice(0,10).map((p,i) => (
-                  <div key={i} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
+                  <div key={i} style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:12 }}>
                     <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
                       <div>
                         <div style={{ fontSize:13, fontWeight:600, color:B.text }}>{p.student}</div>
@@ -570,7 +574,7 @@ export default function GestorCobros() {
           {/* AUDIT */}
           {view==="audit" && (
             <div>
-              <div style={{ background:B.primaryDim, border:`1px solid ${B.border}`, borderRadius:10, padding:"9px 14px", marginBottom:12, fontSize:13, color:B.primary, display:"flex", gap:8 }}>
+              <div style={{ background:B.primaryDim, border:`1px solid ${B.border}`, borderRadius:10, padding:"8px 14px", marginBottom:12, fontSize:13, color:B.primary, display:"flex", gap:8 }}>
                 <i className="ti ti-shield-check" style={{ fontSize:14, flexShrink:0 }} aria-hidden="true" />
                 Este es el log de tus propias acciones. Es inmutable y visible para Contabilidad.
               </div>
@@ -606,7 +610,7 @@ export default function GestorCobros() {
                   { icon:"⚖️",  name:"VA · Legal Assistant",  price:95, interval:"3 meses",  color:"#0e7490" },
                   { icon:"🏥",  name:"VA · Cuidador Remoto",  price:95, interval:"3 meses",  color:"#059669" },
                 ].map((p,i,arr) => (
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:14, padding:"16px 18px", background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:i===0?"14px 14px 0 0":i===arr.length-1?"0 0 14px 14px":"0", borderTop:i>0?"none":"1px solid var(--border)", boxShadow:i===0?"var(--shadow-sm)":"none" }}>
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:16, padding:"16px 18px", background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:i===0?"14px 14px 0 0":i===arr.length-1?"0 0 14px 14px":"0", borderTop:i>0?"none":"1px solid var(--border)", boxShadow:i===0?"var(--shadow-sm)":"none" }}>
                     <span style={{ fontSize:20 }}>{p.icon}</span>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)" }}>{p.name}</div>
@@ -629,7 +633,7 @@ export default function GestorCobros() {
 
       {/* MODAL: Rechazar transferencia */}
       {rejectModal && (
-        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}
+        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-sticky)", borderRadius:16 }}
           onClick={e=>{ if(e.target===e.currentTarget) setRejectModal(null); }}>
           <div style={{ background:B.white, borderRadius:16, padding:24, width:"min(380px,100vw - 32px)", border:`1px solid ${B.border}`, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
             <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, marginBottom:4 }}>
@@ -639,7 +643,7 @@ export default function GestorCobros() {
             <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>
               {rejectModal.student} · ${rejectModal.amount} · {rejectModal.code}
             </div>
-            <div style={{ background:B.redDim, border:`1px solid ${B.red}40`, borderRadius:9, padding:"9px 12px", marginBottom:14, fontSize:12, color:B.red }}>
+            <div style={{ background:B.redDim, border:`1px solid ${B.red}40`, borderRadius:8, padding:"8px 12px", marginBottom:16, fontSize:12, color:B.red }}>
               El comprobante no es válido o el monto no corresponde. Se notificará al estudiante.
             </div>
             <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:5 }}>Motivo del rechazo (obligatorio)</label>
@@ -648,13 +652,13 @@ export default function GestorCobros() {
               value={anulaNote}
               onChange={e=>setAnulaNote(e.target.value)}
               placeholder="Ej: Comprobante ilegible, monto incorrecto..."
-              style={{ width:"100%", padding:"9px 12px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit", marginBottom:14, color:B.text }}
+              style={{ width:"100%", padding:"8px 12px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit", marginBottom:16, color:B.text }}
             />
             <div style={{ display:"flex", gap:8 }}>
-              <button onClick={()=>{ setRejectModal(null); setAnulaNote(""); }} style={{ flex:1, padding:"9px", background:B.bg, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit", color:B.textSec }}>Cancelar</button>
+              <button onClick={()=>{ setRejectModal(null); setAnulaNote(""); }} style={{ flex:1, padding:"9px", background:B.bg, border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, cursor:"pointer", fontFamily:"inherit", color:B.textSec }}>Cancelar</button>
               <button
                 onClick={()=>{ if(anulaNote){ setConfirmed(c=>[...c,rejectModal.id]); setRejectModal(null); setAnulaNote(""); } }}
-                style={{ flex:1, padding:"9px", background:anulaNote?B.red:B.border, color:anulaNote?"var(--bg-surface)":B.textSec, border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:anulaNote?"pointer":"not-allowed", fontFamily:"inherit" }}>
+                style={{ flex:1, padding:"9px", background:anulaNote?B.red:B.border, color:anulaNote?"var(--bg-surface)":B.textSec, border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:anulaNote?"pointer":"not-allowed", fontFamily:"inherit" }}>
                 Confirmar rechazo
               </button>
             </div>
@@ -664,7 +668,7 @@ export default function GestorCobros() {
 
       {/* MODAL: Ver comprobante */}
       {proofModal && (
-        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}>
+        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-sticky)", borderRadius:16 }}>
           <div style={{ background:B.white, borderRadius:16, padding:24, width:"min(380px,100vw - 32px)", border:`1px solid ${B.border}` }}>
             <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Comprobante de transferencia</div>
             <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>{proofModal.student} · ${proofModal.amount} · {proofModal.code}</div>
@@ -685,7 +689,7 @@ export default function GestorCobros() {
                 </div>
               </div>
             ) : (
-              <div style={{ background:B.bg, borderRadius:10, height:120, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:14, border:`1px solid ${B.border}` }}>
+              <div style={{ background:B.bg, borderRadius:10, height:120, display:"flex", alignItems:"center", justifyContent:"center", marginBottom:16, border:`1px solid ${B.border}` }}>
                 <div style={{ textAlign:"center", color:B.textSec }}>
                   <i className="ti ti-file-off" style={{ fontSize:isMobile?20:28, display:"block", marginBottom:6 }} aria-hidden="true" />
                   <div style={{ fontSize:12 }}>Sin comprobante adjunto</div>
@@ -694,8 +698,8 @@ export default function GestorCobros() {
               </div>
             )}
             <div style={{ display:"flex", gap:8 }}>
-              <button onClick={() => setProofModal(null)} style={{ flex:1, padding:"9px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cerrar</button>
-              <button onClick={() => { confirmTransfer(proofModal.id); setProofModal(null); }} style={{ flex:2, padding:"9px", background:B.green, color:"var(--bg-surface)", border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Confirmar pago</button>
+              <button onClick={() => setProofModal(null)} style={{ flex:1, padding:"9px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cerrar</button>
+              <button onClick={() => { confirmTransfer(proofModal.id); setProofModal(null); }} style={{ flex:2, padding:"9px", background:B.green, color:"var(--bg-surface)", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Confirmar pago</button>
             </div>
           </div>
         </div>
@@ -703,20 +707,20 @@ export default function GestorCobros() {
 
       {/* MODAL: Anular pago */}
       {anulaModal && (
-        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:50, borderRadius:16 }}>
+        <div role="dialog" aria-modal="true" style={{ position:"absolute", inset:0, background:"rgba(0,0,0,.5)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-sticky)", borderRadius:16 }}>
           <div style={{ background:B.white, borderRadius:16, padding:24, width:380 }}>
             <div style={{ fontSize:15, fontWeight:700, color:B.text, marginBottom:4 }}>Anular pago</div>
             <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>{anulaModal.student} · ${anulaModal.amount} — esta acción queda en el log de auditoría.</div>
             <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:5 }}>Motivo de la anulación (obligatorio)</label>
-            <input value={anulaNote} onChange={e=>setAnulaNote(e.target.value)} placeholder="Ej: Error en el monto, reembolso solicitado..." style={{ width:"100%", padding:"9px 12px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit", marginBottom:14 }} />
+            <input value={anulaNote} onChange={e=>setAnulaNote(e.target.value)} placeholder="Ej: Error en el monto, reembolso solicitado..." style={{ width:"100%", padding:"8px 12px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit", marginBottom:14 }} />
             <div style={{ display:"flex", gap:8 }}>
-              <button onClick={() => { setAnulaModal(null); setAnulaNote(""); }} style={{ flex:1, padding:"9px", background:B.bg, border:`1px solid ${B.border}`, borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit", color:B.textSec }}>Cancelar</button>
-              <button onClick={() => { setAnulaModal(null); setAnulaNote(""); }} style={{ flex:1, padding:"9px", background:anulaNote?B.red:B.border, color:anulaNote?"var(--bg-surface)":B.textSec, border:"none", borderRadius:9, fontSize:13, fontWeight:600, cursor:anulaNote?"pointer":"not-allowed", fontFamily:"inherit" }}>Anular pago</button>
+              <button onClick={() => { setAnulaModal(null); setAnulaNote(""); }} style={{ flex:1, padding:"9px", background:B.bg, border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, cursor:"pointer", fontFamily:"inherit", color:B.textSec }}>Cancelar</button>
+              <button onClick={() => { setAnulaModal(null); setAnulaNote(""); }} style={{ flex:1, padding:"9px", background:anulaNote?B.red:B.border, color:anulaNote?"var(--bg-surface)":B.textSec, border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:anulaNote?"pointer":"not-allowed", fontFamily:"inherit" }}>Anular pago</button>
             </div>
           </div>
         </div>
       )}
-      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:"var(--z-overlay)",width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
   );
 }

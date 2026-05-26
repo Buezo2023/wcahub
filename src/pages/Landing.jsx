@@ -141,9 +141,9 @@ export default function Landing() {
       `}</style>
 
       {/* ── NAV ────────────────────────────────────────────────── */}
-      <nav style={{ position:"sticky", top:0, zIndex:100, background:"rgba(250,249,247,.95)", backdropFilter:"blur(12px)", borderBottom:`1px solid ${T.border}`, padding:"0 24px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
+      <nav style={{ position:"sticky", top:0, zIndex:"var(--z-sticky)", background:"rgba(250,249,247,.95)", backdropFilter:"blur(12px)", borderBottom:`1px solid ${T.border}`, padding:"0 24px", height:64, display:"flex", alignItems:"center", justifyContent:"space-between" }}>
         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-          <div style={{ width:36, height:36, borderRadius:9, background:T.teal, display:"flex", alignItems:"center", justifyContent:"center" }}>
+          <div style={{ width:36, height:36, borderRadius:8, background:T.teal, display:"flex", alignItems:"center", justifyContent:"center" }}>
             <span style={{ fontSize:16, fontWeight:800, color:T.gold }}>W</span>
           </div>
           <div>
@@ -160,8 +160,8 @@ export default function Landing() {
         </div>
 
         <div style={{ display:"flex", gap:8 }}>
-          <button className="ghost-btn" style={{ padding:"8px 16px", borderRadius:9, fontSize:12, color:T.teal, borderColor:T.border }} onClick={()=>setRoleModal(true)}>Iniciar sesión</button>
-          <button className="gold-btn" style={{ padding:"9px 18px", borderRadius:9, fontSize:12 }} onClick={()=>document.getElementById("registro")?.scrollIntoView({behavior:"smooth"})}>Comenzar gratis</button>
+          <button className="ghost-btn" style={{ padding:"8px 16px", borderRadius:8, fontSize:12, color:T.teal, borderColor:T.border }} onClick={()=>setRoleModal(true)}>Iniciar sesión</button>
+          <button className="gold-btn" style={{ padding:"8px 16px", borderRadius:8, fontSize:12 }} onClick={()=>document.getElementById("registro")?.scrollIntoView({behavior:"smooth"})}>Comenzar gratis</button>
         </div>
       </nav>
 
@@ -221,7 +221,7 @@ export default function Landing() {
                 <div style={{ fontSize:11, background:T.gold, color:T.deep, padding:"3px 10px", borderRadius:20, fontWeight:700 }}>ACTIVO</div>
               </div>
               {/* Progress rings */}
-              <div style={{ display:"flex", gap:14, marginBottom:20 }}>
+              <div style={{ display:"flex", gap:16, marginBottom:20 }}>
                 {[{l:"Inglés",pct:75,c:T.gold},{l:"VA General",pct:58,c:"#a78bfa"},{l:"Marketing",pct:30,c:"#f9a8d4"}].map(({l,pct,c},i)=>(
                   <div key={i} style={{ flex:1, textAlign:"center" }}>
                     <svg viewBox="0 0 60 60" width={60} height={60} style={{ display:"block", margin:"0 auto 6px" }}>
@@ -243,7 +243,7 @@ export default function Landing() {
               </div>
               {/* Skills */}
               {[["Listening",89,"#6b21a8"],["Vocabulary",87,"#166534"],["Communication",92,"#7c3aed"]].map(([s,v,c])=>(
-                <div key={s} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
+                <div key={s} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
                   <div style={{ fontSize:11, color:"rgba(255,255,255,.6)", width:100, flexShrink:0 }}>{s}</div>
                   <div style={{ flex:1, height:5, background:"rgba(255,255,255,.1)", borderRadius:3 }}>
                     <div style={{ height:"100%", width:`${v}%`, background:c, borderRadius:3 }}/>
@@ -319,7 +319,7 @@ export default function Landing() {
           <div style={{ display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap", marginBottom:40 }}>
             {programs.map(p=>(
               <button key={p.id} onClick={()=>setActiveProgram(p.id)} style={{
-                padding:"9px 18px", borderRadius:30, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit",
+                padding:"8px 16px", borderRadius:30, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit",
                 background: activeProgram===p.id ? p.color : "rgba(255,255,255,.06)",
                 color: activeProgram===p.id ? "#fff" : "rgba(255,255,255,.5)",
                 border: `1.5px solid ${activeProgram===p.id ? p.color : "rgba(255,255,255,.1)"}`,
@@ -336,7 +336,7 @@ export default function Landing() {
               <div style={{ background:"rgba(255,255,255,.05)", backdropFilter:"blur(10px)", border:`1px solid rgba(255,255,255,.1)`, borderRadius:24, padding:"36px 40px", display:"flex", gap:40, alignItems:"center" }}>
                 <div style={{ width:90, height:90, borderRadius:22, background:p.color, display:"flex", alignItems:"center", justifyContent:"center", fontSize:44, flexShrink:0 }}>{p.icon}</div>
                 <div style={{ flex:1 }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:8 }}>
                     <div className="serif" style={{ fontSize:26, color:T.white }}>{p.name}</div>
                     {p.popular && <span style={{ fontSize:11, background:T.gold, color:T.deep, padding:"3px 10px", borderRadius:20, fontWeight:700 }}>{p.tag}</span>}
                     {!p.popular && p.tag && <span style={{ fontSize:11, background:"rgba(255,255,255,.1)", color:"rgba(255,255,255,.6)", padding:"3px 10px", borderRadius:20 }}>{p.tag}</span>}
@@ -379,7 +379,7 @@ export default function Landing() {
                 {i < howItWorks.length-1 && (
                   <div style={{ position:"absolute", top:28, left:"60%", right:0, height:1, background:`linear-gradient(90deg,${T.gold},transparent)`, opacity:.3 }}/>
                 )}
-                <div style={{ width:56, height:56, borderRadius:"50%", background:T.teal, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px", position:"relative", zIndex:1 }}>
+                <div style={{ width:56, height:56, borderRadius:"50%", background:T.teal, display:"flex", alignItems:"center", justifyContent:"center", margin:"0 auto 16px", position:"relative", zIndex:"var(--z-base)" }}>
                   <span className="serif" style={{ fontSize:18, color:T.gold }}>{h.n}</span>
                 </div>
                 <div className="serif" style={{ fontSize:16, color:T.ink, marginBottom:8 }}>{h.title}</div>
@@ -441,7 +441,7 @@ export default function Landing() {
                 <div style={{ fontSize:32, marginBottom:14 }}>{p.icon}</div>
                 <div className="serif" style={{ fontSize:20, color:p.popular?T.white:T.ink, marginBottom:8 }}>{p.name}</div>
                 <div style={{ fontSize:13, color:p.popular?"rgba(255,255,255,.6)":T.muted, lineHeight:1.7, marginBottom:20, minHeight:56 }}>{p.desc}</div>
-                <div style={{ display:"flex", alignItems:"baseline", gap:6, marginBottom:24 }}>
+                <div style={{ display:"flex", alignItems:"baseline", gap:8, marginBottom:24 }}>
                   <span className="serif" style={{ fontSize:40, color:p.popular?T.gold:T.teal, lineHeight:1 }}>${p.price}</span>
                   <span style={{ fontSize:13, color:p.popular?"rgba(255,255,255,.5)":T.muted }}>/ mes</span>
                 </div>
@@ -459,7 +459,7 @@ export default function Landing() {
             <div style={{ fontSize:13, fontWeight:700, color:T.muted, marginBottom:16, textTransform:"uppercase", letterSpacing:.8 }}>Especializaciones VA · $95/mes c/u · Requieren VA General</div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))", gap:14 }}>
               {programs.slice(2).map((p,i)=>(
-                <div key={i} style={{ display:"flex", gap:12, alignItems:"center", padding:"12px 14px", background:"#f8fafc", borderRadius:12, border:`1px solid ${T.border}` }}>
+                <div key={i} style={{ display:"flex", gap:12, alignItems:"center", padding:"12px 14px", background:"var(--bg-page)", borderRadius:12, border:`1px solid ${T.border}` }}>
                   <span style={{ fontSize:22 }}>{p.icon}</span>
                   <div>
                     <div style={{ fontSize:13, fontWeight:600, color:T.ink }}>{p.name.replace("VA · ","")}</div>
@@ -475,7 +475,7 @@ export default function Landing() {
       {/* ── REGISTER / CTA ─────────────────────────────────────── */}
 
       {/* ── ALIADOS ────────────────────────────────────────────── */}
-      <section style={{ background:"#ffffff", padding:"72px 24px", borderTop:"1px solid #e8f0f3" }}>
+      <section style={{ background:"var(--bg-surface)", padding:"72px 24px", borderTop:"1px solid #e8f0f3" }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
 
           {/* Header */}
@@ -490,7 +490,7 @@ export default function Landing() {
 
           {/* Grupo 1 — Impulsados por */}
           <div style={{ marginBottom:48 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:22 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:22 }}>
               <div style={{ height:1, flex:1, background:"linear-gradient(90deg,transparent,#e2e8f0)" }}/>
               <div style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 16px", background:T.tealLt||"#e8f3f6", borderRadius:30, border:"1px solid #c5dde5" }}>
                 <span style={{ fontSize:14 }}>🚀</span>
@@ -501,7 +501,7 @@ export default function Landing() {
             <div style={{ display:"flex", gap:16, justifyContent:"center", flexWrap:"wrap" }}>
 
               {/* BID LAB */}
-              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"16px 24px", background:"#f0f8ff", border:"1.5px solid #bfdbfe", borderRadius:16, cursor:"default", minWidth:180 }}>
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:8, padding:"16px 24px", background:"#f0f8ff", border:"1.5px solid #bfdbfe", borderRadius:16, cursor:"default", minWidth:180 }}>
                 <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
                   <circle cx="14" cy="14" r="14" fill="#1e40af"/>
                   <text x="14" y="19" textAnchor="middle" fontSize="10" fontWeight="800" fill="white">BID</text>
@@ -513,7 +513,7 @@ export default function Landing() {
               </div>
 
               {/* Región Plateada */}
-              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"16px 24px", background:"linear-gradient(135deg,#f0fdf4,#ecfdf5)", border:"1.5px solid #86efac", borderRadius:16, cursor:"default", minWidth:200 }}>
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:8, padding:"16px 24px", background:"linear-gradient(135deg,#f0fdf4,#ecfdf5)", border:"1.5px solid #86efac", borderRadius:16, cursor:"default", minWidth:200 }}>
                 <div style={{ width:36, height:36, borderRadius:"50%", background:"linear-gradient(135deg,#059669,#10b981)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                   <span style={{ fontSize:16 }}>🌿</span>
                 </div>
@@ -524,7 +524,7 @@ export default function Landing() {
               </div>
 
               {/* Red de Impacto LATAM */}
-              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"16px 24px", background:"linear-gradient(135deg,#fff7ed,#ffedd5)", border:"1.5px solid #fdba74", borderRadius:16, cursor:"default", minWidth:210 }}>
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:8, padding:"16px 24px", background:"linear-gradient(135deg,#fff7ed,#ffedd5)", border:"1.5px solid #fdba74", borderRadius:16, cursor:"default", minWidth:210 }}>
                 <div style={{ width:36, height:36, borderRadius:"50%", background:"linear-gradient(135deg,#ea580c,#f97316)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                   <span style={{ fontSize:16 }}>🌎</span>
                 </div>
@@ -535,7 +535,7 @@ export default function Landing() {
               </div>
 
               {/* Iniciativa Dinámica */}
-              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"16px 24px", background:"linear-gradient(135deg,#faf5ff,#f3e8ff)", border:"1.5px solid #c4b5fd", borderRadius:16, cursor:"default", minWidth:190 }}>
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:8, padding:"16px 24px", background:"linear-gradient(135deg,#faf5ff,#f3e8ff)", border:"1.5px solid #c4b5fd", borderRadius:16, cursor:"default", minWidth:190 }}>
                 <div style={{ width:36, height:36, borderRadius:"50%", background:"linear-gradient(135deg,#7c3aed,#8b5cf6)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                   <span style={{ fontSize:16 }}>⚡</span>
                 </div>
@@ -549,7 +549,7 @@ export default function Landing() {
 
           {/* Grupo 2 — Respaldados por */}
           <div style={{ marginBottom:48 }}>
-            <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:22 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:22 }}>
               <div style={{ height:1, flex:1, background:"linear-gradient(90deg,transparent,#e2e8f0)" }}/>
               <div style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 16px", background:"#fef2f2", borderRadius:30, border:"1px solid #fca5a5" }}>
                 <span style={{ fontSize:14 }}>🤝</span>
@@ -583,7 +583,7 @@ export default function Landing() {
 
           {/* Grupo 3 — Apoyo Financiero Internacional */}
           <div>
-            <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:22 }}>
+            <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:22 }}>
               <div style={{ height:1, flex:1, background:"linear-gradient(90deg,transparent,#e2e8f0)" }}/>
               <div style={{ display:"flex", alignItems:"center", gap:8, padding:"5px 16px", background:"#f0fdf4", borderRadius:30, border:"1px solid #86efac" }}>
                 <span style={{ fontSize:14 }}>🌍</span>
@@ -591,47 +591,47 @@ export default function Landing() {
               </div>
               <div style={{ height:1, flex:1, background:"linear-gradient(90deg,#e2e8f0,transparent)" }}/>
             </div>
-            <div style={{ display:"flex", gap:14, justifyContent:"center", flexWrap:"wrap" }}>
+            <div style={{ display:"flex", gap:16, justifyContent:"center", flexWrap:"wrap" }}>
 
               {/* BCIE */}
-              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 20px", background:"linear-gradient(135deg,#f0fdf4,#ecfdf5)", border:"1.5px solid #6ee7b7", borderRadius:14, cursor:"default", minWidth:170 }}>
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 20px", background:"linear-gradient(135deg,#f0fdf4,#ecfdf5)", border:"1.5px solid #6ee7b7", borderRadius:12, cursor:"default", minWidth:170 }}>
                 <div style={{ width:34, height:34, borderRadius:8, background:"linear-gradient(135deg,#065f46,#059669)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                   <span style={{ fontSize:11, fontWeight:900, color:"white" }}>BCIE</span>
                 </div>
                 <div>
                   <div style={{ fontSize:12, fontWeight:700, color:"#065f46" }}>BCIE</div>
-                  <div style={{ fontSize:8, color:"#6ee7b7", fontWeight:600, letterSpacing:.3, textTransform:"uppercase" }}>Banco Centroamericano</div>
+                  <div style={{ fontSize:12, color:"#6ee7b7", fontWeight:600, letterSpacing:.3, textTransform:"uppercase" }}>Banco Centroamericano</div>
                 </div>
               </div>
 
               {/* Unión Europea */}
-              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 20px", background:"linear-gradient(135deg,#eff6ff,#dbeafe)", border:"1.5px solid #93c5fd", borderRadius:14, cursor:"default", minWidth:170 }}>
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 20px", background:"linear-gradient(135deg,#eff6ff,#dbeafe)", border:"1.5px solid #93c5fd", borderRadius:12, cursor:"default", minWidth:170 }}>
                 <div style={{ width:34, height:34, borderRadius:"50%", background:"#003399", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, fontSize:18 }}>🇪🇺</div>
                 <div>
                   <div style={{ fontSize:12, fontWeight:700, color:"#1e3a8a" }}>Unión Europea</div>
-                  <div style={{ fontSize:8, color:"#93c5fd", fontWeight:600, letterSpacing:.3, textTransform:"uppercase" }}>Cooperación al Desarrollo</div>
+                  <div style={{ fontSize:12, color:"#93c5fd", fontWeight:600, letterSpacing:.3, textTransform:"uppercase" }}>Cooperación al Desarrollo</div>
                 </div>
               </div>
 
               {/* Cooperación Alemana */}
-              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 20px", background:"linear-gradient(135deg,#fafafa,#f5f5f5)", border:"1.5px solid #d1d5db", borderRadius:14, cursor:"default", minWidth:190 }}>
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 20px", background:"linear-gradient(135deg,#fafafa,#f5f5f5)", border:"1.5px solid #d1d5db", borderRadius:12, cursor:"default", minWidth:190 }}>
                 <div style={{ width:34, height:34, borderRadius:8, background:"linear-gradient(135deg,#111,#374151)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                   <span style={{ fontSize:14 }}>🇩🇪</span>
                 </div>
                 <div>
                   <div style={{ fontSize:12, fontWeight:700, color:"#111" }}>Cooperación Alemana</div>
-                  <div style={{ fontSize:8, color:"#9ca3af", fontWeight:600, letterSpacing:.3, textTransform:"uppercase" }}>Deutsche Zusammenarbeit</div>
+                  <div style={{ fontSize:12, color:"#9ca3af", fontWeight:600, letterSpacing:.3, textTransform:"uppercase" }}>Deutsche Zusammenarbeit</div>
                 </div>
               </div>
 
               {/* KFW */}
-              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:10, padding:"14px 20px", background:"linear-gradient(135deg,#fffbeb,#fef3c7)", border:"1.5px solid #fcd34d", borderRadius:14, cursor:"default", minWidth:130 }}>
+              <div className="hover-lift" style={{ display:"flex", alignItems:"center", gap:8, padding:"12px 20px", background:"linear-gradient(135deg,#fffbeb,#fef3c7)", border:"1.5px solid #fcd34d", borderRadius:12, cursor:"default", minWidth:130 }}>
                 <div style={{ width:34, height:34, borderRadius:8, background:"linear-gradient(135deg,#78350f,#d97706)", display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                   <span style={{ fontSize:13, fontWeight:900, color:"white" }}>KfW</span>
                 </div>
                 <div>
                   <div style={{ fontSize:13, fontWeight:800, color:"#78350f" }}>KfW</div>
-                  <div style={{ fontSize:8, color:"#fcd34d", fontWeight:600, letterSpacing:.3, textTransform:"uppercase" }}>Banco de Fomento</div>
+                  <div style={{ fontSize:12, color:"#fcd34d", fontWeight:600, letterSpacing:.3, textTransform:"uppercase" }}>Banco de Fomento</div>
                 </div>
               </div>
             </div>
@@ -664,7 +664,7 @@ export default function Landing() {
               <div style={{ fontSize:14, color:"rgba(255,255,255,.6)", marginBottom:20, fontWeight:500 }}>Registrate con tu cuenta</div>
               <div style={{ display:"flex", gap:12, marginBottom:20 }}>
                 {/* Microsoft */}
-                <button onClick={signInWithMicrosoft} style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+                <button onClick={signInWithMicrosoft} style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:8, padding:"13px 16px", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
                   onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.14)";}}
                   onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.08)";}}>
                   <svg width="18" height="18" viewBox="0 0 21 21" fill="none">
@@ -674,7 +674,7 @@ export default function Landing() {
                   Continuar con Microsoft
                 </button>
                 {/* Google */}
-                <button onClick={signInWithGoogle} style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+                <button onClick={signInWithGoogle} style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:8, padding:"13px 16px", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
                   onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.14)";}}
                   onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.08)";}}>
                   <svg width="18" height="18" viewBox="0 0 48 48">
@@ -691,7 +691,7 @@ export default function Landing() {
                 <div style={{ flex:1, height:1, background:"rgba(255,255,255,.1)" }}/><span style={{ fontSize:12, color:"rgba(255,255,255,.3)" }}>o</span><div style={{ flex:1, height:1, background:"rgba(255,255,255,.1)" }}/>
               </div>
 
-              <div style={{ display:"flex", gap:10, marginBottom:14 }}>
+              <div style={{ display:"flex", gap:8, marginBottom:14 }}>
                 <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="tu@email.com" type="email" style={{ flex:1, padding:"13px 16px", borderRadius:12, border:"1px solid rgba(255,255,255,.15)", background:"rgba(255,255,255,.07)", color:"#fff", fontSize:14, fontFamily:"inherit", outline:"none" }}
                   onFocus={e=>{e.target.style.borderColor=T.gold;}} onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,.15)";}}/>
                 <button className="gold-btn" onClick={()=>{ if(email.trim()) signInWithGoogle(); else setRoleModal(true); }} style={{ padding:"13px 24px", borderRadius:12, fontSize:14, whiteSpace:"nowrap" }}>
@@ -709,8 +709,8 @@ export default function Landing() {
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <div className="footer-grid" style={{ display:"grid", gridTemplateColumns:"2fr 1fr 1fr 1fr", gap:40, marginBottom:40 }}>
             <div>
-              <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:14 }}>
-                <div style={{ width:34, height:34, borderRadius:9, background:T.teal, display:"flex", alignItems:"center", justifyContent:"center" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:14 }}>
+                <div style={{ width:34, height:34, borderRadius:8, background:T.teal, display:"flex", alignItems:"center", justifyContent:"center" }}>
                   <span style={{ fontSize:16, fontWeight:800, color:T.gold }}>W</span>
                 </div>
                 <div>
@@ -736,7 +736,7 @@ export default function Landing() {
                 <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,.4)", letterSpacing:1.5, textTransform:"uppercase", marginBottom:14 }}>{col.title}</div>
                 {col.links.map(l=><div key={l}
                   onClick={()=>{const id=l.toLowerCase().replace(/[^a-z0-9]/g,"-");const el=document.getElementById(id);if(el)el.scrollIntoView({behavior:"smooth"});}}
-                  style={{ fontSize:13, color:"rgba(255,255,255,.3)", marginBottom:9, cursor:"pointer", transition:"color .15s" }}
+                  style={{ fontSize:13, color:"rgba(255,255,255,.3)", marginBottom:8, cursor:"pointer", transition:"color .15s" }}
                   onMouseEnter={e=>e.target.style.color="#fff"} onMouseLeave={e=>e.target.style.color="rgba(255,255,255,.3)"}>{l}</div>)}
               </div>
             ))}
@@ -755,8 +755,8 @@ export default function Landing() {
       {roleModal && (
         <div
           onClick={e=>{ if(e.target===e.currentTarget) setRoleModal(false); }}
-          style={{ position:"fixed", inset:0, background:"rgba(10,25,35,.7)", backdropFilter:"blur(8px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:9999, padding:20 }}>
-          <div style={{ background:"#ffffff", borderRadius:24, padding:"36px 36px 28px", width:420, maxWidth:"100%", boxShadow:"0 32px 80px rgba(0,0,0,.3)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
+          style={{ position:"fixed", inset:0, background:"rgba(10,25,35,.7)", backdropFilter:"blur(8px)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-modal)", padding:20 }}>
+          <div style={{ background:"var(--bg-surface)", borderRadius:24, padding:"36px 36px 28px", width:420, maxWidth:"100%", boxShadow:"0 32px 80px rgba(0,0,0,.3)", animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both" }}>
 
             {/* Logo + header */}
             <div style={{ textAlign:"center", marginBottom:28 }}>
@@ -776,7 +776,7 @@ export default function Landing() {
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               <button
                 onClick={()=>{ setRoleModal(false); signInWithGoogle(); }}
-                style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", background:"#fff", border:"1.5px solid #e2e8f0", borderRadius:12, cursor:"pointer", fontSize:14, fontWeight:600, color:"#0f172a", fontFamily:"inherit", transition:"all .15s", boxShadow:"0 1px 4px rgba(0,0,0,.06)" }}
+                style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, padding:"13px 16px", background:"var(--bg-surface)", border:"1.5px solid #e2e8f0", borderRadius:12, cursor:"pointer", fontSize:14, fontWeight:600, color:"#0f172a", fontFamily:"inherit", transition:"all .15s", boxShadow:"0 1px 4px rgba(0,0,0,.06)" }}
                 onMouseEnter={e=>{e.currentTarget.style.borderColor="#4285f4";e.currentTarget.style.boxShadow="0 2px 12px rgba(66,133,244,.15)";}}
                 onMouseLeave={e=>{e.currentTarget.style.borderColor="#e2e8f0";e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,.06)";}}>
                 <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285f4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34a853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.32-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#fbbc05" d="M11.68 28.18A13.93 13.93 0 0 1 10.9 24c0-1.45.25-2.86.68-4.18v-5.7H4.34A23.93 23.93 0 0 0 0 24c0 3.87.93 7.53 2.56 10.77l7.12-5.7.99-.89z"/><path fill="#ea4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.34 5.7C13.42 14.62 18.27 10.75 24 10.75z"/></svg>
@@ -785,7 +785,7 @@ export default function Landing() {
 
               <button
                 onClick={()=>{ setRoleModal(false); signInWithMicrosoft(); }}
-                style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"13px 16px", background:"#fff", border:"1.5px solid #e2e8f0", borderRadius:12, cursor:"pointer", fontSize:14, fontWeight:600, color:"#0f172a", fontFamily:"inherit", transition:"all .15s", boxShadow:"0 1px 4px rgba(0,0,0,.06)" }}
+                style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, padding:"13px 16px", background:"var(--bg-surface)", border:"1.5px solid #e2e8f0", borderRadius:12, cursor:"pointer", fontSize:14, fontWeight:600, color:"#0f172a", fontFamily:"inherit", transition:"all .15s", boxShadow:"0 1px 4px rgba(0,0,0,.06)" }}
                 onMouseEnter={e=>{e.currentTarget.style.borderColor="#00a4ef";e.currentTarget.style.boxShadow="0 2px 12px rgba(0,164,239,.15)";}}
                 onMouseLeave={e=>{e.currentTarget.style.borderColor="#e2e8f0";e.currentTarget.style.boxShadow="0 1px 4px rgba(0,0,0,.06)";}}>
                 <svg width="20" height="20" viewBox="0 0 21 21"><rect x="1" y="1" width="9" height="9" fill="#f25022"/><rect x="11" y="1" width="9" height="9" fill="#7fba00"/><rect x="1" y="11" width="9" height="9" fill="#00a4ef"/><rect x="11" y="11" width="9" height="9" fill="#ffb900"/></svg>

@@ -21,7 +21,7 @@ const ROLES = [
 function RoleBadge({ role }) {
   const r = ROLES.find(x => x.id === role) || { label: role, color: "#64748b", bg: "#f1f5f9" };
   return (
-    <span style={{ fontSize:10, padding:"2px 9px", borderRadius:10, background:r.bg, color:r.color, fontWeight:700, whiteSpace:"nowrap" }}>
+    <span style={{ fontSize:11, padding:"2px 9px", borderRadius:10, background:r.bg, color:r.color, fontWeight:700, whiteSpace:"nowrap" }}>
       {r.label}
     </span>
   );
@@ -175,7 +175,7 @@ export function UserManagementSection({ showToast }) {
                 <span>{u.full_name} ({u.email})</span>
                 <span>— rol: <strong>{u.role}</strong></span>
                 <button onClick={() => openEdit(u)}
-                  style={{ fontSize: 10, padding: "1px 8px", background: P, color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontFamily: "inherit" }}>
+                  style={{ fontSize:11, padding: "1px 8px", background: P, color: "#fff", border: "none", borderRadius: 6, cursor: "pointer", fontFamily: "inherit" }}>
                   Corregir
                 </button>
               </div>
@@ -194,7 +194,7 @@ export function UserManagementSection({ showToast }) {
         ].map((k, i) => (
           <div key={i} style={{ background: "var(--bg-surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "10px 12px" }}>
             <div style={{ fontSize: 18, fontWeight: 800, color: k.c, lineHeight: 1 }}>{k.v}</div>
-            <div style={{ fontSize: 10, color: "var(--text-secondary)", marginTop: 2 }}>{k.l}</div>
+            <div style={{ fontSize:11, color: "var(--text-secondary)", marginTop: 2 }}>{k.l}</div>
           </div>
         ))}
       </div>
@@ -225,7 +225,7 @@ export function UserManagementSection({ showToast }) {
                 <thead>
                   <tr style={{ background: "var(--bg-surface-subtle)" }}>
                     {["Nombre", "Email", "Rol", "Matrículas", "XP", "Estado", "Acciones"].map(h => (
-                      <th key={h} style={{ padding: "9px 12px", textAlign: "left", fontSize: 10, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: .5, whiteSpace: "nowrap" }}>{h}</th>
+                      <th key={h} style={{ padding: "8px 12px", textAlign: "left", fontSize:11, fontWeight: 700, color: "var(--text-tertiary)", textTransform: "uppercase", letterSpacing: .5, whiteSpace: "nowrap" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -235,31 +235,31 @@ export function UserManagementSection({ showToast }) {
                     const isConflict = conflict.some(c => c.id === u.id);
                     return (
                       <tr key={u.id} style={{ borderTop: "1px solid var(--border-tertiary)", background: isConflict ? "#fff5f5" : "transparent" }}>
-                        <td style={{ padding: "9px 12px", fontWeight: 600, color: "var(--text-primary)" }}>
-                          {isConflict && <span title="Rol conflictivo" style={{ marginRight: 5 }}>⚠</span>}
+                        <td style={{ padding: "8px 12px", fontWeight: 600, color: "var(--text-primary)" }}>
+                          {isConflict && <i className="ti ti-alert-triangle" title="Rol conflictivo" style={{color:"var(--amber)",marginRight:5,fontSize:14}} aria-label="Rol conflictivo"/>}
                           {u.full_name || "—"}
                         </td>
-                        <td style={{ padding: "9px 12px", fontSize: 11, color: "var(--text-secondary)" }}>{u.email || "—"}</td>
-                        <td style={{ padding: "9px 12px" }}><RoleBadge role={u.role} /></td>
-                        <td style={{ padding: "9px 12px", fontSize: 12, color: activeEnrolls.length > 0 ? G : "var(--text-tertiary)", fontWeight: activeEnrolls.length > 0 ? 600 : 400 }}>
+                        <td style={{ padding: "8px 12px", fontSize: 11, color: "var(--text-secondary)" }}>{u.email || "—"}</td>
+                        <td style={{ padding: "8px 12px" }}><RoleBadge role={u.role} /></td>
+                        <td style={{ padding: "8px 12px", fontSize: 12, color: activeEnrolls.length > 0 ? G : "var(--text-tertiary)", fontWeight: activeEnrolls.length > 0 ? 600 : 400 }}>
                           {activeEnrolls.length > 0 ? activeEnrolls.map(e => e.program_id).join(", ") : "—"}
                         </td>
-                        <td style={{ padding: "9px 12px", fontSize: 11, color: A }}>
+                        <td style={{ padding: "8px 12px", fontSize: 11, color: A }}>
                           {u.total_xp ? `⚡${u.total_xp}` : "—"}
                         </td>
-                        <td style={{ padding: "9px 12px" }}>
-                          <span style={{ fontSize: 10, padding: "2px 7px", borderRadius: 9, background: u.active !== false ? GD : "var(--bg-surface-subtle)", color: u.active !== false ? G : "var(--text-tertiary)", fontWeight: 600 }}>
+                        <td style={{ padding: "8px 12px" }}>
+                          <span style={{ fontSize:11, padding: "2px 7px", borderRadius: 9, background: u.active !== false ? GD : "var(--bg-surface-subtle)", color: u.active !== false ? G : "var(--text-tertiary)", fontWeight: 600 }}>
                             {u.active !== false ? "Activo" : "Inactivo"}
                           </span>
                         </td>
-                        <td style={{ padding: "9px 12px" }}>
+                        <td style={{ padding: "8px 12px" }}>
                           <div style={{ display: "flex", gap: 5 }}>
                             <button onClick={() => openEdit(u)}
                               style={{ padding: "4px 10px", background: PD, color: P, border: "none", borderRadius: 6, fontSize: 11, cursor: "pointer", fontFamily: "inherit", fontWeight: 600 }}>
                               ✎ Rol
                             </button>
                             <button onClick={() => toggleActive(u)}
-                              style={{ padding: "4px 8px", background: u.active !== false ? RD : GD, color: u.active !== false ? R : G, border: "none", borderRadius: 6, fontSize: 10, cursor: "pointer", fontFamily: "inherit" }}>
+                              style={{ padding: "4px 8px", background: u.active !== false ? RD : GD, color: u.active !== false ? R : G, border: "none", borderRadius: 6, fontSize:11, cursor: "pointer", fontFamily: "inherit" }}>
                               {u.active !== false ? "Desact." : "Activar"}
                             </button>
                           </div>
@@ -279,7 +279,7 @@ export function UserManagementSection({ showToast }) {
 
       {/* Edit modal */}
       {editModal && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 10000, background: "rgba(0,0,0,.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
+        <div style={{ position: "fixed", inset: 0, zIndex:"var(--z-modal)", background: "rgba(0,0,0,.45)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}
           onClick={e => { if (e.target === e.currentTarget) setEditModal(null); }}>
           <div style={{ background: "var(--bg-surface)", borderRadius: 18, padding: 24, width: "min(420px,100vw - 32px)", border: "1px solid var(--border)", boxShadow: "0 20px 60px rgba(0,0,0,.15)" }}>
             <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)", marginBottom: 4 }}>Editar usuario</div>
@@ -288,7 +288,7 @@ export function UserManagementSection({ showToast }) {
             <div style={{ marginBottom: 12 }}>
               <div style={{ fontSize: 11, fontWeight: 600, color: "var(--text-secondary)", marginBottom: 5 }}>Nombre</div>
               <input value={editForm.full_name || ""} onChange={e => setEditForm(f => ({ ...f, full_name: e.target.value }))}
-                style={{ width: "100%", padding: "9px 12px", border: "1px solid var(--border)", borderRadius: 9, fontSize: 13, background: "var(--bg-surface-subtle)", color: "var(--text-primary)", fontFamily: "inherit" }}/>
+                style={{ width: "100%", padding: "8px 12px", border: "1px solid var(--border)", borderRadius: 9, fontSize: 13, background: "var(--bg-surface-subtle)", color: "var(--text-primary)", fontFamily: "inherit" }}/>
             </div>
 
             <div style={{ marginBottom: 12 }}>

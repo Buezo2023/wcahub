@@ -58,15 +58,15 @@ export function RecibosSection({ showToast }) {
   return(
     <div>
       <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar por nombre o referencia..."
-        style={{width:"100%",padding:"9px 13px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit",marginBottom:14}}/>
+        style={{width:"100%",padding:"9px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit",marginBottom:16}}/>
       {loading?<div style={{padding:32,textAlign:"center",color:"var(--text-secondary)",fontSize:13}}>Cargando...</div>
       :filtered.length===0?<EmptyState icon="🧾" title="Sin recibos" subtitle="Los recibos aparecen cuando se confirman pagos."/>
-      :<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:10}}>
+      :<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(240px,1fr))",gap:8}}>
         {filtered.map(p=>{
           const fecha=new Date(p.confirmed_at||p.created_at).toLocaleDateString("es-HN",{day:"2-digit",month:"short",year:"numeric"});
           const period=p.period_start?new Date(p.period_start).toLocaleDateString("es-HN",{month:"short",year:"numeric"}):null;
           return(
-            <div key={p.id} style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:14}}>
+            <div key={p.id} style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:12}}>
               <div style={{display:"flex",justifyContent:"space-between",marginBottom:10}}>
                 <div>
                   <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)"}}>{p.student?.profile?.full_name||"—"}</div>
@@ -75,7 +75,7 @@ export function RecibosSection({ showToast }) {
                 <div style={{fontSize:20,fontWeight:800,color:P}}>${p.amount}</div>
               </div>
               <div style={{fontSize:11,color:"var(--text-secondary)",marginBottom:10}}>{p.method} · {p.reference_code||"—"}</div>
-              <div style={{display:"flex",gap:6}}>
+              <div style={{display:"flex",gap:8}}>
                 <button onClickCapture={e=>{e.stopPropagation();printReceipt(p);}} style={{flex:1,fontSize:12,padding:"7px",background:PD,color:P,border:"none",borderRadius:8,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>🖨 Ver recibo</button>
                 <button onClick={()=>{navigator.clipboard?.writeText(p.student?.profile?.email||"");showToast("Email copiado");}} style={{flex:1,fontSize:12,padding:"7px",background:"var(--bg-surface-subtle)",color:"var(--text-secondary)",border:"1px solid var(--border)",borderRadius:8,cursor:"pointer",fontFamily:"inherit"}}>✉ Reenviar</button>
               </div>

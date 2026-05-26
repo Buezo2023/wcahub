@@ -86,33 +86,33 @@ export function ComunicacionesSection({ showToast, subView }) {
           <div style={{marginBottom:12}}>
             <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Destinatarios</div>
             <select value={target} onChange={e=>setTarget(e.target.value)}
-              style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}>
+              style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}>
               {TARGETS.map(([v,l])=><option key={v} value={v}>{l}</option>)}
             </select>
-            {target==="group"&&<select value={selGroup} onChange={e=>setSelGroup(e.target.value)} style={{width:"100%",marginTop:6,padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:12,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}>
+            {target==="group"&&<select value={selGroup} onChange={e=>setSelGroup(e.target.value)} style={{width:"100%",marginTop:6,padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:12,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}>
               <option value="">Seleccionar grupo...</option>
               {groups.map(g=><option key={g.id} value={g.id}>{g.level} · {g.schedule}</option>)}
             </select>}
-            {target==="program"&&<select value={selProg} onChange={e=>setSelProg(e.target.value)} style={{width:"100%",marginTop:6,padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:12,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}>
+            {target==="program"&&<select value={selProg} onChange={e=>setSelProg(e.target.value)} style={{width:"100%",marginTop:6,padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:12,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}>
               {[["en","Inglés Completo"],["va","Asistente Virtual"],["va_mkt","VA Marketing"],["va_legal","VA Legal"],["va_care","VA Cuidador"]].map(([v,l])=><option key={v} value={v}>{l}</option>)}
             </select>}
           </div>
           <div style={{marginBottom:12}}>
             <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Asunto</div>
             <input value={subject} onChange={e=>setSubject(e.target.value)} placeholder="Asunto del email"
-              style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+              style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
           </div>
           <div style={{marginBottom:16}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:5}}>
               <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)"}}>Mensaje</div>
-              <div style={{fontSize:10,color:"var(--text-tertiary)"}}>Usá {"{nombre}"} para personalizar</div>
+              <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Usá {"{nombre}"} para personalizar</div>
             </div>
             <textarea value={body} onChange={e=>setBody(e.target.value)} rows={8} placeholder="Escribí el mensaje aquí..."
-              style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",resize:"vertical"}}/>
+              style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",resize:"vertical"}}/>
           </div>
           <div style={{display:"flex",gap:8}}>
             <button onClickCapture={e=>{e.stopPropagation();send();}} disabled={sending}
-              style={{flex:1,padding:"11px",background:P,color:"#fff",border:"none",borderRadius:9,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:sending?.6:1}}>
+              style={{flex:1,padding:"11px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:sending?.6:1}}>
               {sending?"Enviando...":"✉ Enviar ahora"}
             </button>
           </div>
@@ -170,13 +170,13 @@ export function ComunicacionesSection({ showToast, subView }) {
     return(
       <div style={{maxWidth:600}}>
         {result&&(
-          <div style={{background:result.error?RD:GD,border:`1px solid ${result.error?R:G}40`,borderRadius:10,padding:"10px 14px",marginBottom:14,fontSize:13,color:result.error?R:G,fontWeight:600}}>
+          <div style={{background:result.error?RD:GD,border:`1px solid ${result.error?R:G}40`,borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:13,color:result.error?R:G,fontWeight:600}}>
             {result.error?"✗":"✓"} {result.msg}
           </div>
         )}
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
           {actions.map((a,i)=>(
-            <div key={i} style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:16,display:"flex",alignItems:"center",gap:14}}>
+            <div key={i} style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:16,display:"flex",alignItems:"center",gap:16}}>
               <div style={{width:44,height:44,borderRadius:10,background:`${a.color}14`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
                 <i className={`ti ${a.icon}`} style={{fontSize:20,color:a.color}}/>
               </div>
@@ -185,7 +185,7 @@ export function ComunicacionesSection({ showToast, subView }) {
                 <div style={{fontSize:11,color:"var(--text-secondary)",marginTop:2}}>{a.d}</div>
               </div>
               <button onClickCapture={e=>{e.stopPropagation();run(a.type);}} disabled={running}
-                style={{padding:"8px 18px",background:a.color,color:"#fff",border:"none",borderRadius:9,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",flexShrink:0,opacity:running?.6:1}}>
+                style={{padding:"8px 18px",background:a.color,color:"#fff",border:"none",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",flexShrink:0,opacity:running?.6:1}}>
                 {running?"...":"Ejecutar"}
               </button>
             </div>
@@ -228,19 +228,19 @@ export function ComunicacionesSection({ showToast, subView }) {
         <div>
           <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Tipo</div>
           <select value={form.tipo} onChange={e=>setForm(p=>({...p,tipo:e.target.value}))}
-            style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",marginBottom:10}}>
+            style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",marginBottom:10}}>
             <option value="info">Informativo</option>
             <option value="warn">Aviso</option>
             <option value="urgent">Urgente</option>
           </select>
           <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Título</div>
           <input value={form.titulo} onChange={e=>setForm(p=>({...p,titulo:e.target.value}))} placeholder="Título del anuncio"
-            style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",marginBottom:10}}/>
+            style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",marginBottom:10}}/>
           <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Contenido</div>
           <textarea value={form.contenido} onChange={e=>setForm(p=>({...p,contenido:e.target.value}))} rows={5}
-            style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",resize:"none",marginBottom:12}}/>
+            style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",resize:"none",marginBottom:12}}/>
           <button onClickCapture={e=>{e.stopPropagation();save();}} disabled={saving}
-            style={{width:"100%",padding:"10px",background:P,color:"#fff",border:"none",borderRadius:9,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:saving?.6:1}}>
+            style={{width:"100%",padding:"10px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:saving?.6:1}}>
             {saving?"Guardando...":"Publicar anuncio"}
           </button>
         </div>
@@ -253,7 +253,7 @@ export function ComunicacionesSection({ showToast, subView }) {
               <div key={i} style={{background:bg,border:`1px solid ${color}30`,borderRadius:10,padding:"10px 12px",marginBottom:8}}>
                 <div style={{fontSize:12,fontWeight:700,color}}>{a.titulo}</div>
                 <div style={{fontSize:11,color:"var(--text-secondary)",marginTop:3,lineHeight:1.5}}>{a.contenido}</div>
-                <div style={{fontSize:10,color:"var(--text-tertiary)",marginTop:5}}>{new Date(a.fecha).toLocaleDateString("es-HN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
+                <div style={{fontSize:11,color:"var(--text-tertiary)",marginTop:5}}>{new Date(a.fecha).toLocaleDateString("es-HN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"})}</div>
               </div>
             );
           })}

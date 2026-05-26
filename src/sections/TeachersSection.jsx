@@ -58,8 +58,8 @@ export function TeachersSection({ showToast }) {
 
   return(
     <div>
-      <div style={{display:"flex",justifyContent:"flex-end",marginBottom:14}}>
-        <button onClickCapture={e=>{e.stopPropagation();setModal({mode:"add"});}} style={{padding:"9px 18px",background:P,color:"#fff",border:"none",borderRadius:9,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:6}}>
+      <div style={{display:"flex",justifyContent:"flex-end",marginBottom:16}}>
+        <button onClickCapture={e=>{e.stopPropagation();setModal({mode:"add"});}} style={{padding:"8px 16px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:8}}>
           <i className="ti ti-user-plus" style={{fontSize:14}}/> Agregar docente
         </button>
       </div>
@@ -68,7 +68,7 @@ export function TeachersSection({ showToast }) {
       :teachers.length===0?<EmptyState icon="👩‍🏫" title="Sin docentes" subtitle="Invitá al primer docente con el botón arriba." actionLabel="+ Agregar docente" onAction={()=>setModal({mode:"add"})}/>
       :<div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(260px,1fr))",gap:12}}>
         {teachers.map(t=>(
-          <div key={t.id} onClick={()=>setModal({mode:"view",data:t})} style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,padding:16,cursor:"pointer"}}>
+          <div key={t.id} onClick={()=>setModal({mode:"view",data:t})} style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:16,cursor:"pointer"}}>
             <div style={{display:"flex",gap:12,alignItems:"center",marginBottom:12}}>
               <div style={{width:44,height:44,borderRadius:"50%",background:PD,display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:800,color:P,flexShrink:0}}>
                 {t.name.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase()}
@@ -87,9 +87,9 @@ export function TeachersSection({ showToast }) {
       </div>}
 
       {modal&&(
-        <div style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
+        <div style={{position:"fixed",inset:0,zIndex:"var(--z-modal)",background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
           onClick={e=>{if(e.target===e.currentTarget)setModal(null);}}>
-          <div style={{background:"var(--bg-surface)",borderRadius:18,padding:24,width:"min(420px, calc(100vw - 32px))",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)",maxHeight:"90vh",overflowY:"auto"}}>
+          <div style={{background:"var(--bg-surface)",borderRadius:16,padding:24,width:"min(420px, calc(100vw - 32px))",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)",maxHeight:"90vh",overflowY:"auto"}}>
             {modal.mode==="add"?(
               <>
                 <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:18}}>Agregar docente</div>
@@ -97,12 +97,12 @@ export function TeachersSection({ showToast }) {
                   <div key={k} style={{marginBottom:12}}>
                     <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>{l}</div>
                     <input type={t} value={form[k]} onChange={e=>setForm(p=>({...p,[k]:e.target.value}))}
-                      style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+                      style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
                   </div>
                 ))}
                 <div style={{display:"flex",gap:8,marginTop:18}}>
-                  <button onClick={()=>setModal(null)} style={{flex:1,padding:"10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:9,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>Cancelar</button>
-                  <button onClickCapture={e=>{e.stopPropagation();addTeacher();}} style={{flex:2,padding:"10px",background:P,color:"#fff",border:"none",borderRadius:9,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:saving?.6:1}}>
+                  <button onClick={()=>setModal(null)} style={{flex:1,padding:"10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>Cancelar</button>
+                  <button onClickCapture={e=>{e.stopPropagation();addTeacher();}} style={{flex:2,padding:"10px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:saving?.6:1}}>
                     {saving?"Invitando...":"Invitar docente"}
                   </button>
                 </div>
@@ -119,7 +119,7 @@ export function TeachersSection({ showToast }) {
                     <span style={{fontWeight:500,color:"var(--text-primary)",textAlign:"right",maxWidth:"60%"}}>{v}</span>
                   </div>
                 ))}
-                <button onClickCapture={e=>{e.stopPropagation();deactivate(modal.data);}} style={{width:"100%",marginTop:14,padding:"9px",background:RD,color:R,border:"none",borderRadius:9,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+                <button onClickCapture={e=>{e.stopPropagation();deactivate(modal.data);}} style={{width:"100%",marginTop:16,padding:"9px",background:RD,color:R,border:"none",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
                   Desactivar docente
                 </button>
               </>

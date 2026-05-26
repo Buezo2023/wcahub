@@ -140,13 +140,13 @@ export function StudentReport({ student, enrollments, certificates, progressHist
 
       {/* Backdrop */}
       <div onClick={onClose} style={{
-        position: "fixed", inset: 0, zIndex: 10010,
+        position: "fixed", inset: 0, zIndex:"var(--z-modal)",
         background: "rgba(0,0,0,.6)", backdropFilter: "blur(4px)",
       }} />
 
       {/* Report panel */}
       <div ref={ref} className="wca-report-print" style={{
-        position: "fixed", inset: 0, zIndex: 10011,
+        position: "fixed", inset: 0, zIndex:"var(--z-modal)",
         overflowY: "auto", padding: "20px 16px 40px",
         fontFamily: "'DM Sans','Segoe UI',sans-serif",
       }}>
@@ -196,7 +196,7 @@ export function StudentReport({ student, enrollments, certificates, progressHist
                       <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", letterSpacing: -0.3 }}>
                         WCA <span style={{ color: Y }}>Academy</span>
                       </div>
-                      <div style={{ fontSize: 10, color: "rgba(255,255,255,.5)", letterSpacing: 1.5, textTransform: "uppercase" }}>
+                      <div style={{ fontSize:11, color: "rgba(255,255,255,.5)", letterSpacing: 1.5, textTransform: "uppercase" }}>
                         World Connect Academy
                       </div>
                     </div>
@@ -250,7 +250,7 @@ export function StudentReport({ student, enrollments, certificates, progressHist
                       <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", lineHeight: 1.1 }}>
                         {s.value}{s.total ? <span style={{ fontSize: 11, opacity: 0.6 }}>/{s.total}</span> : ""}
                       </div>
-                      <div style={{ fontSize: 10, color: "rgba(255,255,255,.5)", textTransform: "uppercase", letterSpacing: 0.5 }}>
+                      <div style={{ fontSize:11, color: "rgba(255,255,255,.5)", textTransform: "uppercase", letterSpacing: 0.5 }}>
                         {s.label}
                       </div>
                     </div>
@@ -355,7 +355,7 @@ export function StudentReport({ student, enrollments, certificates, progressHist
                         border: `1px solid ${P}40`,
                       }}>
                         <div style={{ position: "absolute", top: -15, right: -15, fontSize: 64, opacity: 0.06 }}>🏆</div>
-                        <div style={{ fontSize: 28 }}>🏆</div>
+                        <i className="ti ti-trophy" style={{fontSize:28,color:"var(--amber)"}} aria-hidden="true"/>
                         <div style={{ fontSize: 14, fontWeight: 700, marginTop: 8, lineHeight: 1.3 }}>
                           {cert.data?.programName || cert.program_id || "Certificado WCA"}
                         </div>
@@ -363,14 +363,14 @@ export function StudentReport({ student, enrollments, certificates, progressHist
                           {cert.issued_at ? new Date(cert.issued_at).toLocaleDateString("es-HN", { day:"2-digit", month:"long", year:"numeric" }) : "—"}
                         </div>
                         <div style={{ marginTop: 10, padding: "4px 10px", background: `${Y}25`, borderRadius: 20, display: "inline-flex", alignItems: "center", gap: 5 }}>
-                          <span style={{ fontSize: 9, color: Y, fontWeight: 700, letterSpacing: 0.5 }}>COMPLETADO</span>
+                          <span style={{ fontSize:11, color: Y, fontWeight: 700, letterSpacing: 0.5 }}>Completado</span>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div style={{ background: "#f8fafc", borderRadius: 12, padding: 24, textAlign: "center", border: "1px dashed #e2e8f0" }}>
-                    <div style={{ fontSize: 32, marginBottom: 8 }}>🎯</div>
+                    <i className="ti ti-target" style={{fontSize:32,color:"var(--wca-primary)",marginBottom:8,display:"block"}} aria-hidden="true"/>
                     <div style={{ fontSize: 13, color: "#64748b" }}>Completá las 12 unidades para obtener tu certificado</div>
                     <div style={{ marginTop: 8, background: "#e2e8f0", borderRadius: 4, height: 6, overflow: "hidden" }}>
                       <div style={{ width: `${progressPct}%`, height: "100%", background: P, borderRadius: 4 }} />
@@ -392,10 +392,10 @@ export function StudentReport({ student, enrollments, certificates, progressHist
                   </svg>
                   <div>
                     <div style={{ fontSize: 12, fontWeight: 700, color: P }}>WCA Academy Hub</div>
-                    <div style={{ fontSize: 10, color: "#94a3b8" }}>wcahub.vercel.app</div>
+                    <div style={{ fontSize:11, color: "#94a3b8" }}>wcahub.vercel.app</div>
                   </div>
                 </div>
-                <div style={{ fontSize: 10, color: "#94a3b8", textAlign: "right" }}>
+                <div style={{ fontSize:11, color: "#94a3b8", textAlign: "right" }}>
                   Reporte generado el {new Date().toLocaleDateString("es-HN", { day:"2-digit", month:"long", year:"numeric" })}
                   <br/>Estudiante desde {joinDate}
                 </div>

@@ -57,7 +57,7 @@ export function CookieBanner() {
   return (
     <div style={{
       position: "fixed", bottom: 0, left: 0, right: 0,
-      zIndex: 99999,
+      zIndex:"var(--z-toast)",
       background: "#0f172a",
       borderTop: "1px solid rgba(255,255,255,.12)",
       padding: "16px 20px",
@@ -125,12 +125,12 @@ export function CookieBanner() {
                 <div key={cat.name} style={{ background: "rgba(255,255,255,.05)", borderRadius: 8, padding: "10px 12px" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                     <span style={{ fontWeight: 700, color: "#fff" }}>{cat.name}</span>
-                    <span style={{ fontSize: 10, padding: "1px 7px", borderRadius: 9, background: cat.required ? "#155266" : "rgba(255,255,255,.1)", color: cat.required ? "#7dd3fc" : "rgba(255,255,255,.5)", fontWeight: 600 }}>
+                    <span style={{ fontSize:11, padding: "1px 7px", borderRadius: 9, background: cat.required ? "#155266" : "rgba(255,255,255,.1)", color: cat.required ? "#7dd3fc" : "rgba(255,255,255,.5)", fontWeight: 600 }}>
                       {cat.required ? "Requeridas" : "Opcionales"}
                     </span>
                   </div>
                   <div style={{ fontSize: 11, marginBottom: 4 }}>{cat.desc}</div>
-                  <div style={{ fontSize: 10, color: "rgba(255,255,255,.4)" }}>Ejemplos: {cat.examples}</div>
+                  <div style={{ fontSize:11, color: "rgba(255,255,255,.4)" }}>Ejemplos: {cat.examples}</div>
                 </div>
               ))}
             </div>

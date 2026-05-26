@@ -18,13 +18,13 @@ const TYPES = [
 const XP_DEFAULT = {video:20,lesson:15,quiz:50,matching:25,fill_blank:25,roleplay:35};
 
 function Tag({children,bg,color}){
-  return <span style={{fontSize:10,padding:"2px 8px",borderRadius:10,background:bg,color,fontWeight:700}}>{children}</span>;
+  return <span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:bg,color,fontWeight:700}}>{children}</span>;
 }
 
 function SaveBtn({onClick,saving}){
   return(
     <button onClickCapture={e=>{e.stopPropagation();onClick();}} disabled={saving}
-      style={{padding:"8px 20px",background:P,color:"#fff",border:"none",borderRadius:9,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",opacity:saving?.6:1}}>
+      style={{padding:"8px 20px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",opacity:saving?.6:1}}>
       {saving?"Guardando...":"Guardar cambios"}
     </button>
   );
@@ -42,21 +42,21 @@ function VideoEditor({content,onChange}){
         </div>
         <input value={c.youtube_id||""} onChange={e=>onChange({...c,youtube_id:e.target.value.trim()})}
           placeholder="ej: dQw4w9WgXcQ"
-          style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"monospace"}}/>
+          style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"monospace"}}/>
         {c.youtube_id&&!c.youtube_id.startsWith("PLACEHOLDER")&&(
           <a href={`https://youtu.be/${c.youtube_id}`} target="_blank" rel="noopener noreferrer"
             style={{fontSize:11,color:P,display:"block",marginTop:4}}>▷ Ver video en YouTube →</a>
         )}
       </div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
         <div>
           <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Duración (min)</div>
           <input type="number" value={c.duration_min||10} onChange={e=>onChange({...c,duration_min:+e.target.value})}
-            style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+            style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
         </div>
         <div>
           <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Estado</div>
-          <div style={{padding:"9px 12px",background:c.youtube_id&&!c.youtube_id.startsWith("PLACEHOLDER")?GD:AD,borderRadius:9,fontSize:12,fontWeight:600,color:c.youtube_id&&!c.youtube_id.startsWith("PLACEHOLDER")?G:A}}>
+          <div style={{padding:"8px 12px",background:c.youtube_id&&!c.youtube_id.startsWith("PLACEHOLDER")?GD:AD,borderRadius:8,fontSize:12,fontWeight:600,color:c.youtube_id&&!c.youtube_id.startsWith("PLACEHOLDER")?G:A}}>
             {c.youtube_id&&!c.youtube_id.startsWith("PLACEHOLDER")?"✓ Video configurado":"⚠ Sin video aún"}
           </div>
         </div>
@@ -64,13 +64,13 @@ function VideoEditor({content,onChange}){
       <div>
         <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Descripción</div>
         <textarea value={c.description||""} onChange={e=>onChange({...c,description:e.target.value})} rows={2}
-          style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",resize:"vertical"}}/>
+          style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",resize:"vertical"}}/>
       </div>
       <div>
         <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Puntos clave <span style={{fontWeight:400,color:"var(--text-tertiary)"}}>(uno por línea)</span></div>
         <textarea value={kp} onChange={e=>onChange({...c,key_points:e.target.value.split("\n").filter(l=>l.trim())})} rows={4}
           placeholder={"Los estudiantes aprenderán...\nHabilidad 2\nHabilidad 3"}
-          style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",resize:"vertical"}}/>
+          style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",resize:"vertical"}}/>
       </div>
     </div>
   );
@@ -89,30 +89,30 @@ function QuizEditor({content,onChange}){
 
   return(
     <div>
-      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:16}}>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
         <div>
           <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Nota mínima (%)</div>
           <input type="number" value={c.pass_score||70} onChange={e=>onChange({...c,pass_score:+e.target.value})}
-            style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+            style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
         </div>
         <div>
           <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Tiempo límite (min)</div>
           <input type="number" value={c.time_limit_min||15} onChange={e=>onChange({...c,time_limit_min:+e.target.value})}
-            style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+            style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
         </div>
       </div>
 
       {qs.map((q,qi)=>(
-        <div key={qi} style={{background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:12,padding:14,marginBottom:10}}>
+        <div key={qi} style={{background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:12,padding:12,marginBottom:10}}>
           <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
             <span style={{fontSize:12,fontWeight:700,color:"var(--text-secondary)"}}>Pregunta {qi+1}</span>
             <button onClick={()=>removeQ(qi)} style={{background:"none",border:"none",cursor:"pointer",color:R,fontSize:16,padding:0}}>✕</button>
           </div>
           <textarea value={q.q} onChange={e=>updateQ(qi,"q",e.target.value)} rows={2} placeholder="Escribí la pregunta..."
             style={{width:"100%",padding:"8px 10px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit",resize:"vertical",marginBottom:8}}/>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:8}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:8}}>
             {(q.opts||["","","",""]).map((opt,oi)=>(
-              <div key={oi} style={{display:"flex",gap:6,alignItems:"center"}}>
+              <div key={oi} style={{display:"flex",gap:8,alignItems:"center"}}>
                 <input type="radio" name={`ans-${qi}`} checked={q.ans===oi} onChange={()=>updateQ(qi,"ans",oi)} style={{flexShrink:0}}/>
                 <input value={opt} onChange={e=>updateOpt(qi,oi,e.target.value)} placeholder={`Opción ${oi+1}${q.ans===oi?" ← correcta":""}`}
                   style={{flex:1,padding:"6px 10px",border:`1px solid ${q.ans===oi?G:"var(--border)"}`,borderRadius:7,fontSize:12,background:q.ans===oi?GD:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
@@ -144,7 +144,7 @@ function MatchingEditor({content,onChange}){
       <div style={{marginBottom:10}}>
         <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Instrucciones</div>
         <input value={c.instructions||""} onChange={e=>onChange({...c,instructions:e.target.value})}
-          style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+          style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
       </div>
       {pairs.map((p,i)=>(
         <div key={i} style={{display:"grid",gridTemplateColumns:"1fr 1fr auto",gap:8,marginBottom:8,alignItems:"center"}}>
@@ -152,11 +152,11 @@ function MatchingEditor({content,onChange}){
             style={{padding:"8px 10px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
           <input value={p.right} onChange={e=>updatePair(i,"right",e.target.value)} placeholder="Definición"
             style={{padding:"8px 10px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
-          <button onClick={()=>removePair(i)} style={{background:"none",border:"none",cursor:"pointer",color:R,fontSize:16,padding:4}}>✕</button>
+          <button onClick={()=>removePair(i)} style={{background:"none",border:"none",cursor:"pointer",color:R,fontSize:16,padding:6}}>✕</button>
         </div>
       ))}
       <button onClick={addPair}
-        style={{width:"100%",padding:"9px",background:"var(--bg-surface-subtle)",border:"2px dashed var(--border)",borderRadius:9,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)",fontWeight:600}}>
+        style={{width:"100%",padding:"9px",background:"var(--bg-surface-subtle)",border:"2px dashed var(--border)",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)",fontWeight:600}}>
         + Agregar par
       </button>
     </div>
@@ -176,13 +176,13 @@ function FillBlankEditor({content,onChange}){
       <div style={{marginBottom:12}}>
         <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Instrucciones</div>
         <input value={c.instructions||""} onChange={e=>onChange({...c,instructions:e.target.value})}
-          style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+          style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
       </div>
       <div style={{marginBottom:12}}>
         <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Banco de palabras <span style={{fontWeight:400,color:"var(--text-tertiary)"}}>(separadas por coma)</span></div>
         <input value={wb} onChange={e=>onChange({...c,word_bank:e.target.value.split(",").map(w=>w.trim()).filter(Boolean)})}
           placeholder="palabra1, palabra2, palabra3"
-          style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+          style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
       </div>
       {sents.map((s,i)=>(
         <div key={i} style={{background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:10,padding:12,marginBottom:8}}>
@@ -192,7 +192,7 @@ function FillBlankEditor({content,onChange}){
           </div>
           <input value={s.template} onChange={e=>updateSent(i,"template",e.target.value)} placeholder="Texto con ___ donde va la respuesta"
             style={{width:"100%",padding:"7px 10px",border:"1px solid var(--border)",borderRadius:7,fontSize:12,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit",marginBottom:6}}/>
-          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
             <input value={s.answer} onChange={e=>updateSent(i,"answer",e.target.value)} placeholder="Respuesta correcta"
               style={{padding:"6px 10px",border:`1px solid ${G}`,borderRadius:7,fontSize:12,background:GD,color:"var(--text-primary)",fontFamily:"inherit"}}/>
             <input value={s.hint||""} onChange={e=>updateSent(i,"hint",e.target.value)} placeholder="Pista (opcional)"
@@ -201,7 +201,7 @@ function FillBlankEditor({content,onChange}){
         </div>
       ))}
       <button onClick={addSent}
-        style={{width:"100%",padding:"9px",background:"var(--bg-surface-subtle)",border:"2px dashed var(--border)",borderRadius:9,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)",fontWeight:600}}>
+        style={{width:"100%",padding:"9px",background:"var(--bg-surface-subtle)",border:"2px dashed var(--border)",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)",fontWeight:600}}>
         + Agregar oración
       </button>
     </div>
@@ -218,7 +218,7 @@ function LessonEditor({content,onChange}){
   return(
     <div>
       {secs.map((s,i)=>(
-        <div key={i} style={{border:"1px solid var(--border)",borderRadius:12,padding:14,marginBottom:10,background:"var(--bg-surface-subtle)"}}>
+        <div key={i} style={{border:"1px solid var(--border)",borderRadius:12,padding:12,marginBottom:10,background:"var(--bg-surface-subtle)"}}>
           <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
             <span style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)"}}>Sección {i+1}</span>
             <button onClick={()=>removeSec(i)} style={{background:"none",border:"none",cursor:"pointer",color:R,fontSize:14,padding:0}}>✕</button>
@@ -232,7 +232,7 @@ function LessonEditor({content,onChange}){
         </div>
       ))}
       <button onClick={addSec}
-        style={{width:"100%",padding:"9px",background:"var(--bg-surface-subtle)",border:"2px dashed var(--border)",borderRadius:9,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)",fontWeight:600}}>
+        style={{width:"100%",padding:"9px",background:"var(--bg-surface-subtle)",border:"2px dashed var(--border)",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)",fontWeight:600}}>
         + Agregar sección
       </button>
     </div>
@@ -345,7 +345,7 @@ export function LMSContentSection({ showToast }) {
   };
 
   return(
-    <div style={{display:"grid",gridTemplateColumns:"240px 1fr",gap:14,minHeight:500}}>
+    <div style={{display:"grid",gridTemplateColumns:"240px 1fr",gap:16,minHeight:500}}>
 
       {/* ── Left column: program → units ── */}
       <div>
@@ -355,7 +355,7 @@ export function LMSContentSection({ showToast }) {
           <div style={{display:"flex",flexDirection:"column",gap:4}}>
             {PROGRAMS.map(([id,label])=>(
               <button key={id} onClick={()=>{setProg(id);setLevel("A1");}}
-                style={{padding:"8px 12px",borderRadius:9,border:"none",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",textAlign:"left",background:prog===id?P:"var(--bg-surface-subtle)",color:prog===id?"#fff":"var(--text-secondary)"}}>
+                style={{padding:"8px 12px",borderRadius:8,border:"none",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",textAlign:"left",background:prog===id?P:"var(--bg-surface-subtle)",color:prog===id?"#fff":"var(--text-secondary)"}}>
                 {label}
               </button>
             ))}
@@ -384,9 +384,9 @@ export function LMSContentSection({ showToast }) {
           :units.length===0?<div style={{padding:16,fontSize:12,color:"var(--text-secondary)"}}>Sin unidades</div>
           :units.map(u=>(
             <div key={u.id} onClick={()=>setSelUnit(u.id)}
-              style={{padding:"9px 12px",cursor:"pointer",borderBottom:"1px solid var(--border-tertiary)",background:selUnit===u.id?PD:"transparent",borderLeft:`3px solid ${selUnit===u.id?P:"transparent"}`}}>
+              style={{padding:"8px 12px",cursor:"pointer",borderBottom:"1px solid var(--border-tertiary)",background:selUnit===u.id?PD:"transparent",borderLeft:`3px solid ${selUnit===u.id?P:"transparent"}`}}>
               <div style={{fontSize:12,fontWeight:600,color:selUnit===u.id?P:"var(--text-primary)"}}>U{u.unit_number}. {u.title}</div>
-              {u.topic&&<div style={{fontSize:10,color:"var(--text-tertiary)",marginTop:1}}>{u.topic}</div>}
+              {u.topic&&<div style={{fontSize:11,color:"var(--text-tertiary)",marginTop:1}}>{u.topic}</div>}
             </div>
           ))}
         </div>
@@ -412,10 +412,10 @@ export function LMSContentSection({ showToast }) {
             </div>
 
             {activities.length===0?(
-              <div style={{textAlign:"center",padding:"32px 20px",background:"var(--bg-surface)",border:"2px dashed var(--border)",borderRadius:14}}>
+              <div style={{textAlign:"center",padding:"32px 20px",background:"var(--bg-surface)",border:"2px dashed var(--border)",borderRadius:12}}>
                 <div style={{fontSize:32,marginBottom:8}}>📭</div>
                 <div style={{fontSize:14,color:"var(--text-secondary)"}}>Sin actividades en esta unidad</div>
-                <button onClickCapture={e=>{e.stopPropagation();setAddModal(true);}} style={{marginTop:10,padding:"8px 18px",background:P,color:"#fff",border:"none",borderRadius:9,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+                <button onClickCapture={e=>{e.stopPropagation();setAddModal(true);}} style={{marginTop:10,padding:"8px 18px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
                   + Crear primera actividad
                 </button>
               </div>
@@ -426,7 +426,7 @@ export function LMSContentSection({ showToast }) {
                     <div style={{fontSize:22,flexShrink:0}}>{TYPES.find(t=>t.id===act.type)?.icon||"📄"}</div>
                     <div style={{flex:1,minWidth:0}}>
                       <div style={{fontSize:13,fontWeight:600,color:"var(--text-primary)",marginBottom:3}}>{act.title}</div>
-                      <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                      <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                         <Tag bg={PD} color={P}>{TYPES.find(t=>t.id===act.type)?.label}</Tag>
                         <Tag bg="var(--bg-surface-subtle)" color="var(--text-secondary)">+{act.xp_reward} XP</Tag>
                         {!act.published&&<Tag bg={RD} color={R}>Oculto</Tag>}
@@ -449,28 +449,28 @@ export function LMSContentSection({ showToast }) {
           /* Editor panel */
           <div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
-              <button onClick={()=>setSelAct(null)} style={{display:"flex",alignItems:"center",gap:6,background:"none",border:"none",cursor:"pointer",color:"var(--text-secondary)",fontSize:13,fontFamily:"inherit",padding:0}}>
+              <button onClick={()=>setSelAct(null)} style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"none",cursor:"pointer",color:"var(--text-secondary)",fontSize:13,fontFamily:"inherit",padding:0}}>
                 <i className="ti ti-arrow-left" style={{fontSize:15}}/> Volver
               </button>
               <SaveBtn onClick={saveActivity} saving={saving}/>
             </div>
 
             {/* Activity meta */}
-            <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:10,marginBottom:14}}>
+            <div style={{display:"grid",gridTemplateColumns:"1fr auto",gap:8,marginBottom:16}}>
               <div>
                 <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Título de la actividad</div>
                 <input value={selAct.title} onChange={e=>setSelAct(a=>({...a,title:e.target.value}))}
-                  style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:14,fontWeight:600,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+                  style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:14,fontWeight:600,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
               </div>
               <div>
                 <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>XP</div>
                 <input type="number" value={selAct.xp_reward} onChange={e=>setSelAct(a=>({...a,xp_reward:+e.target.value}))}
-                  style={{width:80,padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+                  style={{width:80,padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
               </div>
             </div>
 
             {/* Type badge */}
-            <div style={{marginBottom:14}}>
+            <div style={{marginBottom:16}}>
               <Tag bg={PD} color={P}>
                 {TYPES.find(t=>t.id===selAct.type)?.icon} {TYPES.find(t=>t.id===selAct.type)?.label}
               </Tag>
@@ -493,16 +493,16 @@ export function LMSContentSection({ showToast }) {
 
       {/* Add activity modal */}
       {addModal&&(
-        <div style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
+        <div style={{position:"fixed",inset:0,zIndex:"var(--z-modal)",background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
           onClick={e=>{if(e.target===e.currentTarget)setAddModal(false);}}>
-          <div style={{background:"var(--bg-surface)",borderRadius:18,padding:24,width:"min(420px, calc(100vw - 32px))",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)"}}>
+          <div style={{background:"var(--bg-surface)",borderRadius:16,padding:24,width:"min(420px, calc(100vw - 32px))",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)"}}>
             <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:18}}>Nueva actividad</div>
             <div style={{marginBottom:12}}>
               <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Tipo</div>
-              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:6}}>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
                 {TYPES.map(t=>(
                   <button key={t.id} onClick={()=>setNewAct(a=>({...a,type:t.id,xp_reward:XP_DEFAULT[t.id]}))}
-                    style={{padding:"8px 6px",borderRadius:9,border:`2px solid ${newAct.type===t.id?P:"var(--border)"}`,background:newAct.type===t.id?PD:"var(--bg-surface-subtle)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",color:newAct.type===t.id?P:"var(--text-secondary)"}}>
+                    style={{padding:"8px 6px",borderRadius:8,border:`2px solid ${newAct.type===t.id?P:"var(--border)"}`,background:newAct.type===t.id?PD:"var(--bg-surface-subtle)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",color:newAct.type===t.id?P:"var(--text-secondary)"}}>
                     {t.icon} {t.label}
                   </button>
                 ))}
@@ -511,16 +511,16 @@ export function LMSContentSection({ showToast }) {
             <div style={{marginBottom:12}}>
               <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Título *</div>
               <input value={newAct.title} onChange={e=>setNewAct(a=>({...a,title:e.target.value}))} placeholder="Ej: Introducción al marketing digital"
-                style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+                style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
             </div>
             <div style={{marginBottom:20}}>
               <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>XP</div>
               <input type="number" value={newAct.xp_reward} onChange={e=>setNewAct(a=>({...a,xp_reward:+e.target.value}))}
-                style={{width:100,padding:"9px 12px",border:"1px solid var(--border)",borderRadius:9,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+                style={{width:100,padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
             </div>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>setAddModal(false)} style={{flex:1,padding:"10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:9,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>Cancelar</button>
-              <button onClickCapture={e=>{e.stopPropagation();addActivity();}} style={{flex:2,padding:"10px",background:P,color:"#fff",border:"none",borderRadius:9,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+              <button onClick={()=>setAddModal(false)} style={{flex:1,padding:"10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>Cancelar</button>
+              <button onClickCapture={e=>{e.stopPropagation();addActivity();}} style={{flex:2,padding:"10px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
                 Crear actividad
               </button>
             </div>

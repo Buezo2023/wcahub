@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
 
 const P = "#155266", Y = "#ffbb23", G = "#059669", GD = "#ecfdf5";
@@ -76,7 +77,7 @@ export default function PlacementTest() {
   }
 
   return (
-    <div style={{ minHeight:"100vh", background:"#f8fafc", fontFamily:"'DM Sans','Segoe UI',sans-serif", padding:"20px 16px" }}>
+    <div style={{ minHeight:"100vh", background:"var(--bg-page)", fontFamily:"'DM Sans','Segoe UI',sans-serif", padding:"20px 16px" }}>
       <div style={{ maxWidth:580, margin:"0 auto" }}>
         {/* Header */}
         <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:28 }}>
@@ -85,9 +86,9 @@ export default function PlacementTest() {
           </div>
           <div>
             <div style={{ fontSize:16, fontWeight:800, color:P }}>WCA <span style={{ color:Y }}>Hub</span></div>
-            <div style={{ fontSize:11, color:"#64748b" }}>World Connect Academy</div>
+            <div style={{ fontSize:11, color:"var(--text-secondary)" }}>World Connect Academy</div>
           </div>
-          <button onClick={()=>navigate("/")} style={{ marginLeft:"auto", fontSize:12, padding:"6px 14px", background:"transparent", border:"1px solid #e2e8f0", borderRadius:8, cursor:"pointer", color:"#475569", fontFamily:"inherit" }}>
+          <button onClick={()=>navigate("/")} style={{ marginLeft:"auto", fontSize:12, padding:"6px 14px", background:"transparent", border:"1px solid var(--border)", borderRadius:8, cursor:"pointer", color:"var(--text-secondary)", fontFamily:"inherit" }}>
             ← Volver
           </button>
         </div>
@@ -95,26 +96,26 @@ export default function PlacementTest() {
         {/* INTRO */}
         {phase === "intro" && (
           <div>
-            <h1 style={{ fontSize:26, fontWeight:800, color:"#0f172a", marginBottom:6 }}>¿Cuál es tu nivel de inglés?</h1>
-            <p style={{ fontSize:14, color:"#64748b", marginBottom:24, lineHeight:1.7 }}>
+            <h1 style={{ fontSize:26, fontWeight:800, color:"var(--text-primary)", marginBottom:6 }}>¿Cuál es tu nivel de inglés?</h1>
+            <p style={{ fontSize:14, color:"var(--text-secondary)", marginBottom:24, lineHeight:1.7 }}>
               12 preguntas de gramática. En 5 minutos sabés tu nivel exacto (A1 a C1) y el programa ideal para vos. Es gratis.
             </p>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:10, marginBottom:24 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8, marginBottom:24 }}>
               {[["📝","12 preguntas","Gramática A1-B2"],["⏱","~5 minutos","Sin límite de tiempo"],["🎯","Nivel exacto","A1, A2, B1, B2 o C1"]].map(([ic,t,s],i)=>(
-                <div key={i} style={{ background:"#fff", borderRadius:10, padding:12, textAlign:"center", border:"1px solid #e2e8f0" }}>
+                <div key={i} style={{ background:"var(--bg-surface)", borderRadius:10, padding:12, textAlign:"center", border:"1px solid var(--border)" }}>
                   <div style={{ fontSize:22, marginBottom:4 }}>{ic}</div>
-                  <div style={{ fontSize:12, fontWeight:600, color:"#0f172a" }}>{t}</div>
-                  <div style={{ fontSize:11, color:"#64748b" }}>{s}</div>
+                  <div style={{ fontSize:12, fontWeight:600, color:"var(--text-primary)" }}>{t}</div>
+                  <div style={{ fontSize:11, color:"var(--text-secondary)" }}>{s}</div>
                 </div>
               ))}
             </div>
-            <div style={{ background:"#fff", borderRadius:12, padding:20, border:"1px solid #e2e8f0", marginBottom:16 }}>
-              <div style={{ fontSize:13, fontWeight:600, color:"#0f172a", marginBottom:12 }}>Dejá tu info para recibir el resultado (opcional)</div>
+            <div style={{ background:"var(--bg-surface)", borderRadius:12, padding:20, border:"1px solid var(--border)", marginBottom:16 }}>
+              <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)", marginBottom:12 }}>Dejá tu info para recibir el resultado (opcional)</div>
               {[["Nombre","name","text","María Rodríguez"],["Email","email","email","tu@email.com"],["WhatsApp","phone","tel","+504 9900-0000"]].map(([l,k,t,ph])=>(
                 <div key={k} style={{ marginBottom:10 }}>
-                  <label style={{ fontSize:12, color:"#64748b", display:"block", marginBottom:3 }}>{l}</label>
+                  <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>{l}</label>
                   <input type={t} value={form[k]} onChange={e=>setForm(f=>({...f,[k]:e.target.value}))} placeholder={ph}
-                    style={{ width:"100%", padding:"9px 12px", border:"1px solid #e2e8f0", borderRadius:8, fontSize:13, fontFamily:"inherit", color:"#0f172a" }}/>
+                    style={{ width:"100%", padding:"8px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, fontFamily:"inherit", color:"var(--text-primary)" }}/>
                 </div>
               ))}
             </div>
@@ -122,14 +123,14 @@ export default function PlacementTest() {
               style={{ width:"100%", padding:"14px", background:P, color:"#fff", border:"none", borderRadius:12, fontSize:15, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
               Comenzar test gratuito →
             </button>
-            <div style={{ fontSize:11, color:"#94a3b8", textAlign:"center", marginTop:10 }}>Sin tarjeta de crédito · Resultado inmediato</div>
+            <div style={{ fontSize:11, color:"var(--text-tertiary)", textAlign:"center", marginTop:10 }}>Sin tarjeta de crédito · Resultado inmediato</div>
           </div>
         )}
 
         {/* TEST */}
         {phase === "test" && (
           <div>
-            <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"#64748b", marginBottom:6 }}>
+            <div style={{ display:"flex", justifyContent:"space-between", fontSize:12, color:"var(--text-secondary)", marginBottom:6 }}>
               <span>{answered}/{QUESTIONS.length} respondidas</span>
               <span>{Math.round(answered/QUESTIONS.length*100)}%</span>
             </div>
@@ -138,14 +139,14 @@ export default function PlacementTest() {
             </div>
             <div style={{ display:"flex", flexDirection:"column", gap:14 }}>
               {QUESTIONS.map((q,qi)=>(
-                <div key={q.id} style={{ background:"#fff", border:`1.5px solid ${answers[qi]!==undefined?P+"60":"#e2e8f0"}`, borderRadius:12, padding:18 }}>
-                  <div style={{ fontSize:11, color:"#94a3b8", fontWeight:600, marginBottom:4 }}>Pregunta {qi+1} · {q.level}</div>
-                  <div style={{ fontSize:14, fontWeight:600, color:"#0f172a", marginBottom:12 }}>{q.q}</div>
+                <div key={q.id} style={{ background:"var(--bg-surface)", border:`1.5px solid ${answers[qi]!==undefined?P+"60":"#e2e8f0"}`, borderRadius:12, padding:18 }}>
+                  <div style={{ fontSize:11, color:"var(--text-tertiary)", fontWeight:600, marginBottom:4 }}>Pregunta {qi+1} · {q.level}</div>
+                  <div style={{ fontSize:14, fontWeight:600, color:"var(--text-primary)", marginBottom:12 }}>{q.q}</div>
                   <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:7 }}>
                     {q.opts.map((opt,oi)=>{
                       const sel = answers[qi]===oi;
                       return <button key={oi} onClick={()=>setAnswers(a=>({...a,[qi]:oi}))}
-                        style={{ padding:"9px 12px", background:sel?"#e8f3f6":"#f8fafc", border:`1.5px solid ${sel?P:"#e2e8f0"}`, borderRadius:8, fontSize:13, cursor:"pointer", textAlign:"left", color:sel?P:"#475569", fontWeight:sel?600:400, fontFamily:"inherit" }}>
+                        style={{ padding:"8px 12px", background:sel?"#e8f3f6":"#f8fafc", border:`1.5px solid ${sel?P:"#e2e8f0"}`, borderRadius:8, fontSize:13, cursor:"pointer", textAlign:"left", color:sel?P:"#475569", fontWeight:sel?600:400, fontFamily:"inherit" }}>
                         {opt}
                       </button>;
                     })}
@@ -164,28 +165,28 @@ export default function PlacementTest() {
         {phase === "result" && result && (
           <div style={{ textAlign:"center" }}>
             <div style={{ fontSize:56, marginBottom:8 }}>🎯</div>
-            <div style={{ fontSize:13, color:"#64748b", marginBottom:4 }}>Tu nivel de inglés es</div>
+            <div style={{ fontSize:13, color:"var(--text-secondary)", marginBottom:4 }}>Tu nivel de inglés es</div>
             <div style={{ fontSize:48, fontWeight:800, color:P, marginBottom:4 }}>{result.level}</div>
-            <div style={{ fontSize:20, fontWeight:600, color:"#0f172a", marginBottom:8 }}>{result.label}</div>
-            <div style={{ fontSize:14, color:"#64748b", marginBottom:20, lineHeight:1.7 }}>{result.desc}</div>
-            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, maxWidth:280, margin:"0 auto 24px" }}>
-              <div style={{ background:"#f8fafc", borderRadius:10, padding:12 }}>
+            <div style={{ fontSize:20, fontWeight:600, color:"var(--text-primary)", marginBottom:8 }}>{result.label}</div>
+            <div style={{ fontSize:14, color:"var(--text-secondary)", marginBottom:20, lineHeight:1.7 }}>{result.desc}</div>
+            <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, maxWidth:280, margin:"0 auto 24px" }}>
+              <div style={{ background:"var(--bg-page)", borderRadius:10, padding:12 }}>
                 <div style={{ fontSize:22, fontWeight:800, color:P }}>{result.correct}/{QUESTIONS.length}</div>
-                <div style={{ fontSize:11, color:"#64748b" }}>correctas</div>
+                <div style={{ fontSize:11, color:"var(--text-secondary)" }}>correctas</div>
               </div>
-              <div style={{ background:"#f8fafc", borderRadius:10, padding:12 }}>
+              <div style={{ background:"var(--bg-page)", borderRadius:10, padding:12 }}>
                 <div style={{ fontSize:22, fontWeight:800, color:P }}>{result.score}%</div>
-                <div style={{ fontSize:11, color:"#64748b" }}>puntaje</div>
+                <div style={{ fontSize:11, color:"var(--text-secondary)" }}>puntaje</div>
               </div>
             </div>
             {saved && <div style={{ background:GD, border:"1px solid #d1fae5", borderRadius:10, padding:"10px 14px", fontSize:13, color:"#065f46", marginBottom:16 }}>✓ Resultado guardado. Te contactamos pronto.</div>}
-            {saving && <div style={{ fontSize:13, color:"#64748b", marginBottom:16 }}>Guardando resultado…</div>}
+            {saving && <div style={{ fontSize:13, color:"var(--text-secondary)", marginBottom:16 }}>Guardando resultado…</div>}
             <button onClick={()=>navigate("/")}
               style={{ width:"100%", padding:"14px", background:P, color:"#fff", border:"none", borderRadius:12, fontSize:14, fontWeight:700, cursor:"pointer", fontFamily:"inherit", marginBottom:10 }}>
               Ver programas WCA →
             </button>
             <button onClick={()=>{ setPhase("intro"); setAnswers({}); setResult(null); setSaved(false); }}
-              style={{ width:"100%", padding:"12px", background:"transparent", color:"#64748b", border:"1px solid #e2e8f0", borderRadius:12, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>
+              style={{ width:"100%", padding:"12px", background:"transparent", color:"var(--text-secondary)", border:"1px solid var(--border)", borderRadius:12, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>
               Repetir el test
             </button>
           </div>

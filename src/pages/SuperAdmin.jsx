@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
@@ -6,23 +6,23 @@ import { api } from "../lib/api.js";
 import { toast as globalToast } from "../lib/toast.jsx";
 import { useConfirm } from "../lib/ConfirmModal.jsx";
 import { getAuditLog, getPrograms } from "../lib/db.js";
-import { EstudiantesSection } from "../sections/EstudiantesSection.jsx";
-import { TeachersSection }  from "../sections/TeachersSection.jsx";
-import { AtRiskSection }    from "../sections/AtRiskSection.jsx";
-import { BecasSection }     from "../sections/BecasSection.jsx";
-import { B2BSection }       from "../sections/B2BSection.jsx";
-import { VencidosSection }  from "../sections/VencidosSection.jsx";
-import { BISection }              from "../sections/BISection.jsx";
-import { HorariosSection }       from "../sections/HorariosSection.jsx";
-import { ComunicacionesSection } from "../sections/ComunicacionesSection.jsx";
-import { ReportesSection }       from "../sections/ReportesSection.jsx";
-import { RecibosSection }        from "../sections/RecibosSection.jsx";
-import { LMSContentSection }     from "../sections/LMSContentSection.jsx";
-import { PagosSection }       from "../sections/PagosSection.jsx";
-import { LeadsSection }        from "../sections/LeadsSection.jsx";
-import { VentasSection }      from "../sections/VentasSection.jsx";
-import { GruposSection }             from "../sections/GruposSection.jsx";
-import { UserManagementSection }     from "../sections/UserManagementSection.jsx";
+const EstudiantesSection   = React.lazy(()=>import("../sections/EstudiantesSection.jsx").then(m=>({default:m.EstudiantesSection})));
+const TeachersSection      = React.lazy(()=>import("../sections/TeachersSection.jsx").then(m=>({default:m.TeachersSection})));
+const AtRiskSection        = React.lazy(()=>import("../sections/AtRiskSection.jsx").then(m=>({default:m.AtRiskSection})));
+const BecasSection         = React.lazy(()=>import("../sections/BecasSection.jsx").then(m=>({default:m.BecasSection})));
+const B2BSection           = React.lazy(()=>import("../sections/B2BSection.jsx").then(m=>({default:m.B2BSection})));
+const VencidosSection      = React.lazy(()=>import("../sections/VencidosSection.jsx").then(m=>({default:m.VencidosSection})));
+const BISection            = React.lazy(()=>import("../sections/BISection.jsx").then(m=>({default:m.BISection})));
+const HorariosSection      = React.lazy(()=>import("../sections/HorariosSection.jsx").then(m=>({default:m.HorariosSection})));
+const ComunicacionesSection= React.lazy(()=>import("../sections/ComunicacionesSection.jsx").then(m=>({default:m.ComunicacionesSection})));
+const ReportesSection      = React.lazy(()=>import("../sections/ReportesSection.jsx").then(m=>({default:m.ReportesSection})));
+const RecibosSection       = React.lazy(()=>import("../sections/RecibosSection.jsx").then(m=>({default:m.RecibosSection})));
+const LMSContentSection    = React.lazy(()=>import("../sections/LMSContentSection.jsx").then(m=>({default:m.LMSContentSection})));
+const PagosSection         = React.lazy(()=>import("../sections/PagosSection.jsx").then(m=>({default:m.PagosSection})));
+const LeadsSection         = React.lazy(()=>import("../sections/LeadsSection.jsx").then(m=>({default:m.LeadsSection})));
+const VentasSection        = React.lazy(()=>import("../sections/VentasSection.jsx").then(m=>({default:m.VentasSection})));
+const GruposSection        = React.lazy(()=>import("../sections/GruposSection.jsx").then(m=>({default:m.GruposSection})));
+const UserManagementSection= React.lazy(()=>import("../sections/UserManagementSection.jsx").then(m=>({default:m.UserManagementSection})));
 
 const P = "#155266", PH = "#0f3d4d", PD = "#e8f3f6";
 const Y = "#ffbb23", YD = "#fff8e6";
@@ -117,7 +117,7 @@ function Badge({ text, bg="#f1f5f9", color="#475569" }) {
 }
 function Stat({ label, value, sub, color, icon, up }) {
   return (
-    <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:"16px 18px", borderTop:`3px solid ${color}`, boxShadow:"var(--shadow-sm)" }}>
+    <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:"16px 18px", borderTop:`3px solid ${color}`, boxShadow:"var(--shadow-sm)" }}>
       <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
         <div style={{ fontSize:11, color:"var(--text-secondary)" }}>{label}</div>
         <i className={"ti "+icon} style={{ fontSize:16, color }} aria-hidden="true" />
@@ -134,7 +134,7 @@ function MiniBar({ value, max, color }) {
   return <div style={{ flex:1, height:7, background:"var(--bg-surface-subtle)", borderRadius:4, overflow:"hidden" }}><div style={{ height:"100%", width:`${Math.round(value/(max||1)*100)}%`, background:color, borderRadius:4 }}/></div>;
 }
 function Input({ value, onChange, placeholder, type="text" }) {
-  return <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }} />;
+  return <input type={type} value={value} onChange={e=>onChange(e.target.value)} placeholder={placeholder} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }} />;
 }
 function Field({ label, children }) {
   return <div style={{ marginBottom:12 }}><label style={{ fontSize:11, color:"var(--text-secondary)", display:"block", marginBottom:5, fontWeight:500 }}>{label}</label>{children}</div>;
@@ -147,9 +147,9 @@ function BtnGhost({ onClick, children }) {
 }
 function Modal({ title, subtitle, onClose, children }) {
   return (
-    <div role="dialog" aria-modal="true" style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:10000, padding:16 }}
+    <div role="dialog" aria-modal="true" style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:"var(--z-modal)", padding:16 }}
       onClick={e=>{ if(e.target===e.currentTarget) onClose(); }}>
-      <div style={{ background:"var(--bg-surface)", borderRadius:18, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:460, maxWidth:"100%", border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)", maxHeight:"90vh", overflowY:"auto" }}>
+      <div style={{ background:"var(--bg-surface)", borderRadius:16, padding:26, animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both", width:460, maxWidth:"100%", border:"1px solid var(--border)", boxShadow:"var(--shadow-lg)", maxHeight:"90vh", overflowY:"auto" }}>
         <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:16 }}>
           <div>
             <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>{title}</div>
@@ -163,6 +163,13 @@ function Modal({ title, subtitle, onClose, children }) {
   );
 }
 
+
+const SectionFallback = () => (
+  <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,padding:"40px 20px",color:"var(--text-secondary)",fontSize:13}}>
+    <div style={{width:18,height:18,border:"2px solid var(--border)",borderTopColor:"var(--wca-primary)",borderRadius:"50%",animation:"spin .7s linear infinite"}}/>
+    Cargando...
+  </div>
+);
 export default function SuperAdmin() {
   const navigate = useNavigate();
   // toast: usa el sistema global de ../lib/toast.jsx
@@ -484,7 +491,7 @@ export default function SuperAdmin() {
           {NAV.map(n => {
             if (n.sep) return <div key={n.id} style={{ fontSize:11, color:"rgba(255,255,255,.25)", fontWeight:700, letterSpacing:1, padding:"16px 18px 6px", textTransform:"uppercase" }}>{n.label}</div>;
             if (n.link) return (
-              <button key={n.id} onClick={()=>{navigate(n.id);if(isMobile)setSideOpen(false);}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 18px", border:"none", background:"transparent", color:"rgba(255,255,255,.4)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:"2px solid transparent", transition:"all .15s", fontFamily:"inherit", fontWeight:400, width:"100%" }}
+              <button key={n.id} onClick={()=>{navigate(n.id);if(isMobile)setSideOpen(false);}} style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 18px", border:"none", background:"transparent", color:"rgba(255,255,255,.4)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:"2px solid transparent", transition:"all .15s", fontFamily:"inherit", fontWeight:400, width:"100%" }}
                 onMouseEnter={e=>{e.currentTarget.style.color="#fff";e.currentTarget.style.background="rgba(255,255,255,.06)";}}
                 onMouseLeave={e=>{e.currentTarget.style.color="rgba(255,255,255,.4)";e.currentTarget.style.background="transparent";}}>
                 <i className={"ti "+n.icon} style={{ fontSize:14, width:18, textAlign:"center" }} aria-hidden="true"/>
@@ -493,7 +500,7 @@ export default function SuperAdmin() {
               </button>
             );
             return (
-            <button key={n.id} onClick={()=>{setView(n.id);setSubView((SUB_TABS[n.id]||[["",""]]) [0][0]);if(isMobile)setSideOpen(false);}} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 18px", border:"none", background:view===n.id?"rgba(255,255,255,.12)":"transparent", color:view===n.id?"#fff":"rgba(255,255,255,.45)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:`2px solid ${view===n.id?Y:"transparent"}`, transition:"all .15s", fontFamily:"inherit", fontWeight:view===n.id?600:400, width:"100%" }}>
+            <button key={n.id} onClick={()=>{setView(n.id);setSubView((SUB_TABS[n.id]||[["",""]]) [0][0]);if(isMobile)setSideOpen(false);}} style={{ display:"flex", alignItems:"center", gap:8, padding:"10px 18px", border:"none", background:view===n.id?"rgba(255,255,255,.12)":"transparent", color:view===n.id?"#fff":"rgba(255,255,255,.45)", fontSize:12, cursor:"pointer", textAlign:"left", borderLeft:`2px solid ${view===n.id?Y:"transparent"}`, transition:"all .15s", fontFamily:"inherit", fontWeight:view===n.id?600:400, width:"100%" }}>
               <i className={"ti "+n.icon} style={{ fontSize:14, width:18, textAlign:"center" }} aria-hidden="true"/>
               {n.label}
             </button>
@@ -519,7 +526,7 @@ export default function SuperAdmin() {
           Cerrar sesión
         </button>
       </aside>
-      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:"var(--z-overlay)",background:"rgba(0,0,0,.4)"}}/>}
 
 
       {/* Toast: usa ToastContainer global en App.jsx */}
@@ -551,10 +558,10 @@ export default function SuperAdmin() {
         <div style={{ flex:1, overflowY:"auto", padding:24 }}>
           {/* Sub-navigation tabs for departments */}
           {SUB_TABS[view] && (
-            <div style={{ display:"flex", gap:6, marginBottom:18, flexWrap:"wrap" }}>
+            <div style={{ display:"flex", gap:8, marginBottom:18, flexWrap:"wrap" }}>
               {SUB_TABS[view].map(([id,label])=>(
                 <button key={id} onClick={()=>setSubView(id)} style={{
-                  padding:"6px 14px", borderRadius:9, border:"none", fontSize:12,
+                  padding:"6px 14px", borderRadius:8, border:"none", fontSize:12,
                   fontWeight:600, cursor:"pointer", fontFamily:"inherit",
                   background: subView===id ? P : "var(--bg-surface-subtle)",
                   color: subView===id ? "#fff" : "var(--text-secondary)",
@@ -581,8 +588,8 @@ export default function SuperAdmin() {
               <Stat label="Nómina mensual"       value={nomina > 0 ? `$${nomina.toLocaleString()}` : "—"} sub="USD total staff" color="var(--text-secondary)" icon="ti-receipt"/>
             </div>
 
-            <div style={{ display:"grid", gridTemplateColumns:"1.6fr 1fr", gap:14, marginBottom:14 }}>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:20, boxShadow:"var(--shadow-sm)" }}>
+            <div style={{ display:"grid", gridTemplateColumns:"1.6fr 1fr", gap:16, marginBottom:14 }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:20, boxShadow:"var(--shadow-sm)" }}>
                 <div style={{ display:"flex", justifyContent:"space-between", marginBottom:14 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>MRR — 12 meses</div>
                   <div style={{ fontSize:11, color:totalMRR>0?G:"var(--text-tertiary)", fontWeight:600 }}>{totalMRR>0?`+${mrrGrowth}% vs mes ant.`:"Sin datos aún"}</div>
@@ -598,10 +605,10 @@ export default function SuperAdmin() {
                   })()}
                 </svg>
               </div>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Accesos rápidos</SectionTitle>
                 {[["ti-books","Nuevo programa","programs"],["ti-user-plus","Agregar personal","hr"],["ti-coin","Editar precios","programs"],["ti-chart-bar","Ver BI","bi"],["ti-refresh","Control ciclo","cycle"],["ti-calendar","Agregar festivo","programs"]].map(([ic,lb,ac],i)=>(
-                  <button key={i} onClick={()=>setView(ac)} style={{ width:"100%", display:"flex", alignItems:"center", gap:10, padding:"10px 12px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, cursor:"pointer", marginBottom:7, textAlign:"left", fontFamily:"inherit", transition:"all .15s" }}
+                  <button key={i} onClick={()=>setView(ac)} style={{ width:"100%", display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:8, cursor:"pointer", marginBottom:7, textAlign:"left", fontFamily:"inherit", transition:"all .15s" }}
                     onMouseEnter={e=>{e.currentTarget.style.borderColor=P;e.currentTarget.style.background=PD;}}
                     onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.background="var(--bg-surface-subtle)";}}>
                     <i className={"ti "+ic} style={{ fontSize:15, color:P, flexShrink:0 }} aria-hidden="true"/>
@@ -613,12 +620,12 @@ export default function SuperAdmin() {
             </div>
 
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:14 }}>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Ingresos por programa</SectionTitle>
                 {programs.filter(p=>p.active).map(p=>{
                   const rev=p.students*p.price;
                   const mx=Math.max(...programs.filter(x=>x.active).map(x=>x.students*x.price));
-                  return (<div key={p.id} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:11 }}>
+                  return (<div key={p.id} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:11 }}>
                     <span style={{ fontSize:18 }}>{p.icon}</span>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:12, color:"var(--text-primary)", marginBottom:4 }}>{p.name}</div>
@@ -628,7 +635,7 @@ export default function SuperAdmin() {
                   </div>);
                 })}
               </div>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Últimas acciones</SectionTitle>
                 {(dbAudit.length > 0 ? dbAudit.slice(0,6).map(a=>({
                     user: a.actor_id ? "Staff" : "Sistema",
@@ -636,7 +643,7 @@ export default function SuperAdmin() {
                     detail: typeof a.metadata === "object" ? Object.values(a.metadata||{}).join(" · ") : (a.metadata||""),
                     time: new Date(a.created_at).toLocaleString("es-HN",{day:"2-digit",month:"short",hour:"2-digit",minute:"2-digit"}),
                   })) : []).map((a,i)=>(
-                  <div key={i} style={{ display:"flex", gap:10, padding:"8px 0", borderBottom:i<5?"1px solid var(--border)":"none" }}>
+                  <div key={i} style={{ display:"flex", gap:8, padding:"8px 0", borderBottom:i<5?"1px solid var(--border)":"none" }}>
                     <div style={{ width:7, height:7, borderRadius:"50%", background:P, flexShrink:0, marginTop:5 }}/>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:12, color:"var(--text-primary)" }}><strong>{a.user}</strong> — {a.action}</div>
@@ -666,18 +673,18 @@ export default function SuperAdmin() {
                       <div style={{ width:48, height:48, borderRadius:12, background:`${p.color}15`, display:"flex", alignItems:"center", justifyContent:"center", fontSize:24 }}>{p.icon}</div>
                       <div>
                         <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>{p.name}</div>
-                        <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:2 }}><code style={{ background:"var(--bg-surface-subtle)", padding:"1px 7px", borderRadius:5, fontSize:10 }}>{p.code}</code>{" · "}{p.levels}</div>
+                        <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:2 }}><code style={{ background:"var(--bg-surface-subtle)", padding:"1px 7px", borderRadius:5, fontSize:11 }}>{p.code}</code>{" · "}{p.levels}</div>
                       </div>
                     </div>
                     <Badge text={p.active?"Activo":"Inactivo"} bg={p.active?GD:RD} color={p.active?"#065f46":R}/>
                   </div>
                   <div style={{ fontSize:12, color:"var(--text-secondary)", lineHeight:1.7, marginBottom:14 }}>{p.desc}</div>
-                  <div style={{ display:"flex", gap:10, marginBottom:14 }}>
-                    <div style={{ flex:1, background:"var(--bg-surface-subtle)", borderRadius:9, padding:"10px 12px" }}>
+                  <div style={{ display:"flex", gap:8, marginBottom:14 }}>
+                    <div style={{ flex:1, background:"var(--bg-surface-subtle)", borderRadius:8, padding:"10px 12px" }}>
                       <div style={{ fontSize:22, fontWeight:800, color:p.color }}>${p.price}</div>
                       <div style={{ fontSize:11, color:"var(--text-tertiary)" }}>/{p.interval}</div>
                     </div>
-                    <div style={{ flex:1, background:"var(--bg-surface-subtle)", borderRadius:9, padding:"10px 12px" }}>
+                    <div style={{ flex:1, background:"var(--bg-surface-subtle)", borderRadius:8, padding:"10px 12px" }}>
                       <div style={{ fontSize:22, fontWeight:800, color:"var(--text-primary)" }}>{p.students}</div>
                       <div style={{ fontSize:11, color:"var(--text-tertiary)" }}>estudiantes</div>
                     </div>
@@ -706,7 +713,7 @@ export default function SuperAdmin() {
               <Stat label="Nómina mensual"   value={`$${nomina.toLocaleString()}`}                  sub="USD total"          color="var(--text-secondary)" icon="ti-coin"/>
             </div>
             <div style={{ display:"flex", gap:8, marginBottom:14 }}>
-              <select value={staffFilter} onChange={e=>setStaffFilter(e.target.value)} style={{ padding:"9px 12px", border:"1px solid var(--border)", borderRadius:9, fontSize:12, background:"var(--bg-surface)", color:"var(--text-primary)", fontFamily:"inherit" }}>
+              <select value={staffFilter} onChange={e=>setStaffFilter(e.target.value)} style={{ padding:"8px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:12, background:"var(--bg-surface)", color:"var(--text-primary)", fontFamily:"inherit" }}>
                 <option value="all">Todos los roles</option>
                 {[...new Set(staff.map(s=>s.role))].map(r=><option key={r}>{r}</option>)}
               </select>
@@ -716,7 +723,7 @@ export default function SuperAdmin() {
                 </BtnPrimary>
               </div>
             </div>
-            <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
+            <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
               <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
                 <thead><tr style={{ background:"var(--bg-surface-subtle)" }}>
                   {["Nombre","Rol","Email","Salario","Estado",""].map(h=><th key={h} style={{ padding:"12px 14px", textAlign:"left", fontSize:11, fontWeight:700, color:"var(--text-tertiary)", letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>)}
@@ -766,12 +773,12 @@ export default function SuperAdmin() {
           {/* ── ROLES ── */}
           {view==="rrhh" && subView==="roles" && (
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:"14px 18px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, boxShadow:"var(--shadow-sm)" }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:"12px 16px", display:"flex", justifyContent:"space-between", alignItems:"center", flexWrap:isMobile?"wrap":"nowrap", gap:isMobile?8:0, boxShadow:"var(--shadow-sm)" }}>
                 <div>
                   <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>Roles del sistema ({ROLES_DEF.length})</div>
                   <div style={{ fontSize:12, color:"var(--text-secondary)", marginTop:2 }}>Para crear usuarios con cada rol usá RRHH & Personal → Agregar empleado</div>
                 </div>
-                <button onClick={()=>{ setView("rrhh"); setSubView("staff"); setTimeout(()=>setStaffModal({mode:"add"}),100); }} style={{ fontSize:12, padding:"9px 18px", background:PD, color:P, border:"none", borderRadius:9, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>
+                <button onClick={()=>{ setView("rrhh"); setSubView("staff"); setTimeout(()=>setStaffModal({mode:"add"}),100); }} style={{ fontSize:12, padding:"8px 16px", background:PD, color:P, border:"none", borderRadius:8, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>
                   + Nuevo usuario
                 </button>
               </div>
@@ -782,7 +789,7 @@ export default function SuperAdmin() {
                 const matchLabel = roleKeyMap[r.name] || r.name;
                 const count = r.name==="Super Admin" ? 1 : staff.filter(s=>s.role===matchLabel||s.role===r.name).length;
                 return (
-                  <div key={i} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:"16px 18px", boxShadow:"var(--shadow-sm)", display:"flex", alignItems:"flex-start", gap:14 }}>
+                  <div key={i} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:"16px 18px", boxShadow:"var(--shadow-sm)", display:"flex", alignItems:"flex-start", gap:14 }}>
                     <div style={{ width:44, height:44, borderRadius:12, background:rc||PD, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, flexShrink:0 }}>
                       <i className={`ti ${r.icon}`} style={{ color:tc||P }} aria-hidden="true"/>
                     </div>
@@ -810,12 +817,12 @@ export default function SuperAdmin() {
           {/* ── PRICES ── */}
           {view==="academia" && subView==="prices" && (
             <div style={{ maxWidth:600 }}>
-              <div style={{ background:AD, border:`1px solid ${A}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:12, color:A, display:"flex", gap:8 }}>
+              <div style={{ background:AD, border:`1px solid ${A}40`, borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:12, color:A, display:"flex", gap:8 }}>
                 <i className="ti ti-info-circle" style={{ fontSize:14 }} aria-hidden="true"/> Los cambios aplican a nuevas inscripciones.
               </div>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
                 {programs.map(p=>(
-                  <div key={p.id} style={{ display:"flex", alignItems:"center", gap:14, padding:"18px", borderBottom:"1px solid var(--border)" }}>
+                  <div key={p.id} style={{ display:"flex", alignItems:"center", gap:16, padding:"18px", borderBottom:"1px solid var(--border)" }}>
                     <span style={{ fontSize:22 }}>{p.icon}</span>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)" }}>{p.name}</div>
@@ -851,12 +858,12 @@ export default function SuperAdmin() {
           {/* ── CYCLE ── */}
           {view==="academia" && subView==="cycle" && (
             <div>
-              <div style={{ background:RD, border:`1px solid ${R}40`, borderRadius:10, padding:"10px 14px", marginBottom:14, fontSize:12, color:R, display:"flex", gap:8 }}>
+              <div style={{ background:RD, border:`1px solid ${R}40`, borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:12, color:R, display:"flex", gap:8 }}>
                 <i className="ti ti-alert-triangle" style={{ fontSize:14 }} aria-hidden="true"/> Reiniciar es irreversible.
               </div>
               {cycleLevels.map(c=>(
-                <div key={c.level} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, marginBottom:12, boxShadow:"var(--shadow-sm)" }}>
-                  <div style={{ display:"flex", alignItems:"center", gap:14, marginBottom:12 }}>
+                <div key={c.level} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:18, marginBottom:12, boxShadow:"var(--shadow-sm)" }}>
+                  <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:12 }}>
                     <div style={{ width:48, height:48, borderRadius:12, background:PD, display:"flex", alignItems:"center", justifyContent:"center", fontSize:17, fontWeight:800, color:P }}>{c.level}</div>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>Nivel {c.level} — U{c.unit}: {c.title}</div>
@@ -871,12 +878,12 @@ export default function SuperAdmin() {
                     <select style={{ flex:1, padding:"8px 10px", border:"1px solid var(--border)", borderRadius:8, fontSize:12, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}>
                       {Array.from({length:12},(_,i)=><option key={i} selected={i+1===c.unit}>Unidad {i+1}</option>)}
                     </select>
-                    <button onClick={async()=>{ try{ await supabase.from("cycle_config").upsert({program_id:"en",level:c.level,current_unit:c.unit},{onConflict:"program_id,level"}); showToast(`Unidad ${c.unit} aplicada para ${c.level}`); }catch(e){showToast("Error: "+e.message, R);} }} style={{ padding:"8px 16px", background:AD, color:A, border:`1px solid ${A}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Aplicar</button>
+                    <button onClick={async()=>{ try{ await supabase.from("cycle_config").upsert({program_id:"en",level:c.level,current_unit:c.unit},{onConflict:"program_id,level"}); showToast(`Unidad ${c.unit} aplicada para ${c.level}`); }catch(e){showToast("Error: "+e.message, R);} }} style={{ padding:"8px 16px", background:AD, color:A, border:`1px solid ${A}40`, borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Aplicar</button>
                     <button onClick={async()=>{
   const ok = await confirmDialog({ title:`¿Reiniciar nivel ${c.level}?`, body:"Esto restablece la unidad activa a U1 para todos los estudiantes de este nivel. Es irreversible.", danger:true, confirmText:"Sí, reiniciar" });
   if(!ok) return;
   try{ await supabase.from("cycle_config").upsert({program_id:"en",level:c.level,current_unit:1},{onConflict:"program_id,level"}); showToast(`${c.level} reiniciado a U1`); }catch(e){showToast("Error: "+e.message,R);}
-}} style={{ padding:"8px 16px", background:RD, color:R, border:`1px solid ${R}40`, borderRadius:9, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Reiniciar U1</button>
+}} style={{ padding:"8px 16px", background:RD, color:R, border:`1px solid ${R}40`, borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Reiniciar U1</button>
                   </div>
                 </div>
               ))}
@@ -886,8 +893,8 @@ export default function SuperAdmin() {
           {/* ── HOLIDAYS ── */}
           {view==="academia" && subView==="holidays" && (
             <div style={{ display:"grid", gridTemplateColumns:"1fr 310px", gap:14 }}>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
-                <div style={{ padding:"14px 18px", borderBottom:"1px solid var(--border)", fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>Festivos configurados</div>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
+                <div style={{ padding:"12px 16px", borderBottom:"1px solid var(--border)", fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>Festivos configurados</div>
                 {holidays.map((h,i)=>(
                   <div key={i} style={{ display:"flex", alignItems:"center", gap:12, padding:"13px 18px", borderBottom:"1px solid var(--border)" }}>
                     <div style={{ width:8, height:8, borderRadius:"50%", background:h.affects?R:A, flexShrink:0 }}/>
@@ -904,9 +911,9 @@ export default function SuperAdmin() {
                   </div>
                 ))}
               </div>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, alignSelf:"start", boxShadow:"var(--shadow-sm)" }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:18, alignSelf:"start", boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Agregar festivo</SectionTitle>
-                <Field label="Fecha"><input type="date" value={newHoliday.date} onChange={e=>setNewHoliday(h=>({...h,date:e.target.value}))} style={{ width:"100%", padding:"10px 12px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}/></Field>
+                <Field label="Fecha"><input type="date" value={newHoliday.date} onChange={e=>setNewHoliday(h=>({...h,date:e.target.value}))} style={{ width:"100%", padding:"10px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}/></Field>
                 <Field label="Nombre"><Input value={newHoliday.name} onChange={v=>setNewHoliday(h=>({...h,name:v}))} placeholder="Ej: Día de la Independencia"/></Field>
                 <label style={{ display:"flex", alignItems:"center", gap:8, fontSize:12, color:"var(--text-secondary)", cursor:"pointer", marginBottom:14 }}>
                   <input type="checkbox" checked={newHoliday.affects} onChange={e=>setNewHoliday(h=>({...h,affects:e.target.checked}))}/>
@@ -920,7 +927,7 @@ export default function SuperAdmin() {
           {/* ── GAMIFICATION ── */}
           {view==="sistema" && subView==="gamification" && (
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:14 }}>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Puntos XP por acción</SectionTitle>
                 {XP_ACTIONS.map(a=>(
                   <div key={a.key} style={{ display:"flex", alignItems:"center", gap:12, padding:"10px 0", borderBottom:"1px solid var(--border)" }}>
@@ -934,9 +941,9 @@ export default function SuperAdmin() {
     await supabase.from("app_config").upsert({ key:"xp_config", value:xpVals },{ onConflict:"key" });
     showToast("Configuración XP guardada en BD");
   } catch(e) { showToast("Error: "+e.message, R); }
-}} style={{ marginTop:14, width:"100%" }}>Guardar</BtnPrimary>
+}} style={{ marginTop:16, width:"100%" }}>Guardar</BtnPrimary>
               </div>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Recompensa leaderboard</SectionTitle>
                 <div style={{ display:"flex", alignItems:"center", gap:12, marginBottom:16 }}>
                   <input type="range" min={5} max={50} value={leaderPct} onChange={e=>setLeaderPct(+e.target.value)} style={{ flex:1 }}/>
@@ -944,7 +951,7 @@ export default function SuperAdmin() {
                 </div>
                 <SectionTitle>Rangos</SectionTitle>
                 {[["🥉 Explorer","#92400e","#fff8e6",0],["🥈 Learner",P,PD,500],["🥇 Achiever","#6d28d9","#ede9fe",2000],["⭐ WCA Pro",PH,"var(--bg-surface-subtle)",5000]].map(([r,c,bg,xp],i)=>(
-                  <div key={i} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 12px", background:bg, borderRadius:9, marginBottom:7 }}>
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"8px 12px", background:bg, borderRadius:8, marginBottom:7 }}>
                     <span style={{ fontSize:16 }}>{r.split(" ")[0]}</span>
                     <div style={{ flex:1, fontSize:12, fontWeight:600, color:c }}>{r.split(" ").slice(1).join(" ")}</div>
                     <input type="number" defaultValue={xp} style={{ width:64, padding:"4px 7px", border:"1px solid var(--border)", borderRadius:6, fontSize:12, fontWeight:700, color:c, textAlign:"center", background:"#fff", fontFamily:"inherit" }}/>
@@ -960,7 +967,7 @@ export default function SuperAdmin() {
           {false && (
             <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
               {INTEGRATIONS.map(int=>(
-                <div key={int.id} style={{ background:"var(--bg-surface)", border:`1.5px solid ${int.configured?"var(--border)":`${A}50`}`, borderRadius:14, padding:"16px 18px", boxShadow:"var(--shadow-sm)", display:"flex", alignItems:"center", gap:16 }}>
+                <div key={int.id} style={{ background:"var(--bg-surface)", border:`1.5px solid ${int.configured?"var(--border)":`${A}50`}`, borderRadius:12, padding:"16px 18px", boxShadow:"var(--shadow-sm)", display:"flex", alignItems:"center", gap:16 }}>
                   <div style={{ width:44, height:44, borderRadius:12, background:int.configured?PD:"#fff8e6", display:"flex", alignItems:"center", justifyContent:"center", fontSize:22, flexShrink:0 }}>{int.icon}</div>
                   <div style={{ flex:1, minWidth:0 }}>
                     <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)", marginBottom:3 }}>{int.name}</div>
@@ -1006,7 +1013,7 @@ export default function SuperAdmin() {
                   )}
                 </div>
               ))}
-              <div style={{ background:"var(--bg-surface-subtle)", borderRadius:12, padding:"14px 18px", fontSize:12, color:"var(--text-secondary)", lineHeight:1.7, marginTop:4 }}>
+              <div style={{ background:"var(--bg-surface-subtle)", borderRadius:12, padding:"12px 16px", fontSize:12, color:"var(--text-secondary)", lineHeight:1.7, marginTop:4 }}>
                 <strong style={{ color:"var(--text-primary)" }}>Variables de entorno en Vercel</strong><br/>
                 Stripe: <code style={{ background:"var(--bg-surface)", padding:"1px 6px", borderRadius:4 }}>STRIPE_SECRET_KEY</code> y <code style={{ background:"var(--bg-surface)", padding:"1px 6px", borderRadius:4 }}>STRIPE_WEBHOOK_SECRET</code><br/>
                 Twilio: <code style={{ background:"var(--bg-surface)", padding:"1px 6px", borderRadius:4 }}>TWILIO_ACCOUNT_SID</code>, <code style={{ background:"var(--bg-surface)", padding:"1px 6px", borderRadius:4 }}>TWILIO_AUTH_TOKEN</code>, <code style={{ background:"var(--bg-surface)", padding:"1px 6px", borderRadius:4 }}>TWILIO_WHATSAPP_FROM</code>
@@ -1025,7 +1032,7 @@ export default function SuperAdmin() {
                 { label:"Subida de nivel",   channel:"Email",    trigger:"Al subir de nivel",   preview:"🏆 ¡Completaste {from_level}! Ya estás en *{to_level}*. Tu certificado está disponible." },
                 { label:"Bienvenida",        channel:"Email",    trigger:"Al activar cuenta",   preview:"👋 ¡Bienvenido/a a WCA! Primera clase: {date} a las {time}." },
               ].map((t,i)=>(
-                <div key={i} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:16, marginBottom:10, boxShadow:"var(--shadow-sm)" }}>
+                <div key={i} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:16, marginBottom:10, boxShadow:"var(--shadow-sm)" }}>
                   <div style={{ display:"flex", justifyContent:"space-between", marginBottom:8 }}>
                     <div>
                       <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)" }}>{t.label}</div>
@@ -1052,9 +1059,9 @@ export default function SuperAdmin() {
     exportCSV(auditLog.map(a=>({Fecha:a.date,Acción:a.action,Entidad:a.entity||"—",Actor:a.actor||"—",Detalle:JSON.stringify(a.metadata||{})})), `auditoria-${new Date().toISOString().slice(0,10)}.csv`);
     showToast("Auditoría exportada como CSV");
   });
-}} style={{ padding:"9px 16px", background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:10, fontSize:12, cursor:"pointer", color:"var(--text-secondary)", fontFamily:"inherit" }}>↓ Exportar</button>
+}} style={{ padding:"8px 16px", background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:10, fontSize:12, cursor:"pointer", color:"var(--text-secondary)", fontFamily:"inherit" }}>↓ Exportar</button>
               </div>
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, overflow:"hidden", boxShadow:"var(--shadow-sm)" }}>
                 <table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
                   <thead><tr style={{ background:"var(--bg-surface-subtle)" }}>
                     {["Usuario","Acción","Detalle","Tiempo"].map(h=><th key={h} style={{ padding:"11px 14px", textAlign:"left", fontSize:11, fontWeight:700, color:"var(--text-tertiary)", letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>)}
@@ -1089,7 +1096,7 @@ export default function SuperAdmin() {
               {/* Bank list from Supabase */}
               {banks.length === 0 && <div style={{ color:"var(--text-secondary)", fontSize:13, marginBottom:12 }}>No hay cuentas configuradas. Agregá la primera abajo.</div>}
               {banks.map((b)=>(
-                <div key={b.id} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, marginBottom:10, display:"flex", alignItems:"center", gap:14, boxShadow:"var(--shadow-sm)", opacity:b.active?1:.6 }}>
+                <div key={b.id} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:18, marginBottom:10, display:"flex", alignItems:"center", gap:16, boxShadow:"var(--shadow-sm)", opacity:b.active?1:.6 }}>
                   <div style={{ width:42, height:42, borderRadius:10, background:PD, display:"flex", alignItems:"center", justifyContent:"center" }}>
                     <i className="ti ti-building-bank" style={{ fontSize:22, color:P }} aria-hidden="true"/>
                   </div>
@@ -1109,9 +1116,9 @@ export default function SuperAdmin() {
                 </div>
               ))}
               {/* Add bank form — controlled state */}
-              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:18, boxShadow:"var(--shadow-sm)" }}>
+              <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Agregar cuenta bancaria</SectionTitle>
-                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:10 }}>
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:10 }}>
                   {[["Nombre cuenta *","nombre"],["Banco","banco"],["Número de cuenta *","cuenta"],["Titular","titular"]].map(([label, key]) => (
                     <Field key={key} label={label}>
                       <Input value={bankForm[key]} onChange={v => setBankForm(f => ({...f, [key]: v}))} placeholder=""/>
@@ -1120,7 +1127,7 @@ export default function SuperAdmin() {
                 </div>
                 <Field label="Tipo">
                   <select value={bankForm.tipo} onChange={e => setBankForm(f => ({...f, tipo: e.target.value}))}
-                    style={{ width:"100%", padding:"9px 12px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit", marginBottom:12 }}>
+                    style={{ width:"100%", padding:"8px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit", marginBottom:12 }}>
                     <option value="ahorro">Ahorro</option>
                     <option value="corriente">Corriente</option>
                     <option value="digital">Digital / PayPal</option>
@@ -1147,33 +1154,33 @@ export default function SuperAdmin() {
         </div>
 
           {/* ══ ACADEMIA ══════════════════════════════════════════════ */}
-          {view==="academia" && subView==="contenido" && <LMSContentSection showToast={showToast} />}
-          {view==="academia" && subView==="students"  && <EstudiantesSection showToast={showToast} />}
-          {view==="academia" && subView==="groups"    && <GruposSection    showToast={showToast} />}
-          {view==="academia" && subView==="teachers"  && <TeachersSection  showToast={showToast} />}
-          {view==="academia" && subView==="horarios"  && <HorariosSection />}
-          {view==="academia" && subView==="atrisk"    && <AtRiskSection    showToast={showToast} />}
-          {view==="academia" && subView==="becas"     && <BecasSection     showToast={showToast} />}
+          {view==="academia" && subView==="contenido" && <Suspense fallback={<SectionFallback/>}><LMSContentSection showToast={showToast} /></Suspense>}
+          {view==="academia" && subView==="students"  && <Suspense fallback={<SectionFallback/>}><EstudiantesSection showToast={showToast} /></Suspense>}
+          {view==="academia" && subView==="groups"    && <Suspense fallback={<SectionFallback/>}><GruposSection    showToast={showToast} /></Suspense>}
+          {view==="academia" && subView==="teachers"  && <Suspense fallback={<SectionFallback/>}><TeachersSection  showToast={showToast} /></Suspense>}
+          {view==="academia" && subView==="horarios"  && <Suspense fallback={<SectionFallback/>}><HorariosSection /></Suspense>}
+          {view==="academia" && subView==="atrisk"    && <Suspense fallback={<SectionFallback/>}><AtRiskSection    showToast={showToast} /></Suspense>}
+          {view==="academia" && subView==="becas"     && <Suspense fallback={<SectionFallback/>}><BecasSection     showToast={showToast} /></Suspense>}
 
           {/* ══ VENTAS & CRM ══════════════════════════════════════════ */}
-          {view==="ventas"   && subView==="resumen"   && <VentasSection    showToast={showToast} />}
-          {view==="ventas"   && subView==="leads"     && <LeadsSection     showToast={showToast} />}
-          {view==="ventas"   && subView==="b2b"       && <B2BSection       showToast={showToast} />}
+          {view==="ventas"   && subView==="resumen"   && <Suspense fallback={<SectionFallback/>}><VentasSection    showToast={showToast} /></Suspense>}
+          {view==="ventas"   && subView==="leads"     && <Suspense fallback={<SectionFallback/>}><LeadsSection     showToast={showToast} /></Suspense>}
+          {view==="ventas"   && subView==="b2b"       && <Suspense fallback={<SectionFallback/>}><B2BSection       showToast={showToast} /></Suspense>}
 
           {/* ══ CONTABILIDAD ══════════════════════════════════════════ */}
-          {view==="contab"   && subView==="payments"  && <PagosSection     showToast={showToast} />}
-          {view==="contab"   && subView==="vencidos"  && <VencidosSection  showToast={showToast} />}
-          {view==="contab"   && subView==="register"  && <PagosSection     showToast={showToast} initialTab="register" />}
-          {view==="contab"   && subView==="recibos"   && <RecibosSection   showToast={showToast} />}
+          {view==="contab"   && subView==="payments"  && <Suspense fallback={<SectionFallback/>}><PagosSection     showToast={showToast} /></Suspense>}
+          {view==="contab"   && subView==="vencidos"  && <Suspense fallback={<SectionFallback/>}><VencidosSection  showToast={showToast} /></Suspense>}
+          {view==="contab"   && subView==="register"  && <Suspense fallback={<SectionFallback/>}><PagosSection     showToast={showToast} initialTab="register" /></Suspense>}
+          {view==="contab"   && subView==="recibos"   && <Suspense fallback={<SectionFallback/>}><RecibosSection   showToast={showToast} /></Suspense>}
 
           {/* ══ COMUNICACIONES ════════════════════════════════════════ */}
-          {view==="comunicaciones" && <ComunicacionesSection showToast={showToast} subView={subView} />}
+          {view==="comunicaciones" && <Suspense fallback={<SectionFallback/>}><ComunicacionesSection showToast={showToast} subView={subView} /></Suspense>}
 
           {/* ══ REPORTES ══════════════════════════════════════════════ */}
-          {view==="reportes" && <ReportesSection showToast={showToast} subView={subView} />}
+          {view==="reportes" && <Suspense fallback={<SectionFallback/>}><ReportesSection showToast={showToast} subView={subView} /></Suspense>}
 
           {/* ══ RRHH ════════════════════════════════════════════════ */}
-          {view==="rrhh" && subView==="usuarios" && <UserManagementSection showToast={showToast} />}
+          {view==="rrhh" && subView==="usuarios" && <Suspense fallback={<SectionFallback/>}><UserManagementSection showToast={showToast} /></Suspense>}
 
           {/* ══ SISTEMA — handled inline above ════════════════════════ */}
 
@@ -1185,7 +1192,7 @@ export default function SuperAdmin() {
         <Modal title={staffModal.mode==="add"?"Agregar personal":staffModal.mode==="edit"?"Editar empleado":(staffModal.data?.name||"Empleado")} subtitle={staffModal.mode==="view"?staffModal.data?.role:undefined} onClose={()=>setStaffModal(null)}>
           {staffModal.mode==="view" ? (
             <div>
-              <div style={{ display:"flex", gap:14, marginBottom:18 }}>
+              <div style={{ display:"flex", gap:16, marginBottom:18 }}>
                 <div style={{ width:56, height:56, borderRadius:"50%", background:PD, display:"flex", alignItems:"center", justifyContent:"center", fontSize:20, fontWeight:700, color:P, flexShrink:0 }}>{(staffModal.data?.name||"??").split(" ").map(n=>n[0]).join("").slice(0,2)}</div>
                 <div><div style={{ fontSize:16, fontWeight:700, color:"var(--text-primary)" }}>{staffModal.data?.name}</div><Badge text={staffModal.data?.role} bg={(ROLE_COLORS[staffModal.data?.role]||["var(--bg-surface-subtle)","var(--text-secondary)"])[0]} color={(ROLE_COLORS[staffModal.data?.role]||["","var(--text-secondary)"])[1]}/></div>
               </div>
@@ -1204,10 +1211,10 @@ export default function SuperAdmin() {
             <div>
               <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:10 }}>
                 <div style={{ gridColumn:"1/-1" }}><Field label="Nombre completo"><Input value={staffForm.name||""} onChange={v=>setStaffForm(f=>({...f,name:v}))} placeholder="Ana Torres"/></Field></div>
-                <Field label="Rol"><select value={staffForm.role||"Docente"} onChange={e=>setStaffForm(f=>({...f,role:e.target.value}))} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}>
+                <Field label="Rol"><select value={staffForm.role||"Docente"} onChange={e=>setStaffForm(f=>({...f,role:e.target.value}))} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}>
                   {["Docente","Coordinadora","Admin","Gestor de Cobros","Ventas","Marketing","IT","Soporte","Contabilidad"].map(r=><option key={r}>{r}</option>)}
                 </select></Field>
-                <Field label="Estado"><select value={staffForm.status||"active"} onChange={e=>setStaffForm(f=>({...f,status:e.target.value}))} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}>
+                <Field label="Estado"><select value={staffForm.status||"active"} onChange={e=>setStaffForm(f=>({...f,status:e.target.value}))} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}>
                   <option value="active">Activo</option><option value="inactive">Inactivo</option>
                 </select></Field>
                 <div style={{ gridColumn:"1/-1" }}><Field label="Email"><Input value={staffForm.email||""} onChange={v=>setStaffForm(f=>({...f,email:v}))} placeholder="nombre@wca.edu.hn"/></Field></div>
@@ -1218,9 +1225,9 @@ export default function SuperAdmin() {
                 {staffForm.role==="Docente" && (
                   <div style={{ gridColumn:"1/-1" }}>
                     <Field label="Niveles que imparte">
-                      <div style={{ display:"flex", gap:10, flexWrap:"wrap" }}>
+                      <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
                         {["A1","A2","B1","B2","C1"].map(l=>(
-                          <label key={l} style={{ display:"flex", alignItems:"center", gap:6, cursor:"pointer", fontSize:13 }}>
+                          <label key={l} style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", fontSize:13 }}>
                             <input type="checkbox" checked={staffForm.levels?.includes(l)||false} onChange={e=>setStaffForm(f=>({ ...f, levels:e.target.checked?[...(f.levels||[]),l]:(f.levels||[]).filter(x=>x!==l) }))}/>
                             {l}
                           </label>
@@ -1256,7 +1263,7 @@ export default function SuperAdmin() {
             <Field label="Ícono"><Input value={progForm.icon||""} onChange={v=>setProgForm(f=>({...f,icon:v}))} placeholder="🧒"/></Field>
             <Field label="Niveles"><Input value={progForm.levels||""} onChange={v=>setProgForm(f=>({...f,levels:v}))} placeholder="A1-B1"/></Field>
             <Field label="Precio USD"><Input type="number" value={progForm.price||""} onChange={v=>setProgForm(f=>({...f,price:v}))} placeholder="95"/></Field>
-            <div style={{ gridColumn:"1/-1" }}><Field label="Intervalo"><select value={progForm.interval||"mes"} onChange={e=>setProgForm(f=>({...f,interval:e.target.value}))} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:9, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}><option value="mes">Mensual</option><option value="trimestre">Trimestral</option><option value="año">Anual</option></select></Field></div>
+            <div style={{ gridColumn:"1/-1" }}><Field label="Intervalo"><select value={progForm.interval||"mes"} onChange={e=>setProgForm(f=>({...f,interval:e.target.value}))} style={{ width:"100%", padding:"10px 13px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}><option value="mes">Mensual</option><option value="trimestre">Trimestral</option><option value="año">Anual</option></select></Field></div>
             <div style={{ gridColumn:"1/-1" }}><Field label="Descripción"><Input value={progForm.desc||""} onChange={v=>setProgForm(f=>({...f,desc:v}))} placeholder="Describe el programa"/></Field></div>
             <div style={{ gridColumn:"1/-1" }}><label style={{ display:"flex", alignItems:"center", gap:8, fontSize:13, color:"var(--text-secondary)", cursor:"pointer" }}>
               <input type="checkbox" checked={progForm.active!==false} onChange={e=>setProgForm(f=>({...f,active:e.target.checked}))}/>
@@ -1279,7 +1286,7 @@ export default function SuperAdmin() {
           </div>
         </Modal>
       )}
-      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:P,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:"var(--z-overlay)",width:50,height:50,borderRadius:"50%",background:P,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
     {ConfirmUI}
   </>

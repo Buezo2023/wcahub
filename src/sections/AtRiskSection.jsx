@@ -49,25 +49,25 @@ export function AtRiskSection({ showToast }) {
 
   return(
     <div>
-      <div style={{background:RD,border:`1px solid ${R}40`,borderRadius:10,padding:"10px 14px",marginBottom:14,fontSize:13,color:R,display:"flex",gap:8}}>
+      <div style={{background:RD,border:`1px solid ${R}40`,borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:13,color:R,display:"flex",gap:8}}>
         <i className="ti ti-alert-circle" style={{fontSize:14,flexShrink:0,marginTop:1}}/>
         Estudiantes con promedio menor al 65% o dos o más exámenes reprobados. Coordiná un plan de apoyo con su docente.
       </div>
       {loading?<div style={{padding:32,textAlign:"center",color:"var(--text-secondary)",fontSize:13}}>Cargando...</div>
       :students.length===0?(
         <div style={{textAlign:"center",padding:"40px 20px"}}>
-          <div style={{fontSize:48,marginBottom:12}}>✅</div>
+          <div style={{marginBottom:12}}><i className="ti ti-circle-check" style={{fontSize:48,color:"var(--green)"}} aria-hidden="true"/></div>
           <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>Sin estudiantes en riesgo</div>
           <div style={{fontSize:13,color:"var(--text-secondary)",marginTop:4}}>Todos los estudiantes están al día</div>
         </div>
       ):(
-        <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        <div style={{display:"flex",flexDirection:"column",gap:8}}>
           {students.map(s=>{
             const [label,color,bg]=riskLevel(s);
             return(
               <div key={s.id} style={{background:"var(--bg-surface)",border:`1px solid ${color}30`,borderRadius:12,padding:16}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-                  <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                  <div style={{display:"flex",gap:8,alignItems:"center"}}>
                     <div style={{width:40,height:40,borderRadius:"50%",background:bg,display:"flex",alignItems:"center",justifyContent:"center",fontSize:14,fontWeight:700,color,flexShrink:0}}>
                       {s.name.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase()}
                     </div>
@@ -76,7 +76,7 @@ export function AtRiskSection({ showToast }) {
                       <div style={{fontSize:11,color:"var(--text-secondary)"}}>{s.level} · U{s.unit}/12 · {s.groupSchedule}</div>
                     </div>
                   </div>
-                  <span style={{fontSize:10,padding:"3px 9px",borderRadius:12,background:bg,color,fontWeight:700}}>{label}</span>
+                  <span style={{fontSize:11,padding:"3px 9px",borderRadius:12,background:bg,color,fontWeight:700}}>{label}</span>
                 </div>
                 <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:10}}>
                   {[
@@ -86,11 +86,11 @@ export function AtRiskSection({ showToast }) {
                   ].map((m,i)=>(
                     <div key={i} style={{background:"var(--bg-surface-subtle)",borderRadius:8,padding:"8px 10px"}}>
                       <div style={{fontSize:14,fontWeight:800,color:m.c}}>{m.v}</div>
-                      <div style={{fontSize:10,color:"var(--text-secondary)",marginTop:2}}>{m.l}</div>
+                      <div style={{fontSize:11,color:"var(--text-secondary)",marginTop:2}}>{m.l}</div>
                     </div>
                   ))}
                 </div>
-                <div style={{display:"flex",gap:6}}>
+                <div style={{display:"flex",gap:8}}>
                   <a href={`mailto:${s.email}`} style={{flex:1,fontSize:12,padding:"6px",background:P,color:"#fff",border:"none",borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:600,textAlign:"center",textDecoration:"none"}}>✉ Email</a>
                   {s.phone&&<a href={`https://wa.me/${s.phone.replace(/\D/g,"")}?text=${encodeURIComponent(`Hola ${s.name}, queríamos contactarte para hablar de tu progreso en WCA Academy.`)}`} target="_blank" rel="noopener noreferrer" style={{flex:1,fontSize:12,padding:"6px",background:"#ecfdf5",color:G,border:"none",borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:600,textAlign:"center",textDecoration:"none"}}>💬 WhatsApp</a>}
                 </div>

@@ -33,7 +33,7 @@ export function RoleplayActivity({ content, onComplete, completed }) {
 
   if (done) return (
     <div style={{ textAlign:"center", padding:24, background:GD, borderRadius:14 }}>
-      <div style={{ fontSize:36, marginBottom:8 }}>🎭</div>
+      <div style={{ marginBottom:8 }}><i className="ti ti-masks-theater" style={{fontSize:36,color:"var(--purple)"}} aria-hidden="true"/></div>
       <div style={{ fontSize:16, fontWeight:700, color:"#065f46" }}>
         ¡Roleplay completado! +{Object.values(chosen).reduce((sum, ci, si) => sum + (steps[si]?.options[ci]?.xp || 0), 0)} XP
       </div>
@@ -43,11 +43,11 @@ export function RoleplayActivity({ content, onComplete, completed }) {
   return (
     <div>
       {/* Scenario card */}
-      <div style={{ background:"linear-gradient(135deg,#0f3460,#155266)", borderRadius:14, padding:20, marginBottom:16, color:"#fff" }}>
-        <div style={{ fontSize:10, fontWeight:700, textTransform:"uppercase", letterSpacing:.8, opacity:.6, marginBottom:6 }}>🎭 Escenario</div>
+      <div style={{ background:"linear-gradient(135deg,#0f3460,#155266)", borderRadius:12, padding:20, marginBottom:16, color:"#fff" }}>
+        <div style={{ fontSize:11, fontWeight:700, textTransform:"uppercase", letterSpacing:.8, opacity:.6, marginBottom:6 }}>🎭 Escenario</div>
         <div style={{ fontSize:14, lineHeight:1.7, marginBottom:12 }}>{scenario}</div>
         {context && (
-          <div style={{ background:"rgba(255,255,255,.1)", borderRadius:9, padding:"10px 13px", fontSize:12, lineHeight:1.6, opacity:.85 }}>
+          <div style={{ background:"rgba(255,255,255,.1)", borderRadius:8, padding:"10px 13px", fontSize:12, lineHeight:1.6, opacity:.85 }}>
             <strong>Contexto:</strong> {context}
           </div>
         )}
@@ -66,7 +66,7 @@ export function RoleplayActivity({ content, onComplete, completed }) {
       {/* Current step */}
       {current && (
         <div>
-          <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:14, padding:16, marginBottom:14 }}>
+          <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:16, marginBottom:14 }}>
             <div style={{ fontSize:11, fontWeight:700, color:"var(--text-tertiary)", textTransform:"uppercase", letterSpacing:.5, marginBottom:8 }}>
               Situación {step + 1} de {steps.length}
             </div>
@@ -92,7 +92,7 @@ export function RoleplayActivity({ content, onComplete, completed }) {
             return (
               <div key={oi} onClick={() => choose(oi)}
                 style={{
-                  padding:14, marginBottom:8, borderRadius:12,
+                  padding:12, marginBottom:8, borderRadius:12,
                   border:`2px solid ${border}`, background:bg,
                   cursor: isReveal ? "default" : "pointer",
                   transition:"all .2s", userSelect:"none",
@@ -100,7 +100,7 @@ export function RoleplayActivity({ content, onComplete, completed }) {
                 <div style={{ fontSize:13, color:"var(--text-primary)", lineHeight:1.5, marginBottom: isReveal&&isChosen ? 8 : 0 }}>
                   {!isReveal && <span style={{ color:"var(--text-tertiary)", marginRight:6 }}>{String.fromCharCode(65+oi)}.</span>}
                   {isReveal && isChosen && <span style={{ marginRight:6 }}>{isCorrect ? "✅" : "❌"}</span>}
-                  {isReveal && !isChosen && isCorrect && <span style={{ marginRight:6 }}>✅</span>}
+                  {isReveal && !isChosen && isCorrect && <i className="ti ti-circle-check" style={{color:"var(--green)",marginRight:6,fontSize:14}} aria-hidden="true"/>}
                   {opt.text}
                 </div>
                 {/* Feedback */}

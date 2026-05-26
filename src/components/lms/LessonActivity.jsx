@@ -19,7 +19,7 @@ export function LessonActivity({ content, onComplete, completed }) {
         return (
           <div key={i} style={{
             background:"var(--bg-surface)", border:"1px solid var(--border)",
-            borderRadius:14, marginBottom:12, overflow:"hidden",
+            borderRadius:12, marginBottom:12, overflow:"hidden",
             borderLeft: isRead ? "4px solid #059669" : "4px solid var(--border)",
           }}>
             {/* Header — clickable */}
@@ -27,7 +27,7 @@ export function LessonActivity({ content, onComplete, completed }) {
               onClick={() => { setReading(i === reading ? null : i); markRead(i); }}
               style={{ padding:"14px 16px", cursor:"pointer", display:"flex", justifyContent:"space-between", alignItems:"center", userSelect:"none" }}
             >
-              <div style={{ display:"flex", gap:10, alignItems:"center" }}>
+              <div style={{ display:"flex", gap:8, alignItems:"center" }}>
                 <div style={{
                   width:28, height:28, borderRadius:8, flexShrink:0,
                   background: isRead ? "#ecfdf5" : "#e8f3f6",
@@ -50,7 +50,7 @@ export function LessonActivity({ content, onComplete, completed }) {
                 {sec.highlight && (
                   <div style={{
                     marginTop:12, padding:"10px 14px", background:"#fffbeb",
-                    border:"1px solid #fde68a", borderRadius:9,
+                    border:"1px solid #fde68a", borderRadius:8,
                     fontSize:13, color:"#92400e", lineHeight:1.6,
                   }}>
                     {sec.highlight}
@@ -64,7 +64,7 @@ export function LessonActivity({ content, onComplete, completed }) {
 
       {/* Resources */}
       {resources.length > 0 && (
-        <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:14, marginBottom:16 }}>
+        <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:12, marginBottom:16 }}>
           <div style={{ fontSize:11, fontWeight:700, color:"var(--text-tertiary)", textTransform:"uppercase", letterSpacing:.5, marginBottom:8 }}>
             Recursos descargables
           </div>

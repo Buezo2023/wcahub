@@ -22,7 +22,7 @@ export function VideoActivity({ content, onComplete, completed }) {
   return (
     <div>
       {/* Video Player */}
-      <div style={{ position:"relative", paddingTop:"56.25%", background:"#0f172a", borderRadius:14, overflow:"hidden", marginBottom:16 }}>
+      <div style={{ position:"relative", paddingTop:"56.25%", background:"#0f172a", borderRadius:12, overflow:"hidden", marginBottom:16 }}>
         {embedUrl ? (
           <iframe
             src={embedUrl}
@@ -37,7 +37,7 @@ export function VideoActivity({ content, onComplete, completed }) {
             <div style={{ fontSize:14, textAlign:"center", padding:"0 24px" }}>
               Video próximamente — tu instructor subirá el video en breve
             </div>
-            <button onClick={()=>setWatched(true)} style={{ marginTop:8, padding:"8px 20px", background:"rgba(255,255,255,.15)", border:"1px solid rgba(255,255,255,.3)", borderRadius:9, color:"#fff", fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>
+            <button onClick={()=>setWatched(true)} style={{ marginTop:8, padding:"8px 20px", background:"rgba(255,255,255,.15)", border:"1px solid rgba(255,255,255,.3)", borderRadius:8, color:"#fff", fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>
               Marcar como visto →
             </button>
           </div>

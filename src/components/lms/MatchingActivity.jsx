@@ -53,12 +53,12 @@ export function MatchingActivity({ content, onComplete, completed }) {
 
   return (
     <div>
-      <div style={{ fontSize:13, color:"var(--text-secondary)", marginBottom:14, lineHeight:1.6 }}>{instructions}</div>
+      <div style={{ fontSize:13, color:"var(--text-secondary)", marginBottom:16, lineHeight:1.6 }}>{instructions}</div>
 
-      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:10, marginBottom:16 }}>
+      <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8, marginBottom:16 }}>
         {/* Left column */}
         <div>
-          <div style={{ fontSize:10, fontWeight:700, color:"var(--text-tertiary)", textTransform:"uppercase", letterSpacing:.5, marginBottom:8 }}>Concepto</div>
+          <div style={{ fontSize:11, fontWeight:700, color:"var(--text-tertiary)", textTransform:"uppercase", letterSpacing:.5, marginBottom:8 }}>Concepto</div>
           {pairs.map((p, i) => {
             const matched = matches[i] !== undefined;
             const isWrong = wrong?.left === i;
@@ -81,7 +81,7 @@ export function MatchingActivity({ content, onComplete, completed }) {
 
         {/* Right column (shuffled) */}
         <div>
-          <div style={{ fontSize:10, fontWeight:700, color:"var(--text-tertiary)", textTransform:"uppercase", letterSpacing:.5, marginBottom:8 }}>Definición</div>
+          <div style={{ fontSize:11, fontWeight:700, color:"var(--text-tertiary)", textTransform:"uppercase", letterSpacing:.5, marginBottom:8 }}>Definición</div>
           {shuffled.map((origIdx, si) => {
             const matched = Object.values(matches).includes(si);
             const isWrong = wrong?.right === si;

@@ -46,12 +46,80 @@
   --amber-dim:          #fffbeb;
   --amber-text:         #92400e;
 
+
+  /* ── Z-INDEX SCALE (semantic) ─────────────────────────────────
+     Replace ALL arbitrary z-index values with these tokens       */
+  --z-base:             1;
+  --z-sticky:           10;
+  --z-sidebar:          20;
+  --z-dropdown:         30;
+  --z-overlay:          40;
+  --z-modal:            50;
+  --z-toast:            60;
+  --z-cookie:           70;
+
+  /* ── SPACING SCALE (8pt system) ──────────────────────────────
+     Only use multiples of 4. Common aliases:                     */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+
+  /* ── TYPOGRAPHY SCALE ─────────────────────────────────────────
+     Allowed font-size values (px). Nothing below 12px.           */
+  --text-xs:   12px;   /* labels, badges, captions               */
+  --text-sm:   13px;   /* secondary content, table cells         */
+  --text-base: 14px;   /* default body text                      */
+  --text-md:   16px;   /* primary body, form fields              */
+  --text-lg:   18px;   /* section titles                         */
+  --text-xl:   20px;   /* card titles                            */
+  --text-2xl:  24px;   /* page section headings                  */
+  --text-3xl:  28px;   /* page titles                            */
+  --text-4xl:  32px;   /* hero numbers                           */
+  --text-5xl:  40px;   /* large KPI numbers                      */
+  --text-6xl:  48px;   /* hero display                           */
+
+  /* ── RADIUS SCALE ─────────────────────────────────────────── */
+  --radius-sm:  6px;
+  --radius-md:  9px;
+  --radius-lg:  12px;
+  --radius-xl:  16px;
+  --radius-2xl: 20px;
+  --radius-full: 9999px;
+
+  /* ── TOUCH TARGETS ───────────────────────────────────────────
+     Min interactive size per Apple HIG / Material Design        */
+  --touch-min:    44px;   /* Apple HIG minimum                   */
+  --touch-md:     36px;   /* Compact buttons (with padding)      */
+
+  /* ── SEMANTIC COLORS (extended) ────────────────────────────── */
+  --purple:           #7c3aed;
+  --purple-dim:       #ede9fe;
+  --purple-text:      #5b21b6;
+  --teal:             #0891b2;
+  --teal-dim:         #e0f2fe;
+  --teal-text:        #0c4a6e;
+  --wca-primary-text: #0f3d4d;
+
   /* Transición suave al cambiar tema */
   --transition-theme: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
 }
 
 /* ─── DARK MODE ──────────────────────────────────────────────── */
 [data-theme="dark"] {
+
+  --purple-dim:       #2e1065;
+  --teal-dim:         #0c4a6e;
+  --wca-primary-dim:  #0c2d38;
+  --green-text:       #6ee7b7;
+  --red-text:         #fca5a5;
+  --amber-text:       #fcd34d;
+
   --bg-page:            #0f172a;
   --bg-surface:         #1e293b;
   --bg-surface-raised:  #1e293b;

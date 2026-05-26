@@ -17,9 +17,9 @@ export function Modal({ title, subtitle, onClose, children, width = 460 }) {
   return (
     <div role="dialog" aria-modal="true" style={{ position:"fixed", inset:0,
       background:"rgba(0,0,0,.45)", display:"flex", alignItems:"center",
-      justifyContent:"center", zIndex:10000, padding:16 }}
+      justifyContent:"center", zIndex:"var(--z-modal)", padding:16 }}
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div style={{ background:"var(--bg-surface,#fff)", borderRadius:18, padding:26,
+      <div style={{ background:"var(--bg-surface,#fff)", borderRadius:16, padding:26,
         animation:"popIn .22s cubic-bezier(.34,1.56,.64,1) both",
         width, maxWidth:"100%", border:"1px solid var(--border,#e2e8f0)",
         boxShadow:"0 20px 60px rgba(0,0,0,.15)", maxHeight:"90vh", overflowY:"auto" }}>
@@ -30,7 +30,7 @@ export function Modal({ title, subtitle, onClose, children, width = 460 }) {
           </div>
           <button onClick={onClose} aria-label="Cerrar" style={{
             background:"none", border:"none", fontSize:20, cursor:"pointer",
-            color:"var(--text-tertiary,#94a3b8)", padding:4 }}>✕</button>
+            color:"var(--text-tertiary,#94a3b8)", padding:6 }}>✕</button>
         </div>
         {children}
       </div>
@@ -60,7 +60,7 @@ export function Button({ onClick, children, variant = "primary", style = {}, dis
 // ── Badge ────────────────────────────────────────────────────────
 export function Badge({ text, bg = "#e8f3f6", color = P }) {
   return (
-    <span style={{ fontSize: 10, padding: "3px 9px", borderRadius: 20,
+    <span style={{ fontSize:11, padding: "3px 9px", borderRadius: 20,
       background: bg, color, fontWeight: 600, whiteSpace: "nowrap" }}>
       {text}
     </span>

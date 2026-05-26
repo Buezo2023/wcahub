@@ -74,6 +74,10 @@ function Sparkline({ data, color, height=32, width=80 }) {
     const y = height - 4 - ((v - min) / range) * (height - 8);
     return `${x},${y}`;
   }).join(" ");
+  if (loading) return (<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:300,flexDirection:"column",gap:12,color:"var(--text-secondary)"}}>
+        <div style={{width:24,height:24,border:"2px solid var(--border)",borderTopColor:"var(--wca-primary)",borderRadius:"50%",animation:"spin .7s linear infinite"}}/>
+        <span style={{fontSize:13}}>Cargando...</span>
+      </div>);
   return (
     <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} style={{ overflow:"visible" }}>
       <polyline points={points} fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
@@ -246,7 +250,7 @@ export default function BIDashboard() {
           Cerrar sesión
         </button>
       </aside>
-      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:"var(--z-overlay)",background:"rgba(0,0,0,.4)"}}/>}
 
 
       {/* MAIN */}
@@ -283,7 +287,7 @@ export default function BIDashboard() {
           {view === "overview" && (
             <div>
               {/* KPI row */}
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:10, marginBottom:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:8, marginBottom:14 }}>
                 {[
                   { label:"MRR",          value:currentMRR, prefix:"$", suffix:"", color:B.primary, icon:"ti-trending-up", trend:`${mrrGrowth}%`, up:parseFloat(mrrGrowth)>0, sparkData:mrrHistory.length>=2?mrrHistory.map(m=>m.mrr):[] },
                   { label:"Estudiantes",  value:totalStudents, prefix:"", suffix:"", color:B.green, icon:"ti-users", trend:realStats?.newStudentsMonth ? `+${realStats.newStudentsMonth} este mes` : "+13 este mes", up:true, sparkData:[] },
@@ -373,7 +377,7 @@ export default function BIDashboard() {
               {/* Three col bottom */}
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12 }}>
                 {/* Countries */}
-                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
+                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:12 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Estudiantes por país</div>
                   {false&&([]).map((x,i)=>(
                     <div key={c.name} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:7 }}>
@@ -386,7 +390,7 @@ export default function BIDashboard() {
                 </div>
 
                 {/* New vs Churned */}
-                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
+                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:12 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Altas vs Bajas (6m)</div>
                   <svg width="100%" height={110} viewBox="0 0 200 110" preserveAspectRatio="none">
                     {MRR_DATA.slice(-6).map((m,i) => {
@@ -408,7 +412,7 @@ export default function BIDashboard() {
                 </div>
 
                 {/* Top students */}
-                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
+                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:12 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Top estudiantes XP</div>
                   {false&&([]).map((x,i)=>(
                     <div key={i} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:7 }}>
@@ -426,7 +430,7 @@ export default function BIDashboard() {
           {/* ── REVENUE ── */}
           {view === "revenue" && (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:10, marginBottom:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:8, marginBottom:14 }}>
                 {[
                   { label:"MRR actual",    value:`$${totalMRR.toLocaleString()}`, sub:totalMRR>0?`${mrrHistory.length} meses de datos`:"Sin datos aún", color:B.primary },
                   { label:"ARR proyectado",value:`$${Math.round(totalMRR*12/1000)}k`, sub:"Proyección anual",           color:B.green },
@@ -490,7 +494,7 @@ export default function BIDashboard() {
 
               {/* Revenue breakdown */}
               <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:12 }}>
-                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
+                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:12 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Ingresos por programa</div>
                   {[
                     { name:"Inglés completo", rev:9595, pct:52, color:B.primary },
@@ -498,7 +502,7 @@ export default function BIDashboard() {
                     { name:"VA solo",         rev:1875, pct:10, color:B.amber  },
                     { name:"Becas",           rev:1000, pct:6,  color:B.green  },
                   ].map(p => (
-                    <div key={p.name} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:9 }}>
+                    <div key={p.name} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:9 }}>
                       <div style={{ width:8, height:8, borderRadius:"50%", background:p.color, flexShrink:0 }} />
                       <div style={{ fontSize:13, color:B.text, flex:1 }}>{p.name}</div>
                       <MiniBar value={p.pct} max={100} color={p.color} height={6} />
@@ -506,7 +510,7 @@ export default function BIDashboard() {
                     </div>
                   ))}
                 </div>
-                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
+                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:12 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Métodos de pago</div>
                   {[
                     { name:"Stripe (tarjeta)", pct:58, students:114, color:B.primary },
@@ -514,7 +518,7 @@ export default function BIDashboard() {
                     { name:"Efectivo",         pct:7,  students:14,  color:B.green  },
                     { name:"B2B factura",       pct:5,  students:9,   color:B.purple },
                   ].map(m => (
-                    <div key={m.name} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:9 }}>
+                    <div key={m.name} style={{ display:"flex", alignItems:"center", gap:8, marginBottom:9 }}>
                       <div style={{ width:8, height:8, borderRadius:"50%", background:m.color, flexShrink:0 }} />
                       <div style={{ fontSize:13, color:B.text, flex:1 }}>{m.name}</div>
                       <MiniBar value={m.pct} max={100} color={m.color} height={6} />
@@ -529,7 +533,7 @@ export default function BIDashboard() {
           {/* ── RETENTION ── */}
           {view === "retention" && (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:10, marginBottom:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:8, marginBottom:14 }}>
                 {[
                   { label:"Churn mensual", value:`${churnRate}%`, sub:"Promedio últimos 3m", color:parseFloat(churnRate)<5?B.green:B.red },
                   { label:"Retención M3",  value:"83%",  sub:"Cohorte promedio",  color:B.primary },
@@ -583,7 +587,7 @@ export default function BIDashboard() {
               </div>
 
               {/* Churn reasons */}
-              <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
+              <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:12 }}>
                 <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Motivos de baja estimados (últimos 3m)</div>
                 <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8 }}>
                   {[
@@ -593,7 +597,7 @@ export default function BIDashboard() {
                     { reason:"Cambió a otra plataforma", pct:10, color:B.purple },
                     { reason:"Viaje / reubicación",  pct:7,  color:B.green },
                   ].map((r,i) => (
-                    <div key={i} style={{ background:B.bg, borderRadius:9, padding:"10px 12px" }}>
+                    <div key={i} style={{ background:B.bg, borderRadius:8, padding:"10px 12px" }}>
                       <div style={{ fontSize:18, fontWeight:800, color:r.color }}>{r.pct}%</div>
                       <div style={{ fontSize:12, color:B.textSec, lineHeight:1.4 }}>{r.reason}</div>
                     </div>
@@ -606,7 +610,7 @@ export default function BIDashboard() {
           {/* ── CHANNELS ── */}
           {view === "channels" && (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:10, marginBottom:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:8, marginBottom:14 }}>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:"14px 15px", borderTop:`3px solid ${B.primary}` }}>
                   <div style={{ fontSize:12, color:B.textSec, marginBottom:6 }}>Total leads (año)</div>
                   <div style={{ fontSize:24, fontWeight:800, color:B.text }}>407</div>
@@ -673,7 +677,7 @@ export default function BIDashboard() {
           {/* ── ACADEMIC ── */}
           {view === "academic" && (
             <div>
-              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:10, marginBottom:14 }}>
+              <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:8, marginBottom:14 }}>
                 {[
                   { label:"Asistencia promedio", value:"—", sub:"Datos de asistencia próximamente", color:B.green },
                   { label:"Tasa de aprobación", value:"78%", sub:"Exámenes de unidad", color:B.primary },
@@ -699,7 +703,7 @@ export default function BIDashboard() {
                 </div>
 
                 {/* Exam pass rates by level */}
-                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
+                <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:12 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Tasa de aprobación por nivel</div>
                   {[
                     { level:"A1", rate:82, attempts:1.4 },
@@ -719,7 +723,7 @@ export default function BIDashboard() {
               </div>
 
               {/* Teacher performance */}
-              <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
+              <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:12 }}>
                 <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Rendimiento de docentes</div>
                 <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:8 }}>
                   {[
@@ -730,7 +734,7 @@ export default function BIDashboard() {
                     { name:"José Rodríguez", level:"A1", att:97,  rating:4.8, students:55 },
                     { name:"Luis Gutiérrez", level:"A2", att:88,  rating:4.4, students:12 },
                   ].map((t,i) => (
-                    <div key={i} style={{ background:B.bg, borderRadius:9, padding:"10px 12px" }}>
+                    <div key={i} style={{ background:B.bg, borderRadius:8, padding:"10px 12px" }}>
                       <div style={{ display:"flex", justifyContent:"space-between", marginBottom:4 }}>
                         <div style={{ fontSize:13, fontWeight:600, color:B.text }}>{t.name}</div>
                         <span style={{ fontSize:11, background:B.secondaryDim, color:"#92400e", padding:"1px 6px", borderRadius:10, fontWeight:600 }}>★ {t.rating}</span>
@@ -749,7 +753,7 @@ export default function BIDashboard() {
 
         </div>
       </main>
-      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:"var(--z-overlay)",width:50,height:50,borderRadius:"50%",background:B.primary,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
   );
 }

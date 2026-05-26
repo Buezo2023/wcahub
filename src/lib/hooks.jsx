@@ -84,7 +84,7 @@ export function useToast() {
 
   const ToastEl = toast ? (
     <div style={{
-      position: 'fixed', top: 20, right: 90, zIndex: 9999,
+      position: 'fixed', top: 20, right: 90, zIndex:"var(--z-modal)",
       background: toast.color, color: '#fff',
       padding: '11px 18px', borderRadius: 11,
       fontSize: 13, fontWeight: 600,

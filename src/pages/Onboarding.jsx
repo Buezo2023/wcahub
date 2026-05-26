@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
 
 const B = {
@@ -57,7 +58,7 @@ function GhostBtn({ children, onClick }) {
 
 function StepDots({ current, total, onGoTo }) {
   return (
-    <div style={{ display:"flex", gap:6, justifyContent:"center" }}>
+    <div style={{ display:"flex", gap:8, justifyContent:"center" }}>
       {Array.from({length:total},(_,i) => (
         <button key={i} onClick={() => i < current && onGoTo(i)} style={{
           width: i===current ? 20 : 8, height:8, borderRadius:4,
@@ -122,13 +123,13 @@ function StepWelcome({ name, onNext }) {
           En los próximos <strong style={{ color:B.primary }}>2 minutos</strong> te guiamos para elegir tu programa y conocer cómo funciona WCA.
         </p>
 
-        <div style={{ display:"flex", gap:10, justifyContent:"center", flexWrap:"wrap" }}>
+        <div style={{ display:"flex", gap:8, justifyContent:"center", flexWrap:"wrap" }}>
           {[
             { icon:"ti-school", text:"Academia VA bilingüe", color:B.primary, bg:B.primaryDim },
             { icon:"ti-world",  text:"20+ países",           color:B.green,   bg:B.greenDim  },
             { icon:"ti-clock",  text:"~2 minutos",           color:"#7c3aed", bg:"#ede9fe"   },
           ].map((b,i) => (
-            <div key={i} style={{ display:"flex", alignItems:"center", gap:6, padding:"6px 12px", background:b.bg, borderRadius:20, border:`1px solid ${b.color}20` }}>
+            <div key={i} style={{ display:"flex", alignItems:"center", gap:8, padding:"6px 12px", background:b.bg, borderRadius:20, border:`1px solid ${b.color}20` }}>
               <i className={`ti ${b.icon}`} style={{ fontSize:12, color:b.color }} aria-hidden="true" />
               <span style={{ fontSize:11, fontWeight:600, color:b.color }}>{b.text}</span>
             </div>
@@ -182,10 +183,10 @@ function StepProgram({ selectedProgram, onSelect, onNext, onPrev }) {
           {PROGRAMS.map(p => (
             <button key={p.id} onClick={() => onSelect(p.id)}
               style={{
-                display:"flex", gap:14, alignItems:"flex-start", padding:"14px 16px",
+                display:"flex", gap:16, alignItems:"flex-start", padding:"14px 16px",
                 background: selectedProgram===p.id ? p.bg : B.white,
                 border:`2px solid ${selectedProgram===p.id ? p.color : B.border}`,
-                borderRadius:14, cursor:"pointer", textAlign:"left", fontFamily:"inherit",
+                borderRadius:12, cursor:"pointer", textAlign:"left", fontFamily:"inherit",
                 transition:"all .18s",
               }}>
               <div style={{ fontSize:28, flexShrink:0, marginTop:2 }}>{p.icon}</div>
@@ -244,7 +245,7 @@ function StepPlacement({ program, selectedLevel, onSelect, onNext, onPrev }) {
               "Módulo 3: Comunicación con clientes",
               "Módulo 4: Gestión de proyectos y productividad",
             ].map((m,i) => (
-              <div key={i} style={{ display:"flex", gap:10, alignItems:"center", padding:"8px 0", borderBottom:i<3?`1px solid ${B.border}`:"none" }}>
+              <div key={i} style={{ display:"flex", gap:8, alignItems:"center", padding:"8px 0", borderBottom:i<3?`1px solid ${B.border}`:"none" }}>
                 <div style={{ width:24, height:24, borderRadius:"50%", background:B.primary, display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:"#fff", flexShrink:0 }}>{i+1}</div>
                 <div style={{ fontSize:12, color:B.text }}>{m}</div>
               </div>
@@ -324,9 +325,9 @@ function StepHow({ onNext, onPrev }) {
         <h2 style={{ fontSize:22, fontWeight:800, color:B.text, marginBottom:20, letterSpacing:-0.5 }}>El ciclo semanal de WCA</h2>
         <div style={{ display:"flex", flexDirection:"column", gap:0 }}>
           {HOW.map((h,i) => (
-            <div key={i} onClick={() => setActive(i)} style={{ display:"flex", gap:14, padding:"12px 0", cursor:"pointer", position:"relative" }}>
+            <div key={i} onClick={() => setActive(i)} style={{ display:"flex", gap:16, padding:"12px 0", cursor:"pointer", position:"relative" }}>
               {i < HOW.length-1 && <div style={{ position:"absolute", left:18, top:44, bottom:0, width:2, background:i===active?B.primary:B.border, transition:"background .3s" }}/>}
-              <div style={{ width:36, height:36, borderRadius:"50%", background:i===active?h.bg:"#f1f5f9", border:`2px solid ${i===active?h.bg:B.border}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all .25s", zIndex:1 }}>
+              <div style={{ width:36, height:36, borderRadius:"50%", background:i===active?h.bg:"#f1f5f9", border:`2px solid ${i===active?h.bg:B.border}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, transition:"all .25s", zIndex:"var(--z-base)" }}>
                 <i className={`ti ${h.icon}`} style={{ fontSize:16, color:i===active?"#fff":B.textSec, transition:"color .25s" }} aria-hidden="true" />
               </div>
               <div style={{ flex:1 }}>
@@ -376,11 +377,11 @@ function StepNextSteps({ program, level, onNext, onPrev }) {
 
         <div style={{ position:"relative" }}>
           {steps.map((s, i) => (
-            <div key={i} style={{ display:"flex", gap:14, marginBottom:16, position:"relative" }}>
+            <div key={i} style={{ display:"flex", gap:16, marginBottom:16, position:"relative" }}>
               {i < steps.length-1 && (
                 <div style={{ position:"absolute", left:19, top:40, bottom:-16, width:2, background:B.border }} />
               )}
-              <div style={{ width:40, height:40, borderRadius:"50%", background:`${s.color}15`, border:`2px solid ${s.color}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:1 }}>
+              <div style={{ width:40, height:40, borderRadius:"50%", background:`${s.color}15`, border:`2px solid ${s.color}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0, zIndex:"var(--z-base)" }}>
                 <i className={`ti ${s.icon}`} style={{ fontSize:16, color:s.color }} aria-hidden="true" />
               </div>
               <div style={{ flex:1, paddingTop:4 }}>
@@ -436,7 +437,7 @@ function StepReady({ name, program, level, onFinish, saving }) {
             { text:"Asignación de grupo y horario",            done:false },
             { text:"Primer pago y activación completa",        done:false },
           ].map((item,i,arr) => (
-            <div key={i} style={{ display:"flex", gap:10, alignItems:"center", padding:"8px 0", borderBottom:i<arr.length-1?`1px solid ${B.border}`:"none" }}>
+            <div key={i} style={{ display:"flex", gap:8, alignItems:"center", padding:"8px 0", borderBottom:i<arr.length-1?`1px solid ${B.border}`:"none" }}>
               <div style={{ width:20, height:20, borderRadius:"50%", background:item.done?B.green:"transparent", border:`1.5px solid ${item.done?B.green:B.border}`, display:"flex", alignItems:"center", justifyContent:"center", flexShrink:0 }}>
                 {item.done
                   ? <i className="ti ti-check" style={{ fontSize:11, color:"#fff" }} aria-hidden="true" />

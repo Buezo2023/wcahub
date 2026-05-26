@@ -88,7 +88,7 @@ function AttendanceRow({student, status, onToggle}){
   const setPresent = (val) => onToggle(student.id, val ? "present" : "absent");
   const _unused=useState(true);
   return(
-    <div style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",background:C.surfaceHigh,borderRadius:8,marginBottom:6}}>
+    <div style={{display:"flex",alignItems:"center",gap:8,padding:"8px 10px",background:C.surfaceHigh,borderRadius:8,marginBottom:6}}>
       <div style={{flex:1,fontSize:13,color:C.textPri,fontWeight:500}}>{student.name}</div>
       <div style={{display:"flex",gap:5}}>
         <button onClick={()=>setPresent(true)} style={{fontSize:11,padding:"3px 10px",background:present?C.greenDim:C.surfaceHigh,color:present?C.green:C.textTer,border:`1px solid ${present?C.green:C.border}`,borderRadius:5,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>✓</button>
@@ -196,7 +196,7 @@ export default function TeacherPortal(){
       {/* SIDEBAR */}
       <aside style={{width:isMobile?260:190,background:C.surface,borderRight:`1px solid ${C.border}`,display:"flex",flexDirection:"column",padding:"18px 0",flexShrink:0,position:isMobile?"fixed":"relative",top:0,left:0,bottom:0,zIndex:isMobile?9990:1,transform:isMobile?(sideOpen?"translateX(0)":"translateX(-100%)"):"none",transition:"transform .25s ease",overflowY:"auto",minHeight:isMobile?"100vh":"auto"}}>
         <div style={{padding:"0 18px 16px",borderBottom:`1px solid ${C.border}`,marginBottom:10}}>
-          <div style={{display:"flex",alignItems:"center",gap:10}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
               <svg viewBox="0 0 32 32" style={{width:32,height:32,flexShrink:0}}><rect width="32" height="32" rx="8" fill="#ffbb23"/><text x="16" y="23" fontFamily="sans-serif" fontSize="18" fontWeight="800" fill="#155266" textAnchor="middle">W</text></svg>
               <div>
                 <div style={{fontSize:14,fontWeight:800,color:C.textPri}}>WCA <span style={{color:C.accent}}>Hub</span></div>
@@ -219,7 +219,7 @@ export default function TeacherPortal(){
             )}
           </button>
         ))}
-        <div style={{marginTop:"auto",padding:"14px 18px",borderTop:`1px solid ${C.border}`}}>
+        <div style={{marginTop:"auto",padding:"12px 16px",borderTop:`1px solid ${C.border}`}}>
           <div style={{display:"flex",alignItems:"center",gap:8}}>
             <div style={{width:30,height:30,borderRadius:"50%",background:C.accentDim,display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:C.accent}}>JO</div>
             <div>
@@ -241,7 +241,7 @@ export default function TeacherPortal(){
           Cerrar sesión
         </button>
       </aside>
-      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:9989,background:"rgba(0,0,0,.4)"}}/>}
+      {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:"var(--z-overlay)",background:"rgba(0,0,0,.4)"}}/>}
 
 
       {/* MAIN */}
@@ -271,14 +271,14 @@ export default function TeacherPortal(){
                   <button onClick={()=>setView("examenes")} style={{fontSize:12,padding:"6px 14px",background:C.red,color:"var(--bg-surface)",border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit",whiteSpace:"nowrap"}}>Ver ahora →</button>
                 </div>
               )}
-              <div style={{display:"grid",gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:10,marginBottom:16}}>
+              <div style={{display:"grid",gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)",gap:8,marginBottom:16}}>
                 <Stat label="Mis grupos" value={displayGroups.length} sub="Nivel A1" color={C.accent}/>
                 <Stat label="Estudiantes" value={allStudents.length} sub="Ambos horarios"/>
                 <Stat label="En riesgo" value={atRisk.length} sub="Necesitan apoyo" color={atRisk.length>0?C.amber:C.green}/>
                 <Stat label="Asistencia avg" value="82%" sub="Esta semana" color={C.green}/>
               </div>
-              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:16}}>
                   <div style={{fontSize:13,fontWeight:700,color:C.textPri,marginBottom:12}}>Clases hoy — Lun 16 Jun</div>
                   {displayGroups.map(g=>(
                     <div key={g.id} style={{display:"flex",gap:12,alignItems:"center",padding:"10px 12px",background:C.surfaceHigh,borderRadius:10,marginBottom:8}}>
@@ -291,10 +291,10 @@ export default function TeacherPortal(){
                     </div>
                   ))}
                 </div>
-                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
+                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:16}}>
                   <div style={{fontSize:13,fontWeight:700,color:C.textPri,marginBottom:12}}>Grabaciones pendientes</div>
                   {false&&([]).map((s,i)=>(
-                    <div key={i} style={{display:"flex",gap:10,alignItems:"center",padding:"8px 0",borderTop:i>0?`1px solid ${C.border}`:"none"}}>
+                    <div key={i} style={{display:"flex",gap:8,alignItems:"center",padding:"8px 0",borderTop:i>0?`1px solid ${C.border}`:"none"}}>
                       <div style={{flex:1}}>
                         <div style={{fontSize:13,color:C.textPri,fontWeight:500}}>{s.date} · U{s.unit}: {s.title}</div>
                         <div style={{fontSize:12,color:C.textTer,marginTop:1}}>{s.attended}/{s.total} asistentes</div>
@@ -306,11 +306,11 @@ export default function TeacherPortal(){
                     </div>
                   ))}
                 </div>
-                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
+                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:16}}>
                   <div style={{fontSize:13,fontWeight:700,color:C.textPri,marginBottom:12}}>Estudiantes que necesitan apoyo</div>
                   {atRisk.length===0&&<div style={{fontSize:13,color:C.textTer,textAlign:"center",padding:"16px 0"}}>✓ Todos al día</div>}
                   {atRisk.map(s=>(
-                    <div key={s.id} style={{display:"flex",gap:10,alignItems:"center",padding:"9px 10px",background:C.surfaceHigh,borderRadius:10,marginBottom:7}}>
+                    <div key={s.id} style={{display:"flex",gap:8,alignItems:"center",padding:"9px 10px",background:C.surfaceHigh,borderRadius:10,marginBottom:7}}>
                       <div style={{width:28,height:28,borderRadius:"50%",background:C.redDim,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:C.red,flexShrink:0}}>
                         {s.name.split(" ").map(n=>n[0]).join("").slice(0,2)}
                       </div>
@@ -324,10 +324,10 @@ export default function TeacherPortal(){
                     </div>
                   ))}
                 </div>
-                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
+                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:16}}>
                   <div style={{fontSize:13,fontWeight:700,color:C.textPri,marginBottom:12}}>Rendimiento · A1 6PM · U9</div>
                   {grpStudents.slice(0,5).map(s=>(
-                    <div key={s.id} style={{display:"flex",gap:10,alignItems:"center",marginBottom:9}}>
+                    <div key={s.id} style={{display:"flex",gap:8,alignItems:"center",marginBottom:8}}>
                       <div style={{fontSize:12,color:C.textSec,width:80,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.name.split(" ")[0]}</div>
                       <div style={{flex:1,height:4,background:C.surfaceHigh,borderRadius:2,overflow:"hidden"}}>
                         <div style={{height:"100%",width:`${s.avgScore}%`,background:ScoreCol(s.avgScore),borderRadius:2}}/>
@@ -343,21 +343,21 @@ export default function TeacherPortal(){
           {/* GRUPOS */}
           {view==="grupos"&&(
             <div>
-              <div style={{display:"flex",gap:8,marginBottom:14}}>
+              <div style={{display:"flex",gap:8,marginBottom:16}}>
                 {displayGroups.map(g=>(
                   <button key={g.id} onClick={()=>setSelGroup(g.id)} style={{padding:"8px 16px",border:`1px solid ${selGroup===g.id?g.color:C.border}`,borderRadius:10,background:selGroup===g.id?`${g.color}15`:C.surface,color:selGroup===g.id?g.color:C.textSec,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{g.level} · {g.schedule}</button>
                 ))}
               </div>
-              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:"14px 16px",marginBottom:14}}>
+              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"14px 16px",marginBottom:16}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <div>
                     <div style={{fontSize:16,fontWeight:800,color:C.textPri,marginBottom:3}}>Nivel {group?.level || "—"} · <span style={{color:C.accent}}>{group?.schedule || "—"}</span></div>
                     <div style={{fontSize:13,color:C.textSec}}>{group.days} · {group.students} estudiantes · U{group.activeUnit} activa</div>
                   </div>
-                  <button style={{fontSize:13,padding:"7px 16px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:9,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}} onClick={()=>{ const url=group?.teamsLink||group?.teams_link; if(url&&url!=="")window.open(url,"_blank"); else showToast("Link de Teams no configurado — pedile al Admin"); }}>▷ Abrir Teams</button>
+                  <button style={{fontSize:13,padding:"7px 16px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}} onClick={()=>{ const url=group?.teamsLink||group?.teams_link; if(url&&url!=="")window.open(url,"_blank"); else showToast("Link de Teams no configurado — pedile al Admin"); }}>▷ Abrir Teams</button>
                 </div>
               </div>
-              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
+              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                 <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}><table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
                   <thead>
                     <tr style={{background:C.surfaceHigh}}>
@@ -395,9 +395,9 @@ export default function TeacherPortal(){
 
           {/* ASISTENCIA */}
           {view==="asistencia"&&(
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:14}}>
-              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
-                <div style={{fontSize:13,fontWeight:700,color:C.textPri,marginBottom:14}}>Sesiones recientes</div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:16}}>
+                <div style={{fontSize:13,fontWeight:700,color:C.textPri,marginBottom:16}}>Sesiones recientes</div>
                 {false&&([]).map((s,i)=>(
                   <div key={i} style={{padding:"10px 12px",background:C.surfaceHigh,borderRadius:10,marginBottom:8}}>
                     <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:8}}>
@@ -407,7 +407,7 @@ export default function TeacherPortal(){
                       </div>
                     </div>
                     {!s.recorded?(
-                      <div style={{display:"flex",gap:6}}>
+                      <div style={{display:"flex",gap:8}}>
                         <input aria-label="Link de recurso" value={recLinks[i]||""} onChange={e=>setRecLinks(r=>({...r,[i]:e.target.value}))} placeholder="Link de Stream (grabación)..." style={{flex:1,padding:"5px 8px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:6,fontSize:12,color:C.textPri,fontFamily:"inherit"}}/>
                         <button disabled style={{fontSize:12,padding:"5px 10px",background:"var(--bg-surface-subtle)",color:"var(--text-tertiary)",border:"1px solid var(--border)",borderRadius:6,cursor:"default",fontFamily:"inherit",opacity:0.6}}>Próximamente</button>
                       </div>
@@ -417,9 +417,9 @@ export default function TeacherPortal(){
                   </div>
                 ))}
               </div>
-              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:16}}>
+              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:16}}>
                 <div style={{fontSize:13,fontWeight:700,color:C.textPri,marginBottom:4}}>Tomar asistencia — Hoy</div>
-                <div style={{fontSize:12,color:C.textSec,marginBottom:14}}>A1 · 6:00 PM · U9: Comforts</div>
+                <div style={{fontSize:12,color:C.textSec,marginBottom:16}}>A1 · 6:00 PM · U9: Comforts</div>
                 {grpStudents.map(s=><AttendanceRow key={s.id} student={s}
   status={attendanceMap[s.id]||"present"}
   onToggle={(id,val)=>setAttendanceMap(m=>({...m,[id]:val}))}/>)}
@@ -453,7 +453,7 @@ export default function TeacherPortal(){
                   <div style={{fontSize:12,color:"#fca5a5"}}>Agotaron los 3 intentos del examen. Decide si habilitas uno extra.</div>
                 </div>
               )}
-              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
+              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,overflow:"hidden"}}>
                 <div style={{padding:"12px 16px",borderBottom:`1px solid ${C.border}`,fontSize:13,fontWeight:700,color:C.textPri}}>Estado de exámenes — Unidad 9 · Todos mis grupos</div>
                 {allStudents.map((s,i)=>(
                   <div key={s.id} style={{display:"flex",gap:12,alignItems:"center",padding:"11px 16px",borderTop:i>0?`1px solid ${C.border}`:"none",background:s.flags.includes("blocked")?`${C.red}08`:"transparent"}}>
@@ -481,19 +481,19 @@ export default function TeacherPortal(){
 
           {/* CONTENIDO */}
           {view==="contenido"&&(
-            <div style={{display:"grid",gridTemplateColumns:"210px 1fr",gap:14}}>
-              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:10,alignSelf:"start"}}>
+            <div style={{display:"grid",gridTemplateColumns:"210px 1fr",gap:16}}>
+              <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:10,alignSelf:"start"}}>
                 <div style={{fontSize:11,fontWeight:600,color:C.textTer,textTransform:"uppercase",letterSpacing:.5,marginBottom:8,padding:"0 6px"}}>Unidades A1 — Wide Angle 1</div>
                 {UNITS.map(u=>(
                   <button key={u.n} onClick={()=>setSelUnit(u)} style={{width:"100%",display:"flex",alignItems:"center",gap:8,padding:"7px 8px",background:selUnit?.n===u.n?C.accentDim:"transparent",border:"none",borderRadius:7,cursor:"pointer",textAlign:"left",marginBottom:2,fontFamily:"inherit"}}>
                     <div style={{width:6,height:6,borderRadius:"50%",flexShrink:0,background:u.status==="published"?C.green:u.status==="draft"?C.amber:C.border}}/>
                     <div style={{flex:1,fontSize:13,color:selUnit?.n===u.n?C.accent:C.textSec}}>U{u.n} — {u.title}</div>
-                    {u.n===9&&<span style={{fontSize:8,background:C.accent,color:"var(--bg-surface)",padding:"1px 5px",borderRadius:4,fontWeight:700}}>HOY</span>}
+                    {u.n===9&&<span style={{fontSize:12,background:C.accent,color:"var(--bg-surface)",padding:"1px 5px",borderRadius:4,fontWeight:700}}>HOY</span>}
                   </button>
                 ))}
               </div>
               {selUnit?(
-                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,padding:18}}>
+                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:18}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
                     <div>
                       <div style={{fontSize:16,fontWeight:800,color:C.textPri}}>U{selUnit.n} — {selUnit.title}</div>
@@ -519,7 +519,7 @@ export default function TeacherPortal(){
                   ))}
                   <div style={{borderTop:`1px solid ${C.border}`,paddingTop:12,marginTop:4}}>
                     <div style={{fontSize:12,fontWeight:600,color:C.textSec,marginBottom:8}}>📝 Actividades de esta unidad</div>
-                    <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}}>
+                    <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:8}}>
                       {false&&([]).map(act=>{
                         const[c,tc]=TYPE_C[act.type]||["var(--text-primary)","#374151"];
                         return(<div key={act.id} style={{fontSize:12,padding:"3px 10px",background:c+"44",color:tc,borderRadius:20,border:`1px solid ${c}`}}>{act.type}: {act.title}</div>);
@@ -543,7 +543,7 @@ export default function TeacherPortal(){
                   </div>
                 </div>
               ):(
-                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:14,display:"flex",alignItems:"center",justifyContent:"center",color:C.textTer,fontSize:13,minHeight:300}}>
+                <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,display:"flex",alignItems:"center",justifyContent:"center",color:C.textTer,fontSize:13,minHeight:300}}>
                   ← Selecciona una unidad
                 </div>
               )}
@@ -553,7 +553,7 @@ export default function TeacherPortal(){
           {/* BANCO */}
           {view==="banco"&&(
             <div>
-              <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
+              <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
                 {Object.entries(TYPE_C).map(([type,[c,tc]])=>(
                   <button key={type} style={{fontSize:12,padding:"5px 14px",background:`${c}44`,color:tc,border:`1px solid ${c}`,borderRadius:20,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>{type}</button>
                 ))}
@@ -564,14 +564,14 @@ export default function TeacherPortal(){
                   const[c,tc]=TYPE_C[act.type]||["var(--text-primary)","#374151"];
                   return(
                     <div key={act.id} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:12,padding:"12px 14px"}}>
-                      <div style={{display:"flex",gap:6,marginBottom:8}}>
+                      <div style={{display:"flex",gap:8,marginBottom:8}}>
                         <span style={{fontSize:11,padding:"2px 8px",borderRadius:20,background:`${c}44`,color:tc,fontWeight:600}}>{act.type}</span>
                         <span style={{fontSize:11,color:C.textTer,padding:"2px 7px",background:C.surfaceHigh,borderRadius:20}}>{act.skill}</span>
                       </div>
                       <div style={{fontSize:13,fontWeight:600,color:C.textPri,marginBottom:4}}>{act.title}</div>
                       <div style={{fontSize:12,color:C.textTer,marginBottom:10}}>A1 · U{act.unit}</div>
-                      <div style={{display:"flex",gap:6}}>
-                        <button style={{flex:1,fontSize:12,padding:"5px",background:C.accentDim,color:C.accent,border:"none",borderRadius:7,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>Asignar a unidad</button>
+                      <div style={{display:"flex",gap:8}}>
+                        <button style={{flex:1,fontSize:12,padding:"6px",background:C.accentDim,color:C.accent,border:"none",borderRadius:7,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>Asignar a unidad</button>
                         <button disabled style={{fontSize:12,padding:"5px 10px",background:"var(--bg-surface-subtle)",color:"var(--text-tertiary)",border:"1px solid var(--border)",borderRadius:7,cursor:"default",fontFamily:"inherit",opacity:0.6}}>Próximamente</button>
                       </div>
                     </div>
@@ -586,17 +586,17 @@ export default function TeacherPortal(){
 
       {/* MODAL Intento extra */}
       {extraModal&&(
-        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:50,borderRadius:16}}>
+        <div style={{position:"absolute",inset:0,background:"rgba(0,0,0,.75)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:"var(--z-sticky)",borderRadius:16}}>
           <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:16,padding:24,width:360}}>
             <div style={{fontSize:15,fontWeight:700,color:C.textPri,marginBottom:4}}>Habilitar intento extra</div>
-            <div style={{fontSize:13,color:C.textSec,marginBottom:14}}>{extraModal.name} — U{extraModal.currentUnit} · 3/3 intentos agotados</div>
+            <div style={{fontSize:13,color:C.textSec,marginBottom:16}}>{extraModal.name} — U{extraModal.currentUnit} · 3/3 intentos agotados</div>
             <div style={{fontSize:12,color:C.textTer,marginBottom:8}}>Motivo (queda en el log de auditoría):</div>
-            <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:12}}>
+            <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:12}}>
               {["Problema técnico durante el examen","Se explicó el contenido de nuevo","Caso especial justificado"].map(r=>(
                 <button key={r} disabled style={{fontSize:12,padding:"7px 10px",background:"var(--bg-surface-subtle)",color:"var(--text-tertiary)",border:"1px solid var(--border)",borderRadius:8,cursor:"default",fontFamily:"inherit",textAlign:"left",opacity:0.6}}>{r} · próximamente</button>
               ))}
             </div>
-            <input placeholder="Nota adicional (opcional)..." style={{width:"100%",padding:"8px 12px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,fontSize:13,color:C.textPri,fontFamily:"inherit",marginBottom:14}}/>
+            <input placeholder="Nota adicional (opcional)..." style={{width:"100%",padding:"8px 12px",background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,fontSize:13,color:C.textPri,fontFamily:"inherit",marginBottom:16}}/>
             <div style={{display:"flex",gap:8}}>
               <button onClick={()=>setExtraModal(null)} style={{flex:1,padding:"9px",background:"transparent",color:C.textSec,border:`1px solid ${C.border}`,borderRadius:10,fontSize:13,cursor:"pointer",fontFamily:"inherit"}}>Cancelar</button>
               <button onClick={()=>setExtraModal(null)} style={{flex:1,padding:"9px",background:C.purple,color:"var(--bg-surface)",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✓ Habilitar intento</button>
@@ -608,11 +608,11 @@ export default function TeacherPortal(){
 
       {/* Toast notification */}
       {toastMsg && (
-        <div style={{ position:"fixed", top:20, right:90, background:toastMsg.color, color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:9999, boxShadow:"0 6px 20px rgba(0,0,0,.2)", display:"flex", gap:8, alignItems:"center", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+        <div style={{ position:"fixed", top:20, right:90, background:toastMsg.color, color:"#fff", padding:"11px 18px", borderRadius:11, fontSize:13, fontWeight:600, zIndex:"var(--z-modal)", boxShadow:"0 6px 20px rgba(0,0,0,.2)", display:"flex", gap:8, alignItems:"center", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
           ✓ {toastMsg.msg}
         </div>
       )}
-      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:9988,width:50,height:50,borderRadius:"50%",background:C.accent,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
+      {isMobile && <button onClick={()=>setSideOpen(o=>!o)} style={{position:"fixed",bottom:20,right:20,zIndex:"var(--z-overlay)",width:50,height:50,borderRadius:"50%",background:C.accent,color:"#fff",border:"none",boxShadow:"0 4px 20px rgba(0,0,0,.25)",fontSize:20,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center"}}>{sideOpen?"\u2715":"\u2630"}</button>}
     </div>
   );
 }

@@ -104,14 +104,14 @@ export function GlobalSearchModal({ search: s }) {
 
   return (
     <div onClick={e=>{ if(e.target===e.currentTarget) s.close(); }}
-      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", zIndex:10000,
+      style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", zIndex:"var(--z-modal)",
                display:"flex", alignItems:"flex-start", justifyContent:"center", padding:"80px 16px 16px" }}>
       <div style={{ background:"var(--bg-surface)", borderRadius:16, width:"100%", maxWidth:560,
                     border:"1px solid var(--border)", boxShadow:"0 24px 60px rgba(0,0,0,.25)",
                     overflow:"hidden", animation:"popIn .18s cubic-bezier(.34,1.56,.64,1) both",
                     fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
         {/* Search input */}
-        <div style={{ display:"flex", alignItems:"center", gap:12, padding:"14px 18px",
+        <div style={{ display:"flex", alignItems:"center", gap:12, padding:"12px 16px",
                       borderBottom:"1px solid var(--border)" }}>
           <i className="ti ti-search" style={{ fontSize:18, color:"var(--text-tertiary)", flexShrink:0 }} aria-hidden="true"/>
           <input ref={inputRef} value={s.query} onChange={e=>s.setQuery(e.target.value)}
@@ -121,7 +121,7 @@ export function GlobalSearchModal({ search: s }) {
             aria-label="Búsqueda global"/>
           {s.loading && <div style={{ width:16, height:16, border:"2px solid var(--border)",
             borderTopColor:"#155266", borderRadius:"50%", animation:"spin .7s linear infinite" }}/>}
-          <kbd style={{ fontSize:10, padding:"2px 7px", background:"var(--bg-surface-subtle)",
+          <kbd style={{ fontSize:11, padding:"2px 7px", background:"var(--bg-surface-subtle)",
                         border:"1px solid var(--border)", borderRadius:5, color:"var(--text-tertiary)" }}>ESC</kbd>
         </div>
 
@@ -139,7 +139,7 @@ export function GlobalSearchModal({ search: s }) {
               {[["/portal","👨‍🎓","Portal Estudiante"],["/admin","⚙️","Dashboard Admin"],
                  ["/crm","💼","CRM Ventas"],["/cobros","💳","Gestor de Cobros"]].map(([r,ic,lb])=>(
                 <button key={r} onClick={()=>s.go({route:r})}
-                  style={{ display:"flex", alignItems:"center", gap:12, width:"100%", padding:"9px 12px",
+                  style={{ display:"flex", alignItems:"center", gap:12, width:"100%", padding:"8px 12px",
                            background:"transparent", border:"none", borderRadius:8, cursor:"pointer",
                            textAlign:"left", fontFamily:"inherit", color:"var(--text-primary)",
                            fontSize:13, transition:"background .1s" }}
@@ -157,7 +157,7 @@ export function GlobalSearchModal({ search: s }) {
                 if (!group.length) return null;
                 return (
                   <div key={type}>
-                    <div style={{ fontSize:10, color:"var(--text-tertiary)", textTransform:"uppercase",
+                    <div style={{ fontSize:11, color:"var(--text-tertiary)", textTransform:"uppercase",
                                   letterSpacing:.6, padding:"8px 10px 4px", fontWeight:600 }}>
                       {type === "person" ? "Personas" : "Leads CRM"}
                     </div>
@@ -165,7 +165,7 @@ export function GlobalSearchModal({ search: s }) {
                       <button key={r.id} onClick={()=>s.go(r)}
                         style={{ display:"flex", alignItems:"center", gap:12, width:"100%",
                                  padding:"9px 10px", background:"transparent", border:"none",
-                                 borderRadius:9, cursor:"pointer", textAlign:"left",
+                                 borderRadius:8, cursor:"pointer", textAlign:"left",
                                  fontFamily:"inherit", transition:"background .1s" }}
                         onMouseEnter={e=>e.currentTarget.style.background="var(--bg-surface-subtle)"}
                         onMouseLeave={e=>e.currentTarget.style.background="transparent"}>

@@ -23,7 +23,7 @@ export function useConfirm() {
   const ConfirmUI = state ? (
     <div role="dialog" aria-modal="true"
       style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)", display:"flex",
-               alignItems:"center", justifyContent:"center", zIndex:10001, padding:16 }}
+               alignItems:"center", justifyContent:"center", zIndex:"var(--z-modal)", padding:16 }}
       onClick={e => { if (e.target === e.currentTarget) handle(false); }}>
       <div style={{ background:"var(--bg-surface)", borderRadius:16, padding:24, width:360, maxWidth:"100%",
                     border:"1px solid var(--border)", boxShadow:"0 20px 60px rgba(0,0,0,.2)",
@@ -47,14 +47,14 @@ export function useConfirm() {
         <div style={{ display:"flex", gap:8 }}>
           <button onClick={() => handle(false)}
             style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)",
-                     border:"1px solid var(--border)", borderRadius:9, fontSize:13,
+                     border:"1px solid var(--border)", borderRadius:8, fontSize:13,
                      cursor:"pointer", fontFamily:"inherit", color:"var(--text-secondary)" }}>
             Cancelar
           </button>
           <button onClick={() => handle(true)}
             style={{ flex:2, padding:"10px",
                      background: state.danger ? "#dc2626" : "#155266",
-                     color:"#fff", border:"none", borderRadius:9, fontSize:13,
+                     color:"#fff", border:"none", borderRadius:8, fontSize:13,
                      fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
             {state.confirmText || (state.danger ? "Sí, eliminar" : "Confirmar")}
           </button>
