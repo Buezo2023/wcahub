@@ -157,6 +157,18 @@ for (const f of allSrc) {
   }
 
 
+
+  // ── C13: Known runtime undefined references ──────────────────
+  const KNOWN_UNDEFINED = [
+    { pattern: /coordGroupCounts\[/, file: 'CoordAcademica', msg: 'coordGroupCounts no está definido — usar 0 o cargar de DB' },
+    { pattern: /transfers(?!\s*=)/, file: 'GestorCobros', msg: 'transfers no definido — usar displayHistory o pending' },
+  ];
+  for (const { pattern, file, msg } of KNOWN_UNDEFINED) {
+    if (fp.includes(file) && pattern.test(c)) {
+      err(fp, msg);
+    }
+  }
+
   // ── C12: CSS vars in React inline style numeric props ────────
   // React inline styles require NUMBERS for zIndex, not CSS variable strings
   const cssVarInNumeric = [...c.matchAll(/(?:zIndex|(?<![a-zA-Z])order|(?<![a-zA-Z])flex(?!Direction|Wrap|Shrink|Grow|Basis|Flow)|(?<![a-zA-Z])opacity):\s*["']var\(/g)];

@@ -44,8 +44,8 @@ const attCol     = a => a>=80?B.green:a>=60?B.amber:B.red;
 function Badge({ text, bg, color }) {
   return <span style={{ fontSize:11, padding:"2px 8px", borderRadius:20, background:bg, color, fontWeight:600, whiteSpace:"nowrap" }}>{text}</span>;
 }
-function Stat({ label, value, sub, color, icon }) {
-  if (dataLoading) return (<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:300,flexDirection:"column",gap:12,color:"var(--text-secondary)"}}>
+function Stat({ label, value, sub, color, icon, loading }) {
+  if (loading) return (<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:300,flexDirection:"column",gap:12,color:"var(--text-secondary)"}}>
         <div style={{width:24,height:24,border:"2px solid var(--border)",borderTopColor:"var(--wca-primary)",borderRadius:"50%",animation:"spin .7s linear infinite"}}/>
         <span style={{fontSize:13}}>Cargando...</span>
       </div>);
@@ -89,7 +89,7 @@ export default function CoordAcademica() {
   const [transferModal, setTransferModal] = useState(null);
   const [newGroup, setNewGroup]       = useState({ level:"A1", time:"", days:"L·M·V", teacher:1, cap:25 });
   const [schedCreated, setSchedCreated] = useState(false);
-  const [realDbGroups, setRealDbGroups] = useState([]);
+  const [realDbGroups, setRealDbGroups] = useState([]);  // always array
   const [dataLoading,  setDataLoading]  = useState(false);
   const [coordToast,   setCoordToast]   = useState(null);
   function showToast(msg, color="#059669") {
@@ -146,7 +146,7 @@ export default function CoordAcademica() {
           id: g.id, level: g.level,
           time: g.schedule || "—",
           days: g.days || "L·M·V",
-          students: coordGroupCounts[g.id] || 0, capacity: g.capacity,
+          students: 0, capacity: g.capacity,
           teacher: g.teacher_groups?.[0]?.staff?.profiles?.full_name || "Sin asignar",
           unit: g.active_unit,
           teamsSet: !!g.teams_link,
@@ -155,8 +155,8 @@ export default function CoordAcademica() {
   }, []);
 
   const sourceStudents = realStudents;
-  const AT_RISK = sourceStudents.filter(s => (s.attendance||0) < 70 || (s.score||0) < 65);
-  const filteredStudents = useMemo(() => sourceStudents.filter(s => {
+  const AT_RISK = (sourceStudents||[]).filter(s => (s.attendance||0) < 70 || (s.score||0) < 65);
+  const filteredStudents = useMemo(() => (sourceStudents||[]).filter(s => {
     const ms = !search || s.name.toLowerCase().includes(search.toLowerCase());
     const ml = filterLevel==="all" || s.level===filterLevel;
     const mt = filterType==="all" || s.type===filterType;
@@ -242,10 +242,10 @@ export default function CoordAcademica() {
           {view==="home" && (
             <div>
               <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)", gap:8, marginBottom:14 }}>
-                <Stat label="Estudiantes activos" value={totalStudents} sub={realDbGroups.length > 0 ? `${realDbGroups.length} grupos activos` : "Sin grupos configurados"} color={B.primary} icon="ti-users" />
-                <Stat label="Docentes activos" value={teachers.length} sub="6 horarios cubiertos" color={B.teal} icon="ti-school" />
-                <Stat label="Asistencia promedio" value={`${avgAttendance}%`} sub="Todos los grupos" color={avgAttendance>=80?B.green:B.amber} icon="ti-calendar-check" />
-                <Stat label="En riesgo académico" value={AT_RISK.length} sub="Requieren seguimiento" color={AT_RISK.length>0?B.red:B.green} icon="ti-alert-triangle" />
+                <Stat loading={dataLoading} label="Estudiantes activos" value={totalStudents} sub={realDbGroups.length > 0 ? `${realDbGroups.length} grupos activos` : "Sin grupos configurados"} color={B.primary} icon="ti-users" />
+                <Stat loading={dataLoading} label="Docentes activos" value={teachers.length} sub="6 horarios cubiertos" color={B.teal} icon="ti-school" />
+                <Stat loading={dataLoading} label="Asistencia promedio" value={`${avgAttendance}%`} sub="Todos los grupos" color={avgAttendance>=80?B.green:B.amber} icon="ti-calendar-check" />
+                <Stat loading={dataLoading} label="En riesgo académico" value={AT_RISK.length} sub="Requieren seguimiento" color={AT_RISK.length>0?B.red:B.green} icon="ti-alert-triangle" />
               </div>
 
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>

@@ -40,8 +40,8 @@ const NAV = [
 function Badge({ text, bg, color }) {
   return <span style={{ fontSize:11, padding:"2px 8px", borderRadius:20, background:bg, color, fontWeight:600, whiteSpace:"nowrap" }}>{text}</span>;
 }
-function Stat({ label, value, sub, color, icon }) {
-  if (dataLoading) return (<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:300,flexDirection:"column",gap:12,color:"var(--text-secondary)"}}>
+function Stat({ label, value, sub, color, icon, loading }) {
+  if (loading) return (<div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:300,flexDirection:"column",gap:12,color:"var(--text-secondary)"}}>
         <div style={{width:24,height:24,border:"2px solid var(--border)",borderTopColor:"var(--wca-primary)",borderRadius:"50%",animation:"spin .7s linear infinite"}}/>
         <span style={{fontSize:13}}>Cargando...</span>
       </div>);
@@ -96,7 +96,7 @@ export default function GestorCobros() {
         // Load pending comprobantes (status='pending')
         const { data: pends } = await supabase
           .from("payments")
-          .select("id, amount, method, status, receipt_url, created_at, students(id, profiles(full_name, email, phone)), enrollments(program_id)")
+          .select("id, amount, method, status, proof_url, created_at, students(id, profiles(full_name, email, phone)), enrollments(program_id)")
           .eq("status", "pending")
           .order("created_at", { ascending: false })
           .limit(50);
@@ -113,8 +113,8 @@ export default function GestorCobros() {
             method:   p.method || "Transferencia",
             bank:     "—",
             date:     new Date(p.created_at).toLocaleString("es-HN", { day:"2-digit", month:"short", hour:"2-digit", minute:"2-digit" }),
-            proof:    !!p.receipt_url,
-            proofUrl: p.receipt_url,
+            proof:    !!p.proof_url,
+            proofUrl: p.proof_url,
             urgent:   false,
             studentId: p.students?.id,
             contact:   p.students?.profiles?.phone || "",
@@ -202,13 +202,21 @@ export default function GestorCobros() {
     setConfirmed(c => [...c, id]);
     setSelTransfer(null);
     // Find the transfer to get student info
-    const transfer = [...(pending||[]), ...(transfers||[])].find(t => t.id === id);
-    if (transfer?._dbPaymentId) {
-      // Update payment status in Supabase
-      await supabase.from("payments")
-        .update({ status: "confirmed" })
-        .eq("id", transfer._dbPaymentId)
-        .catch(console.error);
+    const transfer = [...(pending||[]), ...(displayHistory||[])].find(t => t.id === id);
+    if (transfer?._dbId) {
+      // Only update local state AFTER Supabase confirms
+      const { error: updateErr } = await supabase.from("payments")
+        .update({
+          status:       "confirmed",
+          confirmed_at: new Date().toISOString(),
+        })
+        .eq("id", transfer._dbId);
+      if (updateErr) {
+        console.error("[GestorCobros] confirm failed:", updateErr);
+        setConfirmed(c => c.filter(x => x !== id)); // rollback optimistic update
+        toast.error("Error al confirmar el pago. Intentá de nuevo.");
+        return;
+      }
     }
     // Find student profile to notify
     if (transfer?.studentId || transfer?.student) {
@@ -300,10 +308,10 @@ export default function GestorCobros() {
           {view==="home" && (
             <div>
               <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(4,1fr)", gap:8, marginBottom:14 }}>
-                <Stat label="Cobrado hoy" value="$360" sub="3 pagos" color={B.green} icon="ti-trending-up" />
-                <Stat label="Por confirmar" value={pending.length} sub="Transferencias" color={B.amber} icon="ti-clock" />
-                <Stat label="Vencidos" value={realOverdue.length} sub="+30 días" color={B.red} icon="ti-alert-circle" />
-                <Stat label="Cobrado (mes)" value={`$${realHistory.filter(p=>p.status==="confirmed").reduce((s,p)=>s+(p.amount||0),0).toLocaleString()}`} sub={`${realHistory.filter(p=>p.status==="confirmed").length} pagos`} color={B.primary} icon="ti-coin" />
+                <Stat loading={dataLoading} label="Cobrado hoy" value="$360" sub="3 pagos" color={B.green} icon="ti-trending-up" />
+                <Stat loading={dataLoading} label="Por confirmar" value={pending.length} sub="Transferencias" color={B.amber} icon="ti-clock" />
+                <Stat loading={dataLoading} label="Vencidos" value={realOverdue.length} sub="+30 días" color={B.red} icon="ti-alert-circle" />
+                <Stat loading={dataLoading} label="Cobrado (mes)" value={`$${realHistory.filter(p=>p.status==="confirmed").reduce((s,p)=>s+(p.amount||0),0).toLocaleString()}`} sub={`${realHistory.filter(p=>p.status==="confirmed").length} pagos`} color={B.primary} icon="ti-coin" />
               </div>
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12 }}>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:12 }}>
