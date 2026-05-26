@@ -915,7 +915,7 @@ export default function AdminDashboard() {
               </div>
               <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:16 }}>
                 <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:12 }}>Historial reciente</div>
-                {STUDENTS.slice(0,6).map((s,i) => (
+                {realStudents.slice(0,6).map((s,i) => (
                   <div key={s.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"9px 0", borderTop:i>0?`1px solid ${B.borderLight}`:"none" }}>
                     <div style={{ flex:1 }}>
                       <div style={{ fontSize:13, fontWeight:500, color:B.text }}>{s.name}</div>

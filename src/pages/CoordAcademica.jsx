@@ -228,7 +228,7 @@ export default function CoordAcademica() {
           </div>
           <div style={{ display:"flex", gap:8 }}>
             {AT_RISK.length>0 && <div style={{ fontSize:12, background:B.redDim, color:B.red, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>⚠ {AT_RISK.length} en riesgo</div>}
-            <div style={{ fontSize:12, background:B.primaryDim, color:B.primary, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>{GROUPS.length} grupos activos</div>
+            <div style={{ fontSize:12, background:B.primaryDim, color:B.primary, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>{realDbGroups.length} grupos activos</div>
           </div>
         </div>
 
@@ -251,7 +251,7 @@ export default function CoordAcademica() {
                     Ocupación por grupo
                     <button onClick={()=>setView("groups")} style={{ fontSize:11, padding:"3px 8px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:5, cursor:"pointer", fontFamily:"inherit" }}>Ver todos</button>
                   </div>
-                  {GROUPS.map(g => (
+                  {realDbGroups.map(g => (
                     <div key={g.id} style={{ display:"flex", alignItems:"center", gap:10, marginBottom:8 }}>
                       <div style={{ width:32, height:20, borderRadius:4, background:levelBg(g.level), display:"flex", alignItems:"center", justifyContent:"center", fontSize:11, fontWeight:700, color:levelColor(g.level), flexShrink:0 }}>{g.level}</div>
                       <div style={{ fontSize:12, color:B.textSec, width:50, flexShrink:0 }}>{g.time}</div>
@@ -317,7 +317,7 @@ export default function CoordAcademica() {
                       </button>
                     </div>
                   ))}
-                  {!SCHOLARSHIPS.some(s=>s.eligible) && <div style={{ fontSize:13, color:B.textSec, textAlign:"center", padding:"16px 0" }}>No hay becados elegibles este mes</div>}
+                  {!realStudents.filter(s=>s.scholarship).some(s=>(s.attendance||0)>=70) && <div style={{ fontSize:13, color:B.textSec, textAlign:"center", padding:"16px 0" }}>No hay becados elegibles este mes</div>}
                 </div>
               </div>
             </div>
@@ -327,8 +327,8 @@ export default function CoordAcademica() {
           {view==="groups" && (
             <div>
               <div style={{ display:"grid", gridTemplateColumns:isMobile?"repeat(2,1fr)":"repeat(3,1fr)", gap:10 }}>
-                {GROUPS.map(g => {
-                  const teacher = TEACHERS.find(t=>t.id===g.teacher);
+                {realDbGroups.map(g => {
+                  const teacher = teachers.find(t=>t.id===g.teacher);
                   const pct = Math.round((g.students/g.cap)*100);
                   return (
                     <div key={g.id} onClick={() => setSelGroup(selGroup?.id===g.id?null:g)} style={{ background:B.white, border:`1.5px solid ${selGroup?.id===g.id?B.primary:B.border}`, borderRadius:12, padding:14, cursor:"pointer", transition:"border-color .15s" }}>
@@ -527,8 +527,8 @@ export default function CoordAcademica() {
                     </div>
                   </div>
                   <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                    <button onClick={() => { setTransferModal(GROUPS.find(g=>g.id===selStudent.group)); }} style={{ padding:"8px", background:B.primaryDim, color:B.primary, border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Cambiar de grupo</button>
-                    {selStudent.scholarship && <button onClick={()=>setUpgradeModal({...SCHOLARSHIPS.find(s=>s.name===selStudent.name)||SCHOLARSHIPS[0]})} style={{ padding:"8px", background:B.secondaryDim, color:"#92400e", border:`1px solid ${B.amber}30`, borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Upgrade → Plan completo</button>}
+                    <button onClick={() => { setTransferModal(realDbGroups.find(g=>g.id===selStudent.group)); }} style={{ padding:"8px", background:B.primaryDim, color:B.primary, border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Cambiar de grupo</button>
+                    {selStudent.scholarship && <button onClick={()=>setUpgradeModal({...selStudent})} style={{ padding:"8px", background:B.secondaryDim, color:"#92400e", border:`1px solid ${B.amber}30`, borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Upgrade → Plan completo</button>}
                   </div>
                 </div>
               )}
@@ -569,7 +569,7 @@ export default function CoordAcademica() {
                   <div style={{ display:"flex", gap:7 }}>
                     <button style={{ flex:1, fontSize:12, padding:"7px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Notificar docente</button>
                     <button style={{ flex:1, fontSize:12, padding:"7px", background:B.bg, color:B.textSec, border:`1px solid ${B.border}`, borderRadius:7, cursor:"pointer", fontFamily:"inherit" }}>Contactar estudiante</button>
-                    <button onClick={()=>setTransferModal(GROUPS.find(g=>g.id===s.group))} style={{ flex:1, fontSize:12, padding:"7px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:7, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Cambiar grupo</button>
+                    <button onClick={()=>setTransferModal(realDbGroups.find(g=>g.id===s.group))} style={{ flex:1, fontSize:12, padding:"7px", background:B.primaryDim, color:B.primary, border:"none", borderRadius:7, cursor:"pointer", fontWeight:600, fontFamily:"inherit" }}>Cambiar grupo</button>
                   </div>
                 </div>
               ))}
@@ -937,7 +937,7 @@ export default function CoordAcademica() {
             </select>
             <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:5 }}>Nuevo grupo</label>
             <select style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit", marginBottom:14 }}>
-              {GROUPS.filter(g=>g.id!==transferModal.id&&g.level===transferModal.level&&g.students<g.cap).map(g=>(
+              {realDbGroups.filter(g=>g.id!==transferModal.id&&g.level===transferModal.level&&g.students<g.cap).map(g=>(
                 <option key={g.id}>{g.level} · {g.time} ({g.cap-g.students} cupos)</option>
               ))}
             </select>

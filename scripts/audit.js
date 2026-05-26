@@ -124,6 +124,35 @@ for (const f of allSrc) {
     }
   }
 
+
+  // ── C11: Runtime-crash undefined constants ──────────────────
+  // These patterns actually execute at runtime (not just in comments)
+  const runtimePatterns = [
+    /Object\.keys\(([A-Z][A-Z0-9_]{2,})\)/g,
+    /useState\(([A-Z][A-Z0-9_]{2,})\)/g,
+    /\b([A-Z][A-Z0-9_]{2,})\.(?:map|filter|slice|find|some|reduce|length)\b/g,
+  ];
+  const knownGlobals = new Set([
+    'Object','Array','JSON','Math','Date','Promise','Error',
+    'INITIAL_SESSION','SIGNED_OUT','MRR_DATA','ROLES_DEF','XP_ACTIONS',
+    'ALL_PROGRAMS','LEVELS','UNITS','SKILLS','NAV','PROGRAMS','STAGES',
+    'TYPES','DEPTS','TABS','ROLES','SUB_TABS','VIEWS','ROLE_PORTALS',
+    'PAIRS','STEPS','QUESTIONS_SEED',
+  ]);
+  for (const pattern of runtimePatterns) {
+    for (const m of c.matchAll(pattern)) {
+      const name = m[1];
+      if (!name || knownGlobals.has(name)) continue;
+      // Check if defined in file
+      const isDefined = new RegExp(`(?:const|let|var)\\s+${name}\\b`).test(c) ||
+                        new RegExp(`import\\s*\\{[^}]*\\b${name}\\b`).test(c) ||
+                        c.includes(`export const ${name}`);
+      if (!isDefined) {
+        err(fp, `Runtime crash risk: ${name} usado como variable pero nunca definido. Reemplazar con estado real (useState/props).`);
+      }
+    }
+  }
+
   // ── C10: Supabase .eq() on joined tables (invalid syntax) ───
   const badEq = [...c.matchAll(/\.eq\(['"][\w]+\.[\w]+['"]/g)];
   if (badEq.length)

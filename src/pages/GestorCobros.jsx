@@ -323,12 +323,12 @@ export default function GestorCobros() {
                 </div>
                 <div style={{ background:B.white, border:`1px solid ${B.border}`, borderRadius:12, padding:14 }}>
                   <div style={{ fontSize:13, fontWeight:700, color:B.text, marginBottom:10 }}>Últimas acciones</div>
-                  {AUDIT_LOG.slice(0,5).map((a,i) => (
+                  {realHistory.slice(0,5).map((p,i) => (
                     <div key={i} style={{ display:"flex", gap:9, padding:"7px 0", borderTop:i>0?`1px solid ${B.borderLight}`:"none" }}>
-                      <div style={{ width:6, height:6, borderRadius:"50%", background:a.action.includes("Anuló")?B.red:a.action.includes("Marcó")?B.amber:B.green, flexShrink:0, marginTop:5 }} />
+                      <div style={{ width:6, height:6, borderRadius:"50%", background:p.status==="rejected"?B.red:p.status==="pending"?B.amber:B.green, flexShrink:0, marginTop:5 }} />
                       <div style={{ flex:1 }}>
-                        <div style={{ fontSize:13, color:B.text }}><strong>{a.action}</strong> — {a.student}</div>
-                        <div style={{ fontSize:11, color:B.textSec }}>{a.amount} · {a.time}</div>
+                        <div style={{ fontSize:13, color:B.text }}><strong>{p.status==="confirmed"?"Confirmado":p.status==="rejected"?"Rechazado":"Pendiente"}</strong> — {p.student?.profile?.full_name||"—"}</div>
+                        <div style={{ fontSize:11, color:B.textSec }}>${p.amount||0} · {p.confirmed_at?new Date(p.confirmed_at).toLocaleDateString("es-HN"):new Date(p.created_at).toLocaleDateString("es-HN")}</div>
                       </div>
                     </div>
                   ))}
