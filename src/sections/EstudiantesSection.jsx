@@ -1,5 +1,6 @@
 // ─── EstudiantesSection — para SuperAdmin ───────────────────────
 import { useState, useEffect, useMemo } from "react";
+import { api } from "../lib/api.js";
 import { supabase } from "../lib/supabase.js";
 import { EmptyState } from "../lib/EmptyState.jsx";
 import { exportCSV } from "../lib/exportCSV.js";
@@ -213,7 +214,7 @@ export function EstudiantesSection({ showToast }) {
       {enrollModal && (
         <div style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
           onClick={e=>{if(e.target===e.currentTarget)setEnrollModal(false);}}>
-          <div style={{background:"var(--bg-surface)",borderRadius:18,padding:26,width:440,maxWidth:"100%",width:"100%",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)",maxHeight:"90vh",overflowY:"auto"}}>
+          <div style={{background:"var(--bg-surface)",borderRadius:18,padding:26,width:"min(440px, calc(100vw - 32px))",maxWidth:"100%",width:"100%",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)",maxHeight:"90vh",overflowY:"auto"}}>
             <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:20}}>Matricular estudiante</div>
             {[
               {label:"Nombre completo *",key:"name",type:"text",ph:"Ej: María García"},

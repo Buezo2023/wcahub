@@ -190,16 +190,21 @@ export default async function handler(req, res) {
       }
     }
 
-    // Final log
+    // Final log — mark as degraded if too many errors
+    const totalErrors = Object.values(results).reduce((sum, r) => sum + (r.errors?.length || 0), 0);
+    const totalSent   = Object.values(results).reduce((sum, r) => sum + (r.sent || r.count || 0), 0);
+    const isDegraded  = totalErrors > 0 && totalErrors >= totalSent;
+
     await admin.from('audit_log').insert({
-      action: 'daily_billing_run',
+      action: isDegraded ? 'daily_billing_degraded' : 'daily_billing_run',
       entity: 'system',
-      metadata: { date: todayStr, results },
+      metadata: { date: todayStr, results, degraded: isDegraded, totalErrors, totalSent },
     }).catch(() => {});
 
     return res.status(200).json({
-      message: 'Daily billing processed',
+      message: isDegraded ? 'Daily billing completed with errors' : 'Daily billing processed',
       date: todayStr,
+      degraded: isDegraded,
       results,
     });
 

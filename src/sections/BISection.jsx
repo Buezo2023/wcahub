@@ -1,5 +1,6 @@
 // ─── BISection — Reportes & BI para SuperAdmin ──────────────────
 import { useState, useEffect } from "react";
+import { api } from "../lib/api.js";
 import { supabase } from "../lib/supabase.js";
 import { useNavigate } from "react-router-dom";
 

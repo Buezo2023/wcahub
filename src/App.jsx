@@ -7,7 +7,7 @@ import { supabase } from './lib/supabase.js';
 import { ErrorBoundary } from './lib/ErrorBoundary.jsx';
 import { ConnectionGuard } from './lib/ConnectionGuard.jsx';
 import { ThemeProvider, ThemeToggle, useTheme } from './ThemeContext.jsx';
-import { SessionProvider } from './lib/SessionContext.jsx';
+import { SessionProvider, useSession } from './lib/SessionContext.jsx';
 
 const Landing         = lazy(() => import('./pages/Landing.jsx'));
 const PortalEstudiante= lazy(() => import('./pages/PortalEstudiante.jsx'));
@@ -35,44 +35,21 @@ const ROLE_PORTALS = {
   directivo:     '/bi',
 };
 
-// ── Profile cache — avoids re-querying Supabase on every navigation ──
-const _profileCache = { data: null, uid: null };
-
-// ── PrivateRoute — verifica sesión activa + rol correcto ──────────
+// ── PrivateRoute — uses SessionContext (single auth source of truth) ──
 function PrivateRoute({ element, allowedRoles }) {
+  const { profile, session, loading } = useSession();
   const [auth, setAuth] = React.useState({ ready: false, ok: false, redirect: null });
 
   React.useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) { setAuth({ ready: true, ok: false, redirect: '/' }); return; }
-
-      // Use cached profile if same user — avoids Supabase query on every nav
-      let profile = null;
-      if (_profileCache.uid === session.user.id && _profileCache.data) {
-        profile = _profileCache.data;
-      } else {
-        const { data } = await supabase
-          .from('profiles')
-          .select('role, active')
-          .eq('id', session.user.id)
-          .maybeSingle();
-        profile = data;
-        if (profile) {
-          _profileCache.uid  = session.user.id;
-          _profileCache.data = profile;
-        }
-      }
-
-      if (!profile) { setAuth({ ready: true, ok: false, redirect: '/' }); return; }
-
-      if (allowedRoles && !allowedRoles.includes(profile.role)) {
-        setAuth({ ready: true, ok: false, redirect: ROLE_PORTALS[profile.role] || '/' });
-        return;
-      }
-
-      setAuth({ ready: true, ok: true, redirect: null });
-    });
-  }, []);  // eslint-disable-line
+    if (loading) return;
+    if (!session) { setAuth({ ready: true, ok: false, redirect: '/' }); return; }
+    if (!profile) { setAuth({ ready: true, ok: false, redirect: '/' }); return; }
+    if (allowedRoles && !allowedRoles.includes(profile.role)) {
+      setAuth({ ready: true, ok: false, redirect: ROLE_PORTALS[profile.role] || '/' });
+      return;
+    }
+    setAuth({ ready: true, ok: true, redirect: null });
+  }, [loading, session, profile]);
 
   if (!auth.ready) return (
     <div style={{ display:'flex', alignItems:'center', justifyContent:'center',

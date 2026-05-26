@@ -104,6 +104,10 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
 
   // Handle activity completion
   const handleComplete = useCallback(async (activityId, score, xpEarned) => {
+    // Guard: if already completed, update score but don't award XP again
+    const alreadyDone = progress[activityId]?.completed === true;
+    if (alreadyDone) xpEarned = 0;
+
     // Upsert progress — optimistic update + retry up to 3 times
     const progressData = {
       profile_id: profileId, activity_id: activityId,
@@ -298,8 +302,15 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
 
             {/* Activities */}
             {unitActivities.length === 0 ? (
-              <div style={{ textAlign:"center", padding:"32px 20px", color:"var(--text-secondary)", fontSize:13 }}>
-                Tu instructor está preparando las actividades de esta unidad. ¡Pronto disponibles!
+              <div style={{ textAlign:"center", padding:"40px 20px" }}>
+                <div style={{ fontSize:40, marginBottom:12 }}>📖</div>
+                <div style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)", marginBottom:6 }}>
+                  Contenido en preparación
+                </div>
+                <div style={{ fontSize:13, color:"var(--text-secondary)", lineHeight:1.7 }}>
+                  Tu instructor está cargando el material de esta unidad.<br/>
+                  Las actividades aparecerán aquí cuando estén publicadas.
+                </div>
               </div>
             ) : (
               <div style={{ display:"flex", flexDirection:"column", gap:8 }}>

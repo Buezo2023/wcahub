@@ -1,5 +1,6 @@
 // ─── ComunicacionesSection — Email blast + recordatorios ────────
 import { useState, useEffect } from "react";
+import { api } from "../lib/api.js";
 import { supabase } from "../lib/supabase.js";
 
 const P="#155266",PD="#e8f3f6",G="#059669",GD="#ecfdf5",R="#dc2626",RD="#fef2f2",A="#d97706";
@@ -65,14 +66,14 @@ export function ComunicacionesSection({ showToast, subView }) {
           if(!s.profile?.email) continue;
           if(s.profile?.active === false) continue; // skip inactive profiles
           const personalBody = body.replace("{nombre}",s.profile?.full_name?.split(" ")[0]||"Estudiante");
-          await fetch("/api/emails?action=blast",{method:"POST",
+          const blastRes = await fetch("/api/emails?action=blast",{method:"POST",
             headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},
             body:JSON.stringify({to:s.profile.email,toName:s.profile.full_name,subject,html:`<p style="font-family:sans-serif;line-height:1.7">${personalBody.replace(/\n/g,"<br>")}</p>`})
-          }).catch(()=>{});
-          sent++;
-          await new Promise(r=>setTimeout(r,120));
+          }).catch(()=>null);
+          if(blastRes?.ok) { sent++; } // only count confirmed sends
+          await new Promise(r=>setTimeout(r,150)); // slight rate limit
         }
-        showToast(`✓ ${sent} emails enviados`);
+        showToast(sent===students.length ? `✓ ${sent} emails enviados` : `✓ ${sent}/${students.length} emails enviados (algunos fallaron)`);
         setSubject(""); setBody("");
       }catch(e){showToast("Error: "+e.message,R);}
       finally{setSending(false);}

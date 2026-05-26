@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
 import { LMSPlayer } from "../components/lms/LMSPlayer.jsx";
-import { useSession } from "../lib/useSession.js";
 import { notifySelf, Notifs } from "../lib/notify.js";
 import { api } from "../lib/api.js";
 import { toast } from "../lib/toast.jsx";
@@ -514,7 +513,7 @@ export default function PortalEstudiante(){
   const navigate = useNavigate();
   const [user, setUser] = useState({ name:"", email:"", avatar:null });
   const [view,       setView]       = useState("inicio");
-  const [activeProg, setActiveProg] = useState("en"); // current program in practice/exam
+  const [activeProg, setActiveProg] = useState(null) // set after enrollments load; // current program in practice/exam
   const isMobile = useMobile();
   const [sideOpen, setSideOpen] = useState(false);
   const [enrolled,   setEnrolled]   = useState(Object.keys(ENROLLMENTS));

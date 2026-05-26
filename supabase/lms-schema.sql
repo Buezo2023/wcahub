@@ -117,3 +117,15 @@ RETURNS void LANGUAGE sql SECURITY DEFINER AS $$
       END
   WHERE id = p_profile_id;
 $$;
+
+-- ── XP ledger: prevent duplicate XP for same activity ─────────────
+-- Add unique constraint so the same activity can't award XP twice
+-- even in race conditions
+ALTER TABLE public.xp_ledger
+  ADD COLUMN IF NOT EXISTS source_key text GENERATED ALWAYS AS (
+    source || ':' || COALESCE(source_id::text, 'null')
+  ) STORED;
+
+CREATE UNIQUE INDEX IF NOT EXISTS idx_xp_ledger_unique
+  ON public.xp_ledger(profile_id, source_key)
+  WHERE source = 'activity';

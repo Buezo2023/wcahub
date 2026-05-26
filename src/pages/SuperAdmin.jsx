@@ -1158,7 +1158,7 @@ export default function SuperAdmin() {
 
           {/* ══ ACADEMIA ══════════════════════════════════════════════ */}
           {view==="academia" && subView==="contenido" && <LMSContentSection showToast={showToast} />}
-          {view==="academia" && subView==="students"  && <EstudiantesSection key={subView} showToast={showToast} />}
+          {view==="academia" && subView==="students"  && <EstudiantesSection showToast={showToast} />}
           {view==="academia" && subView==="groups"    && <GruposSection    showToast={showToast} />}
           {view==="academia" && subView==="teachers"  && <TeachersSection  showToast={showToast} />}
           {view==="academia" && subView==="horarios"  && <HorariosSection />}
@@ -1166,14 +1166,14 @@ export default function SuperAdmin() {
           {view==="academia" && subView==="becas"     && <BecasSection     showToast={showToast} />}
 
           {/* ══ VENTAS & CRM ══════════════════════════════════════════ */}
-          {view==="ventas"   && subView==="leads"     && <LeadsSection     key={subView} showToast={showToast} />}
-          {view==="ventas"   && subView==="b2b"       && <B2BSection       key={subView} showToast={showToast} />}
+          {view==="ventas"   && subView==="leads"     && <LeadsSection     showToast={showToast} />}
+          {view==="ventas"   && subView==="b2b"       && <B2BSection       showToast={showToast} />}
 
           {/* ══ CONTABILIDAD ══════════════════════════════════════════ */}
-          {view==="contab"   && subView==="payments"  && <PagosSection     key={subView} showToast={showToast} />}
-          {view==="contab"   && subView==="vencidos"  && <VencidosSection  key={subView} showToast={showToast} />}
+          {view==="contab"   && subView==="payments"  && <PagosSection     showToast={showToast} />}
+          {view==="contab"   && subView==="vencidos"  && <VencidosSection  showToast={showToast} />}
           {view==="contab"   && subView==="register"  && <PagosSection     showToast={showToast} initialTab="register" />}
-          {view==="contab"   && subView==="recibos"   && <RecibosSection   key={subView} showToast={showToast} />}
+          {view==="contab"   && subView==="recibos"   && <RecibosSection   showToast={showToast} />}
 
           {/* ══ COMUNICACIONES ════════════════════════════════════════ */}
           {view==="comunicaciones" && <ComunicacionesSection showToast={showToast} subView={subView} />}
