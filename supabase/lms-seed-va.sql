@@ -196,7 +196,7 @@ INSERT INTO public.unit_activities (unit_id,type,order_num,title,xp_reward,conte
     },
     {
       "title": "Notion — Tu base de conocimiento",
-      "content": "Notion es un espacio de trabajo todo-en-uno donde podés crear documentos, bases de datos, wikis y tableros. Es ideal para documentar procesos, crear manuales de operaciones y mantener información organizada.\n\n🎯 Caso de uso: Creás un 'Manual de Operaciones' en Notion para tu cliente, documentando cómo responder preguntas frecuentes, procesar pedidos y gestionar su tienda.",
+      "content": "Notion es un espacio de trabajo todo-en-uno donde podés crear documentos, bases de datos, wikis y tableros. Es ideal para documentar procesos, crear manuales de operaciones y mantener información organizada.\n\n🎯 Caso de uso: Creás un ''Manual de Operaciones'' en Notion para tu cliente, documentando cómo responder preguntas frecuentes, procesar pedidos y gestionar su tienda.",
       "highlight": "📚 El VA que documenta los procesos del cliente es irremplazable — nadie más sabe cómo funciona todo."
     },
     {
@@ -236,7 +236,7 @@ INSERT INTO public.unit_activities (unit_id,type,order_num,title,xp_reward,conte
       "situation": "Sarah te escribe en pánico a las 10 PM. ¿Cómo respondés?",
       "options": [
         {"text": "No respondo hasta el día siguiente en horario laboral.", "correct": false, "xp": 0, "feedback": "❌ Si tu cliente está en crisis y acordaron disponibilidad extendida, ignorar el mensaje daña la confianza. Al menos confirmá que lo viste."},
-        {"text": "Hi Sarah! I got your message. Let's organize everything — I'll create a project board in Asana tonight so you wake up with a clear plan. 🙌", "correct": true, "xp": 15, "feedback": "✅ Perfecto. Respondés con solución inmediata, usás su herramienta y das tranquilidad. Esto es lo que hace un VA excelente."},
+        {"text": "Hi Sarah! I got your message. Let''s organize everything — I''ll create a project board in Asana tonight so you wake up with a clear plan. 🙌", "correct": true, "xp": 15, "feedback": "✅ Perfecto. Respondés con solución inmediata, usás su herramienta y das tranquilidad. Esto es lo que hace un VA excelente."},
         {"text": "Ok, mandame la lista de las 47 cosas.", "correct": false, "xp": 5, "feedback": "⚠️ Funcional pero frío. Podés pedir más información siendo más empático y ofreciendo valor de inmediato."}
       ]
     },
@@ -319,7 +319,7 @@ INSERT INTO public.unit_activities (unit_id,type,order_num,title,xp_reward,conte
     },
     {
       "title": "Frases clave en inglés para atención al cliente",
-      "content": "Agradecimiento:\n• \"Thank you for reaching out to us.\"\n• \"We appreciate your patience.\"\n\nDisculpas:\n• \"I sincerely apologize for the inconvenience.\"\n• \"I understand your frustration and I'm here to help.\"\n\nSolución:\n• \"I'm looking into this right now and will get back to you within [time].\"\n• \"Here's what I'll do to resolve this for you.\"\n\nCierre:\n• \"Please don't hesitate to reach out if you have any other questions.\"\n• \"Is there anything else I can assist you with today?\"",
+      "content": "Agradecimiento:\n• \"Thank you for reaching out to us.\"\n• \"We appreciate your patience.\"\n\nDisculpas:\n• \"I sincerely apologize for the inconvenience.\"\n• \"I understand your frustration and I''m here to help.\"\n\nSolución:\n• \"I''m looking into this right now and will get back to you within [time].\"\n• \"Here''s what I''ll do to resolve this for you.\"\n\nCierre:\n• \"Please don''t hesitate to reach out if you have any other questions.\"\n• \"Is there anything else I can assist you with today?\"",
       "highlight": "⭐ Memorizá estas frases — las usarás todos los días con clientes de habla inglesa."
     },
     {
@@ -339,7 +339,7 @@ ON CONFLICT DO NOTHING;
 INSERT INTO public.unit_activities (unit_id,type,order_num,title,xp_reward,content) VALUES
 (u3,'fill_blank',3,'Redactá un email de atención al cliente',25,'{
   "instructions": "Completá este email de respuesta a un cliente insatisfecho. Elegí la opción que mejor refleje comunicación profesional y empática.",
-  "context": "Un cliente escribió: \"I ordered 3 weeks ago and still haven't received my package. This is unacceptable!\"",
+  "context": "Un cliente escribió: \"I ordered 3 weeks ago and still haven''t received my package. This is unacceptable!\"",
   "word_bank": ["sincerely apologize","understand","immediately","resolve","looking into","appreciate","patience"],
   "sentences": [
     {"template": "Dear [Name],\n\nThank you for reaching out. I ___ your frustration — waiting 3 weeks is certainly longer than expected.", "answer": "understand", "hint": "Verbo que expresa comprensión de la situación del cliente"},
@@ -365,9 +365,9 @@ INSERT INTO public.unit_activities (unit_id,type,order_num,title,xp_reward,conte
       ]
     },
     {
-      "situation": "El cliente responde: \"I don't want to wait. Give me my money back NOW.\" ¿Qué hacés?",
+      "situation": "El cliente responde: \"I don''t want to wait. Give me my money back NOW.\" ¿Qué hacés?",
       "options": [
-        {"text": "\"I completely understand your frustration. I'm escalating this to my supervisor right now — she will contact you before 5 PM today with a resolution. I'm also sending you a $10 store credit as an immediate gesture of goodwill.\"", "correct": true, "xp": 15, "feedback": "✅ Excelente manejo de crisis: reconocés la urgencia, escalás correctamente, das un tiempo concreto Y ofrecés algo de valor inmediato dentro de tu autorización."},
+        {"text": "\"I completely understand your frustration. I''m escalating this to my supervisor right now — she will contact you before 5 PM today with a resolution. I''m also sending you a $10 store credit as an immediate gesture of goodwill.\"", "correct": true, "xp": 15, "feedback": "✅ Excelente manejo de crisis: reconocés la urgencia, escalás correctamente, das un tiempo concreto Y ofrecés algo de valor inmediato dentro de tu autorización."},
         {"text": "\"I understand but there''s nothing I can do right now.\"", "correct": false, "xp": 0, "feedback": "❌ Nunca digas que no podés hacer nada — siempre hay algo dentro de tu alcance. Escalá el problema y ofrecé algo concreto."},
         {"text": "Le ignorás hasta que tu jefa salga de la reunión.", "correct": false, "xp": 0, "feedback": "❌ Ignorar a un cliente furioso garantiza una reseña negativa y pérdida del cliente. Siempre respondé aunque sea para reconocer el problema."}
       ]
@@ -562,7 +562,7 @@ INSERT INTO public.unit_activities (unit_id,type,order_num,title,xp_reward,conte
     {
       "title": "CV bilingüe de VA",
       "content": "Tu CV debe existir en dos versiones: español e inglés. Elementos clave:\n\n• **Resumen profesional** (3 líneas): habilidades + enfoque + propuesta de valor\n• **Herramientas dominadas**: lista concreta (Google Workspace, Canva, Trello, etc.)\n• **Experiencia**: aunque no tengas clientes pagados, incluyé proyectos académicos, voluntariado o ayuda a negocios conocidos\n• **Idiomas**: Español (nativo) + Inglés (nivel que tenés)\n• **Certificaciones**: este certificado de WCA + cualquier curso relevante\n\n💡 Para clientes de EEUU: el CV en inglés debe ser máximo 1 página.",
-      "highlight": "📄 El CV en inglés se llama 'Resume' y NO incluye foto, edad ni estado civil — es ilegal pedirlo en EEUU."
+      "highlight": "📄 El CV en inglés se llama ''Resume'' y NO incluye foto, edad ni estado civil — es ilegal pedirlo en EEUU."
     },
     {
       "title": "Los 3 modelos de negocio del VA",
@@ -651,7 +651,7 @@ INSERT INTO public.unit_activities (unit_id,type,order_num,title,xp_reward,conte
     {"q": "¿Por qué es un error decir \"whatever you think is fair\" cuando preguntan tu tarifa?",
      "opts": ["Porque es informal","Porque comunica inseguridad sobre tu propio valor y puede resultar en una tarifa muy baja","Porque suena muy ambicioso","Porque solo aplica para clientes de Europa"],
      "ans": 1, "explanation": "Un VA profesional conoce su valor y tiene una tarifa definida — dejar que el cliente fije el precio siempre resulta desfavorable."},
-    {"q": "¿Qué deberías hacer si el entrevistador dice 'Do you have any questions?'",
+    {"q": "¿Qué deberías hacer si el entrevistador dice ''Do you have any questions?''",
      "opts": ["Decir que no tenés preguntas para no parecer difícil","Preguntar inmediatamente sobre salario y vacaciones","Hacer 2-3 preguntas inteligentes sobre el rol, el equipo y la definición de éxito","Preguntar por qué salió el último VA"],
      "ans": 2, "explanation": "Hacer preguntas inteligentes muestra interés genuino, preparación e inteligencia emocional — los tres rasgos que buscan los clientes en un VA."},
     {"q": "¿Qué hace diferente a un VA de agencia vs un freelancer independiente?",
