@@ -17,6 +17,7 @@ import { HorariosSection }       from "../sections/HorariosSection.jsx";
 import { ComunicacionesSection } from "../sections/ComunicacionesSection.jsx";
 import { ReportesSection }       from "../sections/ReportesSection.jsx";
 import { RecibosSection }        from "../sections/RecibosSection.jsx";
+import { LMSContentSection }     from "../sections/LMSContentSection.jsx";
 import { PagosSection }       from "../sections/PagosSection.jsx";
 import { LeadsSection }        from "../sections/LeadsSection.jsx";
 import { GruposSection }       from "../sections/GruposSection.jsx";
@@ -74,6 +75,7 @@ const NAV = [
 const SUB_TABS = {
   academia: [
     ["progs","Programas"],["prices","Precios"],["cycle","Ciclo"],["holidays","Festivos"],
+    ["contenido","Contenido LMS"],
     ["students","Estudiantes"],["groups","Grupos"],["teachers","Docentes"],
     ["horarios","Horarios"],["atrisk","En riesgo"],["becas","Becas"],
   ],
@@ -1155,6 +1157,7 @@ export default function SuperAdmin() {
         </div>
 
           {/* ══ ACADEMIA ══════════════════════════════════════════════ */}
+          {view==="academia" && subView==="contenido" && <LMSContentSection showToast={showToast} />}
           {view==="academia" && subView==="students"  && <EstudiantesSection showToast={showToast} />}
           {view==="academia" && subView==="groups"    && <GruposSection    showToast={showToast} />}
           {view==="academia" && subView==="teachers"  && <TeachersSection  showToast={showToast} />}
