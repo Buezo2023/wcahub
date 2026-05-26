@@ -155,7 +155,7 @@ export function ComunicacionesSection({ showToast, subView }) {
         } else {
           const res=await fetch("/api/emails?action=reminders",{method:"POST",headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},body:JSON.stringify({daysOverdue:0})});
           const json=await res.json().catch(()=>({}));
-          setResult({msg:`Recordatorios enviados: ${json.sent||0}`});
+          setResult({msg:`Recordatorios enviados: ${json.data?.sent ?? json.sent ?? 0}`});
         }
       }catch(e){setResult({msg:"Error: "+e.message,error:true});}
       finally{setRunning(false);}

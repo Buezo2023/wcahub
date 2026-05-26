@@ -44,9 +44,10 @@ create table profiles (
   phone        text,
   country      text default 'HN',
   role         user_role not null default 'estudiante',
-  active       boolean default true,
-  created_at   timestamptz default now(),
-  updated_at   timestamptz default now()
+  active           boolean default true,
+  onboarding_done  boolean default false,
+  created_at       timestamptz default now(),
+  updated_at       timestamptz default now()
 );
 
 -- Auto-create profile on signup
@@ -83,7 +84,7 @@ create table programs (
 
 insert into programs (id, name, short_name, price_monthly, price_quarterly) values
   ('en',       'Inglés Completo',        'Inglés',      95.00, null),
-  ('va',       'Asistente Virtual',      'VA General',  75.00, null),
+  ('va',       'Asistente Virtual',      'VA General',  95.00, null),
   ('va_mkt',   'VA · Marketing Digital', 'VA Mkt',      null,  95.00),
   ('va_legal', 'VA · Legal Assistant',   'VA Legal',    null,  95.00),
   ('va_care',  'VA · Cuidador Remoto',   'VA Care',     null,  95.00);
@@ -327,6 +328,26 @@ create table if not exists notifications (
   link       text,
   read       boolean default false,
   created_at timestamptz default now()
+);
+
+
+-- ─── CERTIFICATES ─────────────────────────────────────────────
+create table if not exists certificates (
+  id          uuid default uuid_generate_v4() primary key,
+  student_id  uuid references students(id) on delete cascade,
+  program_id  text not null,
+  level       text,
+  data        jsonb,
+  issued_at   timestamptz default now()
+);
+
+-- ─── STUDENT NOTES ────────────────────────────────────────────
+create table if not exists student_notes (
+  id          uuid default uuid_generate_v4() primary key,
+  student_id  uuid references students(id) on delete cascade,
+  author_id   uuid references profiles(id),
+  note        text not null,
+  created_at  timestamptz default now()
 );
 
 -- ─── ÍNDICES para performance ──────────────────────────────────

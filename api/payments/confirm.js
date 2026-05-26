@@ -60,7 +60,7 @@ export default async function handler(req, res) {
         .from('enrollments')
         .select('next_payment_date')
         .eq('id', payment.enrollment_id)
-        .single();
+        .maybeSingle();
 
       if (enroll) {
         const current = enroll.next_payment_date

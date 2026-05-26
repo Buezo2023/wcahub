@@ -167,6 +167,33 @@ DO $$ BEGIN
   );
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
+
+-- ── 14. attendance RLS policies ──────────────────────────────────
+ALTER TABLE public.attendance ENABLE ROW LEVEL SECURITY;
+DO $$ BEGIN
+  CREATE POLICY "attendance_read" ON public.attendance FOR SELECT USING (
+    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid()
+      AND p.role IN ('admin','super_admin','coordinadora','docente'))
+    OR EXISTS (
+      SELECT 1 FROM enrollments e JOIN students s ON s.id = e.student_id
+      WHERE e.id = enrollment_id AND s.profile_id = auth.uid()
+    )
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  CREATE POLICY "attendance_write" ON public.attendance FOR ALL USING (
+    EXISTS (SELECT 1 FROM profiles p WHERE p.id = auth.uid()
+      AND p.role IN ('admin','super_admin','coordinadora','docente'))
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- ── 15. audit_log write policy (frontend direct writes) ──────────
+DO $$ BEGIN
+  CREATE POLICY "audit_write_self" ON public.audit_log FOR INSERT WITH CHECK (
+    actor_id = auth.uid() OR actor_id IS NULL
+  );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
 -- ── 10. Verify: show table status ────────────────────────────────
 SELECT table_name,
   (SELECT COUNT(*) FROM information_schema.columns

@@ -69,7 +69,7 @@ export default async function handler(req, res) {
       .select('id, status')
       .eq('student_id', studentId)
       .eq('program_id', programId)
-      .single();
+      .maybeSingle();
 
     if (existing?.status === 'active') {
       return err(res, { status: 409, message: 'El estudiante ya está matriculado en este programa' });
@@ -82,7 +82,7 @@ export default async function handler(req, res) {
         .from('groups')
         .select('id, schedule, days, capacity, program_id, level, teacher_groups(teacher:staff(profile:profiles(full_name)))')
         .eq('id', groupId)
-        .single();
+        .maybeSingle();
       group = g;
 
       // Check capacity
