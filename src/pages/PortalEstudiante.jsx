@@ -584,6 +584,7 @@ export default function PortalEstudiante(){
               byProg[p.program_id][p.unit] = { score: p.exam_score, passed: p.passed };
             });
             setRealProgress(byProg);
+            setProgressHistory(prog || []);
           }
           // Load payment history
           const { data: pays } = await supabase
@@ -593,6 +594,14 @@ export default function PortalEstudiante(){
             .order("created_at", { ascending: false })
             .limit(10);
           if (pays?.length) setRealPayments(pays);
+
+          // Load certificates
+          const { data: certs } = await supabase
+            .from('certificates')
+            .select('id,program_id,level,issued_at')
+            .eq('student_id', student.id)
+            .order('issued_at', { ascending: false });
+          setMyCertificates(certs || []);
         });
     });
   }, [navigate]);
@@ -606,6 +615,8 @@ export default function PortalEstudiante(){
   const [profileForm,      setProfileForm]     = useState({ full_name:"", phone:"", preferred_name:"" });
   const [profileSaving,    setProfileSaving]   = useState(false);
   const [profileSaved,     setProfileSaved]    = useState(false);
+  const [myCertificates,   setMyCertificates]  = useState([]);
+  const [progressHistory,  setProgressHistory] = useState([]);
 
   const enrolledProgs = ALL_PROGRAMS.filter(p=>enrolled.includes(p.id));
   const unenrolledProgs = ALL_PROGRAMS.filter(p=>!enrolled.includes(p.id));

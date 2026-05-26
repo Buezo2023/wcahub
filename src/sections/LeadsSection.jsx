@@ -194,7 +194,7 @@ export function LeadsSection({ showToast }) {
       {addModal&&(
         <div style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
           onClick={e=>{if(e.target===e.currentTarget)setAddModal(false);}}>
-          <div style={{background:"var(--bg-surface)",borderRadius:18,padding:24,width:"min(400px, calc(100vw - 32px))",maxWidth:"100%",width:"100%",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)"}}>
+          <div style={{background:"var(--bg-surface)",borderRadius:18,padding:24,width:"min(400px, calc(100vw - 32px))",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)"}}>
             <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:18}}>Nuevo lead</div>
             {[["Nombre *","full_name","text"],["Email *","email","email"],["Teléfono","phone","tel"],["Fuente","source","text"]].map(([l,k,t])=>(
               <div key={k} style={{marginBottom:12}}>

@@ -146,7 +146,7 @@ export function GruposSection({ showToast }) {
       {addModal&&(
         <div style={{position:"fixed",inset:0,zIndex:10000,background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
           onClick={e=>{if(e.target===e.currentTarget)setAddModal(false);}}>
-          <div style={{background:"var(--bg-surface)",borderRadius:18,padding:24,width:"min(420px, calc(100vw - 32px))",maxWidth:"100%",width:"100%",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)"}}>
+          <div style={{background:"var(--bg-surface)",borderRadius:18,padding:24,width:"min(420px, calc(100vw - 32px))",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)"}}>
             <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:18}}>Nuevo grupo</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:12}}>
               {[["Programa","program_id","select",PROGRAMS],["Nivel","level","select",LEVELS.map(l=>[l,l])]].map(([l,k,t,opts])=>(
