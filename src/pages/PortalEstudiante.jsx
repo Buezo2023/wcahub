@@ -88,7 +88,7 @@ const SKILLS = {
   va:[{name:"Comunicación",total:24,done:0,score:0,color:"#7c3aed"},{name:"Herramientas",total:18,done:0,score:0,color:"#0e7490"},{name:"Inglés profesional",total:20,done:0,score:0,color:"#166534"},{name:"Productividad",total:16,done:0,score:0,color:"#c2410c"},{name:"Clientes",total:14,done:0,score:0,color:"#be185d"},{name:"Proyectos",total:12,done:0,score:0,color:"#1e40af"}],
 };
 
-const PROG_PROGRESS = (id)=>{
+const PROG_PROGRESS = (id, realEnrollments = {})=>{
   // Returns zeros for all units — real progress loads from student_progress table in Supabase
   // Units completed are tracked via ExamModule component which writes to student_progress
   const en = realEnrollments[id] || {};
@@ -631,7 +631,7 @@ export default function PortalEstudiante(){
   const skills = activeProg === "en"
     ? (SKILLS_BY_LEVEL[currentLevel] || SKILLS_BY_LEVEL["B1"] || [])
     : (SKILLS[activeProg] || SKILLS[enrolled[0]] || []);
-  const progress = PROG_PROGRESS(activeProg);
+  const progress = PROG_PROGRESS(activeProg, realEnrollments);
   const totalActs = (skills||[]).reduce((a,s)=>a+s.total,0);
   const totalDone = (skills||[]).reduce((a,s)=>a+(s.done||0),0);
   const avgScore  = skills.length>0?Math.round(skills.reduce((a,s)=>a+(s.score||0),0)/skills.length):0;
