@@ -55,13 +55,32 @@ export default async function handler(req, res) {
               .eq('student_id', student.id)
               .eq('program_id', programId);
             // Record confirmed payment
-            await admin.from('payments').insert({
+            const payAmount = session.amount_total / 100;
+            const { data: newPayment } = await admin.from('payments').insert({
               student_id:   student.id,
-              amount:       session.amount_total / 100,
+              amount:       payAmount,
               method:       'stripe',
               status:       'confirmed',
               stripe_id:    session.payment_intent || session.id,
-            });
+              confirmed_at: new Date().toISOString(),
+            }).select('id').single().catch(() => ({ data: null }));
+
+            // Advance next_payment_date by 1 month (keep billing cycle in sync)
+            const { data: enroll } = await admin.from('enrollments')
+              .select('id, next_payment_date')
+              .eq('student_id', student.id)
+              .eq('program_id', programId)
+              .maybeSingle();
+            if (enroll) {
+              const current = enroll.next_payment_date
+                ? new Date(enroll.next_payment_date)
+                : new Date();
+              const next = new Date(current);
+              next.setMonth(next.getMonth() + 1);
+              await admin.from('enrollments')
+                .update({ next_payment_date: next.toISOString().slice(0, 10) })
+                .eq('id', enroll.id);
+            }
             // Notify student
             await admin.from('notifications').insert({
               user_id: profile.id,

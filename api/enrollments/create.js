@@ -53,7 +53,7 @@ export default async function handler(req, res) {
         .select('id, status')
         .eq('student_id', studentId)
         .eq('program_id', prereq)
-        .single();
+        .maybeSingle();
 
       if (!prereqEnroll || prereqEnroll.status !== 'active') {
         return err(res, {

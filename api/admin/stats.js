@@ -53,7 +53,7 @@ export default async function handler(req, res) {
     const mrrGrowth = mrrLast > 0 ? ((mrr - mrrLast) / mrrLast * 100).toFixed(1) : 0;
 
     // Program breakdown
-    const enrollsByProgram = (programBreakdownRes.data || []).reduce((acc, e) => {
+    const byProgram = (programBreakdownRes.data || []).reduce((acc, e) => {
       acc[e.program_id] = (acc[e.program_id] || 0) + 1;
       return acc;
     }, {});
@@ -77,7 +77,8 @@ export default async function handler(req, res) {
       totalStaff:       staffRes.count || 0,
 
       // Breakdowns
-      enrollsByProgram,
+      byProgram,
+      activePrograms:   Object.keys(byProgram).filter(k => byProgram[k] > 0).length,
       leadFunnel,
 
       // Revenue by program (current month)

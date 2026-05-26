@@ -87,10 +87,11 @@ export default async function handler(req, res) {
       try {
         const programNames = { en:'Inglés Completo', va:'Asistente Virtual', va_mkt:'VA Marketing', va_legal:'VA Legal', va_care:'VA Cuidador' };
         const programId = payment.student.enrollments?.[0]?.program_id;
+        const firstName = payment.student.profile.full_name.split(' ')[0];
 
         if (action === 'confirm') {
           const { subject, html } = EmailTemplates.paymentConfirmed({
-            name:        payment.student.profile.full_name.split(' ')[0],
+            name:        firstName,
             amount:      Number(payment.amount).toFixed(2),
             programName: programNames[programId] || 'WCA Academy',
             period:      payment.period_start
@@ -99,6 +100,21 @@ export default async function handler(req, res) {
             code: payment.reference_code,
           });
           await sendEmail({ to: payment.student.profile.email, toName: payment.student.profile.full_name, subject, html });
+        } else {
+          // Rejection — notify student so they can re-submit proof
+          await sendEmail({
+            to:     payment.student.profile.email,
+            toName: payment.student.profile.full_name,
+            subject: 'Tu comprobante de pago fue rechazado — WCA Academy',
+            html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px">
+              <h2 style="color:#dc2626;margin:0 0 12px">Comprobante rechazado</h2>
+              <p style="color:#475569;line-height:1.7">Hola <strong>${firstName}</strong>, tu comprobante de pago de <strong>$${Number(payment.amount).toFixed(2)}</strong> fue revisado y no pudo ser aprobado.</p>
+              ${reason ? `<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;margin:16px 0;color:#991b1b"><strong>Motivo:</strong> ${reason}</div>` : ''}
+              <p style="color:#475569;line-height:1.7">Por favor volvé a subir tu comprobante desde tu portal asegurándote de que sea legible y muestre el monto y la referencia correctamente.</p>
+              <a href="https://wcahub.vercel.app/portal" style="display:inline-block;background:#155266;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:700;margin-top:8px">Ir a mi portal →</a>
+              <p style="color:#94a3b8;font-size:12px;margin-top:20px">Si tenés dudas, contactá a cobros por WhatsApp.</p>
+            </div>`,
+          });
         }
       } catch (emailErr) {
         console.error('Email error (non-fatal):', emailErr);

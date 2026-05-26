@@ -5,7 +5,7 @@
 // - Auto-suspends after 15 days overdue
 // Auth: Vercel cron token OR internal
 
-import { getSupabaseAdmin, sendEmail, EmailTemplates } from '../_utils.js';
+import { getSupabaseAdmin, sendEmail, EmailTemplates, requireAuth } from '../_utils.js';
 
 const GRACE_DAYS    = 5;   // warn before due
 const SUSPEND_DAYS  = 15;  // auto-suspend after X days overdue
@@ -13,11 +13,18 @@ const PROG_NAMES    = { en:'Inglés Completo', va:'Asistente Virtual',
                         va_mkt:'VA Marketing', va_legal:'VA Legal', va_care:'VA Cuidador' };
 
 export default async function handler(req, res) {
-  // Allow Vercel cron (header) or manual call with secret
+  // Allow: (1) Vercel cron, (2) matching CRON_SECRET env var, (3) super_admin JWT
   const isCron   = req.headers['x-vercel-cron'] === '1';
-  const isSecret = req.headers['x-cron-secret'] === process.env.CRON_SECRET;
+  const cronEnv  = process.env.CRON_SECRET;
+  const isSecret = cronEnv && req.headers['x-cron-secret'] === cronEnv;
+
+  let isAdmin = false;
   if (!isCron && !isSecret) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    try {
+      const { profile } = await requireAuth(req);
+      isAdmin = profile.role === 'super_admin';
+    } catch (_) {}
+    if (!isAdmin) return res.status(401).json({ error: 'Unauthorized' });
   }
 
   if (req.method !== 'GET') return res.status(405).end();
@@ -112,6 +119,25 @@ export default async function handler(req, res) {
           const { data: current } = await admin
             .from('enrollments').select('status').eq('id', enroll.id).single();
           if (current?.status === 'active') {
+            // Safety check: do NOT suspend if there's a pending payment in the last 5 days
+            const fiveDaysAgo = new Date(today);
+            fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+            const { data: recentPending } = await admin
+              .from('payments')
+              .select('id')
+              .eq('enrollment_id', enroll.id)
+              .eq('status', 'pending')
+              .gte('created_at', fiveDaysAgo.toISOString())
+              .limit(1);
+            if (recentPending?.length) {
+              await admin.from('audit_log').insert({
+                action: 'auto_suspend_skipped',
+                entity: 'enrollment',
+                entity_id: enroll.id,
+                metadata: { reason: 'pending_payment_found', days_overdue: daysLate },
+              }).catch(() => {});
+              continue; // skip — student has a pending payment being reviewed
+            }
             await admin.from('enrollments').update({
               status:           'suspended',
               suspended_at:     today.toISOString(),

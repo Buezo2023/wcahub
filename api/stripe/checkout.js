@@ -7,7 +7,7 @@ import { requireAuth, ok, err, setCORS, getSupabaseAdmin, checkRateLimit } from 
 
 const PROGRAM_PRICES = {
   en:       { name: 'Inglés Completo',          amount: 9500,  interval: 'month' },
-  va:       { name: 'Asistente Virtual General', amount: 7500,  interval: 'month' },
+  va:       { name: 'Asistente Virtual General', amount: 9500,  interval: 'month' },
   va_mkt:   { name: 'VA · Marketing Digital',   amount: 9500,  interval: 'month' },
   va_legal: { name: 'VA · Legal Assistant',     amount: 9500,  interval: 'month' },
   va_care:  { name: 'VA · Cuidador Remoto',     amount: 9500,  interval: 'month' },

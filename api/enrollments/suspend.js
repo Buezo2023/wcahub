@@ -26,9 +26,17 @@ export default async function handler(req, res) {
 
     const admin = getSupabaseAdmin();
 
+    // On reactivate: reset next_payment_date to today + 1 month
+    // (prevents immediate re-suspension if date is in the past)
+    const reactivateDate = (() => {
+      const d = new Date();
+      d.setMonth(d.getMonth() + 1);
+      return d.toISOString().slice(0, 10);
+    })();
+
     const updates = action === 'suspend'
       ? { status: 'suspended', suspended_at: new Date().toISOString(), suspended_reason: reason || null }
-      : { status: 'active',    suspended_at: null, suspended_reason: null };
+      : { status: 'active', suspended_at: null, suspended_reason: null, next_payment_date: reactivateDate };
 
     const { data, error } = await admin
       .from('enrollments')

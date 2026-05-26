@@ -63,7 +63,7 @@ export function ComunicacionesSection({ showToast, subView }) {
         for(const s of students){
           if(!s.profile?.email) continue;
           const personalBody = body.replace("{nombre}",s.profile?.full_name?.split(" ")[0]||"Estudiante");
-          await fetch("/api/emails?action=welcome",{method:"POST",
+          await fetch("/api/emails?action=blast",{method:"POST",
             headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},
             body:JSON.stringify({to:s.profile.email,toName:s.profile.full_name,subject,html:`<p style="font-family:sans-serif;line-height:1.7">${personalBody.replace(/\n/g,"<br>")}</p>`})
           }).catch(()=>{});
