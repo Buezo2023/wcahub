@@ -1153,6 +1153,35 @@ export default function SuperAdmin() {
           )}
 
         </div>
+
+          {/* ══ ACADEMIA ══════════════════════════════════════════════ */}
+          {view==="academia" && subView==="students"  && <EstudiantesSection showToast={showToast} />}
+          {view==="academia" && subView==="groups"    && <GruposSection    showToast={showToast} />}
+          {view==="academia" && subView==="teachers"  && <TeachersSection  showToast={showToast} />}
+          {view==="academia" && subView==="horarios"  && <HorariosSection />}
+          {view==="academia" && subView==="atrisk"    && <AtRiskSection    showToast={showToast} />}
+          {view==="academia" && subView==="becas"     && <BecasSection     showToast={showToast} />}
+
+          {/* ══ VENTAS & CRM ══════════════════════════════════════════ */}
+          {view==="ventas"   && subView==="leads"     && <LeadsSection     showToast={showToast} />}
+          {view==="ventas"   && subView==="b2b"       && <B2BSection       showToast={showToast} />}
+
+          {/* ══ CONTABILIDAD ══════════════════════════════════════════ */}
+          {view==="contab"   && subView==="payments"  && <PagosSection     showToast={showToast} />}
+          {view==="contab"   && subView==="vencidos"  && <VencidosSection  showToast={showToast} />}
+          {view==="contab"   && subView==="register"  && <PagosSection     showToast={showToast} initialTab="register" />}
+          {view==="contab"   && subView==="recibos"   && <RecibosSection   showToast={showToast} />}
+
+          {/* ══ COMUNICACIONES ════════════════════════════════════════ */}
+          {view==="comunicaciones" && <ComunicacionesSection showToast={showToast} subView={subView} />}
+
+          {/* ══ REPORTES ══════════════════════════════════════════════ */}
+          {view==="reportes" && <ReportesSection showToast={showToast} subView={subView} />}
+
+          {/* ══ RRHH — extra sub-tab handled by inline code above ═══ */}
+
+          {/* ══ SISTEMA — handled inline above ════════════════════════ */}
+
       </main>
 
       {/* ── MODALES ── */}
