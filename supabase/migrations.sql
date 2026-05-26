@@ -248,6 +248,8 @@ CREATE INDEX IF NOT EXISTS idx_notif_user_unread ON public.notifications(user_id
 
 
 -- ── B2B: add program_id column ────────────────────────────────────
+-- b2b_companies.program_id: use program_id enum type to match programs.id
+-- No FK constraint — store as text to avoid enum dependency issues
 ALTER TABLE public.b2b_companies
-  ADD COLUMN IF NOT EXISTS program_id text REFERENCES public.programs(id),
-  ADD COLUMN IF NOT EXISTS program_name text; -- cached name for display
+  ADD COLUMN IF NOT EXISTS program_id text,       -- matches programs.id values (en, va, etc.)
+  ADD COLUMN IF NOT EXISTS program_name text;      -- cached name for display
