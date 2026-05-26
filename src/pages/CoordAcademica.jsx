@@ -631,6 +631,7 @@ export default function CoordAcademica() {
                     <div>
                       <label style={{ fontSize:13, color:B.textSec, display:"block", marginBottom:4 }}>Cupo máximo</label>
                       <input type="number" value={newGroup.cap} onChange={e=>setNewGroup(g=>({...g,cap:+e.target.value}))} style={{ width:"100%", padding:"9px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.bg, fontFamily:"inherit" }} />
+                      <div style={{fontSize:11,color:"var(--text-tertiary)",marginTop:3}}>Ej: 15 — máx. de estudiantes por grupo</div>
                     </div>
                   </div>
                   <div style={{ marginBottom:12 }}>

@@ -173,7 +173,9 @@ export function VentasSection({ showToast }) {
                   </tr></thead>
                   <tbody>
                     {filtered.map(l=>(
-                      <tr key={l.id} style={{borderTop:"1px solid var(--border-tertiary)"}}>
+                      <tr key={l.id} onMouseEnter={e=>e.currentTarget.style.background="var(--bg-surface-subtle)"}
+              onMouseLeave={e=>e.currentTarget.style.background=""}
+              style={{borderTop:"1px solid var(--border-tertiary)",transition:"background .1s"}}>
                         <td style={{padding:"8px 12px",fontWeight:600,color:"var(--text-primary)"}}>{l.full_name}</td>
                         <td style={{padding:"8px 12px",fontSize:11,color:"var(--text-secondary)"}}>{l.email||"—"}</td>
                         <td style={{padding:"8px 12px"}}><StageTag stage={l.stage}/></td>

@@ -132,7 +132,9 @@ export function PagosSection({ showToast, initialTab }) {
               {filtered.map(p=>{
                 const [bg,color]=statusColor(p.status);
                 return (
-                  <tr key={p.id} style={{borderTop:"1px solid var(--border-tertiary)"}}>
+                  <tr key={p.id} onMouseEnter={e=>e.currentTarget.style.background="var(--bg-surface-subtle)"}
+              onMouseLeave={e=>e.currentTarget.style.background=""}
+              style={{borderTop:"1px solid var(--border-tertiary)",transition:"background .1s"}}>
                     <td style={{padding:"10px 12px"}}>
                       <div style={{fontWeight:600,color:"var(--text-primary)"}}>{p.student?.profile?.full_name||"—"}</div>
                       <div style={{fontSize:11,color:"var(--text-secondary)"}}>{p.enrollment?.program_id?.toUpperCase()||"—"}</div>

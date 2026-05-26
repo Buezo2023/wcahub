@@ -141,7 +141,12 @@ export function LeadsSection({ showToast }) {
                 {leads.map(l=>{
                   const st=STAGES.find(s=>s.id===l.stage)||STAGES[0];
                   return(
-                    <tr key={l.id} onClick={()=>setSel(sel?.id===l.id?null:l)} style={{borderTop:"1px solid var(--border-tertiary)",cursor:"pointer",background:sel?.id===l.id?"var(--bg-surface-subtle)":"transparent"}}>
+                    <tr key={l.id}
+              onMouseEnter={e=>{if(!e.currentTarget.dataset.sel)e.currentTarget.style.background="var(--bg-surface-subtle)"}}
+              onMouseLeave={e=>{if(!e.currentTarget.dataset.sel)e.currentTarget.style.background=""}}
+              onMouseDown={e=>e.currentTarget.style.opacity=".8"}
+              onMouseUp={e=>e.currentTarget.style.opacity="1"}
+              onClick={()=>setSel(sel?.id===l.id?null:l)} style={{borderTop:"1px solid var(--border-tertiary)",cursor:"pointer",background:sel?.id===l.id?"var(--bg-surface-subtle)":"transparent"}}>
                       <td style={{padding:"10px 12px",fontWeight:600,color:"var(--text-primary)"}}>{l.full_name}</td>
                       <td style={{padding:"10px 12px",fontSize:12,color:"var(--text-secondary)"}}>{l.email}</td>
                       <td style={{padding:"10px 12px"}}><span style={{fontSize:11,padding:"2px 8px",borderRadius:12,background:st.bg,color:st.color,fontWeight:600}}>{st.label}</span></td>

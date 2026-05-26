@@ -234,7 +234,10 @@ export function UserManagementSection({ showToast }) {
                     const activeEnrolls = u.students?.[0]?.enrollments?.filter(e => e.status === "active") || [];
                     const isConflict = conflict.some(c => c.id === u.id);
                     return (
-                      <tr key={u.id} style={{ borderTop: "1px solid var(--border-tertiary)", background: isConflict ? "#fff5f5" : "transparent" }}>
+                      <tr key={u.id}
+                        onMouseEnter={e=>{ if(!isConflict) e.currentTarget.style.background="var(--bg-surface-subtle)"; }}
+                        onMouseLeave={e=>{ e.currentTarget.style.background=isConflict?"#fff5f5":""; }}
+                        style={{ borderTop: "1px solid var(--border-tertiary)", background: isConflict ? "#fff5f5" : "transparent", transition:"background .1s" }}>
                         <td style={{ padding: "8px 12px", fontWeight: 600, color: "var(--text-primary)" }}>
                           {isConflict && <i className="ti ti-alert-triangle" title="Rol conflictivo" style={{color:"var(--amber)",marginRight:5,fontSize:14}} aria-label="Rol conflictivo"/>}
                           {u.full_name || "—"}

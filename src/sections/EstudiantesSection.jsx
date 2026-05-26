@@ -158,7 +158,12 @@ export function EstudiantesSection({ showToast }) {
                     const prog = s.enrollments?.[0]?.program_id||"—";
                     const isSel = sel?.id===s.id;
                     return (
-                      <tr key={s.id} onClick={()=>setSel(isSel?null:s)}
+                      <tr key={s.id}
+              onMouseEnter={e=>{if(!e.currentTarget.dataset.sel)e.currentTarget.style.background="var(--bg-surface-subtle)"}}
+              onMouseLeave={e=>{if(!e.currentTarget.dataset.sel)e.currentTarget.style.background=""}}
+              onMouseDown={e=>e.currentTarget.style.opacity=".8"}
+              onMouseUp={e=>e.currentTarget.style.opacity="1"}
+              onClick={()=>setSel(isSel?null:s)}
                         style={{borderTop:"1px solid var(--border-tertiary)",cursor:"pointer",background:isSel?"var(--bg-surface-subtle)":"transparent"}}>
                         <td style={{padding:"10px 12px"}}>
                           <div style={{fontWeight:600,color:"var(--text-primary)"}}>{s.profile?.full_name||"—"}</div>

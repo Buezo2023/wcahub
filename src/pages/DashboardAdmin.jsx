@@ -192,6 +192,7 @@ function EnrollForm({ groups, onSubmit, onCancel }) {
         <label style={{ fontSize:12, color:"var(--text-secondary)", display:"block", marginBottom:3 }}>Precio mensual (USD)</label>
         <input type="number" value={form.price} onChange={e=>set("price",+e.target.value)}
           style={{ width:"100%", padding:"8px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:13, color:"var(--text-primary)", background:"var(--bg-surface-subtle)", fontFamily:"inherit" }}/>
+        <div style={{fontSize:11,color:"var(--text-tertiary)",marginTop:4}}>Monto en USD · Ej: 95 para $95/mes</div>
       </div>
       <div style={{ display:"flex", gap:8 }}>
         <button onClick={onCancel} style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:8, fontSize:13, cursor:"pointer", fontFamily:"inherit" }}>Cancelar</button>

@@ -38,7 +38,9 @@ function TableWrap({headers,rows,empty="Sin datos"}){
         </tr></thead>
         <tbody>
           {rows.map((row,i)=>(
-            <tr key={i} style={{borderTop:"1px solid var(--border-tertiary)"}}>
+            <tr key={i} onMouseEnter={e=>e.currentTarget.style.background="var(--bg-surface-subtle)"}
+              onMouseLeave={e=>e.currentTarget.style.background=""}
+              style={{borderTop:"1px solid var(--border-tertiary)",transition:"background .1s"}}>
               {row.map((cell,j)=><td key={j} style={{padding:"8px 12px",color:"var(--text-primary)"}}>{cell}</td>)}
             </tr>
           ))}

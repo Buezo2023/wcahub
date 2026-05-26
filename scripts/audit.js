@@ -90,12 +90,15 @@ for (const f of allSrc) {
     if (subTabBlocks > 1)
       err(fp, `Sub-tabs de academia duplicados (${subTabBlocks}x) — eliminar el bloque inline redundante`);
 
-    // Check that all sections are imported before being used in JSX
+    // Check that all sections are imported OR lazy-loaded before being used in JSX
     const usedSections = [...c.matchAll(/<(\w+Section)\s/g)].map(m => m[1]);
     const importedSections = [...c.matchAll(/import \{ (\w+Section) \}/g)].map(m => m[1]);
+    // Also count React.lazy() declarations as valid
+    const lazySections = [...c.matchAll(/const (\w+Section)\s*=\s*React\.lazy/g)].map(m => m[1]);
+    const allDeclared = new Set([...importedSections, ...lazySections]);
     for (const s of usedSections) {
-      if (!importedSections.includes(s))
-        err(fp, `<${s}> usado en JSX pero no importado → pantalla en blanco`);
+      if (!allDeclared.has(s))
+        err(fp, `<${s}> usado en JSX pero no importado ni lazy-loaded → pantalla en blanco`);
     }
   }
 

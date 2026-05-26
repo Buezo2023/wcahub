@@ -170,6 +170,7 @@ export function GruposSection({ showToast }) {
               <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Capacidad</div>
               <input type="number" value={form.capacity} onChange={e=>setForm(p=>({...p,capacity:+e.target.value}))}
                 style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+              <div style={{fontSize:11,color:"var(--text-tertiary)",marginTop:4}}>Máx. de estudiantes por grupo. Ej: 15</div>
             </div>
             <div style={{display:"flex",gap:8}}>
               <button onClick={()=>setAddModal(false)} style={{flex:1,padding:"10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>Cancelar</button>

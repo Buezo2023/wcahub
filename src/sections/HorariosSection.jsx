@@ -89,7 +89,9 @@ export function HorariosSection() {
                   const pct=(enrolled(g)/(g.capacity||25))*100;
                   const color=progColor[g.program_id]||P;
                   return(
-                    <tr key={g.id} style={{borderTop:"1px solid var(--border-tertiary)"}}>
+                    <tr key={g.id} onMouseEnter={e=>e.currentTarget.style.background="var(--bg-surface-subtle)"}
+              onMouseLeave={e=>e.currentTarget.style.background=""}
+              style={{borderTop:"1px solid var(--border-tertiary)",transition:"background .1s"}}>
                       <td style={{padding:"10px 12px"}}>
                         <span style={{fontWeight:700,color:color}}>{g.level}</span>
                         <div style={{fontSize:11,color:"var(--text-tertiary)"}}>U{g.active_unit}</div>

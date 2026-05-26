@@ -1,5 +1,6 @@
 // ─── LMSContentSection — Gestión de contenido LMS en SuperAdmin ─
 import { useState, useEffect } from "react";
+import { useConfirm } from "../lib/ConfirmModal.jsx";
 import { supabase } from "../lib/supabase.js";
 
 const P="#155266",PD="#e8f3f6",G="#059669",GD="#ecfdf5",R="#dc2626",RD="#fef2f2",A="#d97706",AD="#fffbeb";
@@ -72,6 +73,7 @@ function VideoEditor({content,onChange}){
           placeholder={"Los estudiantes aprenderán...\nHabilidad 2\nHabilidad 3"}
           style={{width:"100%",padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",resize:"vertical"}}/>
       </div>
+      {ConfirmUI}
     </div>
   );
 }
@@ -241,6 +243,7 @@ function LessonEditor({content,onChange}){
 
 // ── Main Section Component ────────────────────────────────────────
 export function LMSContentSection({ showToast }) {
+  const [confirm, ConfirmUI] = useConfirm();
   const [prog,      setProg]      = useState("va");
   const [level,     setLevel]     = useState("A1");
   const [units,     setUnits]     = useState([]);
@@ -329,7 +332,14 @@ export function LMSContentSection({ showToast }) {
 
   // Delete activity
   async function deleteActivity(actId){
-    if(!window.confirm("¿Eliminar esta actividad? Esta acción no se puede deshacer.")) return;
+    const ok = await confirm({
+      title: "¿Eliminar actividad?",
+      body: "Esta acción no se puede deshacer. El progreso de los estudiantes en esta actividad se perderá.",
+      danger: true,
+      confirmText: "Sí, eliminar",
+      cancelText: "Cancelar",
+    });
+    if(!ok) return;
     await supabase.from("unit_activities").delete().eq("id",actId);
     setActivities(as=>as.filter(a=>a.id!==actId));
     if(selAct?.id===actId) setSelAct(null);
