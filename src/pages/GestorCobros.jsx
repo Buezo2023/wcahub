@@ -199,25 +199,34 @@ export default function GestorCobros() {
   ), [searchHist, displayHistory]);
 
   async function confirmTransfer(id) {
-    setConfirmed(c => [...c, id]);
     setSelTransfer(null);
     // Find the transfer to get student info
     const transfer = [...(pending||[]), ...(displayHistory||[])].find(t => t.id === id);
     if (transfer?._dbId) {
-      // Only update local state AFTER Supabase confirms
+      // Fetch authenticated user for confirmed_by — never block confirmation on this
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError && import.meta.env.DEV) {
+        console.warn("[GestorCobros] getUser warn:", userError.message);
+      }
+
+      // Update Supabase FIRST — only set local state if it succeeds
       const { error: updateErr } = await supabase.from("payments")
         .update({
           status:       "confirmed",
           confirmed_at: new Date().toISOString(),
+          confirmed_by: user?.id || null,
         })
         .eq("id", transfer._dbId);
+
       if (updateErr) {
         console.error("[GestorCobros] confirm failed:", updateErr);
-        setConfirmed(c => c.filter(x => x !== id)); // rollback optimistic update
         toast.error("Error al confirmar el pago. Intentá de nuevo.");
-        return;
+        return; // do NOT update local state
       }
     }
+
+    // Only mark as confirmed locally after Supabase succeeded (or no _dbId)
+    setConfirmed(c => [...c, id]);
     // Find student profile to notify
     if (transfer?.studentId || transfer?.student) {
       const name = transfer.student || "";
