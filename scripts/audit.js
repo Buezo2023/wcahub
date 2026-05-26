@@ -156,6 +156,14 @@ for (const f of allSrc) {
     }
   }
 
+
+  // ── C12: CSS vars in React inline style numeric props ────────
+  // React inline styles require NUMBERS for zIndex, not CSS variable strings
+  const cssVarInNumeric = [...c.matchAll(/(?:zIndex|(?<![a-zA-Z])order|(?<![a-zA-Z])flex(?!Direction|Wrap|Shrink|Grow|Basis|Flow)|(?<![a-zA-Z])opacity):\s*["']var\(/g)];
+  if (cssVarInNumeric.length) {
+    err(fp, `${cssVarInNumeric.length} CSS var(--) en propiedad numérica inline — React requiere número, no string CSS.`);
+  }
+
   // ── C10: Supabase .eq() on joined tables (invalid syntax) ───
   const badEq = [...c.matchAll(/\.eq\(['"][\w]+\.[\w]+['"]/g)];
   if (badEq.length)
