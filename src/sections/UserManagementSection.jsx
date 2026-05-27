@@ -491,6 +491,12 @@ export function UserManagementSection({ showToast }) {
               </label>
             </div>
 
+            {editForm.role !== editModal.user.role && (
+              <div style={{ fontSize:11, color:"var(--text-secondary)", background:"var(--bg-surface-subtle)", borderRadius:8, padding:"8px 12px", marginBottom:12 }}>
+                💡 El cambio de rol toma efecto la próxima vez que el usuario cierre sesión y vuelva a ingresar.
+              </div>
+            )}
+
             <div style={{ display:"flex", gap:8 }}>
               <button onClick={()=>setEditModal(null)}
                 style={{ flex:1, padding:"10px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:9, fontSize:13, cursor:"pointer", fontFamily:"inherit", color:"var(--text-secondary)" }}>
