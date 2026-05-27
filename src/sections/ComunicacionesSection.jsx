@@ -147,7 +147,7 @@ export function ComunicacionesSection({ showToast, subView }) {
       try{
         const {data:{session}}=await supabase.auth.getSession();
         if(type==="manual"){
-          const res=await api.get("/api/jobs/daily-billing", {headers:{"x-cron-secret":"manual-trigger"}});
+          const res=await api.get("/api/jobs/daily-billing");
           const json=await res.json().catch(()=>({}));
           setResult({msg:`Ciclo ejecutado: ${json.results?.preReminders?.sent||0} pre-avisos, ${json.results?.dueToday?.sent||0} vencen hoy, ${json.results?.overdueWarning?.sent||0} vencidos, ${json.results?.autoSuspended?.count||0} suspendidos`});
         } else {

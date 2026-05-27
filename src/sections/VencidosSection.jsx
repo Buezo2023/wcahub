@@ -42,7 +42,7 @@ export function VencidosSection({ showToast }) {
   async function triggerCycle(){
     try{
       const {data:{session}}=await supabase.auth.getSession();
-      const res=await api.get("/api/jobs/daily-billing", {headers:{"x-cron-secret":"manual-trigger"}});
+      const res=await api.get("/api/jobs/daily-billing");
       const json=await res.json().catch(()=>({}));
       showToast(`Ciclo ejecutado: ${json.results?.autoSuspended?.count||0} suspendidos`);
       await load();

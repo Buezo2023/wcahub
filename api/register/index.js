@@ -28,11 +28,15 @@ export default async function handler(req, res) {
     const {
       name, email, phone, country, timezone,
       programId, level, groupId, paymentMethod,
+      termsAcceptedAt,
     } = req.body;
 
     // ── Validation ─────────────────────────────────────────────────
     if (!name?.trim() || !email?.trim() || !programId) {
       return err(res, { status: 400, message: 'name, email y programId son requeridos' });
+    }
+    if (!termsAcceptedAt) {
+      return err(res, { status: 400, message: 'Debés aceptar los términos para continuar' });
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return err(res, { status: 400, message: 'Email inválido' });
@@ -97,6 +101,7 @@ export default async function handler(req, res) {
       timezone: timezone || 'America/Tegucigalpa',
       role: 'estudiante',
       active: true,
+      terms_accepted_at: termsAcceptedAt,
     }, { onConflict: 'id' });
 
     // ── Create student if not exists ─────────────────────────────────

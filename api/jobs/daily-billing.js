@@ -13,16 +13,17 @@ const PROG_NAMES    = { en:'Inglés Completo', va:'Asistente Virtual',
                         va_mkt:'VA Marketing', va_legal:'VA Legal', va_care:'VA Cuidador' };
 
 export default async function handler(req, res) {
-  // Allow: (1) Vercel cron, (2) matching CRON_SECRET env var, (3) super_admin JWT
+  // Allow: (1) Vercel cron, (2) matching CRON_SECRET env var, (3) super_admin/admin JWT
   const isCron   = req.headers['x-vercel-cron'] === '1';
   const cronEnv  = process.env.CRON_SECRET;
-  const isSecret = cronEnv && req.headers['x-cron-secret'] === cronEnv;
+  // Require CRON_SECRET to be set AND match exactly (no empty-string match)
+  const isSecret = !!cronEnv && cronEnv.length >= 16 && req.headers['x-cron-secret'] === cronEnv;
 
   let isAdmin = false;
   if (!isCron && !isSecret) {
     try {
       const { profile } = await requireAuth(req);
-      isAdmin = profile.role === 'super_admin';
+      isAdmin = ['super_admin', 'admin'].includes(profile?.role);
     } catch (_) {}
     if (!isAdmin) return res.status(401).json({ error: 'Unauthorized' });
   }

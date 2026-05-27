@@ -4,6 +4,7 @@ import { api } from "../lib/api.js";
 import { toast } from "../lib/toast.jsx";
 import { supabase } from "../lib/supabase.js";
 import { EmptyState } from "../lib/EmptyState.jsx";
+import { validateEmail, validateName, validatePhone } from "../lib/validators.js";
 
 const P="#155266",PD="#e8f3f6",G="#059669",GD="#ecfdf5",R="#dc2626",RD="#fef2f2",A="#d97706";
 

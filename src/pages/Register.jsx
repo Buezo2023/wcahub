@@ -5,6 +5,7 @@ import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabase.js";
 import { detectTimezone, TIMEZONES, getTimezonesByRegion } from "../lib/timezone.js";
+import { validateEmail, validateName, validatePhone } from "../lib/validators.js";
 
 const P = "#155266", PD = "#e8f3f6", Y = "#ffbb23", YD = "#fff8e6";
 const G = "#059669", GD = "#ecfdf5", R = "#dc2626", RD = "#fef2f2", A = "#d97706";
@@ -90,6 +91,7 @@ export default function Register() {
   const [data, setData] = useState({
     programId: null, level: null, groupId: null,
     name: "", email: "", phone: "", country: "", timezone: detectTimezone(),
+    termsAccepted: false,
     paymentMethod: null,
   });
   const [programs, setPrograms] = useState([]);
@@ -437,8 +439,12 @@ export default function Register() {
         </div>
         {error && <div style={{ background:RD, border:`1px solid ${R}40`, borderRadius:8, padding:"10px 14px", fontSize:12, color:R, marginBottom:14 }}>{error}</div>}
         <button onClick={() => {
-            if (!data.name.trim() || !data.email.trim()) { setError("Nombre y email son requeridos"); return; }
-            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) { setError("Email inválido"); return; }
+            const nameErr  = validateName(data.name);
+            const emailErr = validateEmail(data.email);
+            const phoneErr = validatePhone(data.phone);
+            if (nameErr)  { setError(nameErr);  return; }
+            if (emailErr) { setError(emailErr); return; }
+            if (phoneErr) { setError(phoneErr); return; }
             setError(""); setStep(5);
           }} style={btnStyle(P)}>
           Continuar →
@@ -505,14 +511,31 @@ export default function Register() {
 
         {error && <div style={{ background:RD, border:`1px solid ${R}40`, borderRadius:8, padding:"10px 14px", fontSize:12, color:R, marginBottom:14 }}>{error}</div>}
 
+        {/* Terms acceptance — required before payment */}
+        <label style={{ display:"flex", alignItems:"flex-start", gap:10, marginBottom:14,
+          padding:"12px 14px", background:"var(--bg-surface-subtle)", borderRadius:10,
+          border:`1px solid ${data.termsAccepted ? G+"40" : "var(--border)"}`, cursor:"pointer",
+          transition:"all .15s" }}>
+          <input type="checkbox" checked={data.termsAccepted}
+            onChange={e => setData(d => ({...d, termsAccepted: e.target.checked}))}
+            style={{ marginTop:2, cursor:"pointer", flexShrink:0, width:16, height:16,
+              accentColor:P }}/>
+          <div style={{ fontSize:12, color:"var(--text-secondary)", lineHeight:1.6 }}>
+            Acepto los <a href="/terminos" target="_blank" rel="noopener" style={{ color:P, fontWeight:600 }}>Términos de Servicio</a>
+            {" "}y la <a href="/privacidad" target="_blank" rel="noopener" style={{ color:P, fontWeight:600 }}>Política de Privacidad</a>
+            {" "}de WCA Academy. Entiendo que los pagos son recurrentes y puedo cancelarlos cuando quiera.
+          </div>
+        </label>
+
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
           {/* Stripe */}
-          <button disabled={saving} onClick={async () => {
+          <button disabled={saving || !data.termsAccepted} onClick={async () => {
+            if (!data.termsAccepted) { setError("Aceptá los términos para continuar"); return; }
             setSaving(true); setError("");
             try {
               const res = await fetch("/api/register", {
                 method:"POST", headers:{"Content-Type":"application/json"},
-                body: JSON.stringify({...data, paymentMethod:"stripe"}),
+                body: JSON.stringify({...data, paymentMethod:"stripe", termsAcceptedAt:new Date().toISOString()}),
               });
               const json = await res.json();
               if (!res.ok) { setError(json.error || "Error al procesar"); return; }
@@ -520,8 +543,10 @@ export default function Register() {
             } catch(e) { setError("Error de red. Intentá de nuevo."); }
             finally { setSaving(false); }
           }} style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"15px",
-            background: saving ? "var(--bg-surface-subtle)" : P, color: saving?"var(--text-secondary)":"#fff",
-            border:"none", borderRadius:12, fontSize:15, fontWeight:700, cursor:saving?"not-allowed":"pointer", fontFamily:"inherit",
+            background: (saving || !data.termsAccepted) ? "var(--bg-surface-subtle)" : P,
+            color: (saving || !data.termsAccepted) ? "var(--text-secondary)" : "#fff",
+            border:"none", borderRadius:12, fontSize:15, fontWeight:700,
+            cursor:(saving || !data.termsAccepted) ? "not-allowed" : "pointer", fontFamily:"inherit",
             transition:"all .2s" }}>
             {saving ? "Procesando..." : "💳 Pagar con tarjeta — $95/mes"}
           </button>
@@ -531,12 +556,13 @@ export default function Register() {
           </div>
 
           {/* Transfer */}
-          <button disabled={saving} onClick={async () => {
+          <button disabled={saving || !data.termsAccepted} onClick={async () => {
+            if (!data.termsAccepted) { setError("Aceptá los términos para continuar"); return; }
             setSaving(true); setError("");
             try {
               const res = await fetch("/api/register", {
                 method:"POST", headers:{"Content-Type":"application/json"},
-                body: JSON.stringify({...data, paymentMethod:"transfer"}),
+                body: JSON.stringify({...data, paymentMethod:"transfer", termsAcceptedAt:new Date().toISOString()}),
               });
               const json = await res.json();
               if (!res.ok) { setError(json.error || "Error al procesar"); return; }
@@ -546,7 +572,8 @@ export default function Register() {
           }} style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"14px",
             background:"var(--bg-surface)", color:"var(--text-primary)",
             border:"1.5px solid var(--border)", borderRadius:12, fontSize:14, fontWeight:600,
-            cursor:saving?"not-allowed":"pointer", fontFamily:"inherit" }}>
+            cursor:(saving || !data.termsAccepted)?"not-allowed":"pointer", fontFamily:"inherit",
+            opacity: !data.termsAccepted ? 0.6 : 1 }}>
             🏦 Pagar por transferencia bancaria
           </button>
         </div>

@@ -4,6 +4,7 @@ import { api } from "../lib/api.js";
 import { supabase } from "../lib/supabase.js";
 import { EmptyState } from "../lib/EmptyState.jsx";
 import { exportCSV } from "../lib/exportCSV.js";
+import { validateEmail, validateName, validatePhone } from "../lib/validators.js";
 
 const P="#155266",G="#059669",GD="#ecfdf5",R="#dc2626",RD="#fef2f2",A="#d97706",AD="#fffbeb";
 const LEVELS=["A1","A2","B1","B2","C1"];

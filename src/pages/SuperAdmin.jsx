@@ -591,7 +591,7 @@ export default function SuperAdmin() {
                 try {
                   const {data:{session}} = await supabase.auth.getSession();
                   const res = await fetch("/api/jobs/daily-billing", {
-                    headers:{"x-cron-secret": "manual-trigger", "Authorization":`Bearer ${session?.access_token}`}
+                    headers:{"Authorization":`Bearer ${session?.access_token}`}
                   });
                   const json = await res.json().catch(()=>({}));
                   showToast(`Ciclo ejecutado: ${json.results?.autoSuspended?.count||0} suspendidos, ${json.results?.preReminders?.sent||0} recordatorios`);
