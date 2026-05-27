@@ -26,6 +26,7 @@ const PlacementTestPublic = lazy(() => import('./pages/PlacementTest.jsx'));
 const PrivacyPolicy        = lazy(() => import('./pages/PrivacyPolicy.jsx'));
 const TermsOfUse           = lazy(() => import('./pages/TermsOfUse.jsx'));
 const Register             = lazy(() => import('./pages/Register.jsx'));
+const ForgotAccess      = lazy(() => import('./pages/ForgotAccess.jsx'));
 
 // ── Role → portal map ────────────────────────────────────────────
 const ROLE_PORTALS = {
@@ -322,6 +323,7 @@ function AppInner() {
             <Route path="/coordinacion" element={<PrivateRoute element={<CoordAcademica />} allowedRoles={['coordinadora','admin','super_admin']} />} />
             <Route path="/bi"           element={<PrivateRoute element={<BIDashboard />} allowedRoles={['directivo','admin','super_admin']} />} />
             <Route path="/registro"     element={<Register />} />
+            <Route path="/recuperar"    element={<ForgotAccess />} />
             <Route path="*"             element={<Navigate to="/" replace />} />
           </Routes>
           {/* Floating "Back to SuperAdmin" button when super_admin is viewing other portals */}

@@ -828,8 +828,18 @@ export default function Landing() {
               </button>
             </div>
 
+            {/* Recover access link */}
+            <div style={{ marginTop:16, paddingTop:14, borderTop:"1px solid #f1f5f9", textAlign:"center" }}>
+              <button
+                onClick={()=>{ setRoleModal(false); navigate("/recuperar"); }}
+                style={{ background:"none", border:"none", color:T.teal, fontSize:13, fontWeight:600,
+                  cursor:"pointer", fontFamily:"inherit", padding:"6px 12px", borderRadius:6 }}>
+                ¿No podés acceder? Recuperar con enlace mágico →
+              </button>
+            </div>
+
             {/* Footer */}
-            <div style={{ marginTop:20, paddingTop:16, borderTop:"1px solid #f1f5f9", textAlign:"center" }}>
+            <div style={{ marginTop:16, paddingTop:14, borderTop:"1px solid #f1f5f9", textAlign:"center" }}>
               <p style={{ fontSize:11, color:"#94a3b8", lineHeight:1.6, margin:0 }}>
                 Al continuar aceptás los{" "}
                 <span style={{ color:T.teal, cursor:"pointer" }}>Términos de uso</span>

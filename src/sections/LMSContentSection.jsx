@@ -322,7 +322,7 @@ export function LMSContentSection({ showToast }) {
       .insert({unit_id:selUnit,type:newAct.type,order_num:maxOrder+1,
                title:newAct.title,xp_reward:newAct.xp_reward||XP_DEFAULT[newAct.type],
                content:defaultContent[newAct.type]||{},published:false})
-      .select().single();
+      .select().maybeSingle();
     if(error){ showToast("Error: "+error.message,R); return; }
     setActivities(as=>[...as,data]);
     setAddModal(false);

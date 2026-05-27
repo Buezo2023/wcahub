@@ -659,7 +659,7 @@ export default function CoordAcademica() {
       capacity:    newGroup.cap || 25,
       active_unit: 1,
       active:      true,
-    }).select().single();
+    }).select().maybeSingle();
     if(error) throw error;
     if(teacherRow?.dbId) {
       const { data: staffRow } = await supabase.from("staff").select("id").eq("profile_id", teacherRow.dbId).maybeSingle();

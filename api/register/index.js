@@ -108,7 +108,7 @@ export default async function handler(req, res) {
     } else {
       const { data: newSt, error: stErr } = await admin.from('students')
         .insert({ profile_id: userId, level: level || 'A1' })
-        .select('id, student_code').single();
+        .select('id, student_code').maybeSingle();
       if (stErr) throw stErr;
       student = newSt;
     }
@@ -125,7 +125,7 @@ export default async function handler(req, res) {
         price_locked:      95,
         next_payment_date: addOneMonth(todayStr),
       }, { onConflict: 'student_id,program_id' })
-      .select('id').single();
+      .select('id').maybeSingle();
     if (enrollErr) throw enrollErr;
 
     // ── Save / update lead ───────────────────────────────────────────

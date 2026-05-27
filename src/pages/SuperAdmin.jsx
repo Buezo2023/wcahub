@@ -1296,7 +1296,7 @@ export default function SuperAdmin() {
                   try {
                     const { data: newBank, error } = await supabase.from("bank_accounts")
                       .insert({ nombre: bankForm.nombre, banco: bankForm.banco, cuenta: bankForm.cuenta, titular: bankForm.titular, tipo: bankForm.tipo, active: true })
-                      .select().single();
+                      .select().maybeSingle();
                     if (error) throw error;
                     setBanks(prev => [...prev, newBank]);
                     setBankForm({ nombre:"", banco:"", cuenta:"", titular:"", tipo:"ahorro" });

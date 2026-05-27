@@ -71,7 +71,7 @@ export default function AuthCallback() {
               onboarding_done: false,
             })
             .select("role, full_name, active, onboarding_done")
-            .single();
+            .maybeSingle();
 
           if (newProfile) {
             // Log emergency profile creation so admin can review

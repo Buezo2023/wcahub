@@ -44,7 +44,7 @@ async function handleRecord(req, res) {
       .from('students')
       .select('id, profile:profiles(full_name, email), enrollments(id, program_id, group:groups(schedule))')
       .eq('id', studentId)
-      .single();
+      .maybeSingle();
 
     if (!student) return err(res, { status: 404, message: 'Estudiante no encontrado' });
 
@@ -70,7 +70,7 @@ async function handleRecord(req, res) {
         confirmed_at:   autoConfirm ? new Date().toISOString() : null,
       })
       .select()
-      .single();
+      .maybeSingle();
 
     if (paymentError) throw paymentError;
 
@@ -133,7 +133,7 @@ async function handleConfirm(req, res) {
         )
       `)
       .eq('id', paymentId)
-      .single();
+      .maybeSingle();
 
     if (!payment) return err(res, { status: 404, message: 'Pago no encontrado' });
     if (payment.status !== 'pending') return err(res, { status: 409, message: `El pago ya está ${payment.status}` });
@@ -147,7 +147,7 @@ async function handleConfirm(req, res) {
       .update(updates)
       .eq('id', paymentId)
       .select()
-      .single();
+      .maybeSingle();
     if (error) throw error;
 
     // Advance next_payment_date + reactivate if suspended
@@ -267,7 +267,7 @@ async function handleUploadProof(req, res) {
       .from('payments')
       .select('id, status, student_id, student:students(profile_id)')
       .eq('id', paymentId)
-      .single();
+      .maybeSingle();
 
     if (!payment) return err(res, { status: 404, message: 'Pago no encontrado' });
 

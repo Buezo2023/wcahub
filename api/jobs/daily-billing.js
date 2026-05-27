@@ -117,7 +117,7 @@ export default async function handler(req, res) {
         try {
           // Check if already suspended
           const { data: current } = await admin
-            .from('enrollments').select('status').eq('id', enroll.id).single();
+            .from('enrollments').select('status').eq('id', enroll.id).maybeSingle();
           if (current?.status === 'active') {
             // Safety check: do NOT suspend if there's a pending payment in the last 5 days
             const fiveDaysAgo = new Date(today);

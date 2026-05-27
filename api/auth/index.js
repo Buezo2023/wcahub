@@ -109,11 +109,11 @@ async function handleStudent(req, actor) {
   const { data: existSt } = await admin.from('students').select('id').eq('profile_id', userId).maybeSingle();
   let student;
   if (existSt) {
-    const { data, error: sErr } = await admin.from('students').update({ level }).eq('id', existSt.id).select().single();
+    const { data, error: sErr } = await admin.from('students').update({ level }).eq('id', existSt.id).select().maybeSingle();
     if (sErr) throw sErr;
     student = data;
   } else {
-    const { data, error: sErr } = await admin.from('students').insert({ profile_id: userId, level, scholarship }).select().single();
+    const { data, error: sErr } = await admin.from('students').insert({ profile_id: userId, level, scholarship }).select().maybeSingle();
     if (sErr) throw sErr;
     student = data;
   }
@@ -134,7 +134,7 @@ async function handleStudent(req, actor) {
     student_id: student.id, program_id: programId, group_id: groupId || null,
     status: 'active', current_unit: 1, price_locked: price,
     next_payment_date: _nextPayStr,
-  }, { onConflict: 'student_id,program_id' }).select().single();
+  }, { onConflict: 'student_id,program_id' }).select().maybeSingle();
   if (eErr) throw eErr;
 
   await admin.from('audit_log').insert({ actor_id: actor.id, action: 'invited_student', entity: 'student', entity_id: student.id, metadata: { email, programId, level } });
@@ -226,7 +226,7 @@ async function handleStaff(req, actor) {
     const { data, error: updErr } = await admin.from('staff')
       .update({ position: role, department: role === 'Docente' ? 'Académico' : 'Administrativo',
         salary: salary ? Number(salary) : null, active: true })
-      .eq('id', existingStaff.id).select().single();
+      .eq('id', existingStaff.id).select().maybeSingle();
     if (updErr) throw new Error('Error actualizando staff: ' + updErr.message);
     staffRow = data;
   } else {
@@ -236,7 +236,7 @@ async function handleStaff(req, actor) {
         salary: salary ? Number(salary) : null,
         hire_date: hireDate || new Date().toISOString().slice(0, 10),
         active: true })
-      .select().single();
+      .select().maybeSingle();
     if (insErr) throw new Error('Error creando staff: ' + insErr.message);
     staffRow = data;
   }
@@ -441,7 +441,7 @@ export default async function handler(req, res) {
       const adminCR = getSupabaseAdmin();
       const { data: updated, error: roleErr } = await adminCR.from('profiles')
         .update({ role: newRole }).eq('id', userId)
-        .select('id, email, full_name, role').single();
+        .select('id, email, full_name, role').maybeSingle();
       if (roleErr) throw roleErr;
       await adminCR.from('audit_log').insert({
         actor_id: actor.id, action: 'changed_role', entity: 'profile',

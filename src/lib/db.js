@@ -12,7 +12,7 @@ export async function getCurrentProfile() {
     .from('profiles')
     .select('*')
     .eq('id', session.user.id)
-    .single();
+    .maybeSingle();
   return data;
 }
 
@@ -66,7 +66,7 @@ export async function getStudent(studentId) {
       enrollments(*, group:groups(*), program:programs(*))
     `)
     .eq('id', studentId)
-    .single();
+    .maybeSingle();
   if (error) { import.meta.env.DEV && console.error('getStudent:', error); return null; }
   return data;
 }
@@ -77,7 +77,7 @@ export async function updateStudentEnrollment(enrollmentId, updates) {
     .update({ ...updates, updated_at: new Date().toISOString() })
     .eq('id', enrollmentId)
     .select()
-    .single();
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -126,7 +126,7 @@ export async function confirmPayment(paymentId, confirmerId) {
     })
     .eq('id', paymentId)
     .select()
-    .single();
+    .maybeSingle();
   if (error) throw error;
 
   // Log to audit
@@ -147,7 +147,7 @@ export async function rejectPayment(paymentId, reason, actorId) {
     .update({ status: 'failed', notes: reason })
     .eq('id', paymentId)
     .select()
-    .single();
+    .maybeSingle();
   if (error) throw error;
 
   await supabase.from('audit_log').insert({
@@ -250,7 +250,7 @@ export async function createLead(leadData) {
     .from('leads')
     .insert(leadData)
     .select()
-    .single();
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -261,7 +261,7 @@ export async function updateLeadStage(leadId, stage) {
     .update({ stage, updated_at: new Date().toISOString() })
     .eq('id', leadId)
     .select()
-    .single();
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -271,7 +271,7 @@ export async function createTask(taskData) {
     .from('crm_tasks')
     .insert(taskData)
     .select()
-    .single();
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -282,7 +282,7 @@ export async function toggleTask(taskId, done) {
     .update({ done, done_at: done ? new Date().toISOString() : null })
     .eq('id', taskId)
     .select()
-    .single();
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -307,7 +307,7 @@ export async function updateProgramPrice(programId, priceMonthly, priceQuarterly
     .update(updates)
     .eq('id', programId)
     .select()
-    .single();
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -342,7 +342,7 @@ export async function enrollStudent(studentId, programId, groupId, price) {
       current_unit:  1,
     }, { onConflict: 'student_id,program_id' })
     .select()
-    .single();
+    .maybeSingle();
   if (error) throw error;
   return data;
 }
@@ -391,7 +391,7 @@ export async function registerNewStudent({ fullName, email, phone, programId, le
     .from('profiles')
     .select('id')
     .eq('email', email)
-    .single();
+    .maybeSingle();
 
   let profileId = existingProfile?.id;
 
@@ -406,7 +406,7 @@ export async function registerNewStudent({ fullName, email, phone, programId, le
     .from('students')
     .upsert({ profile_id: profileId, level }, { onConflict: 'profile_id' })
     .select()
-    .single();
+    .maybeSingle();
   if (studentError) throw studentError;
 
   // Create enrollment

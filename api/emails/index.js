@@ -37,7 +37,7 @@ async function handleWelcome(req, res) {
         enrollments(id, program_id, current_unit,
           group:groups(schedule, days, teams_link))`)
       .eq('profile_id', actor.id)
-      .single();
+      .maybeSingle();
 
     if (!student) return err(res, { status: 404, message: 'Perfil de estudiante no encontrado' });
 

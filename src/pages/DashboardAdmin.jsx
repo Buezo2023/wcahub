@@ -256,7 +256,7 @@ function B2BSection({ supabase, B, Badge, Stat }) {
       seats_paid:    Number(form.seats_paid) || 0,
       discount_pct:  Number(form.discount_pct) || 0,
       active:        true,
-    }).select().single();
+    }).select().maybeSingle();
     if (error) { toast.error("Error: " + error.message); return; }
     // Audit log
     const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
