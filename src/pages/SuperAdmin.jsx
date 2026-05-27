@@ -70,7 +70,7 @@ const NAV = [
   { id:"comunicaciones",  icon:"ti-send",              label:"Comunicaciones"    },
   { id:"reportes",        icon:"ti-chart-bar",         label:"Reportes"          },
   { id:"rrhh",            icon:"ti-users-group",       label:"RRHH & Personal"   },
-  { id:"sistema",         icon:"ti-settings",          label:"Sistema"           },
+
 ];
 
 // Sub-tabs per department
@@ -82,7 +82,8 @@ const SUB_TABS = {
     ["horarios","Horarios"],["atrisk","En riesgo"],["becas","Becas"],
   ],
   ventas: [
-    ["resumen","Resumen CRM"],["leads","Todos los leads"],["b2b","Empresas B2B"],
+    ["resumen","Resumen"],["leads","Todos los leads"],["tasks","Tareas"],
+    ["pipeline","Pipeline"],["b2b","Empresas B2B"],
   ],
   contab: [
     ["payments","Pagos"],["vencidos","Vencidos"],
@@ -94,13 +95,12 @@ const SUB_TABS = {
   reportes: [
     ["metricas","BI & KPIs"],["finanzas","Finanzas"],["academia","Academia"],
     ["ventas","Ventas & CRM"],["rrhh","RRHH"],["lms","LMS"],
+    ["gamification","Gamificación"],["audit","Auditoría"],
   ],
   rrhh: [
     ["usuarios","Todos los usuarios"],["staff","Personal"],["roles","Roles del sistema"],
   ],
-  sistema: [
-    ["gamification","Gamificación"],["notifications","Notificaciones"],["audit","Auditoría"],
-  ],
+
 };
 
 const ROLE_COLORS = {
@@ -537,7 +537,7 @@ export default function SuperAdmin() {
           <div>
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
               <span style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>
-                {{"overview":"Panel general","academia":"Academia","ventas":"Ventas & CRM","contab":"Contabilidad","comunicaciones":"Comunicaciones","reportes":"Reportes","rrhh":"RRHH & Personal","sistema":"Sistema"}[view]}
+                {{"overview":"Panel general","academia":"Academia","ventas":"Ventas & CRM","contab":"Contabilidad","comunicaciones":"Comunicaciones","reportes":"Reportes","rrhh":"RRHH & Personal",}[view]}
               </span>
               {SUB_TABS[view] && subView && (() => {
                 const sub = (SUB_TABS[view]||[]).find(([id])=>id===subView);
@@ -550,7 +550,7 @@ export default function SuperAdmin() {
           </div>
           <div style={{ display:"flex", gap:8 }}>
             <Badge text="Sistema activo" bg={GD} color="#065f46"/>
-            {(view==="contab" || view==="sistema") && (
+            {view==="contab" && (
               <button onClick={async()=>{
                 try {
                   const {data:{session}} = await supabase.auth.getSession();
@@ -945,7 +945,7 @@ export default function SuperAdmin() {
           )}
 
           {/* ── GAMIFICATION ── */}
-          {view==="sistema" && subView==="gamification" && (
+          {view==="reportes" && subView==="gamification" && (
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(240px,1fr))", gap:14 }}>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Puntos XP por acción</SectionTitle>
@@ -1042,7 +1042,7 @@ export default function SuperAdmin() {
           )}
 
           {/* ── NOTIFICATIONS ── */}
-          {view==="sistema" && subView==="notifications" && (
+          {view==="reportes" && subView==="notifications" && (
             <div>
               {[
                 { label:"Nueva unidad",     channel:"WhatsApp", trigger:"Lunes 00:00 CST",     preview:"🎓 Nueva unidad disponible: *{unit_title}*. Abre wcahub.com 📚" },
@@ -1067,7 +1067,7 @@ export default function SuperAdmin() {
           )}
 
           {/* ── AUDIT ── */}
-          {view==="sistema" && subView==="audit" && (
+          {view==="reportes" && subView==="audit" && (
             <div>
               <div style={{ display:"flex", gap:8, marginBottom:14 }}>
                 <div style={{ flex:1, display:"flex", alignItems:"center", gap:9, background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:10, padding:"9px 13px" }}>
@@ -1235,9 +1235,12 @@ export default function SuperAdmin() {
           {view==="academia" && subView==="becas"     && <Suspense fallback={<SectionFallback/>}><BecasSection     showToast={showToast} /></Suspense>}
 
           {/* ══ VENTAS & CRM ══════════════════════════════════════════ */}
-          {view==="ventas"   && subView==="resumen"   && <Suspense fallback={<SectionFallback/>}><VentasSection    showToast={showToast} /></Suspense>}
-          {view==="ventas"   && subView==="leads"     && <Suspense fallback={<SectionFallback/>}><LeadsSection     showToast={showToast} /></Suspense>}
-          {view==="ventas"   && subView==="b2b"       && <Suspense fallback={<SectionFallback/>}><B2BSection       showToast={showToast} /></Suspense>}
+          {/* Mapeamos subView → tab interno de VentasSection para evitar doble nav */}
+          {view==="ventas" && subView==="resumen" && <Suspense fallback={<SectionFallback/>}><VentasSection showToast={showToast} externalTab="overview" /></Suspense>}
+          {view==="ventas" && subView==="leads"   && <Suspense fallback={<SectionFallback/>}><VentasSection showToast={showToast} externalTab="leads"    /></Suspense>}
+          {view==="ventas" && subView==="tasks"   && <Suspense fallback={<SectionFallback/>}><VentasSection showToast={showToast} externalTab="tasks"    /></Suspense>}
+          {view==="ventas" && subView==="pipeline"&& <Suspense fallback={<SectionFallback/>}><VentasSection showToast={showToast} externalTab="pipeline" /></Suspense>}
+          {view==="ventas" && subView==="b2b"     && <Suspense fallback={<SectionFallback/>}><B2BSection    showToast={showToast} /></Suspense>}
 
           {/* ══ CONTABILIDAD ══════════════════════════════════════════ */}
           {view==="contab"   && subView==="payments"  && <Suspense fallback={<SectionFallback/>}><PagosSection     showToast={showToast} /></Suspense>}

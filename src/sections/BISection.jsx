@@ -29,8 +29,8 @@ export function BISection({ showToast }) {
   async function load(){
     setLoading(true);
     try{
-      const res=await api.get("/api/admin/stats");
-      if(res.ok){const json=await res.json();setStats(json.data||json);}
+      const data=await api.get("/api/admin/stats");
+      setStats(data.data||data);
       // Load payment history for sparkline
       const {data:pays}=await supabase.from("payments")
         .select("amount,created_at").eq("status","confirmed")

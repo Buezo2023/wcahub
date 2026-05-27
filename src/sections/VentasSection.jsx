@@ -20,11 +20,12 @@ function StageTag({stage}){
   return <span style={{fontSize:11,padding:"2px 8px",borderRadius:10,background:s.bg,color:s.color,fontWeight:700,whiteSpace:"nowrap"}}>{s.label}</span>;
 }
 
-export function VentasSection({ showToast }) {
+export function VentasSection({ showToast, externalTab }) {
   const [leads,  setLeads]  = useState([]);
   const [tasks,  setTasks]  = useState([]);
   const [staff,  setStaff]  = useState([]); // asesores
-  const [tab,    setTab]    = useState("overview");
+  const [_internalTab, setTab] = useState("overview");
+  const tab = externalTab || _internalTab;
   const [loading,setLoading]= useState(true);
   const [search, setSearch] = useState("");
   const [filterStage, setFilterStage] = useState("all");
@@ -33,15 +34,17 @@ export function VentasSection({ showToast }) {
 
   async function load(){
     setLoading(true);
-    const [leadsRes, tasksRes, staffRes] = await Promise.all([
-      supabase.from("leads").select("*").order("created_at",{ascending:false}).limit(300),
-      supabase.from("crm_tasks").select("id,title,due_date,done,priority,lead_id,assigned_to,leads(full_name),profiles(full_name)").order("due_date").limit(100),
-      supabase.from("staff").select("id,profile:profiles(id,full_name,email)").limit(50),
-    ]);
-    if(leadsRes.data)  setLeads(leadsRes.data);
-    if(tasksRes.data)  setTasks(tasksRes.data);
-    if(staffRes.data)  setStaff(staffRes.data);
-    setLoading(false);
+    try{
+      const [leadsRes, tasksRes, staffRes] = await Promise.all([
+        supabase.from("leads").select("*").order("created_at",{ascending:false}).limit(300),
+        supabase.from("crm_tasks").select("id,title,due_date,done,priority,lead_id,assigned_to,leads(full_name),profiles(full_name)").order("due_date").limit(100),
+        supabase.from("staff").select("id,profile:profiles(id,full_name,email)").limit(50),
+      ]);
+      if(leadsRes.data)  setLeads(leadsRes.data);
+      if(tasksRes.data)  setTasks(tasksRes.data);
+      if(staffRes.data)  setStaff(staffRes.data);
+    }catch(e){ console.error("VentasSection load error:", e.message); }
+    finally{ setLoading(false); }
   }
 
   async function changeStage(id,stage){
@@ -81,8 +84,8 @@ export function VentasSection({ showToast }) {
 
   return(
     <div>
-      {/* Sub-nav */}
-      <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
+      {/* Sub-nav — hidden when embedded in SuperAdmin (uses externalTab) */}
+      {!externalTab && <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
         {TABS.map(([id,label])=>(
           <button key={id} onClick={()=>setTab(id)} style={{padding:"7px 16px",borderRadius:8,border:"none",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",background:tab===id?P:"var(--bg-surface-subtle)",color:tab===id?"#fff":"var(--text-secondary)"}}>
             {label}
@@ -93,7 +96,7 @@ export function VentasSection({ showToast }) {
           style={{marginLeft:"auto",padding:"7px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>
           <i className="ti ti-download"/> CSV
         </button>
-      </div>
+      </div>}
 
       {loading?<div style={{padding:32,textAlign:"center",color:"var(--text-secondary)",fontSize:13}}>Cargando datos de ventas...</div>:<>
 
