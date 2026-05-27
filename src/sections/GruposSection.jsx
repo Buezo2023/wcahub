@@ -43,7 +43,7 @@ export function GruposSection({ showToast }) {
         const go=window.confirm(`Ya existe un grupo activo con ese horario y días:\n${names}\n\n¿Crear de todas formas?`);
         if(!go){setSaving(false);return;}
       }
-      const {error}=await supabase.from("groups").insert({...form,days_arr:form.days_arr||[],active:true,active_unit:1});
+      const {error}=await supabase.from("groups").insert({...form,days_arr:form.days_arr||[],active:true,active_unit:1,schedule_utc:form.schedule_utc||null,schedule_end_utc:form.schedule_end_utc||null,schedule_timezone:"America/Tegucigalpa"});
       if(error) throw error;
       showToast("✓ Grupo creado");
       setAddModal(false);
@@ -209,9 +209,25 @@ export function GruposSection({ showToast }) {
               ))}
             </div>
             <div style={{marginBottom:12}}>
-              <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Horario *</div>
+              <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Horario (texto) *</div>
               <input type="text" value={form.schedule} placeholder="6:00 PM – 7:30 PM" onChange={e=>setForm(p=>({...p,schedule:e.target.value}))}
                 style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+              <div style={{fontSize:11,color:"var(--text-tertiary)",marginTop:4}}>Texto visible en el admin</div>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+              <div>
+                <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>🕐 Inicio (UTC)</div>
+                <input type="time" value={form.schedule_utc||""} onChange={e=>setForm(p=>({...p,schedule_utc:e.target.value}))}
+                  style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+              </div>
+              <div>
+                <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>🕐 Fin (UTC)</div>
+                <input type="time" value={form.schedule_end_utc||""} onChange={e=>setForm(p=>({...p,schedule_end_utc:e.target.value}))}
+                  style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+              </div>
+            </div>
+            <div style={{background:"#e8f3f6",borderRadius:8,padding:"8px 12px",fontSize:11,color:"#155266",marginBottom:12}}>
+              💡 Honduras = UTC−6. Si la clase es a las 6:00 PM HN, ingresá 00:00 UTC. Si es a las 7:00 AM HN → 13:00 UTC.
             </div>
             <div style={{marginBottom:12}}>
               <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:6}}>Días</div>

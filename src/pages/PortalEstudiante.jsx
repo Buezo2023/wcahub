@@ -10,6 +10,7 @@ import { generateCertificate } from "../lib/certificate.js";
 import { StudentReport } from "../lib/StudentReport.jsx";
 import { useNotifications } from "../lib/useNotifications.js";
 import { LEVELS, UNITS, SKILLS_BY_LEVEL } from "../data/englishContent.js";
+import { formatSchedule, detectTimezone, TIMEZONES, getTimezonesByRegion } from "../lib/timezone.js";
 
 const P="#155266",PH="#0f3d4d",PD="#e8f3f6";
 const Y="#ffbb23",YD="#fff8e6";
@@ -509,10 +510,12 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
 export default function PortalEstudiante(){
   const navigate = useNavigate();
   const [user, setUser] = useState({ name:"", email:"", avatar:null, studentCode:null });
+  const [studentTimezone, setStudentTimezone] = useState(detectTimezone());
   const [view,       setView]       = useState("inicio");
   const [activeProg, setActiveProg] = useState(null) // set after enrollments load; // current program in practice/exam
   const isMobile = useMobile();
   const [sideOpen, setSideOpen] = useState(false);
+  const [isScholarship, setIsScholarship] = useState(false); // beca = no LMS 24/7, no digital exam
   const [enrolled,   setEnrolled]   = useState([]); // populated from realEnrollments after load
 
   useEffect(() => {
@@ -527,7 +530,7 @@ export default function PortalEstudiante(){
       if (!session) { navigate("/", { replace: true }); return; }
       const uid = session.user.id;
       // Load profile
-      supabase.from("profiles").select("full_name, email, avatar_url, phone, preferred_name")
+      supabase.from("profiles").select("full_name, email, avatar_url, phone, preferred_name, timezone")
         .eq("id", uid).maybeSingle()
         .then(({ data }) => {
           if (data) {
@@ -536,19 +539,22 @@ export default function PortalEstudiante(){
               email:  data.email || session.user.email || "",
               avatar: data.avatar_url || null,
             });
+            if (data.timezone) setStudentTimezone(data.timezone);
             setProfileForm({
               full_name:      data.full_name || "",
               phone:          data.phone || "",
               preferred_name: data.preferred_name || "",
+              timezone:       data.timezone || detectTimezone(),
             });
           }
         });
       // Load enrollments + group + student_progress
-      supabase.from("students").select("id, level, student_code")
+      supabase.from("students").select("id, level, student_code, scholarship")
         .eq("profile_id", uid).maybeSingle()
         .then(async ({ data: student }) => {
           if (!student) return;
           if (student.student_code) setUser(u => ({ ...u, studentCode: student.student_code }));
+          setIsScholarship(!!student.scholarship);
           const { data: enrolls } = await supabase
             .from("enrollments")
             .select("program_id, current_unit, exam_score, status, group_id, groups(teams_link, schedule, days, level, teacher_groups(staff(profiles(full_name))))")
@@ -560,7 +566,9 @@ export default function PortalEstudiante(){
               const grp = e.groups;
               const teacherName = grp?.teacher_groups?.[0]?.staff?.profiles?.full_name || null;
               const link = grp?.teams_link || null;
-              const schedule = grp?.schedule ? `${grp.days || "L·M·V"} · ${grp.schedule}` : null;
+              const schedule = grp
+                ? `${grp.days || "L·M·V"} · ${formatSchedule(grp, studentTimezone)}`
+                : null;
               patch[e.program_id] = {
                 unit: e.current_unit || 1,
                 examScore: e.exam_score || 0,
@@ -613,7 +621,7 @@ export default function PortalEstudiante(){
   const [realPayments,     setRealPayments]    = useState([]);
   const [uploadState,      setUploadState]     = useState({ loading:false, done:false, error:null });
   const [realProgress,     setRealProgress]     = useState({}); // {programId: {unit: {score, passed}}}
-  const [profileForm,      setProfileForm]     = useState({ full_name:"", phone:"", preferred_name:"" });
+  const [profileForm,      setProfileForm]     = useState({ full_name:"", phone:"", preferred_name:"", timezone:"" });
   const [profileSaving,    setProfileSaving]   = useState(false);
   const [profileSaved,     setProfileSaved]    = useState(false);
   const [myCertificates,   setMyCertificates]  = useState([]);
@@ -673,12 +681,25 @@ export default function PortalEstudiante(){
 
         <div style={{height:1,background:"rgba(255,255,255,.08)",margin:"4px 12px 8px"}}/>
 
-        {NAV.map(n=>(
-          <button key={n.id} onClick={()=>setView(n.id)} style={{display:"flex",alignItems:"center",gap:8,padding:"10px 18px",border:"none",background:view===n.id?"rgba(255,255,255,.12)":"transparent",color:view===n.id?"#fff":"rgba(255,255,255,.45)",fontSize:12,cursor:"pointer",textAlign:"left",borderLeft:`2px solid ${view===n.id?Y:"transparent"}`,transition:"all .15s",fontFamily:"inherit",fontWeight:view===n.id?600:400,width:"100%"}}>
+        {NAV.map(n=>{
+          // Beca students: block LMS practice and digital exams
+          const blocked = isScholarship && (n.id === "practica" || n.id === "examen");
+          return (
+          <button key={n.id}
+            onClick={()=>{ if(!blocked) setView(n.id); }}
+            title={blocked ? "Solo disponible en el plan completo" : ""}
+            style={{display:"flex",alignItems:"center",gap:8,padding:"10px 18px",border:"none",
+              background:view===n.id?"rgba(255,255,255,.12)":"transparent",
+              color:blocked?"rgba(255,255,255,.2)":view===n.id?"#fff":"rgba(255,255,255,.45)",
+              fontSize:12,cursor:blocked?"not-allowed":"pointer",textAlign:"left",
+              borderLeft:`2px solid ${view===n.id?Y:"transparent"}`,
+              transition:"all .15s",fontFamily:"inherit",fontWeight:view===n.id?600:400,width:"100%"}}>
             <i className={"ti "+n.icon} style={{fontSize:14,width:18,textAlign:"center"}} aria-hidden="true"/>
             {n.label}
+            {blocked && <span style={{fontSize:9,background:"rgba(255,255,255,.15)",borderRadius:4,padding:"1px 5px",color:"rgba(255,255,255,.4)",marginLeft:"auto"}}>FULL</span>}
           </button>
-        ))}
+          );
+        })}
 
         <div style={{marginTop:"auto",padding:"14px 18px 0",borderTop:"1px solid rgba(255,255,255,.08)"}}>
           <div style={{display:"flex",alignItems:"center",gap:9}}>
@@ -851,7 +872,20 @@ export default function PortalEstudiante(){
           {/* ── PRÁCTICA 24/7 ── */}
           {view==="practica"&&(
             <div style={{height:"calc(100vh - 120px)"}}>
-              {enrolledProgs.length === 0 ? (
+              {isScholarship ? (
+                <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",gap:16,padding:32,textAlign:"center"}}>
+                  <div style={{fontSize:52}}>🎓</div>
+                  <div style={{fontSize:18,fontWeight:800,color:"var(--text-primary)"}}>Plataforma 24/7 — Plan Completo</div>
+                  <div style={{fontSize:14,color:"var(--text-secondary)",maxWidth:380,lineHeight:1.7}}>
+                    Tu beca incluye clases en vivo y seguimiento académico.<br/>
+                    La plataforma de práctica 24/7 está disponible en el plan completo ($95/mes).<br/>
+                    Hablá con tu coordinadora para hacer el upgrade.
+                  </div>
+                  <div style={{background:"#e8f3f6",borderRadius:12,padding:"12px 20px",fontSize:13,color:"#155266",fontWeight:600}}>
+                    📞 Contactá a tu coordinadora para más información
+                  </div>
+                </div>
+              ) : enrolledProgs.length === 0 ? (
                 <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",gap:12,padding:24}}>
                   <div style={{fontSize:48}}>📚</div>
                   <div style={{fontSize:16,fontWeight:700,color:"var(--text-primary)"}}>Sin programa activo</div>
@@ -871,6 +905,16 @@ export default function PortalEstudiante(){
           )}
 
           {view==="examen"&&(
+            isScholarship ? (
+              <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100%",gap:16,padding:32,textAlign:"center"}}>
+                <div style={{fontSize:52}}>📝</div>
+                <div style={{fontSize:18,fontWeight:800,color:"var(--text-primary)"}}>Exámenes digitales — Plan Completo</div>
+                <div style={{fontSize:14,color:"var(--text-secondary)",maxWidth:380,lineHeight:1.7}}>
+                  Los exámenes digitales están disponibles en el plan completo.<br/>
+                  Tu beca incluye evaluación por asistencia a clases en vivo.
+                </div>
+              </div>
+            ) :
             <ExamModule
               prog={prog}
               enrollment={enrollment}
@@ -1223,6 +1267,27 @@ export default function PortalEstudiante(){
                     />
                   </div>
                 ))}
+                {/* Timezone selector */}
+                <div style={{marginBottom:12}}>
+                  <label style={{fontSize:11,color:"var(--text-secondary)",display:"block",marginBottom:4,fontWeight:500}}>
+                    🌍 Tu zona horaria
+                  </label>
+                  <select
+                    value={profileForm.timezone || detectTimezone()}
+                    onChange={e=>{ setProfileForm(p=>({...p,timezone:e.target.value})); setStudentTimezone(e.target.value); }}
+                    style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}>
+                    {Object.entries(getTimezonesByRegion()).map(([region, tzList]) => (
+                      <optgroup key={region} label={region}>
+                        {tzList.map(tz => (
+                          <option key={tz.value} value={tz.value}>{tz.label}</option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                  <div style={{fontSize:11,color:"var(--text-tertiary)",marginTop:4}}>
+                    Los horarios de clases se mostrarán en tu hora local.
+                  </div>
+                </div>
                 {profileSaved && <div style={{background:GD,borderRadius:8,padding:"8px 12px",fontSize:12,color:"#065f46",fontWeight:600,marginBottom:12}}>✓ Perfil actualizado correctamente</div>}
                 <button
                   disabled={profileSaving}
@@ -1235,6 +1300,7 @@ export default function PortalEstudiante(){
                         full_name:      profileForm.full_name||undefined,
                         phone:          profileForm.phone||undefined,
                         preferred_name: profileForm.preferred_name||undefined,
+                        timezone:       profileForm.timezone||undefined,
                       }).eq("id",session.user.id);
                       setUser(u=>({...u,name:profileForm.preferred_name||profileForm.full_name?.split(" ")[0]||u.name}));
                       setProfileSaved(true);
