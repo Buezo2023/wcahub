@@ -170,6 +170,7 @@ export default function TeacherPortal(){
   const [streamLinks,setStreamLinks]=useState(Object.fromEntries(UNITS.map(u=>[u.n,u.stream])));
   const [pdfLinks,setPdfLinks]=useState(Object.fromEntries(UNITS.map(u=>[u.n,u.pdf])));
   const [backupLinks,setBackupLinks]=useState(Object.fromEntries(UNITS.map(u=>[u.n,""])));
+  const [toastMsg, setToastMsg] = useState(null);
 
   const displayGroups   = realGroups.length > 0 ? realGroups.map((g,i) => ({
     id:         g.id,
