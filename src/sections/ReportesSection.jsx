@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase.js";
 import { exportCSV } from "../lib/exportCSV.js";
+import { generateFinancialReport, generateAcademicReport, generateEnrollmentReport, generateLeadsReport } from "../lib/reportPDF.js";
 import { BISection } from "./BISection.jsx";
 
 const P="#155266",PD="#e8f3f6",G="#059669",GD="#ecfdf5",R="#dc2626",A="#d97706";
@@ -198,7 +199,10 @@ function FinanzasReport(){
   return(
     <div>
       <ReportHeader onRefresh={load} refreshedAt={refreshedAt}
-        exportBtn={<button onClick={exp} style={{padding:"6px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>}/>
+        exportBtn={<div style={{display:"flex",gap:6}}>
+          <button onClick={exp} style={{padding:"6px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>
+          <button onClick={()=>generateFinancialReport({mrr:data.mrr,arr:data.mrr*12,collected:data.collected,pending:data.pending,overdue:data.overdue,payments:data.pays,byProg:data.byProg})} style={{padding:"6px 12px",background:P,border:"none",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"#fff",fontWeight:600}}>↓ PDF</button>
+        </div>}/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:6}}>
         <Kpi label="MRR" value={`$${data.mrr.toLocaleString()}`} color={P} sub="Ingresos recurrentes/mes"/>
         <Kpi label="ARR" value={`$${(data.mrr*12).toLocaleString()}`} color={P} sub="Ingresos anuales proj."/>
@@ -304,7 +308,11 @@ function AcademiaReport(){
   return(
     <div>
       <ReportHeader onRefresh={load} refreshedAt={refreshedAt}
-        exportBtn={<button onClick={exp} style={{padding:"6px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>}/>
+        exportBtn={<div style={{display:"flex",gap:6}}>
+          <button onClick={{exp}} style={{padding:"6px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>
+          <button onClick={()=>generateAcademicReport({students:data.enrolls.map(e=>({id:e.id,name:e.student?.profile?.full_name||"—",email:e.student?.profile?.email||"—",level:e.group?.level||e.group_level||"A1",programId:e.program_id,state:e.status,attendance:80,scholarship:false})),groups:data.groups.map(g=>({level:g.level,time:g.schedule,days:g.days,teacher:"—",students:g.enrollments?.length||0,capacity:g.capacity}))})} style={{padding:"6px 12px",background:P,border:"none",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"#fff",fontWeight:600}}>↓ PDF Académico</button>
+          <button onClick={()=>generateEnrollmentReport({students:data.enrolls.map(e=>({id:e.id,name:e.student?.profile?.full_name||"—",email:e.student?.profile?.email||"—",level:e.group?.level||"A1",programId:e.program_id,state:e.status,scholarship:false})),institution:"UNAH-Cortés"})} style={{padding:"6px 12px",background:"#7c3aed",border:"none",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"#fff",fontWeight:600}}>↓ Nómina UNAH</button>
+        </div>}/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:6}}>
         <Kpi label="Matrículas activas" value={data.activeCount} color={P}/>
         <Kpi label="Grupos activos" value={data.groups.length} color={G}/>
@@ -388,7 +396,10 @@ function VentasReport(){
   return(
     <div>
       <ReportHeader onRefresh={load} refreshedAt={refreshedAt}
-        exportBtn={<button onClick={exp} style={{padding:"6px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>}/>
+        exportBtn={<div style={{display:"flex",gap:6}}>
+          <button onClick={{exp}} style={{padding:"6px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>
+          <button onClick={()=>generateLeadsReport({leads:data.leads})} style={{padding:"6px 12px",background:"#d97706",border:"none",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"#fff",fontWeight:600}}>↓ PDF Ventas</button>
+        </div>}/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:6}}>
         <Kpi label="Total leads" value={data.leads.length} color={P}/>
         <Kpi label="Convertidos" value={data.byStage.convertido||0} color={G}/>
@@ -467,7 +478,10 @@ function RRHHReport(){
   return(
     <div>
       <ReportHeader onRefresh={load} refreshedAt={refreshedAt}
-        exportBtn={<button onClick={exp} style={{padding:"6px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>}/>
+        exportBtn={<div style={{display:"flex",gap:6}}>
+          <button onClick={{exp}} style={{padding:"6px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>
+          
+        </div>}/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:6}}>
         <Kpi label="Total usuarios" value={data.total} color={P}/>
         <Kpi label="Activos" value={data.active} color={G}/>
