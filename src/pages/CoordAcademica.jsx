@@ -75,6 +75,11 @@ export default function CoordAcademica() {
     return () => subscription.unsubscribe();
   }, [navigate]);
   const [view, setView]               = useState("home");
+  const [selectedIds,  setSelectedIds]  = useState(new Set());
+  const [bulkModal,    setBulkModal]    = useState(false);
+  const [bulkGroupId,  setBulkGroupId]  = useState("");
+  const [bulkSaving,   setBulkSaving]   = useState(false);
+  const [filterGroup,  setFilterGroup]  = useState("all");
   const isMobile = useMobile();
   const [sideOpen, setSideOpen] = useState(false);
   const [selGroup, setSelGroup]       = useState(null);
@@ -120,19 +125,22 @@ export default function CoordAcademica() {
         })));
       });
     supabase.from("enrollments")
-      .select("program_id, status, students!inner(id, level, scholarship, profiles!inner(full_name, email))")
+      .select("id, program_id, status, group_id, students!inner(id, level, scholarship, profiles!inner(full_name, email))")
       .eq("status", "active").limit(300)
       .then(({ data }) => {
         if (data?.length) {
-          setRealStudents(data.map((e,i) => ({
-            id:         e.students.id,
-            name:       e.students.profiles.full_name || e.students.profiles.email,
-            level:      e.students.level || "A1",
-            group:      i % 9 + 1,
-            type:       e.students.scholarship ? "scholarship" : "regular",
-            attendance: 80, score: 75,
-            state:      "active",
-            scholarship: e.students.scholarship,
+          setRealStudents(data.map(e => ({
+            id:           e.students.id,
+            enrollmentId: e.id,
+            name:         e.students.profiles.full_name || e.students.profiles.email,
+            email:        e.students.profiles.email || "",
+            level:        e.students.level || "A1",
+            group:        e.group_id || null,
+            programId:    e.program_id,
+            type:         e.students.scholarship ? "scholarship" : "regular",
+            attendance:   80, score: 75,
+            state:        "active",
+            scholarship:  e.students.scholarship,
           })));
         }
       }).catch(e => setDataError(e.message)).finally(() => setDataLoading(false));
@@ -158,14 +166,75 @@ export default function CoordAcademica() {
   const sourceStudents = realStudents;
   const AT_RISK = (sourceStudents||[]).filter(s => (s.attendance||0) < 70 || (s.score||0) < 65);
   const filteredStudents = useMemo(() => (sourceStudents||[]).filter(s => {
-    const ms = !search || s.name.toLowerCase().includes(search.toLowerCase());
+    const ms = !search || s.name.toLowerCase().includes(search.toLowerCase()) || s.email?.toLowerCase().includes(search.toLowerCase());
     const ml = filterLevel==="all" || s.level===filterLevel;
     const mt = filterType==="all" || s.type===filterType;
-    return ms && ml && mt;
-  }), [search, filterLevel, filterType, sourceStudents]);
+    const mg = filterGroup==="all" || (filterGroup==="none" ? !s.group : s.group===filterGroup);
+    return ms && ml && mt && mg;
+  }), [search, filterLevel, filterType, filterGroup, sourceStudents]);
+
+  const noGroupCount = (sourceStudents||[]).filter(s => !s.group).length;
+
+  async function bulkAssignGroup() {
+    if (!bulkGroupId || selectedIds.size === 0) return;
+    setBulkSaving(true);
+    try {
+      const enrollmentIds = filteredStudents
+        .filter(s => selectedIds.has(s.id))
+        .map(s => s.enrollmentId)
+        .filter(Boolean);
+      const { error } = await supabase.from("enrollments")
+        .update({ group_id: bulkGroupId })
+        .in("id", enrollmentIds);
+      if (error) throw error;
+      const count = enrollmentIds.length;
+      showToast(`✓ ${count} estudiante${count>1?"s":""} asignado${count>1?"s":""} al grupo`);
+      setBulkModal(false);
+      setSelectedIds(new Set());
+      setBulkGroupId("");
+      // Reload students
+      setDataLoading(true);
+      const { data } = await supabase.from("enrollments")
+        .select("id, program_id, status, group_id, students!inner(id, level, scholarship, profiles!inner(full_name, email))")
+        .eq("status", "active").limit(300);
+      if (data) setRealStudents(data.map(e => ({
+        id: e.students.id, enrollmentId: e.id,
+        name: e.students.profiles.full_name || e.students.profiles.email,
+        email: e.students.profiles.email || "",
+        level: e.students.level || "A1", group: e.group_id || null,
+        programId: e.program_id, type: e.students.scholarship?"scholarship":"regular",
+        attendance: 80, score: 75, state: "active", scholarship: e.students.scholarship,
+      })));
+    } catch(e) {
+      showToast("Error: " + (e.message || "Error al asignar"), "#dc2626");
+    } finally {
+      setBulkSaving(false);
+      setDataLoading(false);
+    }
+  }
+
+  function toggleSelect(id) {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.size === filteredStudents.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredStudents.map(s => s.id)));
+    }
+  }
 
   const teacherName = id => teachers.find(t=>t.id===id)?.name || "Sin asignar";
-  const groupLabel  = id => { const g=realDbGroups.find(g=>g.id===id); return g?`${g.level} · ${g.time||"—"}`:"—"; };
+  const groupLabel  = id => {
+    if (!id) return <span style={{ color:"#d97706", fontWeight:600, fontSize:11 }}>⚠ Sin grupo</span>;
+    const g = realDbGroups.find(g => g.id === id);
+    return g ? `${g.level} · ${g.time||"—"}` : "—";
+  };
   const totalStudents = sourceStudents.length;
   const avgAttendance = sourceStudents.length > 0 ? Math.round(sourceStudents.reduce((a,s)=>a+(s.attendance||0),0)/sourceStudents.length) : 0;
 
@@ -374,6 +443,93 @@ export default function CoordAcademica() {
             </div>
           )}
 
+          {/* BULK ASSIGN MODAL */}
+          {bulkModal && (
+            <div role="dialog" aria-modal="true" aria-label="Asignar grupo en lote"
+              onClick={()=>!bulkSaving&&setBulkModal(false)}
+              style={{ position:"fixed", inset:0, background:"rgba(0,0,0,.45)",
+                display:"flex", alignItems:"center", justifyContent:"center",
+                zIndex:200, padding:16 }}>
+              <div onClick={e=>e.stopPropagation()}
+                style={{ background:B.white, borderRadius:16, padding:28,
+                  width:"100%", maxWidth:440, boxShadow:"0 24px 80px rgba(0,0,0,.2)" }}>
+                <div style={{ fontSize:17, fontWeight:800, color:B.text, marginBottom:6 }}>
+                  Asignar grupo en lote
+                </div>
+                <p style={{ fontSize:13, color:B.textSec, marginBottom:20, lineHeight:1.6 }}>
+                  Se asignará el grupo seleccionado a{" "}
+                  <strong style={{ color:B.primary }}>{selectedIds.size} estudiante{selectedIds.size>1?"s":""}</strong>.
+                  Esta acción se puede deshacer cambiando el grupo individualmente.
+                </p>
+
+                {/* Students preview */}
+                <div style={{ background:B.bg, borderRadius:10, padding:"10px 14px",
+                  marginBottom:16, maxHeight:130, overflowY:"auto" }}>
+                  {filteredStudents.filter(s=>selectedIds.has(s.id)).map(s => (
+                    <div key={s.id} style={{ display:"flex", alignItems:"center", gap:8,
+                      padding:"5px 0", borderBottom:`1px solid ${B.borderLight}`, fontSize:12 }}>
+                      <div style={{ width:24, height:24, borderRadius:6, background:B.primaryDim,
+                        display:"flex", alignItems:"center", justifyContent:"center",
+                        fontSize:10, fontWeight:700, color:B.primary, flexShrink:0 }}>
+                        {s.name[0]}
+                      </div>
+                      <span style={{ color:B.text, fontWeight:500 }}>{s.name}</span>
+                      <span style={{ color:B.textSec, marginLeft:"auto" }}>Nivel {s.level}</span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Group picker */}
+                <label style={{ fontSize:11, fontWeight:600, color:B.textSec,
+                  display:"block", marginBottom:6 }}>
+                  Grupo de destino *
+                </label>
+                <select value={bulkGroupId} onChange={e=>setBulkGroupId(e.target.value)}
+                  aria-label="Seleccionar grupo"
+                  style={{ width:"100%", padding:"11px 14px",
+                    border:`1px solid ${bulkGroupId?"#155266":B.border}`,
+                    borderRadius:9, fontSize:13, background:B.bg,
+                    fontFamily:"inherit", marginBottom:20, color:B.text }}>
+                  <option value="">Seleccioná un grupo...</option>
+                  {realDbGroups.map(g => {
+                    const spots = (g.capacity||25) - (g.students||0);
+                    const ok = spots >= selectedIds.size;
+                    return (
+                      <option key={g.id} value={g.id} disabled={!ok}>
+                        {g.level} · {g.time} · {g.days} — {spots} cupos {!ok?"(insuficiente)":""}
+                      </option>
+                    );
+                  })}
+                </select>
+
+                <div style={{ display:"flex", gap:10 }}>
+                  <button onClick={()=>!bulkSaving&&setBulkModal(false)}
+                    style={{ flex:1, padding:"12px", background:B.bg,
+                      border:`1px solid ${B.border}`, borderRadius:10, fontSize:14,
+                      fontWeight:600, cursor:bulkSaving?"not-allowed":"pointer",
+                      fontFamily:"inherit", color:B.textSec }}>
+                    Cancelar
+                  </button>
+                  <button onClick={bulkAssignGroup}
+                    disabled={!bulkGroupId || bulkSaving}
+                    style={{ flex:2, padding:"12px", background:bulkGroupId&&!bulkSaving?B.primary:"#94a3b8",
+                      color:"#fff", border:"none", borderRadius:10, fontSize:14,
+                      fontWeight:700, cursor:bulkGroupId&&!bulkSaving?"pointer":"not-allowed",
+                      fontFamily:"inherit", display:"flex", alignItems:"center",
+                      justifyContent:"center", gap:8 }}>
+                    {bulkSaving ? (
+                      <><div style={{ width:14, height:14, border:"2px solid rgba(255,255,255,.3)",
+                        borderTopColor:"#fff", borderRadius:"50%",
+                        animation:"spin .7s linear infinite" }}/> Asignando...</>
+                    ) : (
+                      `✓ Asignar a ${selectedIds.size} estudiante${selectedIds.size>1?"s":""}`
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* TEACHERS */}
           {view==="teachers" && (
             <div>
@@ -463,17 +619,47 @@ export default function CoordAcademica() {
           {view==="students" && (
             <div style={{ display:"flex", gap:12, height:"100%" }}>
               <div style={{ flex:1, overflow:"hidden", display:"flex", flexDirection:"column" }}>
+                {/* Bulk action bar — appears when students are selected */}
+                {selectedIds.size > 0 && (
+                  <div style={{ display:"flex", alignItems:"center", gap:10, marginBottom:10,
+                    padding:"10px 14px", background:B.primaryDim, borderRadius:10,
+                    border:`1px solid ${B.primary}30` }}>
+                    <span style={{ fontSize:13, fontWeight:700, color:B.primary }}>
+                      {selectedIds.size} seleccionado{selectedIds.size>1?"s":""}
+                    </span>
+                    <div style={{ flex:1 }}/>
+                    <button onClick={() => setBulkModal(true)}
+                      style={{ padding:"7px 16px", background:B.primary, color:"#fff", border:"none",
+                        borderRadius:8, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit",
+                        display:"flex", alignItems:"center", gap:6 }}>
+                      <i className="ti ti-users" aria-hidden="true"/> Asignar grupo →
+                    </button>
+                    <button onClick={() => setSelectedIds(new Set())}
+                      aria-label="Cancelar selección"
+                      style={{ padding:"7px 10px", background:"transparent", color:B.textSec,
+                        border:`1px solid ${B.border}`, borderRadius:8, fontSize:13,
+                        cursor:"pointer", fontFamily:"inherit" }}>
+                      ✕
+                    </button>
+                  </div>
+                )}
+
                 <div style={{ display:"flex", gap:8, marginBottom:10 }}>
                   <div style={{ flex:1, display:"flex", alignItems:"center", gap:8, background:B.white, border:`1px solid ${B.border}`, borderRadius:8, padding:"7px 12px" }}>
                     <i className="ti ti-search" style={{ color:B.textSec, fontSize:14 }} aria-hidden="true" />
-                    <input aria-label="Buscar estudiante" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar estudiante..." style={{ border:"none", outline:"none", fontSize:13, background:"transparent", flex:1, fontFamily:"inherit", color:B.text }} />
+                    <input aria-label="Buscar estudiante" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar por nombre o email..." style={{ border:"none", outline:"none", fontSize:13, background:"transparent", flex:1, fontFamily:"inherit", color:B.text }} />
                   </div>
+                  <select aria-label="Filtrar por grupo" value={filterGroup} onChange={e=>{setFilterGroup(e.target.value);setSelectedIds(new Set());}} style={{ padding:"7px 10px", border:`1px solid ${filterGroup==="none"?"#d97706":B.border}`, borderRadius:8, fontSize:13, background:filterGroup==="none"?"#fff8e6":B.white, fontFamily:"inherit", fontWeight:filterGroup==="none"?700:400, color:filterGroup==="none"?"#92400e":B.text }}>
+                    <option value="all">Todos los grupos</option>
+                    <option value="none">⚠ Sin grupo ({noGroupCount})</option>
+                    {realDbGroups.map(g=><option key={g.id} value={g.id}>{g.level} · {g.time}</option>)}
+                  </select>
                   <select aria-label="Filtrar por nivel" value={filterLevel} onChange={e=>setFilterLevel(e.target.value)} style={{ padding:"7px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.white, fontFamily:"inherit" }}>
                     <option value="all">Todos los niveles</option>
                     {["A1","A2","B1","B2","C1"].map(l=><option key={l}>{l}</option>)}
                   </select>
                   <select aria-label="Filtrar por tipo" value={filterType} onChange={e=>setFilterType(e.target.value)} style={{ padding:"7px 10px", border:`1px solid ${B.border}`, borderRadius:8, fontSize:13, background:B.white, fontFamily:"inherit" }}>
-                    <option value="all">Todos los tipos</option>
+                    <option value="all">Todos</option>
                     <option value="regular">Regular</option>
                     <option value="scholarship">Beca</option>
                     <option value="b2b">B2B</option>
@@ -483,15 +669,27 @@ export default function CoordAcademica() {
                   <div style={{overflowX:"auto",WebkitOverflowScrolling:"touch"}}><table style={{ width:"100%", borderCollapse:"collapse", fontSize:13 }}>
                     <thead style={{ position:"sticky", top:0 }}>
                       <tr style={{ background:B.bg }}>
-                        {["Estudiante","Nivel","Grupo","Tipo","Asistencia","Promedio","Estado",""].map(h=>(
+                        <th style={{ padding:"8px 10px", width:36 }}>
+                        <input type="checkbox" aria-label="Seleccionar todos"
+                          checked={selectedIds.size===filteredStudents.length && filteredStudents.length>0}
+                          onChange={toggleSelectAll}
+                          style={{ cursor:"pointer", accentColor:B.primary, width:14, height:14 }}/>
+                      </th>
+                      {["Estudiante","Nivel","Grupo","Tipo","Asistencia","Promedio","Estado",""].map(h=>(
                           <th key={h} style={{ padding:"8px 10px", textAlign:"left", fontSize:11, fontWeight:600, color:B.textSec, letterSpacing:.5, textTransform:"uppercase" }}>{h}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody>
                       {filteredStudents.map((s,i) => (
-                        <tr key={s.id} onClick={() => setSelStudent(selStudent?.id===s.id?null:s)} style={{ borderTop:`1px solid ${B.borderLight}`, cursor:"pointer", background:selStudent?.id===s.id?B.primaryDim:"transparent" }}>
-                          <td style={{ padding:"10px 10px" }}><div style={{ fontWeight:600, color:B.text }}>{s.name}</div></td>
+                        <tr key={s.id} style={{ borderTop:`1px solid ${B.borderLight}`, background:selectedIds.has(s.id)?B.primaryDim:selStudent?.id===s.id?B.primaryDim:"transparent", transition:"background .1s" }}>
+                          <td style={{ padding:"10px 10px", width:36 }} onClick={e=>e.stopPropagation()}>
+                            <input type="checkbox" aria-label={`Seleccionar ${s.name}`}
+                              checked={selectedIds.has(s.id)}
+                              onChange={() => toggleSelect(s.id)}
+                              style={{ cursor:"pointer", accentColor:B.primary, width:14, height:14 }}/>
+                          </td>
+                          <td style={{ padding:"10px 10px" }} onClick={() => setSelStudent(selStudent?.id===s.id?null:s)}><div style={{ fontWeight:600, color:B.text }}>{s.name}</div><div style={{ fontSize:10, color:B.textSec }}>{s.email}</div></td>
                           <td style={{ padding:"10px 10px" }}><Badge text={s.level} bg={levelBg(s.level)} color={levelColor(s.level)} /></td>
                           <td style={{ padding:"10px 10px", fontSize:12, color:B.textSec }}>{groupLabel(s.group)}</td>
                           <td style={{ padding:"10px 10px" }}>
