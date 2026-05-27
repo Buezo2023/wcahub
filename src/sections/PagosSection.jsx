@@ -12,7 +12,7 @@ export function PagosSection({ showToast, initialTab }) {
   const [students, setStudents] = useState([]);
   const [groups,   setGroups]   = useState([]);
   const [loading,  setLoading]  = useState(true);
-  const [tab,      setTab]      = useState(initialTab==="register"?"pending":"pending");
+  const [tab,      setTab]      = useState(initialTab || "pending");
   const [regModal, setRegModal] = useState(false);
   const [form,     setForm]     = useState({studentId:"",enrollmentId:"",amount:95,method:"transfer",bank:"",referenceCode:"",notes:""});
   const [saving,   setSaving]   = useState(false);

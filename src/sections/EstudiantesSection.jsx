@@ -63,15 +63,22 @@ export function EstudiantesSection({ showToast }) {
 
   async function toggleActive(s) {
     const newActive = !(s.profile?.active !== false);
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!newActive) {
-      const en = s.enrollments?.[0]?.id;
-      if (en) await api.patch("/api/enrollments", {enrollmentId:en,action:"suspend",reason:"Suspendido por admin"});
-    } else {
-      const{error:actErr}=await supabase.from("profiles").update({active:true}).eq("id",s.profile?.id);
-      if(actErr)toast.error("Error al reactivar perfil");
+    try {
+      const activeEnroll = s.enrollments?.find(e => e.status === "active" || e.status === "suspended");
+      if (!newActive) {
+        // Suspend: call API so enrollment status + audit log are handled correctly
+        if (activeEnroll) await api.patch("/api/enrollments", {enrollmentId: activeEnroll.id, action:"suspend", reason:"Suspendido por admin"});
+        else await supabase.from("profiles").update({active: false}).eq("id", s.profile?.id);
+      } else {
+        // Reactivate: call API so enrollment.status → active and profile.active → true
+        const suspendedEnroll = s.enrollments?.find(e => e.status === "suspended");
+        if (suspendedEnroll) await api.patch("/api/enrollments", {enrollmentId: suspendedEnroll.id, action:"reactivate"});
+        else await supabase.from("profiles").update({active: true}).eq("id", s.profile?.id);
+      }
+      showToast(newActive ? "Estudiante reactivado" : "Estudiante suspendido");
+    } catch(e) {
+      showToast("Error: " + (e.message || "Error al cambiar estado"), "#dc2626");
     }
-    showToast(newActive ? "Estudiante reactivado" : "Estudiante suspendido");
     setSel(null);
     await load();
   }

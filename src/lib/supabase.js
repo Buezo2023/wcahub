@@ -39,13 +39,3 @@ export async function getSession() {
   return session;
 }
 
-// ─── User profile ──────────────────────────────────────────────────
-export async function getProfile(userId) {
-  const { data, error } = await supabase
-    .from('profiles')
-    .select('*, role:roles(name, permissions)')
-    .eq('id', userId)
-    .single();
-  if (error) throw error;
-  return data;
-}

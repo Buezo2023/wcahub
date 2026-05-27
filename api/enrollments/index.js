@@ -2,7 +2,7 @@
 // POST /api/enrollments + action=create → create enrollment (explicit)
 // PATCH /api/enrollments/suspend → suspend or reactivate
 
-import { requireAuth, requireRole, getSupabaseAdmin, sendEmail, EmailTemplates, ok, err, setCORS, checkRateLimit } from '../_utils.js';
+import { requireAuth, requireRole, getSupabaseAdmin, sendEmail, EmailTemplates, ok, err, setCORS, checkRateLimit, addOneMonth } from '../_utils.js';
 
 const PROGRAM_NAMES = {
   en: 'Inglés Completo', va: 'Asistente Virtual',
@@ -79,15 +79,18 @@ async function handleCreate(req, res) {
 
     const now = new Date();
     const payDay = now.getDate();
-    const nextPayment = new Date(now.getFullYear(), now.getMonth(), payDay);
-    if (nextPayment <= now) nextPayment.setMonth(nextPayment.getMonth() + 1);
+    const thisMonthCandidate = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(payDay).padStart(2,'0')}`;
+    const todayStr = now.toISOString().slice(0, 10);
+    const nextPaymentStr = thisMonthCandidate <= todayStr
+      ? addOneMonth(thisMonthCandidate)
+      : thisMonthCandidate;
 
     const { data: enrollment, error: enrollError } = await admin.from('enrollments')
       .upsert({
         student_id: studentId, program_id: programId, group_id: groupId || null,
         status: 'active', current_unit: existing ? existing.current_unit || 1 : 1,
         price_locked: price || null, enrolled_at: new Date().toISOString(),
-        next_payment_date: nextPayment.toISOString().slice(0, 10),
+        next_payment_date: nextPaymentStr,
       }, { onConflict: 'student_id,program_id' }).select().single();
     if (enrollError) throw enrollError;
 
@@ -125,7 +128,7 @@ async function handleSuspend(req, res) {
     if (!['suspend','reactivate'].includes(action)) return err(res, { status: 400, message: "action debe ser 'suspend' o 'reactivate'" });
 
     const admin = getSupabaseAdmin();
-    const reactivateDate = (() => { const d = new Date(); d.setMonth(d.getMonth() + 1); return d.toISOString().slice(0,10); })();
+    const reactivateDate = addOneMonth(new Date().toISOString().slice(0, 10));
 
     const updates = action === 'suspend'
       ? { status: 'suspended', suspended_at: new Date().toISOString(), suspended_reason: reason || null }

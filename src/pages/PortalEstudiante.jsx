@@ -1100,16 +1100,16 @@ export default function PortalEstudiante(){
                               .upload(path, file, { upsert:true });
                             if(error) throw error;
                             const { data:{ publicUrl } } = supabase.storage.from("proofs").getPublicUrl(path);
-                            // Record payment pending confirmation
+                            // Record payment via API (generates audit log, correct field names)
                             if(uid){
                               const { data:st } = await supabase.from("students").select("id").eq("profile_id",uid).maybeSingle();
-                              if(st) await supabase.from("payments").insert({
-                                student_id:st.id,
-                                amount:0,
-                                method:"Transferencia bancaria",
-                                status:"pending",
-                                proof_url:publicUrl,
-                              });
+                              if(st) await api.post("/api/payments", {
+                                studentId: st.id,
+                                amount: 0,
+                                method: "Transferencia bancaria",
+                                proofUrl: publicUrl,
+                                autoConfirm: false,
+                              }).catch(()=>{}); // non-fatal — proof is already uploaded to storage
                             }
                             setUploadState({loading:false,done:true,error:null});
                             // Notify student that comprobante was received
