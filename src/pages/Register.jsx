@@ -177,6 +177,9 @@ export default function Register() {
             style={btnStyle(P)}>
             Continuar →
           </button>
+          <button onClick={() => setStep(1)} style={{...btnStyle("transparent"), color:"var(--text-secondary)", border:"1px solid var(--border)", marginTop:8}}>
+            ← Cambiar programa
+          </button>
         </div>
       );
     }
@@ -254,6 +257,9 @@ export default function Register() {
           ))}
         </div>
         <button onClick={() => setStep(3)} style={btnStyle(P)}>Continuar con {data.level} →</button>
+        <button onClick={() => { setStep(1); setTestDone(false); setAnswers({}); }} style={{...btnStyle("transparent"), color:"var(--text-secondary)", border:"1px solid var(--border)", marginTop:8}}>
+          ← Cambiar programa
+        </button>
       </div>
     );
   }
