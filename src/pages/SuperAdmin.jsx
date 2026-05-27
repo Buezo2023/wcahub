@@ -85,7 +85,7 @@ const SUB_TABS = {
     ["resumen","Resumen CRM"],["leads","Todos los leads"],["b2b","Empresas B2B"],
   ],
   contab: [
-    ["payments","Pagos pendientes"],["vencidos","Vencidos"],["register","Registrar pago"],
+    ["payments","Pagos"],["vencidos","Vencidos"],
     ["recibos","Recibos"],["banks","Cuentas banco"],
   ],
   comunicaciones: [
@@ -535,28 +535,40 @@ export default function SuperAdmin() {
       <main style={{ flex:1, display:"flex", flexDirection:"column", minHeight:"100vh" }}>
         <div style={{ height:60, background:"var(--bg-surface)", borderBottom:"1px solid var(--border)", display:"flex", alignItems:"center", justifyContent:"space-between", padding:"0 24px", flexShrink:0, boxShadow:"0 1px 4px rgba(0,0,0,.04)" }}>
           <div>
-            <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>
-              {{"overview":"Panel general","academia":"Academia","ventas":"Ventas & CRM","contab":"Contabilidad","comunicaciones":"Comunicaciones","reportes":"Reportes","rrhh":"RRHH & Personal","sistema":"Sistema"}[view]}
+            <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+              <span style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>
+                {{"overview":"Panel general","academia":"Academia","ventas":"Ventas & CRM","contab":"Contabilidad","comunicaciones":"Comunicaciones","reportes":"Reportes","rrhh":"RRHH & Personal","sistema":"Sistema"}[view]}
+              </span>
+              {SUB_TABS[view] && subView && (() => {
+                const sub = (SUB_TABS[view]||[]).find(([id])=>id===subView);
+                return sub ? <>
+                  <i className="ti ti-chevron-right" style={{fontSize:11,color:"var(--text-tertiary)"}} aria-hidden="true"/>
+                  <span style={{fontSize:13,color:"var(--text-secondary)",fontWeight:500}}>{sub[1]}</span>
+                </> : null;
+              })()}
             </div>
           </div>
           <div style={{ display:"flex", gap:8 }}>
             <Badge text="Sistema activo" bg={GD} color="#065f46"/>
-            <button onClick={async()=>{
-              try {
-                const {data:{session}} = await supabase.auth.getSession();
-                const res = await fetch("/api/jobs/daily-billing", {
-                  headers:{"x-cron-secret": "manual-trigger", "Authorization":`Bearer ${session?.access_token}`}
-                });
-                const json = await res.json().catch(()=>({}));
-                showToast(`Ciclo ejecutado: ${json.results?.autoSuspended?.count||0} suspendidos, ${json.results?.preReminders?.sent||0} recordatorios`);
-              } catch(e){ showToast("Error: "+e.message, R); }
-            }} style={{fontSize:11,padding:"7px 14px",background:PD,color:P,border:`1px solid ${P}30`,borderRadius:8,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>
-              ▶ Ciclo cobro manual
-            </button>
+            {(view==="contab" || view==="sistema") && (
+              <button onClick={async()=>{
+                try {
+                  const {data:{session}} = await supabase.auth.getSession();
+                  const res = await fetch("/api/jobs/daily-billing", {
+                    headers:{"x-cron-secret": "manual-trigger", "Authorization":`Bearer ${session?.access_token}`}
+                  });
+                  const json = await res.json().catch(()=>({}));
+                  showToast(`Ciclo ejecutado: ${json.results?.autoSuspended?.count||0} suspendidos, ${json.results?.preReminders?.sent||0} recordatorios`);
+                } catch(e){ showToast("Error: "+e.message, R); }
+              }} style={{fontSize:11,padding:"7px 14px",background:PD,color:P,border:`1px solid ${P}30`,borderRadius:8,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>
+                ▶ Ciclo cobro manual
+              </button>
+            )}
           </div>
         </div>
 
-        <div style={{ flex:1, overflowY:"auto", padding:24 }}>
+        <div style={{ flex:1, overflowY:"auto", padding:"24px 28px" }}>
+          <div style={{ maxWidth:1200, margin:"0 auto" }}>
           {/* Sub-navigation tabs for departments */}
           {SUB_TABS[view] && (
             <div style={{ display:"flex", gap:8, marginBottom:18, flexWrap:"wrap" }}>
@@ -595,16 +607,23 @@ export default function SuperAdmin() {
                   <div style={{ fontSize:13, fontWeight:700, color:"var(--text-primary)" }}>MRR — 12 meses</div>
                   <div style={{ fontSize:11, color:totalMRR>0?G:"var(--text-tertiary)", fontWeight:600 }}>{totalMRR>0?`+${mrrGrowth}% vs mes ant.`:"Sin datos aún"}</div>
                 </div>
-                <svg width="100%" height={110} viewBox="0 0 500 110" preserveAspectRatio="none">
-                  <defs><linearGradient id="mrg2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor={P} stopOpacity={0.15}/><stop offset="100%" stopColor={P} stopOpacity={0}/></linearGradient></defs>
-                  {(()=>{
-                    const mx=20000,mn=6000;
-                    if(!MRR_DATA.length) return null; const pts=MRR_DATA.map((v,i)=>({ x:(i/(MRR_DATA.length-1))*488+6, y:100-((v-mn)/(mx-mn))*88+5 }));
-                    const line=pts.map(p=>`${p.x},${p.y}`).join(" ");
-                    const area=`M${pts[0].x},${pts[0].y} ${pts.slice(1).map(p=>`L${p.x},${p.y}`).join(" ")} L${pts[pts.length-1].x},105 L${pts[0].x},105 Z`;
-                    return (<><path d={area} fill="url(#mrg2)"/><polyline points={line} fill="none" stroke={P} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>{pts.map((p,i)=>(<g key={i}><circle cx={p.x} cy={p.y} r={3} fill="var(--bg-surface)" stroke={P} strokeWidth={2}/><text x={p.x} y={108} textAnchor="middle" fontSize={7} fill="var(--text-tertiary)">{MRR_MONTHS[i]}</text></g>))}</>);
-                  })()}
-                </svg>
+                {MRR_DATA.length > 0 ? (
+                  <svg width="100%" height={110} viewBox="0 0 500 110" preserveAspectRatio="none">
+                    <defs><linearGradient id="mrg2" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stopColor={P} stopOpacity={0.15}/><stop offset="100%" stopColor={P} stopOpacity={0}/></linearGradient></defs>
+                    {(()=>{
+                      const mx=20000,mn=6000;
+                      const pts=MRR_DATA.map((v,i)=>({ x:(i/(MRR_DATA.length-1))*488+6, y:100-((v-mn)/(mx-mn))*88+5 }));
+                      const line=pts.map(p=>`${p.x},${p.y}`).join(" ");
+                      const area=`M${pts[0].x},${pts[0].y} ${pts.slice(1).map(p=>`L${p.x},${p.y}`).join(" ")} L${pts[pts.length-1].x},105 L${pts[0].x},105 Z`;
+                      return (<><path d={area} fill="url(#mrg2)"/><polyline points={line} fill="none" stroke={P} strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round"/>{pts.map((p,i)=>(<g key={i}><circle cx={p.x} cy={p.y} r={3} fill="var(--bg-surface)" stroke={P} strokeWidth={2}/><text x={p.x} y={108} textAnchor="middle" fontSize={7} fill="var(--text-tertiary)">{MRR_MONTHS[i]}</text></g>))}</>);
+                    })()}
+                  </svg>
+                ) : (
+                  <div style={{height:90,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:6,color:"var(--text-tertiary)"}}>
+                    <i className="ti ti-chart-line" style={{fontSize:28,opacity:.3}} aria-hidden="true"/>
+                    <div style={{fontSize:12}}>Los datos de MRR aparecerán cuando haya pagos confirmados</div>
+                  </div>
+                )}
               </div>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Accesos rápidos</SectionTitle>
@@ -658,8 +677,6 @@ export default function SuperAdmin() {
           </>}
 
           {/* ── BI ── */}
-                    {(view==="academia") && <>
-
             {(subView==="progs") && <>
             <div style={{ display:"flex", justifyContent:"flex-end", marginBottom:14 }}>
               <BtnPrimary onClick={openAddProg} style={{ display:"flex", alignItems:"center", gap:7 }}>
@@ -703,16 +720,17 @@ export default function SuperAdmin() {
               ))}
             </div>
           </>}
-          </>}
 
           {/* ── HR ── */}
           {view==="rrhh" && <>
+            {/* Stats — visible en todos los sub-tabs de RRHH */}
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:12, marginBottom:16 }}>
               <Stat label="Personal total"   value={staff.length}                                   sub={`${staff.filter(s=>s.status==="active").length} activos`} color={P}  icon="ti-users-group"/>
               <Stat label="Docentes"         value={staff.filter(s=>s.role==="Docente").length}     sub="Activos"            color={A} icon="ti-school"/>
               <Stat label="Personal admin"   value={staff.filter(s=>s.role!=="Docente").length}     sub="Roles internos"     color={G} icon="ti-briefcase"/>
               <Stat label="Nómina mensual"   value={`$${nomina.toLocaleString()}`}                  sub="USD total"          color="var(--text-secondary)" icon="ti-coin"/>
             </div>
+            {subView==="staff" && <div style={{marginTop:0}}>
             <div style={{ display:"flex", gap:8, marginBottom:14 }}>
               <select value={staffFilter} onChange={e=>setStaffFilter(e.target.value)} style={{ padding:"8px 12px", border:"1px solid var(--border)", borderRadius:8, fontSize:12, background:"var(--bg-surface)", color:"var(--text-primary)", fontFamily:"inherit" }}>
                 <option value="all">Todos los roles</option>
@@ -769,6 +787,7 @@ export default function SuperAdmin() {
                 </tbody>
               </table>
             </div>
+            </div>}{/* end subView==="staff" */}
           </>}
 
           {/* ── ROLES ── */}
@@ -1206,8 +1225,6 @@ export default function SuperAdmin() {
             </div>
           )}
 
-        </div>
-
           {/* ══ ACADEMIA ══════════════════════════════════════════════ */}
           {view==="academia" && subView==="contenido" && <Suspense fallback={<SectionFallback/>}><LMSContentSection showToast={showToast} /></Suspense>}
           {view==="academia" && subView==="students"  && <Suspense fallback={<SectionFallback/>}><EstudiantesSection showToast={showToast} /></Suspense>}
@@ -1239,6 +1256,8 @@ export default function SuperAdmin() {
 
           {/* ══ SISTEMA — handled inline above ════════════════════════ */}
 
+          </div>{/* end maxWidth:1200 */}
+        </div>{/* end flex:1 overflowY:auto */}
       </main>
 
       {/* ── MODALES ── */}
