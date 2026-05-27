@@ -48,7 +48,7 @@ function PrivateRoute({ element, allowedRoles }) {
     if (loading) return;
     if (!session) { setAuth({ ready: true, ok: false, redirect: '/' }); return; }
     if (!profile) { setAuth({ ready: true, ok: false, redirect: '/' }); return; }
-    if (allowedRoles && !allowedRoles.includes(profile.role)) {
+    if (allowedRoles && profile.role !== 'super_admin' && !allowedRoles.includes(profile.role)) {
       setAuth({ ready: true, ok: false, redirect: ROLE_PORTALS[profile.role] || '/' });
       return;
     }
@@ -281,9 +281,9 @@ function AppInner() {
             <Route path="/test"         element={<PlacementTestPublic />} />
             <Route path="/preview"      element={<PlatformPreview />} />
             <Route path="/auth/callback" element={<AuthCallback />} />
-            <Route path="/onboarding"   element={<PrivateRoute element={<Onboarding />} allowedRoles={['estudiante']} />} />
-            <Route path="/portal"       element={<PrivateRoute element={<PortalEstudiante />} allowedRoles={['estudiante']} />} />
-            <Route path="/docente"      element={<PrivateRoute element={<PortalDocente />} allowedRoles={['docente']} />} />
+            <Route path="/onboarding"   element={<PrivateRoute element={<Onboarding />} allowedRoles={['estudiante','super_admin']} />} />
+            <Route path="/portal"       element={<PrivateRoute element={<PortalEstudiante />} allowedRoles={['estudiante','super_admin']} />} />
+            <Route path="/docente"      element={<PrivateRoute element={<PortalDocente />} allowedRoles={['docente','super_admin']} />} />
             <Route path="/admin"        element={<PrivateRoute element={<DashboardAdmin />} allowedRoles={['admin','super_admin']} />} />
             <Route path="/super"        element={<PrivateRoute element={<SuperAdmin />} allowedRoles={['super_admin']} />} />
             <Route path="/crm"          element={<PrivateRoute element={<CRM />} allowedRoles={['asesor_ventas','admin','super_admin']} />} />

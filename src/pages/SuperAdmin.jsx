@@ -570,6 +570,22 @@ export default function SuperAdmin() {
           </div>
           <div style={{ display:"flex", gap:8 }}>
             <Badge text="Sistema activo" bg={GD} color="#065f46"/>
+            {/* Portal switcher — super_admin can view any role's portal */}
+            <select
+              onChange={e => { if(e.target.value) window.open(e.target.value, '_blank'); e.target.value=''; }}
+              style={{ padding:"6px 10px", fontSize:11, border:`1px solid ${P}30`, borderRadius:8,
+                background:PD, color:P, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
+              <option value="">👁 Ver como...</option>
+              <option value="/portal">Portal Estudiante</option>
+              <option value="/docente">Portal Docente</option>
+              <option value="/admin">Dashboard Admin</option>
+              <option value="/coordinacion">Coordinación Académica</option>
+              <option value="/crm">CRM Ventas</option>
+              <option value="/cobros">Gestor de Cobros</option>
+              <option value="/bi">BI Dashboard</option>
+              <option value="/registro">Página de Registro (público)</option>
+              <option value="/">Landing Page</option>
+            </select>
             {view==="contab" && (
               <button onClick={async()=>{
                 try {
