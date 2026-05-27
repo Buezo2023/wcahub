@@ -87,7 +87,7 @@ export default function CoordAcademica() {
   const [teachers, setTeachers]         = useState([]);
   const [deleteTeacher, setDeleteTeacher] = useState(null);
   const [transferModal, setTransferModal] = useState(null);
-  const [newGroup, setNewGroup]       = useState({ level:"A1", time:"", days:"L·M·V", teacher:1, cap:25 });
+  const [newGroup, setNewGroup]       = useState({ level:"A1", time:"", days:"L·M·V", teacher:1, cap:25, program_id:"en" });
   const [schedCreated, setSchedCreated] = useState(false);
   const [realDbGroups, setRealDbGroups] = useState([]);  // always array
   const [dataLoading,  setDataLoading]  = useState(false);
@@ -651,7 +651,7 @@ export default function CoordAcademica() {
   const teacherRow = teachers.find(t=>t.id===newGroup.teacher||t.id===+newGroup.teacher);
   try{
     const { data: grp, error } = await supabase.from("groups").insert({
-      program_id:  "en",
+      program_id:  newGroup.program_id || "en",
       level:       newGroup.level,
       schedule:    newGroup.time,
       days:        days,

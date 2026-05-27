@@ -34,7 +34,7 @@ export function EstudiantesSection({ showToast }) {
         .order("created_at", { ascending: false });
       if (sts) setStudents(sts);
       const { data: grps } = await supabase.from("groups")
-        .select("id,level,schedule,days,capacity,active_unit,program_id").eq("active",true);
+        .select("id,level,schedule,days,capacity,active_unit,program_id,enrollments(id,status)").eq("active",true);
       if (grps) setGroups(grps);
     } finally { setLoading(false); }
   }
@@ -252,9 +252,13 @@ export function EstudiantesSection({ showToast }) {
               <select value={enrollForm.groupId} onChange={e=>setEnrollForm(p=>({...p,groupId:e.target.value}))}
                 style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}>
                 <option value="">Sin grupo asignado</option>
-                {groups.filter(g=>g.level===enrollForm.level&&g.program_id===enrollForm.programId).map(g=>(
-                  <option key={g.id} value={g.id}>{g.level} · {g.schedule}</option>
-                ))}
+                {groups.filter(g=>g.level===enrollForm.level&&g.program_id===enrollForm.programId).map(g=>{
+                  const enrolled=(g.enrollments||[]).filter(e=>e.status==="active").length;
+                  const full=enrolled>=(g.capacity||25);
+                  return <option key={g.id} value={g.id} disabled={full}>
+                    {g.level} · {g.schedule} · {enrolled}/{g.capacity||25}{full?" (sin cupo)":""}
+                  </option>;
+                })}
               </select>
             </div>
             <div style={{marginBottom:12}}>

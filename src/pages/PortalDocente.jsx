@@ -176,7 +176,7 @@ export default function TeacherPortal(){
     schedule:   g.schedule || "6:00 PM",
     days:       g.days || "L·M·V",
     students:   realStudents.filter(s => s.group === g.id).length,
-    activeUnit: g.active_unit || 9,
+    activeUnit: g.active_unit || 1,
     color:      i === 0 ? C.accent : "#1a7a9a",
     teamsLink:  g.teams_link || null,
     dbId:       g.id,
@@ -458,19 +458,25 @@ export default function TeacherPortal(){
                 <button style={{marginTop:8,width:"100%",padding:"9px",background:C.accent,color:"var(--bg-surface)",border:"none",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}
   onClick={async()=>{
     const today = new Date().toISOString().slice(0,10);
+    const groupDbId = group?.dbId || (typeof selGroup==="string" ? selGroup : null);
     const records = grpStudents.map(s=>({
       student_id:    s.id,
-      group_id:      group?.dbId || (typeof selGroup==="string" ? selGroup : null),
-      date:          today,
+      group_id:      groupDbId,
+      class_date:    today,
       status:        attendanceMap[s.id] || "present",
-      unit:          group?.active_unit || 9,
+      present:       (attendanceMap[s.id]||"present") === "present",
+      late:          (attendanceMap[s.id]||"present") === "late",
+      unit:          group?.active_unit || 1,
+      recorded_by:   profileId,
     })).filter(r=>r.student_id);
     if(records.length){
       try{
-        await supabase.from("attendance").upsert(records, {onConflict:"student_id,date"});
-        showToast("✓ Asistencia guardada localmente");
-      }catch(e){ showToast("Error: "+e.message); }
-    } else { showToast("✓ Asistencia guardada localmente"); }
+        const {error:attErr} = await supabase.from("attendance")
+          .upsert(records, {onConflict:"student_id,class_date"});
+        if(attErr) throw attErr;
+        showToast("✓ Asistencia guardada — "+records.length+" estudiantes");
+      }catch(e){ showToast("Error al guardar asistencia: "+e.message); }
+    } else { showToast("Sin estudiantes para registrar"); }
   }}>Guardar asistencia</button>
               </div>
             </div>

@@ -1,5 +1,6 @@
 // ─── GruposSection — para SuperAdmin ────────────────────────────
 import { useState, useEffect } from "react";
+import { toast } from "../lib/toast.jsx";
 import { supabase } from "../lib/supabase.js";
 import { EmptyState } from "../lib/EmptyState.jsx";
 
@@ -10,7 +11,7 @@ export function GruposSection({ showToast }) {
   const [staff,    setStaff]    = useState([]);
   const [loading,  setLoading]  = useState(true);
   const [addModal, setAddModal] = useState(false);
-  const [form,     setForm]     = useState({program_id:"en",level:"A1",schedule:"6:00 PM – 7:30 PM",days:"Lun · Mié · Vie",capacity:20});
+  const [form,     setForm]     = useState({program_id:"en",level:"A1",schedule:"6:00 PM – 7:30 PM",days:"Lun · Mié · Vie",days_arr:["mon","wed","fri"],capacity:20});
   const [saving,   setSaving]   = useState(false);
   const [editTeams,setEditTeams]= useState(null);
   const [teamsUrl, setTeamsUrl] = useState("");
@@ -31,11 +32,22 @@ export function GruposSection({ showToast }) {
     if(!form.schedule){showToast("Horario requerido",R);return;}
     setSaving(true);
     try{
-      const {error}=await supabase.from("groups").insert({...form,active:true,active_unit:1});
+      // Check for duplicate schedule + same days
+      const {data:existing}=await supabase.from("groups")
+        .select("id,level,schedule")
+        .eq("active",true)
+        .eq("schedule",form.schedule)
+        .eq("days",form.days);
+      if(existing?.length){
+        const names=existing.map(g=>`${g.level} (${g.schedule})`).join(", ");
+        const go=window.confirm(`Ya existe un grupo activo con ese horario y días:\n${names}\n\n¿Crear de todas formas?`);
+        if(!go){setSaving(false);return;}
+      }
+      const {error}=await supabase.from("groups").insert({...form,days_arr:form.days_arr||[],active:true,active_unit:1});
       if(error) throw error;
       showToast("✓ Grupo creado");
       setAddModal(false);
-      setForm({program_id:"en",level:"A1",schedule:"6:00 PM – 7:30 PM",days:"Lun · Mié · Vie",capacity:20});
+      setForm({program_id:"en",level:"A1",schedule:"6:00 PM – 7:30 PM",days:"Lun · Mié · Vie",days_arr:["mon","wed","fri"],capacity:20});
       await load();
     }catch(e){showToast("Error: "+e.message,R);}
     finally{setSaving(false);}
@@ -50,8 +62,17 @@ export function GruposSection({ showToast }) {
   }
 
   async function assignTeacher(groupId,staffId){
-    if(!staffId) return;
-    const {error}=await supabase.from("teacher_groups").upsert({teacher_id:staffId,group_id:groupId},{onConflict:"teacher_id,group_id"});
+    if(!staffId){
+      // "Sin asignar" selected → remove ALL teachers from this group
+      const {error}=await supabase.from("teacher_groups").delete().eq("group_id",groupId);
+      if(error){showToast("Error: "+error.message,R);return;}
+      showToast("Docente removido del grupo");
+      await load();
+      return;
+    }
+    // Remove existing teachers first, then assign the new one
+    await supabase.from("teacher_groups").delete().eq("group_id",groupId);
+    const {error}=await supabase.from("teacher_groups").insert({teacher_id:staffId,group_id:groupId});
     if(error){showToast("Error: "+error.message,R);return;}
     showToast("✓ Docente asignado");
     await load();
@@ -62,6 +83,15 @@ export function GruposSection({ showToast }) {
     if(grpErr){toast.error("Error al cambiar estado del grupo");return;}
     showToast(!active?"Grupo activado":"Grupo desactivado");
     await load();
+  }
+
+  async function advanceUnit(id, currentUnit){
+    const next = (currentUnit||1) + 1;
+    if(next > 12){ showToast("El grupo ya está en la unidad máxima (12)","#d97706"); return; }
+    const {error}=await supabase.from("groups").update({active_unit:next}).eq("id",id);
+    if(error){ showToast("Error: "+error.message,R); return; }
+    showToast(`✓ Grupo avanzado a Unidad ${next}`);
+    setGroups(gs=>gs.map(x=>x.id===id?{...x,active_unit:next}:x));
   }
 
   const LEVELS=["A1","A2","B1","B2","C1"];
@@ -119,20 +149,38 @@ export function GruposSection({ showToast }) {
               {/* Teams link */}
               {editTeams===g.id?(
                 <div style={{display:"flex",gap:8,marginBottom:8}}>
-                  <input value={teamsUrl} onChange={e=>setTeamsUrl(e.target.value)} placeholder="https://teams.microsoft.com/..."
+                  <input value={teamsUrl} onChange={e=>setTeamsUrl(e.target.value)} placeholder="https://teams.microsoft.com/... o zoom.us/..."
                     style={{flex:1,padding:"6px 10px",border:"1px solid var(--border)",borderRadius:7,fontSize:11,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
                   <button onClickCapture={e=>{e.stopPropagation();saveTeams(g);}} style={{padding:"6px 12px",background:P,color:"#fff",border:"none",borderRadius:7,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✓</button>
                   <button onClick={()=>setEditTeams(null)} style={{padding:"6px 10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:7,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>✕</button>
                 </div>
               ):(
                 <div style={{display:"flex",gap:8,marginBottom:4}}>
-                  {g.teams_link?(
-                    <a href={g.teams_link} target="_blank" rel="noopener noreferrer"
-                      style={{flex:1,fontSize:11,padding:"6px 10px",background:"#dbeafe",color:"#1d4ed8",borderRadius:7,textDecoration:"none",fontWeight:600,textAlign:"center"}}>▷ Abrir Teams</a>
-                  ):(
-                    <div style={{flex:1,fontSize:11,color:"var(--text-tertiary)",padding:"6px 0"}}>Sin link de Teams</div>
+                  {g.teams_link?(()=>{
+                    const url=g.teams_link||"";
+                    const isZoom=url.includes("zoom.us");
+                    const isMeet=url.includes("meet.google");
+                    const label=isZoom?"Abrir Zoom":isMeet?"Abrir Meet":"Abrir clase virtual";
+                    const bg=isZoom?"#e8f0ff":isMeet?"#e6f4ea":"#dbeafe";
+                    const clr=isZoom?"#3b5bdb":isMeet?"#137333":"#1d4ed8";
+                    return <a href={url} target="_blank" rel="noopener noreferrer"
+                      style={{flex:1,fontSize:11,padding:"6px 10px",background:bg,color:clr,borderRadius:7,textDecoration:"none",fontWeight:600,textAlign:"center",display:"flex",alignItems:"center",justifyContent:"center",gap:4}}>
+                      <i className={`ti ${isZoom?"ti-video":isMeet?"ti-brand-google":"ti-brand-teams"}`} style={{fontSize:13}} aria-hidden="true"/>
+                      {label}
+                    </a>;
+                  })():(
+                    <div style={{flex:1,fontSize:11,color:"var(--text-tertiary)",padding:"6px 0"}}>Sin link de clase virtual</div>
                   )}
                   <button onClick={()=>{setEditTeams(g.id);setTeamsUrl(g.teams_link||"");}} style={{padding:"6px 10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:7,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>✎</button>
+                </div>
+              )}
+              {g.active && (
+                <div style={{display:"flex",gap:6,marginBottom:6,alignItems:"center"}}>
+                  <span style={{fontSize:11,color:"var(--text-secondary)",flex:1}}>Unidad activa: <strong>{g.active_unit||1}</strong>/12</span>
+                  <button onClick={()=>advanceUnit(g.id,g.active_unit)}
+                    style={{padding:"5px 12px",background:P,color:"#fff",border:"none",borderRadius:7,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:4}}>
+                    <i className="ti ti-arrow-right" style={{fontSize:12}} aria-hidden="true"/>U{(g.active_unit||1)+1}
+                  </button>
                 </div>
               )}
               <button onClick={()=>toggleGroup(g.id,g.active)} style={{width:"100%",padding:"6px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:7,fontSize:11,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>
@@ -160,13 +208,36 @@ export function GruposSection({ showToast }) {
                 </div>
               ))}
             </div>
-            {[["Horario *","schedule","text","6:00 PM – 7:30 PM"],["Días","days","text","Lun · Mié · Vie"]].map(([l,k,t,ph])=>(
-              <div key={k} style={{marginBottom:12}}>
-                <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>{l}</div>
-                <input type={t} value={form[k]} placeholder={ph} onChange={e=>setForm(p=>({...p,[k]:e.target.value}))}
-                  style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+            <div style={{marginBottom:12}}>
+              <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Horario *</div>
+              <input type="text" value={form.schedule} placeholder="6:00 PM – 7:30 PM" onChange={e=>setForm(p=>({...p,schedule:e.target.value}))}
+                style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+            </div>
+            <div style={{marginBottom:12}}>
+              <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:6}}>Días</div>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                {[["mon","Lun"],["tue","Mar"],["wed","Mié"],["thu","Jue"],["fri","Vie"],["sat","Sáb"]].map(([k,l])=>{
+                  const selected=(form.days_arr||[]).includes(k);
+                  return(
+                    <button key={k} type="button"
+                      onClick={()=>setForm(p=>{
+                        const arr=p.days_arr||[];
+                        const next=arr.includes(k)?arr.filter(d=>d!==k):[...arr,k];
+                        const labels={mon:"Lun",tue:"Mar",wed:"Mié",thu:"Jue",fri:"Vie",sat:"Sáb"};
+                        const days=["mon","tue","wed","thu","fri","sat"].filter(d=>next.includes(d)).map(d=>labels[d]).join(" · ");
+                        return {...p,days_arr:next,days:days||"Sin días"};
+                      })}
+                      style={{padding:"6px 12px",borderRadius:7,border:`1px solid ${selected?"#155266":"var(--border)"}`,
+                        background:selected?"#e8f3f6":"var(--bg-surface-subtle)",
+                        color:selected?"#155266":"var(--text-secondary)",fontSize:12,fontWeight:selected?600:400,
+                        cursor:"pointer",fontFamily:"inherit",transition:"all .15s"}}>
+                      {l}
+                    </button>
+                  );
+                })}
               </div>
-            ))}
+              {(form.days_arr||[]).length===0 && <div style={{fontSize:11,color:"#dc2626",marginTop:4}}>Seleccioná al menos un día</div>}
+            </div>
             <div style={{marginBottom:18}}>
               <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Capacidad</div>
               <input type="number" value={form.capacity} onChange={e=>setForm(p=>({...p,capacity:+e.target.value}))}

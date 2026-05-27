@@ -16,14 +16,19 @@ export function HorariosSection() {
   async function load(){
     setLoading(true);
     const {data}=await supabase.from("groups")
-      .select("id,level,schedule,days,capacity,active_unit,program_id,teams_link,active,teacher_groups(teacher:staff(profile:profiles(full_name))),enrollments(id,status)")
+      .select("id,level,schedule,days,days_arr,capacity,active_unit,program_id,teams_link,active,teacher_groups(teacher:staff(profile:profiles(full_name))),enrollments(id,status)")
       .eq("active",true).order("level");
     if(data) setGroups(data);
     setLoading(false);
   }
 
   // Parse which days each group meets
-  const groupsByDay = (day) => groups.filter(g=>(g.days||"").includes(day));
+  const DAY_CODE = {Lun:"mon",Mar:"tue",Mié:"wed",Jue:"thu",Vie:"fri",Sáb:"sat",Dom:"sun"};
+  const groupsByDay = (day) => groups.filter(g=>{
+    const code = DAY_CODE[day];
+    if(g.days_arr?.length) return g.days_arr.includes(code);
+    return (g.days||"").includes(day); // fallback for old text format
+  });
   const enrolled = (g) => g.enrollments?.filter(e=>e.status==="active").length||0;
   const teacher = (g) => g.teacher_groups?.[0]?.teacher?.profile?.full_name||"Sin asignar";
 
