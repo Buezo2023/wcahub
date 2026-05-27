@@ -11,6 +11,7 @@ import { StudentReport } from "../lib/StudentReport.jsx";
 import { useNotifications } from "../lib/useNotifications.js";
 import { LEVELS, UNITS, SKILLS_BY_LEVEL } from "../data/englishContent.js";
 import { formatSchedule, detectTimezone, TIMEZONES, getTimezonesByRegion } from "../lib/timezone.js";
+import { useGamification, updateStreak, checkBadges, getRank, getXpToNextRank, streakColor } from "../lib/gamification.js";
 
 const P="#155266",PH="#0f3d4d",PD="#e8f3f6";
 const Y="#ffbb23",YD="#fff8e6";
@@ -419,6 +420,17 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
                   },
                 }).catch(()=>{});
 
+                // Streak + badges on level up
+                const strRes = await updateStreak(session.user.id).catch(()=>null);
+                const { data: profData } = await supabase.from("profiles")
+                  .select("country").eq("id", session.user.id).maybeSingle();
+                await checkBadges(student.id, {
+                  streak: strRes?.streak || 0,
+                  score: pct, isLevelUp: true,
+                  isChampion: isFinalLevel,
+                  country: profData?.country,
+                });
+
                 await notifySelf("success",
                   `🚀 ¡Subiste a ${nextCEFR}!`,
                   `Completaste el nivel ${currentLevel} con ${pct}%. Tu coordinadora te asignará al grupo ${nextCEFR} pronto.`,
@@ -436,6 +448,12 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
               }).catch(()=>{});
               await notifySelf("success", `✓ U${unit} aprobada — ${pct}%`,
                 `Desbloqueaste la unidad ${nextUnit}.`, "/portal").catch(()=>{});
+              // Update streak on exam pass
+              const _sr = await updateStreak(session.user.id).catch(()=>null);
+              await checkBadges(student.id, {
+                streak: _sr?.streak || 0, score: pct,
+                isFirstExam: Object.keys(realProgress[activeProg]||{}).length <= 1,
+              });
             }
           } else {
             // ── Failed exam ─────────────────────────────────────────
@@ -576,6 +594,7 @@ export default function PortalEstudiante(){
   const [sideOpen, setSideOpen] = useState(false);
   const [isScholarship, setIsScholarship] = useState(false); // beca = no LMS 24/7, no digital exam
   const [enrolled,   setEnrolled]   = useState([]); // populated from realEnrollments after load
+  const [studentId,  setStudentId]  = useState(null);
 
   useEffect(() => {
     // Auth state listener — handles token expiry
@@ -613,6 +632,7 @@ export default function PortalEstudiante(){
         .then(async ({ data: student }) => {
           if (!student) return;
           if (student.student_code) setUser(u => ({ ...u, studentCode: student.student_code }));
+          setStudentId(student.id);
           setIsScholarship(!!student.scholarship);
           const { data: enrolls } = await supabase
             .from("enrollments")
@@ -700,6 +720,14 @@ export default function PortalEstudiante(){
     ? (SKILLS_BY_LEVEL[currentLevel] || SKILLS_BY_LEVEL["B1"] || [])
     : (SKILLS[activeProg] || SKILLS[enrolled[0]] || []);
   const progress = PROG_PROGRESS(activeProg, realEnrollments);
+
+  // ── Gamification ─────────────────────────────────────────────────
+  const [uid, setUid] = useState(null);
+  const gami = useGamification(uid, studentId);
+  // Load UID from session on mount
+  import("../lib/supabase.js").then(({supabase: sb}) =>
+    sb.auth.getSession().then(({data:{session}}) => { if(session?.user?.id) setUid(session.user.id); })
+  ).catch(()=>{});
   const totalActs = (skills||[]).reduce((a,s)=>a+s.total,0);
   const totalDone = (skills||[]).reduce((a,s)=>a+(s.done||0),0);
   const avgScore  = skills.length>0?Math.round(skills.reduce((a,s)=>a+(s.score||0),0)/skills.length):0;
@@ -760,10 +788,43 @@ export default function PortalEstudiante(){
           );
         })}
 
-        <div style={{marginTop:"auto",padding:"14px 18px 0",borderTop:"1px solid rgba(255,255,255,.08)"}}>
+        <div style={{marginTop:"auto",padding:"12px 14px 0",borderTop:"1px solid rgba(255,255,255,.08)"}}>
+          {/* XP + Streak bar */}
+          {!gami.loading && (
+            <div style={{marginBottom:10,background:"rgba(255,255,255,.07)",borderRadius:10,padding:"8px 10px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
+                <span style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>⚡ {gami.totalXp.toLocaleString()} XP</span>
+                <span style={{fontSize:13,color:streakColor(gami.streak),fontWeight:700}}>
+                  🔥 {gami.streak}d
+                </span>
+              </div>
+              {/* XP progress bar to next rank */}
+              {(() => {
+                const rank = getRank(gami.totalXp);
+                const next = getXpToNextRank(gami.totalXp);
+                return (
+                  <div>
+                    <div style={{height:3,borderRadius:2,background:"rgba(255,255,255,.1)",overflow:"hidden"}}>
+                      <div style={{height:"100%",borderRadius:2,background:Y,
+                        width: next ? `${Math.min(100,((gami.totalXp-(rank.min||0))/((next.next.min)-(rank.min||0)))*100)}%` : "100%",
+                        transition:"width 1s ease"}}/>
+                    </div>
+                    <div style={{fontSize:9,color:"rgba(255,255,255,.3)",marginTop:3}}>
+                      {rank.icon} {rank.label}{next ? ` → ${next.needed.toLocaleString()} XP para ${next.next.label}` : " — Rango máximo ⭐"}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
           <div style={{display:"flex",alignItems:"center",gap:9}}>
-            <div style={{width:32,height:32,borderRadius:"50%",background:Y,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:PH}}>MR</div>
-            <div><div style={{fontSize:12,color:"#fff",fontWeight:600}}>María Rodríguez</div><div style={{fontSize:11,color:"rgba(255,255,255,.35)"}}>{enrolled.length} programa{enrolled.length!==1?"s":""} activo{enrolled.length!==1?"s":""}</div></div>
+            <div style={{width:32,height:32,borderRadius:"50%",background:Y,display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:PH,flexShrink:0}}>
+              {user.name?.slice(0,2).toUpperCase() || "??"}
+            </div>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:12,color:"#fff",fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{user.name || "Estudiante"}</div>
+              <div style={{fontSize:10,color:"rgba(255,255,255,.35)"}}>{enrolled.length} programa{enrolled.length!==1?"s":""} activo{enrolled.length!==1?"s":""}</div>
+            </div>
           </div>
         </div>
       
@@ -1057,6 +1118,106 @@ export default function PortalEstudiante(){
             </div>
           )}
 
+          {/* ── GAMIFICATION: Leaderboard + Badges ── */}
+          {view==="progreso" && !gami.loading && (
+            <div style={{padding:"0 24px 24px"}}>
+
+              {/* Badges earned */}
+              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:20,marginBottom:16,boxShadow:"var(--shadow-sm)"}}>
+                <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:12}}>
+                  🏅 Mis badges ({gami.badges.length})
+                </div>
+                {gami.badges.length === 0 ? (
+                  <div style={{fontSize:12,color:"var(--text-tertiary)",fontStyle:"italic"}}>
+                    Completá actividades y exámenes para ganar badges. ¡El primero llega pronto!
+                  </div>
+                ) : (
+                  <div style={{display:"flex",flexWrap:"wrap",gap:10}}>
+                    {gami.badges.map(b => (
+                      <div key={b.id} title={b.description}
+                        style={{display:"flex",alignItems:"center",gap:6,padding:"6px 12px",
+                          background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",
+                          borderRadius:20,fontSize:12,fontWeight:600,color:"var(--text-primary)"}}>
+                        <span style={{fontSize:16}}>{b.icon}</span>
+                        <span>{b.name}</span>
+                        {b.xp > 0 && <span style={{fontSize:10,color:"var(--text-tertiary)"}}>+{b.xp} XP</span>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Monthly leaderboard */}
+              <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:20,boxShadow:"var(--shadow-sm)"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                  <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)"}}>
+                    🏆 Leaderboard — {new Date().toLocaleDateString("es-HN",{month:"long"})}
+                  </div>
+                  {gami.myRank && (
+                    <div style={{fontSize:11,background:"#ede9fe",color:"#7c3aed",padding:"2px 10px",borderRadius:10,fontWeight:700}}>
+                      Tu posición: #{gami.myRank}
+                    </div>
+                  )}
+                </div>
+                {gami.leaderboard.length === 0 ? (
+                  <div style={{fontSize:12,color:"var(--text-tertiary)"}}>Completá actividades este mes para aparecer en el ranking.</div>
+                ) : (
+                  <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                    {gami.leaderboard.map((r, i) => {
+                      const isMe = r.profile_id === uid;
+                      const medals = ["🥇","🥈","🥉"];
+                      return (
+                        <div key={r.profile_id} style={{
+                          display:"flex",alignItems:"center",gap:10,padding:"8px 12px",
+                          borderRadius:9,
+                          background:isMe?"#ede9fe":"var(--bg-surface-subtle)",
+                          border:isMe?"1px solid #7c3aed40":"1px solid transparent",
+                          transition:"all .2s",
+                        }}>
+                          <div style={{width:22,fontSize:i<3?16:12,textAlign:"center",fontWeight:700,color:"var(--text-tertiary)",flexShrink:0}}>
+                            {i < 3 ? medals[i] : i+1}
+                          </div>
+                          <div style={{flex:1,fontSize:12,fontWeight:isMe?700:500,color:isMe?"#7c3aed":"var(--text-primary)"}}>
+                            {r.full_name?.split(" ")[0] || "—"} {isMe ? "(tú)" : ""}
+                          </div>
+                          <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                            {r.streak > 0 && <span style={{fontSize:11,color:"#d97706"}}>🔥{r.streak}</span>}
+                            <span style={{fontSize:12,fontWeight:700,color:isMe?"#7c3aed":"var(--text-secondary)"}}>
+                              ⚡ {r.monthly_xp.toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Referral code */}
+              {gami.referralCode && (
+                <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:20,marginTop:16,boxShadow:"var(--shadow-sm)"}}>
+                  <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:8}}>🤝 Referí un amigo — +300 XP</div>
+                  <div style={{fontSize:11,color:"var(--text-secondary)",marginBottom:12,lineHeight:1.6}}>
+                    Compartí tu código. Cuando tu amigo complete su primera matrícula activa, recibís 300 XP automáticamente.
+                  </div>
+                  <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                    <div style={{flex:1,background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 14px",fontFamily:"monospace",fontSize:14,fontWeight:700,color:"var(--text-primary)",letterSpacing:1}}>
+                      {gami.referralCode}
+                    </div>
+                    <button onClick={() => {
+                      navigator.clipboard?.writeText(gami.referralCode).catch(()=>{});
+                      const msg = `Estudiá inglés y conviértite en VA bilingüe con WCA Academy 🎓\n\nUsá mi código ${gami.referralCode} al inscribirte en wcahub.vercel.app/registro`;
+                      if(navigator.share) navigator.share({text:msg}).catch(()=>{});
+                    }} style={{padding:"10px 14px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
+                      Compartir
+                    </button>
+                  </div>
+                </div>
+              )}
+
+            </div>
+          )}
+
           {/* ── PAGOS ── */}
           {view==="pagos"&&(
             <div style={{padding:24,maxWidth:650}}>
@@ -1242,6 +1403,65 @@ export default function PortalEstudiante(){
               </div>
             </div>
           )}
+
+          {/* ── PAUSA DE MATRÍCULA (dentro de pagos) ── */}
+          {view==="pagos" && (() => {
+            const [pauseOpen, setPauseOpen] = React.useState(false);
+            const [pauseSaving, setPauseSaving] = React.useState(false);
+            const [pauseDone, setPauseDone] = React.useState(false);
+            return pauseOpen ? (
+              <div style={{padding:"0 24px 24px",maxWidth:650}}>
+                <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,padding:24}}>
+                  <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:8}}>⏸ Pausar matrícula</div>
+                  <div style={{fontSize:13,color:"var(--text-secondary)",lineHeight:1.7,marginBottom:20}}>
+                    Podés pausar tu matrícula hasta <strong>2 meses</strong>. Durante la pausa no se generan cobros.
+                    Tu progreso y grupo se conservan. Al reactivar, continuás desde donde dejaste.
+                  </div>
+                  {enrolledProgs.map(p => (
+                    <div key={p.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"10px 14px",background:"var(--bg-surface-subtle)",borderRadius:9,marginBottom:8}}>
+                      <span style={{fontSize:13,fontWeight:600,color:"var(--text-primary)"}}>{p.icon} {p.name}</span>
+                      <button disabled={pauseSaving} onClick={async()=>{
+                        setPauseSaving(true);
+                        const {data:{session}} = await supabase.auth.getSession();
+                        if(!session) return;
+                        const {data:st} = await supabase.from("students").select("id,enrollments(id,status)").eq("profile_id",session.user.id).maybeSingle();
+                        const enroll = st?.enrollments?.find(e=>e.status==="active");
+                        if(enroll){
+                          const pauseEnd = new Date(); pauseEnd.setMonth(pauseEnd.getMonth()+1);
+                          await supabase.from("enrollments").update({
+                            next_payment_date: pauseEnd.toISOString().slice(0,10),
+                          }).eq("id",enroll.id);
+                          await supabase.from("audit_log").insert({
+                            actor_id: session.user.id, action:"enrollment_paused",
+                            entity:"enrollment", entity_id:enroll.id,
+                            metadata:{program_id:p.id,pause_until:pauseEnd.toISOString().slice(0,10)},
+                          }).catch(()=>{});
+                        }
+                        setPauseSaving(false); setPauseDone(true);
+                      }} style={{padding:"6px 14px",background:"#e8f3f6",color:"#155266",border:"none",borderRadius:7,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+                        {pauseSaving?"Procesando...":"Pausar 1 mes"}
+                      </button>
+                    </div>
+                  ))}
+                  {pauseDone && (
+                    <div style={{background:"#ecfdf5",border:"1px solid #6ee7b7",borderRadius:9,padding:"10px 14px",fontSize:13,color:"#065f46",marginTop:12}}>
+                      ✓ Pausa aplicada. Tu próximo cobro se postergó 1 mes. Escribinos si necesitás más tiempo.
+                    </div>
+                  )}
+                  <button onClick={()=>setPauseOpen(false)} style={{width:"100%",marginTop:14,padding:"10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:9,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>
+                    Volver a pagos
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div style={{padding:"0 24px 16px",maxWidth:650}}>
+                <button onClick={()=>setPauseOpen(true)}
+                  style={{width:"100%",padding:"11px",background:"var(--bg-surface)",border:"1.5px dashed var(--border)",borderRadius:10,fontSize:13,color:"var(--text-secondary)",cursor:"pointer",fontFamily:"inherit",fontWeight:500}}>
+                  ⏸ Necesito pausar mi matrícula temporalmente
+                </button>
+              </div>
+            );
+          })()}
 
           {/* ── PERFIL ── */}
           {view==="reporte"&&(

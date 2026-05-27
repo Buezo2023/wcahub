@@ -148,8 +148,16 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
         description: `Completó actividad`,
       }).catch(() => {});
 
-      // Update profile total_xp
+      // Update profile total_xp + streak
       await supabase.rpc("increment_xp", { p_profile_id: profileId, p_amount: xpEarned }).catch(() => {});
+      const strRes = await updateStreak(profileId).catch(() => null);
+      // Check streak badges (non-blocking)
+      if (strRes?.changed) {
+        supabase.from("students").select("id").eq("profile_id", profileId).maybeSingle()
+          .then(({ data: st }) => {
+            if (st?.id) checkBadges(st.id, { streak: strRes.streak || 0 }).catch(() => {});
+          }).catch(() => {});
+      }
 
       // XP animation
       setXpAnim({ amount: xpEarned });
