@@ -83,6 +83,13 @@ export default async function handler(req, res) {
               <p style="color:#666;font-size:12px">WCA Academy · wcahub.vercel.app</p>`,
           });
           results.preReminders.sent++;
+          // In-app notification
+          await admin.from('notifications').insert({
+            user_id: profile.id, type: 'payment',
+            title: `Pago vence en ${GRACE_DAYS} días`,
+            body: `Tu pago de $${amount} para ${programName} vence pronto. Coordiná tu transferencia.`,
+            link: '/portal',
+          }).catch(() => {});
         } catch(e) { results.preReminders.errors.push({ id: enroll.id, error: e.message }); }
       }
 
@@ -99,6 +106,12 @@ export default async function handler(req, res) {
               <p style="color:#666;font-size:12px">WCA Academy · wcahub.vercel.app</p>`,
           });
           results.dueToday.sent++;
+          await admin.from('notifications').insert({
+            user_id: profile.id, type: 'warning',
+            title: '⚠ Tu pago vence hoy',
+            body: `$${amount} para ${programName}. Realizá tu pago para mantener acceso activo.`,
+            link: '/portal',
+          }).catch(() => {});
         } catch(e) { results.dueToday.errors.push({ id: enroll.id, error: e.message }); }
       }
 
@@ -110,6 +123,12 @@ export default async function handler(req, res) {
           });
           await sendEmail({ to: profile.email, toName: profile.full_name, subject, html });
           results.overdueWarning.sent++;
+          await admin.from('notifications').insert({
+            user_id: profile.id, type: 'warning',
+            title: `Pago vencido — ${daysLate} días de mora`,
+            body: `Tu cuenta de ${programName} puede suspenderse. Regularizá tu pago a la brevedad.`,
+            link: '/portal',
+          }).catch(() => {});
         } catch(e) { results.overdueWarning.errors.push({ id: enroll.id, error: e.message }); }
       }
 

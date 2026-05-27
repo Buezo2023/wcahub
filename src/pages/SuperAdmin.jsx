@@ -91,7 +91,7 @@ const SUB_TABS = {
     ["recibos","Recibos"],["banks","Cuentas banco"],
   ],
   comunicaciones: [
-    ["blast","Email masivo"],["recordatorios","Recordatorios"],["anuncios","Anuncios"],
+    ["blast","Email masivo"],["recordatorios","Recordatorios"],["notificaciones","Push In-App"],["anuncios","Anuncios"],
   ],
   reportes: [
     ["metricas","BI & KPIs"],["finanzas","Finanzas"],["academia","Academia"],

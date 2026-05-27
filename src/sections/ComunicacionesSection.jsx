@@ -258,5 +258,91 @@ export function ComunicacionesSection({ showToast, subView }) {
     );
   }
 
-  return subView==="blast"?<BlastView/>:subView==="recordatorios"?<RecordatoriosView/>:<AnunciosView/>;
+
+  // ── NOTIFICATION BROADCAST ────────────────────────────────────
+  function NotifBroadcastView() {
+    const [target,  setTarget]  = useState("all");
+    const [programs,setPrograms]= useState([]);
+    const [selProg, setSelProg] = useState("en");
+    const [title,   setTitle]   = useState("");
+    const [msgBody, setMsgBody] = useState("");
+    const [type,    setType]    = useState("info");
+    const [sending, setSending] = useState(false);
+    const [sentCnt, setSentCnt] = useState(0);
+
+    useEffect(()=>{
+      supabase.from("programs").select("id,name").eq("active",true).then(({data})=>{ if(data) setPrograms(data); });
+    },[]);
+
+    const TYPES=[
+      {id:"info",color:"#155266",lbl:"ℹ Info"},
+      {id:"success",color:"#059669",lbl:"✓ Éxito"},
+      {id:"warning",color:"#d97706",lbl:"⚠ Aviso"},
+      {id:"payment",color:"#7c3aed",lbl:"💳 Pago"},
+      {id:"class",color:"#0e7490",lbl:"📚 Clase"},
+    ];
+
+    async function broadcast(){
+      if(!title.trim()){showToast("El título es requerido",R);return;}
+      setSending(true); setSentCnt(0);
+      try{
+        let ids=[];
+        if(target==="program"){
+          const {data:enrolls}=await supabase.from("enrollments")
+            .select("student:students(profile_id)").eq("program_id",selProg).eq("status","active");
+          ids=[...new Set((enrolls||[]).map(e=>e.student?.profile_id).filter(Boolean))];
+        } else {
+          const {data:users}=await supabase.from("profiles")
+            .select("id").eq("active",true).eq("role","estudiante").limit(500);
+          ids=(users||[]).map(u=>u.id);
+        }
+        if(!ids.length){showToast("Sin destinatarios",A);return;}
+        const rows=ids.map(uid=>({user_id:uid,type,title:title.trim(),body:msgBody.trim()||null}));
+        const {error}=await supabase.from("notifications").insert(rows);
+        if(error) throw error;
+        setSentCnt(ids.length);
+        showToast(`✓ Notificación enviada a ${ids.length} estudiante${ids.length!==1?"s":""}`,G);
+        setTitle(""); setMsgBody("");
+      }catch(e){showToast("Error: "+(e.message||"Error al enviar"),R);}
+      finally{setSending(false);}
+    }
+
+    return(
+      <div style={{maxWidth:500}}>
+        <p style={{fontSize:12,color:"var(--text-secondary)",marginBottom:20,lineHeight:1.6}}>
+          Envía notificaciones in-app a los estudiantes. Aparecen en tiempo real en la campana 🔔 del portal.
+        </p>
+        <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,padding:20}}>
+          <label style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",display:"block",marginBottom:6}}>Destinatarios</label>
+          <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap"}}>
+            {[["all","Todos los estudiantes"],["program","Por programa"]].map(([id,lbl])=>(
+              <button key={id} onClick={()=>setTarget(id)} style={{padding:"6px 14px",borderRadius:8,border:`1.5px solid ${target===id?P:"var(--border)"}`,background:target===id?PD:"transparent",color:target===id?P:"var(--text-secondary)",fontSize:12,fontWeight:target===id?600:400,cursor:"pointer",fontFamily:"inherit"}}>
+                {lbl}
+              </button>
+            ))}
+          </div>
+          {target==="program"&&<select value={selProg} onChange={e=>setSelProg(e.target.value)} style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",fontFamily:"inherit",marginBottom:14,color:"var(--text-primary)"}}>
+            {programs.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>}
+          <label style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",display:"block",marginBottom:6}}>Tipo</label>
+          <div style={{display:"flex",gap:6,marginBottom:16,flexWrap:"wrap"}}>
+            {TYPES.map(t=><button key={t.id} onClick={()=>setType(t.id)} style={{padding:"5px 10px",borderRadius:7,border:`1.5px solid ${type===t.id?t.color:"var(--border)"}`,background:type===t.id?t.color+"15":"transparent",color:type===t.id?t.color:"var(--text-secondary)",fontSize:11,fontWeight:type===t.id?700:400,cursor:"pointer",fontFamily:"inherit"}}>{t.lbl}</button>)}
+          </div>
+          <label style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",display:"block",marginBottom:5}}>Título *</label>
+          <input value={title} onChange={e=>setTitle(e.target.value)} placeholder="Ej: Cambio de horario esta semana"
+            style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",fontFamily:"inherit",marginBottom:12,color:"var(--text-primary)"}}/>
+          <label style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",display:"block",marginBottom:5}}>Mensaje (opcional)</label>
+          <textarea value={msgBody} onChange={e=>setMsgBody(e.target.value)} rows={3} placeholder="Detalle adicional..."
+            style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",fontFamily:"inherit",resize:"vertical",color:"var(--text-primary)",marginBottom:16}}/>
+          <button onClick={broadcast} disabled={!title.trim()||sending}
+            style={{width:"100%",padding:"11px",background:!title.trim()||sending?"var(--bg-surface-subtle)":P,color:!title.trim()||sending?"var(--text-tertiary)":"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:700,cursor:!title.trim()||sending?"not-allowed":"pointer",fontFamily:"inherit"}}>
+            {sending?"Enviando...":"🔔 Enviar notificación"}
+          </button>
+          {sentCnt>0&&<div style={{marginTop:10,padding:"8px 12px",background:GD,borderRadius:8,fontSize:12,color:"#065f46",fontWeight:600,textAlign:"center"}}>✓ Enviado a {sentCnt} estudiante{sentCnt!==1?"s":""}</div>}
+        </div>
+      </div>
+    );
+  }
+
+  return subView==="blast"?<BlastView/>:subView==="recordatorios"?<RecordatoriosView/>:subView==="notificaciones"?<NotifBroadcastView/>:<AnunciosView/>;
 }

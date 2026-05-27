@@ -151,6 +151,13 @@ export default async function handler(req, res) {
             </body></html>`,
         });
         results.sent++;
+        // In-app notification alongside the digest email
+        await admin.from('notifications').insert({
+          user_id: p.id, type: 'info',
+          title: '📊 Tu resumen semanal está listo',
+          body: `Esta semana ganaste XP y seguís progresando. ¡Revisá tu portal para ver detalles!`,
+          link: '/portal',
+        }).catch(() => {});
       } catch(e) { results.errors.push({ email: p.email, error: e.message }); }
     }
 
