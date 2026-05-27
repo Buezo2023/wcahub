@@ -192,15 +192,6 @@ function SkillCard({skill, index=0}){
     </div>
   );
 }
-    {/* Global visual effects */}
-    <Confetti active={confetti} count={40} />
-    {floatingXP && (
-      <FloatingXP amount={floatingXP.amount} x={floatingXP.x} y={floatingXP.y}
-        onDone={() => setFloatingXP(null)} />
-    )}
-    </div>
-  );
-}
 
 // ─── Unit row (Online Practice style) ────────────────────────────
 function UnitRow({unit,prog,isActive,isDone,isLocked,color}){
