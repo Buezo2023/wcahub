@@ -13,17 +13,21 @@ self.addEventListener("install", e => {
   );
 });
 
-// Activate: delete ALL old caches immediately
+// Activate: delete old caches, notify ONLY if this was a real update (not first install)
 self.addEventListener("activate", e => {
   e.waitUntil(
     caches.keys()
-      .then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))
-      .then(() => self.clients.claim())
-      .then(() => {
-        // Notify all open tabs that a new version is available
-        return self.clients.matchAll({ type: "window" }).then(clients => {
-          clients.forEach(client => client.postMessage({ type: "SW_UPDATED" }));
-        });
+      .then(keys => {
+        const oldCaches = keys.filter(k => k !== CACHE);
+        const isRealUpdate = oldCaches.length > 0; // false on first install
+        return Promise.all(oldCaches.map(k => caches.delete(k)))
+          .then(() => self.clients.claim())
+          .then(() => {
+            if (!isRealUpdate) return; // first install — don't notify
+            return self.clients.matchAll({ type: "window" }).then(clients => {
+              clients.forEach(client => client.postMessage({ type: "SW_UPDATED" }));
+            });
+          });
       })
   );
 });
