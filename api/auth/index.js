@@ -557,6 +557,91 @@ export default async function handler(req, res) {
       }
     }
 
+    // ── GDPR: export my data ──────────────────────────────────────────
+    case 'export-data': {
+      const uid = actor.id;
+      // Gather all personal data for this user
+      const [profileRes, studentRes, enrollRes, payRes, progressRes] = await Promise.all([
+        admin.from('profiles').select('*').eq('id', uid).maybeSingle(),
+        admin.from('students').select('*').eq('profile_id', uid).maybeSingle(),
+        admin.from('enrollments').select('*, groups(schedule, level, days)').eq('student_id',
+          (await admin.from('students').select('id').eq('profile_id', uid).maybeSingle()).data?.id || ''
+        ),
+        admin.from('payments').select('amount, status, method, confirmed_at, reference_code').eq('student_id',
+          (await admin.from('students').select('id').eq('profile_id', uid).maybeSingle()).data?.id || ''
+        ),
+        admin.from('progress').select('*').eq('profile_id', uid),
+      ]);
+
+      const exportData = {
+        exportedAt: new Date().toISOString(),
+        platform: 'WCA Hub — World Connect Academy',
+        profile: profileRes.data || {},
+        student: studentRes.data || {},
+        enrollments: enrollRes.data || [],
+        payments: payRes.data || [],
+        progress: progressRes.data || [],
+      };
+
+      // Remove sensitive internal fields
+      delete exportData.profile.id;
+      delete exportData.student.profile_id;
+
+      return ok(res, { export: exportData });
+    }
+
+    // ── GDPR: delete my account ────────────────────────────────────
+    case 'delete-account': {
+      const { confirmEmail } = req.body;
+      // Require email confirmation to prevent accidental deletion
+      if (!confirmEmail || confirmEmail.toLowerCase() !== actor.email.toLowerCase()) {
+        return err(res, { status: 400, message: 'Email de confirmación no coincide' });
+      }
+
+      const uid = actor.id;
+
+      // 1. Cancel Stripe subscription if active
+      try {
+        const { data: student } = await admin.from('students').select('id, stripe_subscription_id')
+          .eq('profile_id', uid).maybeSingle();
+        if (student?.stripe_subscription_id) {
+          const stripe = (await import('stripe')).default(process.env.STRIPE_SECRET_KEY);
+          await stripe.subscriptions.cancel(student.stripe_subscription_id).catch(() => {});
+        }
+      } catch (_) {}
+
+      // 2. Soft delete — anonymize personal data, keep financial records for compliance
+      const anonymized = `deleted_${Date.now()}`;
+      await admin.from('profiles').update({
+        full_name: 'Cuenta eliminada',
+        email: `${anonymized}@deleted.wca`,
+        phone: null,
+        preferred_name: null,
+        active: false,
+        deleted_at: new Date().toISOString(),
+      }).eq('id', uid);
+
+      // 3. Deactivate enrollments
+      const { data: st } = await admin.from('students').select('id').eq('profile_id', uid).maybeSingle();
+      if (st?.id) {
+        await admin.from('enrollments').update({ status: 'cancelled' })
+          .eq('student_id', st.id).eq('status', 'active');
+      }
+
+      // 4. Revoke Supabase auth session
+      await admin.auth.admin.deleteUser(uid).catch(() => {});
+
+      // 5. Audit log
+      try {
+        await admin.from('audit_log').insert({
+          actor_id: uid, action: 'account_deleted', entity: 'profile', entity_id: uid,
+          metadata: { reason: 'user_request', gdpr: true },
+        });
+      } catch (_) {}
+
+      return ok(res, { deleted: true });
+    }
+
     default:
         return err(res, { status: 400, message: `action desconocida: ${action}` });
     }
