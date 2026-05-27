@@ -3,7 +3,7 @@
 // POST without stripe-signature → checkout
 // Merges: api/stripe/checkout.js + api/stripe/webhook.js
 
-import { requireAuth, ok, err, setCORS, getSupabaseAdmin, checkRateLimit } from '../_utils.js';
+import { requireAuth, ok, err, setCORS, getSupabaseAdmin, checkRateLimit, addOneMonth } from '../_utils.js';
 
 const PROGRAM_PRICES = {
   en:       { name: 'Inglés Completo',          amount: 9500,  interval: 'month' },
@@ -109,6 +109,26 @@ async function handleWebhook(req, res) {
               confirmed_at:   new Date().toISOString(),
               notes:          'Pago automático via Stripe',
             });
+
+            // Bug 2 fix: advance next_payment_date (Stripe pays directly as confirmed)
+            const { data: enroll } = await admin.from('enrollments')
+              .select('next_payment_date, status')
+              .eq('id', enrollment.id).maybeSingle();
+            if (enroll) {
+              const base = enroll.next_payment_date || new Date().toISOString().slice(0, 10);
+              const updateFields = { next_payment_date: addOneMonth(base) };
+              // Also reactivate if the account was auto-suspended
+              if (enroll.status === 'suspended') {
+                updateFields.status = 'active';
+                updateFields.suspended_at = null;
+                updateFields.suspended_reason = null;
+              }
+              await admin.from('enrollments').update(updateFields).eq('id', enrollment.id);
+              // Reactivate profile if deactivated
+              if (enroll.status === 'suspended') {
+                await admin.from('profiles').update({ active: true }).eq('id', profileId);
+              }
+            }
           }
         }
       } catch(dbErr) {

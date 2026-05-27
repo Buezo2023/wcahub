@@ -33,6 +33,21 @@ export function checkRateLimit(identifier, maxReqs = 10, windowMs = 60000) {
 }
 
 // ─── Input sanitizer — prevent XSS in email templates ────────────
+// ─── Date helpers ─────────────────────────────────────────────────
+// Safe "add 1 month" that never overflows into the next month.
+// e.g. Jan 31 → Feb 28 (not Mar 3), Aug 31 → Sep 30 (not Oct 1)
+export function addOneMonth(dateStrOrDate) {
+  const d = new Date(dateStrOrDate);
+  const originalDay = d.getUTCDate();
+  // Step to 1st to avoid any overflow during month change
+  d.setUTCDate(1);
+  d.setUTCMonth(d.getUTCMonth() + 1);
+  // Last day of the new month
+  const lastDay = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth() + 1, 0)).getUTCDate();
+  d.setUTCDate(Math.min(originalDay, lastDay));
+  return d.toISOString().slice(0, 10); // 'YYYY-MM-DD'
+}
+
 export function sanitize(str) {
   if (typeof str !== "string") return String(str || "");
   return str

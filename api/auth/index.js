@@ -97,16 +97,22 @@ async function handleStudent(req, actor) {
     student = data;
   }
 
-  // Set next_payment_date: same day of month, next occurrence
+  // Set next_payment_date: same day of month, next occurrence (safe – no 31-day overflow)
   const _now = new Date();
-  const _payDay = _now.getDate();
-  const _nextPay = new Date(_now.getFullYear(), _now.getMonth(), _payDay);
-  if (_nextPay <= _now) _nextPay.setMonth(_nextPay.getMonth() + 1);
+  const _todayStr = _now.toISOString().slice(0, 10);
+  // Build current-month candidate at day-of-enrollment
+  const _padDay = String(_now.getUTCDate()).padStart(2, '0');
+  const _padMon = String(_now.getUTCMonth() + 1).padStart(2, '0');
+  const _thisMonthDate = `${_now.getUTCFullYear()}-${_padMon}-${_padDay}`;
+  // If that date is today or in the past, advance by one month safely
+  const _nextPayStr = _thisMonthDate <= _todayStr
+    ? addOneMonth(_thisMonthDate)
+    : _thisMonthDate;
 
   const { data: enrollment, error: eErr } = await admin.from('enrollments').upsert({
     student_id: student.id, program_id: programId, group_id: groupId || null,
     status: 'active', current_unit: 1, price_locked: price,
-    next_payment_date: _nextPay.toISOString().slice(0, 10),
+    next_payment_date: _nextPayStr,
   }, { onConflict: 'student_id,program_id' }).select().single();
   if (eErr) throw eErr;
 

@@ -5,7 +5,7 @@
 // - Auto-suspends after 15 days overdue
 // Auth: Vercel cron token OR internal
 
-import { getSupabaseAdmin, sendEmail, EmailTemplates, requireAuth } from '../_utils.js';
+import { getSupabaseAdmin, sendEmail, EmailTemplates, requireAuth, addOneMonth } from '../_utils.js';
 
 const GRACE_DAYS    = 5;   // warn before due
 const SUSPEND_DAYS  = 15;  // auto-suspend after X days overdue
@@ -69,8 +69,8 @@ export default async function handler(req, res) {
       const programName= PROG_NAMES[enroll.program_id] || 'WCA Academy';
       const amount     = enroll.price_locked || 95;
 
-      // ── A: Pre-reminder — 5 days before due ──
-      if (diffDays === GRACE_DAYS) {
+      // ── A: Pre-reminder — 5 days before due (window [5,6] for 1-day cron recovery) ──
+      if (diffDays >= GRACE_DAYS && diffDays <= GRACE_DAYS + 1) {
         try {
           await sendEmail({
             to: profile.email, toName: profile.full_name,
@@ -101,8 +101,8 @@ export default async function handler(req, res) {
         } catch(e) { results.dueToday.errors.push({ id: enroll.id, error: e.message }); }
       }
 
-      // ── C: Overdue warning (D+5) ──
-      else if (daysLate === GRACE_DAYS) {
+      // ── C: Overdue warning (D+5 to D+6, window allows 1-day cron recovery) ──
+      else if (daysLate >= GRACE_DAYS && daysLate <= GRACE_DAYS + 1) {
         try {
           const { subject, html } = EmailTemplates.paymentReminder({
             name: firstName, programName, amount, daysOverdue: daysLate,

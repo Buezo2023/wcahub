@@ -156,23 +156,47 @@ async function handleConfirm(req, res) {
       .single();
     if (error) throw error;
 
-    // Advance next_payment_date by 1 month when payment is confirmed
+    // Advance next_payment_date + reactivate if suspended
     if (action === 'confirm' && payment.enrollment_id) {
       const { data: enroll } = await admin
         .from('enrollments')
-        .select('next_payment_date')
+        .select('next_payment_date, status, student_id')
         .eq('id', payment.enrollment_id)
         .maybeSingle();
 
       if (enroll) {
-        const current = enroll.next_payment_date
-          ? new Date(enroll.next_payment_date)
-          : new Date();
-        const next = new Date(current);
-        next.setMonth(next.getMonth() + 1);
+        const base = enroll.next_payment_date || new Date().toISOString().slice(0, 10);
+        const nextDate = addOneMonth(base);
+
+        // Bug 3 fix: if enrollment was suspended, reactivate it on payment
+        const updateFields = { next_payment_date: nextDate };
+        if (enroll.status === 'suspended') {
+          updateFields.status = 'active';
+          updateFields.suspended_at = null;
+          updateFields.suspended_reason = null;
+        }
         await admin.from('enrollments')
-          .update({ next_payment_date: next.toISOString().slice(0, 10) })
+          .update(updateFields)
           .eq('id', payment.enrollment_id);
+
+        // Also reactivate profile if it was deactivated by auto-suspend
+        if (enroll.status === 'suspended' && enroll.student_id) {
+          const { data: student } = await admin
+            .from('students').select('profile_id').eq('id', enroll.student_id).maybeSingle();
+          if (student?.profile_id) {
+            await admin.from('profiles')
+              .update({ active: true })
+              .eq('id', student.profile_id);
+          }
+          // Log the reactivation
+          await admin.from('audit_log').insert({
+            actor_id:  actor.id,
+            action:    'reactivated_after_payment',
+            entity:    'enrollment',
+            entity_id: payment.enrollment_id,
+            metadata:  { next_payment_date: nextDate },
+          }).catch(() => {});
+        }
       }
     }
 
