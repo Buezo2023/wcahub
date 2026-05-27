@@ -15,13 +15,15 @@ export function GruposSection({ showToast }) {
   const [saving,   setSaving]   = useState(false);
   const [editTeams,setEditTeams]= useState(null);
   const [teamsUrl, setTeamsUrl] = useState("");
+  const [editUtc,  setEditUtc]  = useState(null);  // group id
+  const [utcForm,  setUtcForm]  = useState({ schedule_utc:"", schedule_end_utc:"" });
 
   useEffect(()=>{load();},[]);
 
   async function load(){
     setLoading(true);
     const {data:grps}=await supabase.from("groups")
-      .select("id,level,schedule,days,capacity,active_unit,program_id,teams_link,active,teacher_groups(teacher:staff(id,profile:profiles(full_name))),enrollments(id,status)").order("level");
+      .select("id,level,schedule,schedule_utc,schedule_end_utc,days,capacity,active_unit,program_id,teams_link,active,teacher_groups(teacher:staff(id,profile:profiles(full_name))),enrollments(id,status)").order("level");
     if(grps) setGroups(grps);
     const {data:st}=await supabase.from("staff").select("id,profile:profiles(full_name)").eq("active",true);
     if(st) setStaff(st);
@@ -59,6 +61,18 @@ export function GruposSection({ showToast }) {
     showToast("✓ Link de Teams guardado");
     setGroups(gs=>gs.map(x=>x.id===g.id?{...x,teams_link:teamsUrl}:x));
     setEditTeams(null);
+  }
+
+  async function saveUtc(g){
+    const {error}=await supabase.from("groups").update({
+      schedule_utc:     utcForm.schedule_utc     || null,
+      schedule_end_utc: utcForm.schedule_end_utc || null,
+      schedule_timezone:"America/Tegucigalpa",
+    }).eq("id",g.id);
+    if(error){showToast("Error: "+error.message,R);return;}
+    showToast("✓ Horario UTC guardado — recordatorios activados");
+    setGroups(gs=>gs.map(x=>x.id===g.id?{...x,...utcForm}:x));
+    setEditUtc(null);
   }
 
   async function assignTeacher(groupId,staffId){
@@ -172,6 +186,43 @@ export function GruposSection({ showToast }) {
                     <div style={{flex:1,fontSize:11,color:"var(--text-tertiary)",padding:"6px 0"}}>Sin link de clase virtual</div>
                   )}
                   <button onClick={()=>{setEditTeams(g.id);setTeamsUrl(g.teams_link||"");}} style={{padding:"6px 10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:7,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>✎</button>
+                </div>
+              )}
+              {/* UTC Schedule editor */}
+              {editUtc===g.id ? (
+                <div style={{marginBottom:8,background:"var(--bg-surface-subtle)",borderRadius:8,padding:"10px 12px"}}>
+                  <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:6}}>🕐 Horario UTC (Honduras = UTC−6)</div>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6,marginBottom:6}}>
+                    <div>
+                      <div style={{fontSize:10,color:"var(--text-tertiary)",marginBottom:3}}>Inicio UTC</div>
+                      <input type="time" value={utcForm.schedule_utc}
+                        onChange={e=>setUtcForm(f=>({...f,schedule_utc:e.target.value}))}
+                        style={{width:"100%",padding:"6px 8px",border:"1px solid var(--border)",borderRadius:6,fontSize:12,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+                    </div>
+                    <div>
+                      <div style={{fontSize:10,color:"var(--text-tertiary)",marginBottom:3}}>Fin UTC</div>
+                      <input type="time" value={utcForm.schedule_end_utc}
+                        onChange={e=>setUtcForm(f=>({...f,schedule_end_utc:e.target.value}))}
+                        style={{width:"100%",padding:"6px 8px",border:"1px solid var(--border)",borderRadius:6,fontSize:12,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
+                    </div>
+                  </div>
+                  <div style={{fontSize:10,color:"#155266",marginBottom:8}}>
+                    Ej: 6:00 PM HN = 00:00 UTC · 7:00 AM HN = 13:00 UTC
+                  </div>
+                  <div style={{display:"flex",gap:6}}>
+                    <button onClick={()=>saveUtc(g)} style={{flex:2,padding:"5px",background:"#155266",color:"#fff",border:"none",borderRadius:6,fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>✓ Guardar</button>
+                    <button onClick={()=>setEditUtc(null)} style={{flex:1,padding:"5px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:6,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>✕</button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:6}}>
+                  <span style={{fontSize:11,color:g.schedule_utc?"var(--text-secondary)":"#dc2626",flex:1}}>
+                    {g.schedule_utc
+                      ? `🕐 UTC: ${g.schedule_utc?.slice(0,5)}${g.schedule_end_utc?"–"+g.schedule_end_utc.slice(0,5):""}`
+                      : "⚠ Sin horario UTC — recordatorios inactivos"}
+                  </span>
+                  <button onClick={()=>{setEditUtc(g.id);setUtcForm({schedule_utc:g.schedule_utc?.slice(0,5)||"",schedule_end_utc:g.schedule_end_utc?.slice(0,5)||""}); }}
+                    style={{padding:"3px 9px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:6,fontSize:10,cursor:"pointer",fontFamily:"inherit"}}>✎</button>
                 </div>
               )}
               {g.active && (
