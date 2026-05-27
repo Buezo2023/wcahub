@@ -39,15 +39,19 @@ CREATE TABLE IF NOT EXISTS student_badges (
   UNIQUE(student_id, badge_id)
 );
 ALTER TABLE student_badges ENABLE ROW LEVEL SECURITY;
-CREATE POLICY IF NOT EXISTS "badges_read_own" ON student_badges
-  FOR SELECT USING (
-    student_id IN (SELECT id FROM students WHERE profile_id = auth.uid())
-  );
-CREATE POLICY IF NOT EXISTS "badges_read_staff" ON student_badges
-  FOR SELECT USING (
-    EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid()
-      AND role IN ('admin','super_admin','coordinadora','docente'))
-  );
+DO $$ BEGIN
+  CREATE POLICY "badges_read_own" ON student_badges
+    FOR SELECT USING (
+      student_id IN (SELECT id FROM students WHERE profile_id = auth.uid())
+    );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN
+  CREATE POLICY "badges_read_staff" ON student_badges
+    FOR SELECT USING (
+      EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid()
+        AND role IN ('admin','super_admin','coordinadora','docente'))
+    );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- ── 4. Referral code en profiles ──────────────────────────────────
 ALTER TABLE profiles
