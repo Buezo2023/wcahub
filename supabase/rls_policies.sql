@@ -353,8 +353,6 @@ CREATE POLICY "notes_delete_own_or_admin"
 -- Sintaxis moderna Supabase (no usa storage.policies table)
 -- ══════════════════════════════════════════════════════════════════
 
--- Habilitar RLS en storage.objects (aplica a todos los buckets)
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
 -- Estudiante puede SUBIR a su propio path: proofs/{uid}/*
 DROP POLICY IF EXISTS "proofs_upload_own" ON storage.objects;
