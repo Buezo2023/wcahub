@@ -508,7 +508,7 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
 
 export default function PortalEstudiante(){
   const navigate = useNavigate();
-  const [user, setUser] = useState({ name:"", email:"", avatar:null });
+  const [user, setUser] = useState({ name:"", email:"", avatar:null, studentCode:null });
   const [view,       setView]       = useState("inicio");
   const [activeProg, setActiveProg] = useState(null) // set after enrollments load; // current program in practice/exam
   const isMobile = useMobile();
@@ -544,10 +544,11 @@ export default function PortalEstudiante(){
           }
         });
       // Load enrollments + group + student_progress
-      supabase.from("students").select("id, level")
+      supabase.from("students").select("id, level, student_code")
         .eq("profile_id", uid).maybeSingle()
         .then(async ({ data: student }) => {
           if (!student) return;
+          if (student.student_code) setUser(u => ({ ...u, studentCode: student.student_code }));
           const { data: enrolls } = await supabase
             .from("enrollments")
             .select("program_id, current_unit, exam_score, status, group_id, groups(teams_link, schedule, days, level, teacher_groups(staff(profiles(full_name))))")
@@ -1203,6 +1204,7 @@ export default function PortalEstudiante(){
                   <div>
                     <div style={{fontSize:16,fontWeight:700,color:"var(--text-primary)"}}>{user.name}</div>
                     <div style={{fontSize:12,color:"var(--text-secondary)"}}>{user.email}</div>
+                    {user.studentCode&&<div style={{display:"inline-flex",alignItems:"center",gap:4,marginTop:4,background:"#e8f3f6",borderRadius:6,padding:"2px 8px"}}><span style={{fontSize:10,color:"#155266",fontFamily:"monospace",fontWeight:700,letterSpacing:"1px"}}>{user.studentCode}</span></div>}
                   </div>
                 </div>
                 {[

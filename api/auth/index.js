@@ -115,11 +115,11 @@ async function handleStudent(req, actor) {
   if (isNewUser) {
     try {
       const progNames = { en:'Inglés Completo', va:'Asistente Virtual', va_mkt:'VA·Marketing', va_legal:'VA·Legal', va_care:'VA·Cuidador' };
-      const { subject, html } = EmailTemplates.invite({ name: fullName.split(' ')[0], email, programName: progNames[programId] || programId });
+      const { subject, html } = EmailTemplates.invite({ name: fullName.split(' ')[0], email, programName: progNames[programId] || programId, studentCode: student.student_code || null });
       await sendEmail({ to: email, toName: fullName, subject, html });
     } catch(e) { console.error('Student email:', e.message); }
   }
-  return { message: `Estudiante ${existingProfile ? 'matriculado' : 'invitado'} exitosamente`, studentId: student.id, enrolled: !!enrollment, emailSent: isNewUser };
+  return { message: `Estudiante ${existingProfile ? 'matriculado' : 'invitado'} exitosamente`, studentId: student.id, studentCode: student.student_code, enrolled: !!enrollment, emailSent: isNewUser };
 }
 
 async function handleStaff(req, actor) {

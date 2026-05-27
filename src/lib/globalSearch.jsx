@@ -34,16 +34,34 @@ export function useGlobalSearch() {
     setLoading(true);
     try {
       const term = q.trim().toLowerCase();
-      const [{ data: profiles }, { data: leads }] = await Promise.all([
+      // Detect if searching by student code (WCA- prefix)
+      const isCodeSearch = term.toUpperCase().startsWith("WCA-");
+      const [{ data: profiles }, { data: leads }, { data: studentCodes }] = await Promise.all([
         supabase.from("profiles")
           .select("id, full_name, email, role, avatar_url")
           .or(`full_name.ilike.%${term}%,email.ilike.%${term}%`)
-          .limit(6),
+          .limit(isCodeSearch ? 0 : 6),
         supabase.from("leads")
           .select("id, full_name, email, stage, source")
           .or(`full_name.ilike.%${term}%,email.ilike.%${term}%`)
-          .limit(4),
+          .limit(isCodeSearch ? 0 : 4),
+        supabase.from("students")
+          .select("id, student_code, profile:profiles(id, full_name, email, role, avatar_url)")
+          .ilike("student_code", `%${term.toUpperCase()}%`)
+          .limit(6),
       ]);
+
+      const codeResults = (studentCodes || []).filter(s => s.profile).map(s => ({
+        id:       s.profile.id,
+        label:    s.profile.full_name || s.profile.email,
+        sub:      s.student_code,
+        type:     "person",
+        role:     s.profile.role,
+        avatar:   s.profile.full_name?.split(" ").map(n=>n[0]).join("").slice(0,2).toUpperCase(),
+        route:    ROLE_ROUTES[s.profile.role] || "/admin",
+        icon:     "👨‍🎓",
+        studentCode: s.student_code,
+      }));
 
       const profileResults = (profiles || []).map(p => ({
         id:       p.id,
@@ -65,7 +83,7 @@ export function useGlobalSearch() {
         icon:   "💼",
       }));
 
-      setResults([...profileResults, ...leadResults]);
+      setResults([...codeResults, ...profileResults.filter(p => !codeResults.some(cr => cr.id === p.id)), ...leadResults]);
     } catch(e) { console.error("Global search:", e); }
     finally { setLoading(false); }
   }, []);
@@ -115,7 +133,7 @@ export function GlobalSearchModal({ search: s }) {
                       borderBottom:"1px solid var(--border)" }}>
           <i className="ti ti-search" style={{ fontSize:18, color:"var(--text-tertiary)", flexShrink:0 }} aria-hidden="true"/>
           <input ref={inputRef} value={s.query} onChange={e=>s.setQuery(e.target.value)}
-            placeholder="Buscar estudiante, lead, email…"
+            placeholder="Buscar por nombre, email o código WCA-…"
             style={{ flex:1, border:"none", outline:"none", fontSize:15, background:"transparent",
                      color:"var(--text-primary)", fontFamily:"inherit" }}
             aria-label="Búsqueda global"/>
@@ -175,11 +193,14 @@ export function GlobalSearchModal({ search: s }) {
                           {r.avatar || r.icon}
                         </div>
                         <div style={{ flex:1, minWidth:0 }}>
-                          <div style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)",
+                          <div style={{ display:"flex", alignItems:"center", gap:6 }}>
+                            <span style={{ fontSize:13, fontWeight:600, color:"var(--text-primary)",
                                         whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>
-                            {r.label}
+                              {r.label}
+                            </span>
+                            {r.studentCode&&<span style={{fontSize:10,fontFamily:"monospace",fontWeight:700,color:"#155266",background:"#e8f3f6",padding:"1px 6px",borderRadius:4,flexShrink:0}}>{r.studentCode}</span>}
                           </div>
-                          <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:1 }}>{r.sub}</div>
+                          <div style={{ fontSize:11, color:"var(--text-secondary)", marginTop:1 }}>{r.sub !== r.studentCode ? r.sub : r.label === r.sub ? "" : r.sub}</div>
                         </div>
                         <i className="ti ti-arrow-right" style={{ fontSize:14, color:"var(--text-tertiary)", flexShrink:0 }} aria-hidden="true"/>
                       </button>

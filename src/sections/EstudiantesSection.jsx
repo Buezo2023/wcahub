@@ -162,7 +162,10 @@ export function EstudiantesSection({ showToast }) {
               onClick={()=>setSel(isSel?null:s)}
                         style={{borderTop:"1px solid var(--border-tertiary)",cursor:"pointer",background:isSel?"var(--bg-surface-subtle)":"transparent"}}>
                         <td style={{padding:"10px 12px"}}>
-                          <div style={{fontWeight:600,color:"var(--text-primary)"}}>{s.profile?.full_name||"—"}</div>
+                          <div style={{display:"flex",alignItems:"center",gap:6}}>
+                            <span style={{fontWeight:600,color:"var(--text-primary)"}}>{s.profile?.full_name||"—"}</span>
+                            {s.student_code&&<span style={{fontSize:10,fontFamily:"monospace",fontWeight:700,color:"#155266",background:"#e8f3f6",padding:"1px 7px",borderRadius:5}}>{s.student_code}</span>}
+                          </div>
                           <div style={{fontSize:11,color:"var(--text-secondary)"}}>{s.profile?.email||"—"}</div>
                         </td>
                         <td style={{padding:"10px 12px"}}><Badge text={s.level||"—"} bg={`${P}14`} color={P}/></td>

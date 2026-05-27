@@ -168,7 +168,7 @@ export function PagosSection({ showToast, initialTab }) {
                 setForm(p=>({...p,studentId:e.target.value,enrollmentId:en?.id||"",amount:autoPrice}));
               }} style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}>
                 <option value="">Seleccionar estudiante...</option>
-                {students.map(s=><option key={s.id} value={s.id}>{s.profile?.full_name} — {s.profile?.email}</option>)}
+                {students.map(s=><option key={s.id} value={s.id}>{s.student_code ? `[${s.student_code}] ` : ""}{s.profile?.full_name} — {s.profile?.email}</option>)}
               </select>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>

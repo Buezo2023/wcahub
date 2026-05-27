@@ -176,8 +176,9 @@ const wrap = (content) => `<!DOCTYPE html>
 </div></body></html>`;
 
 export const EmailTemplates = {
-  invite({ name, email, programName }) {
+  invite({ name, email, programName, studentCode }) {
     const n = sanitize(name), e = sanitize(email), p = sanitize(programName);
+    const code = studentCode ? sanitize(studentCode) : null;
     return {
       subject: `Bienvenido a WCA Academy — Accedé a tu portal`,
       html: wrap(`
@@ -185,6 +186,11 @@ export const EmailTemplates = {
         <p style="color:#475569;font-size:14px;line-height:1.7;margin:0 0 20px;">
           Tu matrícula en <strong>${p}</strong> fue creada. Hacé clic para acceder con tu cuenta de Google o Microsoft.
         </p>
+        ${code ? `<div style="background:#e8f3f6;border:1.5px solid #155266;border-radius:10px;padding:14px 20px;margin-bottom:20px;display:inline-block;">
+          <div style="font-size:11px;color:#155266;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Tu código de estudiante</div>
+          <div style="font-size:22px;font-weight:800;color:#155266;font-family:monospace;letter-spacing:2px;">${code}</div>
+          <div style="font-size:11px;color:#64748b;margin-top:4px;">Guardá este código — lo necesitarás para identificarte</div>
+        </div>` : ''}
         <a href="https://wcahub.vercel.app" style="display:inline-block;background:#155266;color:#fff;text-decoration:none;padding:13px 28px;border-radius:10px;font-weight:700;font-size:14px;">
           Acceder a WCA Hub →
         </a>

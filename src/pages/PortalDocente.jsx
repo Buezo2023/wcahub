@@ -125,7 +125,7 @@ export default function TeacherPortal(){
         const groupIds = tgroups.map(tg => tg.group_id);
         const { data: enrollments } = await supabase
           .from("enrollments")
-          .select("student_id, group_id, students(id, level, profiles(full_name, email))")
+          .select("student_id, group_id, students(id, level, student_code, profiles(full_name, email))")
           .in("group_id", groupIds)
           .eq("status", "active");
         if (enrollments?.length) {
@@ -133,6 +133,7 @@ export default function TeacherPortal(){
             id:         e.students?.id,
             name:       e.students?.profiles?.full_name || e.students?.profiles?.email || "Estudiante",
             email:      e.students?.profiles?.email,
+            studentCode: e.students?.student_code || null,
             group:      e.group_id,
             attendance: 85,
             avgScore:   80,
@@ -347,7 +348,10 @@ export default function TeacherPortal(){
                         {s.name.split(" ").map(n=>n[0]).join("").slice(0,2)}
                       </div>
                       <div style={{flex:1}}>
-                        <div style={{fontSize:13,fontWeight:600,color:C.textPri}}>{s.name}</div>
+                        <div style={{display:"flex",alignItems:"center",gap:6}}>
+                          <div style={{fontSize:13,fontWeight:600,color:C.textPri}}>{s.name}</div>
+                          {s.studentCode&&<span style={{fontSize:10,fontFamily:"monospace",fontWeight:700,color:C.accent,background:C.accentDim,padding:"1px 6px",borderRadius:4}}>{s.studentCode}</span>}
+                        </div>
                         <div style={{fontSize:12,color:C.textSec,marginTop:1}}>
                           {s.flags.includes("blocked")?`⛔ Bloqueado U${s.currentUnit}`:`⚠ ${s.attempts.filter(a=>a!==null).length}/3 fallidos`} · {s.attendance}% asistencia
                         </div>
