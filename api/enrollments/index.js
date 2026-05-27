@@ -50,7 +50,7 @@ async function handleCreate(req, res) {
 
     const { data: student, error: studentError } = await admin
       .from('students').select('id, level, profile:profiles(full_name, email)')
-      .eq('id', studentId).single();
+      .eq('id', studentId).maybeSingle();
     if (studentError || !student) return err(res, { status: 404, message: 'Estudiante no encontrado' });
 
     const prereq = PREREQUISITES[programId];
@@ -88,11 +88,15 @@ async function handleCreate(req, res) {
     const { data: enrollment, error: enrollError } = await admin.from('enrollments')
       .upsert({
         student_id: studentId, program_id: programId, group_id: groupId || null,
-        status: 'active', current_unit: existing ? existing.current_unit || 1 : 1,
+        status: 'active',
+        // Existing enrollment: keep their progress. New enrollment: start at U1.
+        // Student must pass exams sequentially from U1 regardless of group cycle.
+        current_unit: existing ? existing.current_unit || 1 : 1,
         price_locked: price || null, enrolled_at: new Date().toISOString(),
         next_payment_date: nextPaymentStr,
-      }, { onConflict: 'student_id,program_id' }).select().single();
+      }, { onConflict: 'student_id,program_id' }).select().maybeSingle();
     if (enrollError) throw enrollError;
+    if (!enrollment) return err(res, { status: 500, message: 'No se pudo crear la matrícula' });
 
     await admin.from('audit_log').insert({
       actor_id: actor.id, action: 'created_enrollment', entity: 'enrollment',
@@ -135,11 +139,11 @@ async function handleSuspend(req, res) {
       : { status: 'active', suspended_at: null, suspended_reason: null, next_payment_date: reactivateDate };
 
     const { data, error } = await admin.from('enrollments')
-      .update(updates).eq('id', enrollmentId).select().single();
+      .update(updates).eq('id', enrollmentId).select().maybeSingle();
     if (error) throw error;
 
     const { data: student } = await admin.from('students')
-      .select('profile_id').eq('id', data.student_id).single();
+      .select('profile_id').eq('id', data.student_id).maybeSingle();
 
     if (student) {
       if (action === 'suspend') {

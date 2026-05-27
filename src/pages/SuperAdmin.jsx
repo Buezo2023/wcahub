@@ -204,14 +204,34 @@ export default function SuperAdmin() {
       finally { setStatsLoading(false); }
     });
 
-    // Load cycle levels
-    supabase.from("cycle_config").select("level, current_unit, program_id")
-      .eq("program_id", "en").then(({ data: cyc }) => {
-        if (cyc?.length) setCycleLevels(cyc.map(r => ({
-          level: r.level, unit: r.current_unit,
-          title: `Unidad ${r.current_unit}`, students: 0
-        })));
+    // Load cycle levels with student counts (English + VA)
+    Promise.all([
+      supabase.from("cycle_config").select("level, current_unit, program_id"),
+      supabase.from("enrollments").select("id, program_id, status, student:students(level)").eq("status","active"),
+      supabase.from("groups").select("id, level, program_id, active_unit").eq("active", true),
+    ]).then(([cycRes, enrollRes, grpRes]) => {
+      const enrolls = enrollRes.data || [];
+      const groups  = grpRes.data || [];
+      const cycData = cycRes.data || [];
+      // English levels from cycle_config
+      const enLevels = ["A1","A2","B1","B2","C1"].map(lv => {
+        const cfg = cycData.find(c => c.program_id === "en" && c.level === lv);
+        const grp = groups.find(g => g.program_id === "en" && g.level === lv);
+        const unit = cfg?.current_unit || grp?.active_unit || 1;
+        const count = enrolls.filter(e => e.program_id === "en" && e.student?.level === lv).length;
+        return { level: lv, unit, title: `Unidad ${unit}`, students: count, programId: "en" };
       });
+      // VA programs from groups
+      const vaProgs = [["va","VA General"],["va_mkt","VA Marketing"],["va_legal","VA Legal"],["va_care","VA Cuidador"]];
+      const vaLevels = vaProgs.map(([pid, name]) => {
+        const grp = groups.find(g => g.program_id === pid);
+        const cfg = cycData.find(c => c.program_id === pid);
+        const unit = cfg?.current_unit || grp?.active_unit || 1;
+        const count = enrolls.filter(e => e.program_id === pid).length;
+        return { level: name, unit, title: `Módulo ${unit}`, students: count, programId: pid };
+      }).filter(v => v.students > 0 || groups.some(g => g.program_id === v.programId));
+      setCycleLevels([...enLevels, ...vaLevels]);
+    });
 
     // Load holidays
     supabase.from("holidays").select("date, name, affects_cycle")
@@ -879,34 +899,81 @@ export default function SuperAdmin() {
           {view==="academia" && subView==="cycle" && (
             <div>
               <div style={{ background:RD, border:`1px solid ${R}40`, borderRadius:10, padding:"10px 14px", marginBottom:16, fontSize:12, color:R, display:"flex", gap:8 }}>
-                <i className="ti ti-alert-triangle" style={{ fontSize:14 }} aria-hidden="true"/> Reiniciar es irreversible.
+                <i className="ti ti-alert-triangle" style={{ fontSize:14 }} aria-hidden="true"/> Reiniciar es irreversible. Los cambios se aplican a cycle_config Y a todos los grupos del nivel.
               </div>
-              {cycleLevels.map(c=>(
-                <div key={c.level} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:18, marginBottom:12, boxShadow:"var(--shadow-sm)" }}>
+              {cycleLevels.map((c, ci)=>{
+                const isVA = c.programId !== "en";
+                const color = isVA ? "#7c3aed" : P;
+                const colorLight = isVA ? "#ede9fe" : PD;
+                return (
+                <div key={c.level+c.programId} style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:18, marginBottom:12, boxShadow:"var(--shadow-sm)" }}>
                   <div style={{ display:"flex", alignItems:"center", gap:16, marginBottom:12 }}>
-                    <div style={{ width:48, height:48, borderRadius:12, background:PD, display:"flex", alignItems:"center", justifyContent:"center", fontSize:17, fontWeight:800, color:P }}>{c.level}</div>
+                    <div style={{ width:48, height:48, borderRadius:12, background:colorLight, display:"flex", alignItems:"center", justifyContent:"center", fontSize:isVA?13:17, fontWeight:800, color }}>{isVA ? "VA" : c.level}</div>
                     <div style={{ flex:1 }}>
-                      <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>Nivel {c.level} — U{c.unit}: {c.title}</div>
-                      <div style={{ fontSize:12, color:"var(--text-secondary)" }}>{c.students} estudiantes · Próximo: lunes</div>
+                      <div style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>
+                        {isVA ? c.level : `Nivel ${c.level}`} — U{c.unit}: {c.title}
+                      </div>
+                      <div style={{ fontSize:12, color:"var(--text-secondary)" }}>
+                        {c.students} estudiante{c.students!==1?"s":""} activo{c.students!==1?"s":""} · Próximo avance: lunes
+                      </div>
                     </div>
-                    <Badge text="Activo" bg={GD} color="#065f46"/>
+                    <Badge text={c.students>0?"Activo":"Sin alumnos"} bg={c.students>0?GD:"var(--bg-surface-subtle)"} color={c.students>0?"#065f46":"var(--text-tertiary)"}/>
                   </div>
                   <div style={{ display:"flex", gap:3, marginBottom:12 }}>
-                    {Array.from({length:12},(_,i)=><div key={i} style={{ flex:1, height:8, borderRadius:4, background:i+1<c.unit?P:i+1===c.unit?Y:"var(--bg-surface-subtle)" }}/>)}
+                    {Array.from({length:12},(_,i)=><div key={i} style={{ flex:1, height:8, borderRadius:4, background:i+1<c.unit?color:i+1===c.unit?Y:"var(--bg-surface-subtle)" }}/>)}
                   </div>
                   <div style={{ display:"flex", gap:8 }}>
-                    <select style={{ flex:1, padding:"8px 10px", border:"1px solid var(--border)", borderRadius:8, fontSize:12, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}>
-                      {Array.from({length:12},(_,i)=><option key={i} selected={i+1===c.unit}>Unidad {i+1}</option>)}
+                    {/* FIX BUG 1: Controlled select — onChange updates state */}
+                    <select value={c.unit}
+                      onChange={e => setCycleLevels(prev => prev.map((x,j) => j===ci ? {...x, unit:+e.target.value, title:`${isVA?"Módulo":"Unidad"} ${e.target.value}`} : x))}
+                      style={{ flex:1, padding:"8px 10px", border:"1px solid var(--border)", borderRadius:8, fontSize:12, background:"var(--bg-surface-subtle)", color:"var(--text-primary)", fontFamily:"inherit" }}>
+                      {Array.from({length:12},(_,i)=><option key={i+1} value={i+1}>{isVA?"Módulo":"Unidad"} {i+1}</option>)}
                     </select>
-                    <button onClick={async()=>{ try{ await supabase.from("cycle_config").upsert({program_id:"en",level:c.level,current_unit:c.unit},{onConflict:"program_id,level"}); showToast(`Unidad ${c.unit} aplicada para ${c.level}`); }catch(e){showToast("Error: "+e.message, R);} }} style={{ padding:"8px 16px", background:AD, color:A, border:`1px solid ${A}40`, borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Aplicar</button>
+                    {/* FIX BUG 2: Aplicar updates cycle_config (Inglés) + groups */}
                     <button onClick={async()=>{
-  const ok = await confirmDialog({ title:`¿Reiniciar nivel ${c.level}?`, body:"Esto restablece la unidad activa a U1 para todos los estudiantes de este nivel. Es irreversible.", danger:true, confirmText:"Sí, reiniciar" });
-  if(!ok) return;
-  try{ await supabase.from("cycle_config").upsert({program_id:"en",level:c.level,current_unit:1},{onConflict:"program_id,level"}); showToast(`${c.level} reiniciado a U1`); }catch(e){showToast("Error: "+e.message,R);}
-}} style={{ padding:"8px 16px", background:RD, color:R, border:`1px solid ${R}40`, borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Reiniciar U1</button>
+                      try{
+                        const pid = c.programId || "en";
+                        // English: update cycle_config + groups by level
+                        // VA: update groups directly (cycle_config uses cefr_level enum, incompatible with VA)
+                        if(!isVA){
+                          await supabase.from("cycle_config").upsert(
+                            {program_id:pid, level:c.level, current_unit:c.unit},
+                            {onConflict:"program_id,level"}
+                          );
+                          await supabase.from("groups").update({active_unit:c.unit}).eq("program_id",pid).eq("level",c.level).eq("active",true);
+                        } else {
+                          await supabase.from("groups").update({active_unit:c.unit}).eq("program_id",pid).eq("active",true);
+                        }
+                        showToast(`✓ ${isVA?c.level:`Nivel ${c.level}`} → U${c.unit} aplicado a todos los grupos`);
+                      }catch(e){showToast("Error: "+e.message, R);}
+                    }} style={{ padding:"8px 16px", background:AD, color:A, border:`1px solid ${A}40`, borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Aplicar</button>
+                    {/* FIX BUG 3: Reiniciar updates BOTH cycle_config AND groups */}
+                    <button onClick={async()=>{
+                      const ok = await confirmDialog({
+                        title:`¿Reiniciar ${isVA?c.level:`nivel ${c.level}`}?`,
+                        body:"Esto restablece la unidad activa a U1 para TODOS los grupos de este nivel. Es irreversible.",
+                        danger:true, confirmText:"Sí, reiniciar"
+                      });
+                      if(!ok) return;
+                      try{
+                        const pid = c.programId || "en";
+                        if(!isVA){
+                          await supabase.from("cycle_config").upsert(
+                            {program_id:pid, level:c.level, current_unit:1},
+                            {onConflict:"program_id,level"}
+                          );
+                          await supabase.from("groups").update({active_unit:1}).eq("program_id",pid).eq("level",c.level).eq("active",true);
+                        } else {
+                          await supabase.from("groups").update({active_unit:1}).eq("program_id",pid).eq("active",true);
+                        }
+                        setCycleLevels(prev => prev.map((x,j) => j===ci ? {...x, unit:1, title:`${isVA?"Módulo":"Unidad"} 1`} : x));
+                        showToast(`${isVA?c.level:c.level} reiniciado a U1 — groups + cycle_config actualizados`);
+                      }catch(e){showToast("Error: "+e.message,R);}
+                    }} style={{ padding:"8px 16px", background:RD, color:R, border:`1px solid ${R}40`, borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Reiniciar U1</button>
                   </div>
                 </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
