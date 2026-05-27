@@ -9,21 +9,14 @@ import { detectTimezone, TIMEZONES, getTimezonesByRegion } from "../lib/timezone
 const P = "#155266", PD = "#e8f3f6", Y = "#ffbb23", YD = "#fff8e6";
 const G = "#059669", GD = "#ecfdf5", R = "#dc2626", RD = "#fef2f2", A = "#d97706";
 
-// ── Programs ─────────────────────────────────────────────────────
-const PROGRAMS = [
-  { id:"en",     icon:"🇬🇧", name:"Inglés Completo",      price:95, interval:"mes",
-    desc:"CEFR A1–C1, clases en vivo 3x/semana + plataforma 24/7",
-    color:P, tag:null },
-  { id:"va",     icon:"💻", name:"Asistente Virtual",     price:95, interval:"mes",
-    desc:"VA bilingüe: herramientas digitales, gestión remota, inglés profesional",
-    color:"#7c3aed", tag:"Más popular" },
-  { id:"va_mkt", icon:"📱", name:"VA · Marketing Digital", price:95, interval:"3 meses",
-    desc:"Redes sociales, copywriting, email marketing, analítica. Requiere VA General.",
-    color:"#db2777", tag:"Especialización", prereq:"va" },
-  { id:"va_legal",icon:"⚖️", name:"VA · Legal Assistant",  price:95, interval:"3 meses",
-    desc:"Documentos legales, agenda, inglés jurídico. Requiere VA General.",
-    color:"#0e7490", tag:"Especialización", prereq:"va" },
-];
+// ── Program visual config (UI only — data comes from Supabase) ────
+const PROG_UI = {
+  en:       { icon:"🇬🇧", color:P,         tag:null },
+  va:       { icon:"💻",  color:"#7c3aed",  tag:"Más popular" },
+  va_mkt:   { icon:"📱",  color:"#db2777",  tag:"Especialización" },
+  va_legal: { icon:"⚖️",  color:"#0e7490",  tag:"Especialización" },
+  va_care:  { icon:"🏥",  color:"#059669",  tag:"Especialización" },
+};
 
 const LEVELS = [
   { id:"A1", label:"A1 · Principiante", desc:"Comienzo desde cero" },
@@ -99,15 +92,57 @@ export default function Register() {
     name: "", email: "", phone: "", country: "", timezone: detectTimezone(),
     paymentMethod: null,
   });
+  const [programs, setPrograms] = useState([]);
+  const [loadingPrograms, setLoadingPrograms] = useState(true);
   const [groups, setGroups] = useState([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
+
+  // Load programs dynamically from Supabase
+  useEffect(() => {
+    supabase.from("programs")
+      .select("id, name, description, price_monthly, price_quarterly, active, prereq_program_id")
+      .eq("active", true)
+      .order("id")
+      .then(({ data: progs, error }) => {
+        if (error || !progs?.length) {
+          // Fallback to basic programs if table doesn't exist yet
+          setPrograms([
+            { id:"en",      name:"Inglés Completo",       price_monthly:95, description:"CEFR A1–C1, clases en vivo 3x/semana + plataforma 24/7", prereq_program_id:null },
+            { id:"va",      name:"Asistente Virtual",     price_monthly:95, description:"VA bilingüe: herramientas digitales, gestión remota, inglés profesional", prereq_program_id:null },
+            { id:"va_mkt",  name:"VA · Marketing Digital",price_monthly:95, description:"Redes sociales, copywriting, email marketing.", prereq_program_id:"va" },
+            { id:"va_legal",name:"VA · Legal Assistant",  price_monthly:95, description:"Documentos legales, inglés jurídico.", prereq_program_id:"va" },
+            { id:"va_care", name:"VA · Cuidador Remoto",  price_monthly:95, description:"Terminología médica, coordinación de citas.", prereq_program_id:"va" },
+          ]);
+        } else {
+          setPrograms(progs);
+        }
+        setLoadingPrograms(false);
+      })
+      .catch(() => {
+        setPrograms([
+          { id:"en", name:"Inglés Completo", price_monthly:95, description:"CEFR A1–C1, clases en vivo 3x/semana + plataforma 24/7", prereq_program_id:null },
+          { id:"va", name:"Asistente Virtual", price_monthly:95, description:"VA bilingüe: herramientas digitales, gestión remota.", prereq_program_id:null },
+        ]);
+        setLoadingPrograms(false);
+      });
+  }, []);
   const [answers, setAnswers] = useState({});
   const [testDone, setTestDone] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [transferResult, setTransferResult] = useState(null);
 
-  const prog = PROGRAMS.find(p => p.id === data.programId);
+  const _progBase = programs.find(p => p.id === data.programId);
+  const ui = PROG_UI[data.programId] || PROG_UI.en;
+  const prog = _progBase ? { ..._progBase,
+    icon:     ui.icon,
+    color:    ui.color,
+    tag:      ui.tag,
+    price:    _progBase.price_monthly || 95,
+    interval: _progBase.prereq_program_id ? "3 meses" : "mes",
+    desc:     _progBase.description || "",
+    prereq:   _progBase.prereq_program_id,
+  } : null;
   const isIngles = data.programId === "en";
   const TOTAL_STEPS = 5;
 
@@ -146,27 +181,33 @@ export default function Register() {
         <h2 style={{ fontSize:22, fontWeight:800, color:"var(--text-primary)", marginBottom:6 }}>¿Qué querés estudiar?</h2>
         <p style={{ fontSize:14, color:"var(--text-secondary)", marginBottom:24 }}>Elegí el programa que mejor se adapta a tus objetivos.</p>
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
-          {PROGRAMS.map(p => (
-            <button key={p.id} onClick={() => { setData(d => ({...d, programId:p.id, level:p.id==="en"?null:"A1"})); setStep(2); }}
+          {loadingPrograms ? (
+            <div style={{ padding:32, textAlign:"center", color:"var(--text-secondary)", fontSize:13 }}>Cargando programas...</div>
+          ) : programs.map(p => {
+            const ui = PROG_UI[p.id] || PROG_UI.en;
+            const pDisplay = {...p, icon:ui.icon, color:ui.color, tag:ui.tag, price:p.price_monthly||95, interval:p.prereq_program_id?"3 meses":"mes", desc:p.description||""};
+            return (
+            <button key={pDisplay.id} onClick={() => { setData(d => ({...d, programId:pDisplay.id, level:pDisplay.id==="en"?null:"A1"})); setStep(2); }}
               style={{ display:"flex", alignItems:"flex-start", gap:16, padding:"16px 20px",
-                background: data.programId===p.id ? p.color+"15" : "var(--bg-surface)",
-                border:`2px solid ${data.programId===p.id ? p.color : "var(--border)"}`,
+                background: data.programId===pDisplay.id ? pDisplay.color+"15" : "var(--bg-surface)",
+                border:`2px solid ${data.programId===pDisplay.id ? pDisplay.color : "var(--border)"}`,
                 borderRadius:14, cursor:"pointer", fontFamily:"inherit", textAlign:"left",
                 transition:"all .2s",
               }}
-              onMouseEnter={e=>e.currentTarget.style.borderColor=p.color}
-              onMouseLeave={e=>e.currentTarget.style.borderColor=data.programId===p.id?p.color:"var(--border)"}>
-              <div style={{ fontSize:28, lineHeight:1, flexShrink:0 }}>{p.icon}</div>
+              onMouseEnter={e=>e.currentTarget.style.borderColor=pDisplay.color}
+              onMouseLeave={e=>e.currentTarget.style.borderColor=data.programId===pDisplay.id?pDisplay.color:"var(--border)"}>
+              <div style={{ fontSize:28, lineHeight:1, flexShrink:0 }}>{pDisplay.icon}</div>
               <div style={{ flex:1 }}>
                 <div style={{ display:"flex", alignItems:"center", gap:8, marginBottom:4 }}>
-                  <span style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>{p.name}</span>
-                  {p.tag && <span style={{ fontSize:10, padding:"2px 8px", borderRadius:10, background:p.color+"20", color:p.color, fontWeight:700 }}>{p.tag}</span>}
+                  <span style={{ fontSize:15, fontWeight:700, color:"var(--text-primary)" }}>{pDisplay.name}</span>
+                  {pDisplay.tag && <span style={{ fontSize:10, padding:"2px 8px", borderRadius:10, background:pDisplay.color+"20", color:pDisplay.color, fontWeight:700 }}>{pDisplay.tag}</span>}
                 </div>
-                <div style={{ fontSize:12, color:"var(--text-secondary)", marginBottom:6, lineHeight:1.5 }}>{p.desc}</div>
-                <div style={{ fontSize:13, fontWeight:700, color:p.color }}>${p.price} USD/{p.interval}</div>
+                <div style={{ fontSize:12, color:"var(--text-secondary)", marginBottom:6, lineHeight:1.5 }}>{pDisplay.desc}</div>
+                <div style={{ fontSize:13, fontWeight:700, color:pDisplay.color }}>${pDisplay.price} USD/{pDisplay.interval}</div>
               </div>
             </button>
-          ))}
+          );
+          }))}
         </div>
       </div>
     );

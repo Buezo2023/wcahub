@@ -181,7 +181,7 @@ export default function TeacherPortal(){
     color:      i === 0 ? C.accent : "#1a7a9a",
     teamsLink:  g.teams_link || null,
     dbId:       g.id,
-  })) : GROUPS;
+  })) : [];  // No fallback mock data — real data only
   const displayStudents = realStudents;
   const selGroupId = typeof selGroup === "string" ? selGroup : displayGroups[0]?.id || 1;
   const grpStudents = displayStudents.filter(s => String(s.group) === String(selGroupId));
