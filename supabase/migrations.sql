@@ -400,3 +400,55 @@ ALTER TABLE public.student_notes
 -- 4. author_id faltaba en el insert de DashboardAdmin — agregar NOT NULL con default null
 --    (ya existe la columna, solo verificar)
 -- ALTER TABLE public.student_notes ALTER COLUMN author_id DROP NOT NULL; -- solo si da error
+
+-- ─── Security fix: proteger columnas sensibles del auto-update ────
+-- Fecha: 2026-05-27
+-- 
+-- PROBLEMA: profiles_own_update permite que cualquier usuario autenticado
+-- actualice SU PROPIO perfil sin restricción de columnas. Un estudiante
+-- podría hacer: supabase.from('profiles').update({role:'super_admin'}).eq('id', uid)
+--
+-- SOLUCIÓN: trigger BEFORE UPDATE que revierte role, active y email
+-- a sus valores anteriores si quien actualiza NO es admin/super_admin.
+-- Silencioso (no lanza error, solo ignora los campos prohibidos).
+-- Los admins siguen pudiendo cambiar todo a través de sus políticas.
+
+CREATE OR REPLACE FUNCTION public.protect_profile_sensitive_cols()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  requester_role text;
+BEGIN
+  -- Get the role of whoever is making the request
+  SELECT role INTO requester_role
+  FROM public.profiles
+  WHERE id = auth.uid();
+
+  -- Admins and super_admins can change anything
+  IF requester_role IN ('admin', 'super_admin') THEN
+    RETURN NEW;
+  END IF;
+
+  -- Everyone else: silently revert protected columns to their old values
+  NEW.role   := OLD.role;
+  NEW.active := OLD.active;
+  NEW.email  := OLD.email;
+
+  RETURN NEW;
+END;
+$$;
+
+-- Attach trigger to profiles table
+DROP TRIGGER IF EXISTS protect_profile_cols ON public.profiles;
+CREATE TRIGGER protect_profile_cols
+  BEFORE UPDATE ON public.profiles
+  FOR EACH ROW
+  EXECUTE FUNCTION public.protect_profile_sensitive_cols();
+
+-- Verify the trigger exists
+SELECT trigger_name, event_manipulation, action_statement
+FROM information_schema.triggers
+WHERE event_object_table = 'profiles'
+  AND trigger_schema = 'public';
