@@ -34,14 +34,12 @@ export function TeachersSection({ showToast }) {
     if(!form.name||!form.email){showToast("Nombre y email requeridos",R);return;}
     setSaving(true);
     try{
-      const res=await api.post("/api/auth",{action:"staff",email:form.email,fullName:form.name,role:"Docente",phone:form.phone||null,salary:form.salary||null});
-      const json=await res.json().catch(()=>({}));
-      if(!res.ok||!json.ok){showToast("Error: "+(json.error||json.message),R);return;}
+      await api.post("/api/auth",{action:"staff",email:form.email,fullName:form.name,role:"Docente",phone:form.phone||null,salary:form.salary||null});
       showToast("✓ Docente invitado — recibirá email para acceder");
       setModal(null);
       setForm({name:"",email:"",phone:"",levels:[],salary:""});
       await load();
-    }catch(e){showToast("Error de red",R);}
+    }catch(e){showToast("Error: "+(e.message||"Error de red"),R);}
     finally{setSaving(false);}
   }
 

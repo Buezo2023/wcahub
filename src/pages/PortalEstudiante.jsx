@@ -1108,7 +1108,7 @@ export default function PortalEstudiante(){
                                 amount:0,
                                 method:"Transferencia bancaria",
                                 status:"pending",
-                                receipt_url:publicUrl,
+                                proof_url:publicUrl,
                               });
                             }
                             setUploadState({loading:false,done:true,error:null});

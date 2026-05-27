@@ -52,14 +52,12 @@ export function EstudiantesSection({ showToast }) {
     if (!enrollForm.name || !enrollForm.email) { showToast("Nombre y email requeridos", R); return; }
     setEnrolling(true);
     try {
-      const res = await api.post("/api/auth", {action:"student",...enrollForm,fullName:enrollForm.name,scholarship:enrollForm.scholarship||false});
-      const json = await res.json().catch(()=>({}));
-      if (!res.ok||!json.ok) { showToast("Error: "+(json.error||json.message), R); return; }
+      await api.post("/api/auth", {action:"student",...enrollForm,fullName:enrollForm.name,scholarship:enrollForm.scholarship||false});
       showToast("✓ Estudiante matriculado — invitación enviada");
       setEnrollModal(false);
       setEnrollForm({name:"",email:"",phone:"",programId:"en",level:"A1",groupId:"",price:95});
       await load();
-    } catch(e) { showToast("Error de red", R); }
+    } catch(e) { showToast("Error: " + (e.message || "Error de red"), R); }
     finally { setEnrolling(false); }
   }
 

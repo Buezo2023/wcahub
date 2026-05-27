@@ -8,7 +8,7 @@
 
 import {
   requireAuth, requireRole, getSupabaseAdmin,
-  sendEmail, EmailTemplates, ok, err, setCORS, checkRateLimit,
+  sendEmail, EmailTemplates, ok, err, setCORS, checkRateLimit, addOneMonth,
 } from '../_utils.js';
 
 // ── Staff constants ────────────────────────────────────────────────

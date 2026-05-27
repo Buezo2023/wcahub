@@ -29,9 +29,6 @@ async function handleRecord(req, res) {
     const { profile: actor } = await requireAuth(req);
     requireRole(actor, 'cobros', 'admin', 'super_admin');
 
-    const { profile: actor } = await requireAuth(req);
-    requireRole(actor, 'cobros', 'admin', 'super_admin');
-
     const {
       studentId, enrollmentId, amount, method = 'transfer',
       bank, referenceCode, proofUrl, periodStart, periodEnd,
@@ -116,9 +113,6 @@ async function handleRecord(req, res) {
 // ── Confirm / Reject payment ───────────────────────────────────────
 async function handleConfirm(req, res) {
   try {
-    const { profile: actor } = await requireAuth(req);
-    requireRole(actor, 'cobros', 'admin', 'super_admin');
-
     const { profile: actor } = await requireAuth(req);
     requireRole(actor, 'cobros', 'admin', 'super_admin');
 
