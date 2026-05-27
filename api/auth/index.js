@@ -394,11 +394,48 @@ async function handleResendSupabase(req, actor) {
 }
 
 // ── Main handler ───────────────────────────────────────────────────
+
+// ── action = 'magic-link' → send OTP email with rate limiting ─────
+async function handleMagicLink(req, res, admin) {
+  const { email } = req.body;
+  if (!email || typeof email !== 'string') {
+    return err(res, { status: 400, message: 'Email requerido' });
+  }
+  const normalized = email.trim().toLowerCase();
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+    return err(res, { status: 400, message: 'Email inválido' });
+  }
+  // Rate limit by email (3/15min) and IP (5/15min)
+  const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
+  try {
+    await checkRateLimit(`magic:email:${normalized}`, 3, 15 * 60 * 1000);
+    await checkRateLimit(`magic:ip:${ip}`, 5, 15 * 60 * 1000);
+  } catch (_) {
+    // Anti-enumeration: always return success even when rate limited
+    return ok(res, { sent: true, limited: true });
+  }
+  // Generate magic link server-side — silently ignore if user doesn't exist
+  try {
+    await admin.auth.admin.generateLink({
+      type: 'magiclink',
+      email: normalized,
+      options: { redirectTo: `${process.env.SITE_URL || 'https://wcahub.vercel.app'}/auth/callback` },
+    });
+  } catch (_) { /* anti-enumeration: swallow errors */ }
+  return ok(res, { sent: true });
+}
+
 export default async function handler(req, res) {
   setCORS(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
   try { await checkRateLimit(`invite:${req.headers['x-forwarded-for']||'x'}`, 15, 60000); } catch(e) { return err(res, e); }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+
+  // magic-link is public (no auth required — it's the recovery entry point)
+  if (req.body?.action === 'magic-link') {
+    const admin = getSupabaseAdmin();
+    return handleMagicLink(req, res, admin);
+  }
 
   try {
     const { profile: actor } = await requireAuth(req);

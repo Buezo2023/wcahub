@@ -347,32 +347,38 @@ CREATE POLICY "notes_delete_own_or_admin"
 -- ══════════════════════════════════════════════════════════════════
 -- STORAGE: bucket "proofs" (comprobantes de pago)
 -- ══════════════════════════════════════════════════════════════════
--- Ejecutar en: Supabase Dashboard → Storage → Policies
 
--- Política: estudiante puede subir a su propio path proofs/{uid}/*
--- INSERT
-INSERT INTO storage.policies (name, bucket_id, definition, action)
-VALUES (
-  'proofs_upload_own',
-  'proofs',
-  '(bucket_id = ''proofs'' AND (storage.foldername(name))[1] = auth.uid()::text)',
-  'INSERT'
-) ON CONFLICT DO NOTHING;
+-- ══════════════════════════════════════════════════════════════════
+-- STORAGE POLICIES — bucket: proofs (comprobantes de pago)
+-- Sintaxis moderna Supabase (no usa storage.policies table)
+-- ══════════════════════════════════════════════════════════════════
 
--- SELECT: cobros/admin pueden ver todos los comprobantes
-INSERT INTO storage.policies (name, bucket_id, definition, action)
-VALUES (
-  'proofs_read_cobros',
-  'proofs',
-  '(bucket_id = ''proofs'' AND get_my_role() IN (''cobros'',''admin'',''super_admin''))',
-  'SELECT'
-) ON CONFLICT DO NOTHING;
+-- Habilitar RLS en storage.objects (aplica a todos los buckets)
+ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
 
--- SELECT propio: estudiante puede ver sus propios comprobantes
-INSERT INTO storage.policies (name, bucket_id, definition, action)
-VALUES (
-  'proofs_read_own',
-  'proofs',
-  '(bucket_id = ''proofs'' AND (storage.foldername(name))[1] = auth.uid()::text)',
-  'SELECT'
-) ON CONFLICT DO NOTHING;
+-- Estudiante puede SUBIR a su propio path: proofs/{uid}/*
+DROP POLICY IF EXISTS "proofs_upload_own" ON storage.objects;
+CREATE POLICY "proofs_upload_own"
+  ON storage.objects FOR INSERT
+  WITH CHECK (
+    bucket_id = 'proofs'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );
+
+-- Cobros/admin pueden VER todos los comprobantes
+DROP POLICY IF EXISTS "proofs_read_cobros" ON storage.objects;
+CREATE POLICY "proofs_read_cobros"
+  ON storage.objects FOR SELECT
+  USING (
+    bucket_id = 'proofs'
+    AND get_my_role() IN ('cobros','admin','super_admin')
+  );
+
+-- Estudiante puede VER sus propios comprobantes
+DROP POLICY IF EXISTS "proofs_read_own" ON storage.objects;
+CREATE POLICY "proofs_read_own"
+  ON storage.objects FOR SELECT
+  USING (
+    bucket_id = 'proofs'
+    AND (storage.foldername(name))[1] = auth.uid()::text
+  );

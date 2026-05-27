@@ -20,10 +20,10 @@ export default function ForgotAccess() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/auth/magic-link", {
+      const res = await fetch("/api/auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim().toLowerCase() }),
+        body: JSON.stringify({ action: "magic-link", email: email.trim().toLowerCase() }),
       });
       if (res.status === 429) {
         setError("Demasiados intentos. Esperá 15 minutos antes de intentar de nuevo.");
