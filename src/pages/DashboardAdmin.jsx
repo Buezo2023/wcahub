@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import GlobalSearch from "../components/GlobalSearch.jsx";
 import { useNavigate } from "react-router-dom";
 import { getStudents, getGroups, getPayments, updateGroupTeamsLink, getPrograms, getAuditLog } from "../lib/db.js";
 import { exportCSV } from "../lib/exportCSV.js";
@@ -635,6 +636,7 @@ export default function AdminDashboard() {
             {({ home:"Resumen general", students:"Estudiantes", groups:"Grupos y horarios", enrollments:"Nueva matrícula", payments:"Pagos operativos", cycle:"Estado del ciclo", reports:"Reportes", b2b:"Empresas B2B", precios:"Precios" })[view]}
           </div>
           <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+            <GlobalSearch onNavigate={(section) => setView(section)}/>
             {suspended.length > 0 && <div style={{ fontSize:12, background:B.redDim, color:B.red, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>⚠ {suspended.length} suspendidos</div>}
             <div style={{ fontSize:12, background:B.primaryDim, color:B.primary, padding:"3px 10px", borderRadius:20, fontWeight:600 }}>{active.length} activos hoy</div>
             {view === "students" && <>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, Suspense } from "react";
+import GlobalSearch from "../components/GlobalSearch.jsx";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
@@ -568,7 +569,8 @@ export default function SuperAdmin() {
               })()}
             </div>
           </div>
-          <div style={{ display:"flex", gap:8 }}>
+          <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+            <GlobalSearch onNavigate={(section, sub) => { setView(section); if(sub) setSubView(sub); }}/>
             <Badge text="Sistema activo" bg={GD} color="#065f46"/>
             {/* Portal switcher — super_admin can view any role's portal */}
             <select
