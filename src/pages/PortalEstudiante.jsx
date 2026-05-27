@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
@@ -12,6 +12,10 @@ import { useNotifications } from "../lib/useNotifications.js";
 import { LEVELS, UNITS, SKILLS_BY_LEVEL } from "../data/englishContent.js";
 import { formatSchedule, detectTimezone, TIMEZONES, getTimezonesByRegion } from "../lib/timezone.js";
 import { useGamification, updateStreak, checkBadges, getRank, getXpToNextRank, streakColor } from "../lib/gamification.js";
+import {
+  AnimatedCounter, XPRing, StreakFlame, SkillRadar, MiniAreaChart,
+  Confetti, FloatingXP, StatCard, UnitProgress, ProgressBar,
+} from "../lib/VisualComponents.jsx";
 
 const P="#155266",PH="#0f3d4d",PD="#e8f3f6";
 const Y="#ffbb23",YD="#fff8e6";
@@ -134,6 +138,12 @@ function ProgTag({prog}){
     <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"3px 10px",borderRadius:20,background:prog.colorLight,border:`1px solid ${prog.color}30`}}>
       <span style={{fontSize:12}}>{prog.icon}</span>
       <span style={{fontSize:11,fontWeight:600,color:prog.color}}>{prog.shortName}</span>
+    {/* Global visual effects */}
+    <Confetti active={confetti} count={40} />
+    {floatingXP && (
+      <FloatingXP amount={floatingXP.amount} x={floatingXP.x} y={floatingXP.y}
+        onDone={() => setFloatingXP(null)} />
+    )}
     </div>
   );
 }
@@ -155,21 +165,39 @@ function ProgramPill({prog,active,onClick}){
   );
 }
 
-// ─── Skill card ───────────────────────────────────────────────────
-function SkillCard({skill}){
+// ─── Skill card (animated) ────────────────────────────────────────
+function SkillCard({skill, index=0}){
   const pct=Math.round((skill.done/skill.total)*100);
   return(
-    <div style={{background:skill.color,borderRadius:12,padding:"14px 12px",position:"relative",overflow:"hidden"}}>
-      <div style={{fontSize:13,fontWeight:700,color:"#fff",marginBottom:6}}>{skill.name}</div>
-      <div style={{fontSize:11,color:"rgba(255,255,255,.65)",marginBottom:1}}>Scores</div>
-      <div style={{fontSize:20,fontWeight:800,color:"#fff",marginBottom:10}}>{skill.score}%</div>
-      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
-        <div>
-          <div style={{fontSize:11,color:"rgba(255,255,255,.65)",marginBottom:1}}>Activities done</div>
-          <div style={{fontSize:14,fontWeight:700,color:"#fff"}}>{skill.done}/{skill.total}</div>
-        </div>
-        <Ring pct={pct} size={40} stroke={3} color="rgba(255,255,255,.9)" bg="rgba(255,255,255,.25)"/>
+    <div className="wca-card-lift" style={{
+      background:`linear-gradient(135deg,${skill.color},${skill.color}cc)`,
+      borderRadius:14,padding:"14px 12px",position:"relative",overflow:"hidden",
+      animation:`wca-scaleIn .35s ${index*60}ms ease both`,
+      boxShadow:`0 4px 16px ${skill.color}40`,
+    }}>
+      <div style={{position:"absolute",right:-12,top:-12,width:70,height:70,borderRadius:"50%",background:"rgba(255,255,255,.08)"}}/>
+      <div style={{fontSize:12,fontWeight:700,color:"rgba(255,255,255,.9)",marginBottom:8,position:"relative"}}>{skill.name}</div>
+      <div style={{fontSize:22,fontWeight:900,color:"#fff",marginBottom:6,position:"relative",lineHeight:1}}>
+        {skill.score}<span style={{fontSize:13,opacity:.7}}>%</span>
       </div>
+      <div style={{marginBottom:8}}>
+        <ProgressBar pct={pct} color="rgba(255,255,255,.9)" bg="rgba(255,255,255,.25)"
+          height={4} delay={index*60} />
+      </div>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",position:"relative"}}>
+        <div style={{fontSize:10,color:"rgba(255,255,255,.6)"}}>{skill.done}/{skill.total} actividades</div>
+        <XPRing pct={pct} size={34} stroke={3} color="rgba(255,255,255,.95)" bg="rgba(255,255,255,.2)"
+          label={`${pct}%`} delay={index*60}/>
+      </div>
+    </div>
+  );
+}
+    {/* Global visual effects */}
+    <Confetti active={confetti} count={40} />
+    {floatingXP && (
+      <FloatingXP amount={floatingXP.amount} x={floatingXP.x} y={floatingXP.y}
+        onDone={() => setFloatingXP(null)} />
+    )}
     </div>
   );
 }
@@ -224,6 +252,12 @@ function UnitRow({unit,prog,isActive,isDone,isLocked,color}){
           {prog.testDone>0?`${Math.round((prog.testDone/3)*100)}%`:"0%"}
         </div>
       </div>
+    {/* Global visual effects */}
+    <Confetti active={confetti} count={40} />
+    {floatingXP && (
+      <FloatingXP amount={floatingXP.amount} x={floatingXP.x} y={floatingXP.y}
+        onDone={() => setFloatingXP(null)} />
+    )}
     </div>
   );
 }
@@ -257,6 +291,12 @@ function UpsellBanner({prog,canEnroll,onEnroll}){
           </button>
         </div>
       </div>
+    {/* Global visual effects */}
+    <Confetti active={confetti} count={40} />
+    {floatingXP && (
+      <FloatingXP amount={floatingXP.amount} x={floatingXP.x} y={floatingXP.y}
+        onDone={() => setFloatingXP(null)} />
+    )}
     </div>
   );
 }
@@ -431,6 +471,9 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
                   country: profData?.country,
                 });
 
+                setConfetti(true); setTimeout(() => setConfetti(false), 3000);
+                setFloatingXP({ amount: 200, x: "50%", y: "35%" });
+                setTimeout(() => setFloatingXP(null), 1400);
                 await notifySelf("success",
                   `🚀 ¡Subiste a ${nextCEFR}!`,
                   `Completaste el nivel ${currentLevel} con ${pct}%. Tu coordinadora te asignará al grupo ${nextCEFR} pronto.`,
@@ -448,6 +491,9 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
               }).catch(()=>{});
               await notifySelf("success", `✓ U${unit} aprobada — ${pct}%`,
                 `Desbloqueaste la unidad ${nextUnit}.`, "/portal").catch(()=>{});
+              setFloatingXP({ amount: pct >= 90 ? 100 : pct >= 70 ? 50 : 25,
+                x: "50%", y: "40%" });
+              setTimeout(() => setFloatingXP(null), 1400);
               // Update streak on exam pass
               const _sr = await updateStreak(session.user.id).catch(()=>null);
               await checkBadges(student.id, {
@@ -595,6 +641,8 @@ export default function PortalEstudiante(){
   const [isScholarship, setIsScholarship] = useState(false); // beca = no LMS 24/7, no digital exam
   const [enrolled,   setEnrolled]   = useState([]); // populated from realEnrollments after load
   const [studentId,  setStudentId]  = useState(null);
+  const [confetti,    setConfetti]   = useState(false);
+  const [floatingXP,  setFloatingXP] = useState(null); // {amount, x, y}
 
   useEffect(() => {
     // Auth state listener — handles token expiry
@@ -902,57 +950,113 @@ export default function PortalEstudiante(){
           {view==="inicio"&&(
             <div style={{padding:24}}>
 
-              {/* Welcome */}
-              <div style={{background:`linear-gradient(135deg,${P},${PH})`,borderRadius:16,padding:"22px 28px",marginBottom:20,position:"relative",overflow:"hidden"}}>
-                <div style={{position:"absolute",right:-30,top:-30,width:160,height:160,borderRadius:"50%",background:"rgba(255,255,255,.05)"}}/>
-                <div style={{fontSize:11,color:"rgba(255,255,255,.5)",textTransform:"uppercase",letterSpacing:1,marginBottom:4}}>Bienvenida de vuelta</div>
-                <div style={{fontSize:24,fontWeight:800,color:"#fff",marginBottom:6}}>{`¡Hola, ${user.name || "Estudiante"}! 👋`}</div>
-                <div style={{fontSize:13,color:"rgba(255,255,255,.7)",lineHeight:1.6,marginBottom:16}}>
-                  Estás inscrita en <strong style={{color:Y}}>{enrolled.length} programas</strong>. Selecciona uno para continuar practicando.
-                </div>
-                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
-                  {enrolledProgs.map(p=>(
-                    <button key={p.id} onClick={()=>{setActiveProg(p.id);setView("practica");}} style={{display:"flex",alignItems:"center",gap:7,padding:isMobile?"6px 10px":"8px 16px",background:"rgba(255,255,255,.15)",color:"#fff",border:"1px solid rgba(255,255,255,.25)",borderRadius:10,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",transition:"all .15s"}}
-                      onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.25)";}}
-                      onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.15)";}}>
-                      <span style={{fontSize:16}}>{p.icon}</span> {p.shortName} →
-                    </button>
-                  ))}
+              {/* Welcome hero — animated gradient with decorative circles */}
+              <div style={{background:`linear-gradient(135deg,${P} 0%,#0e3a47 60%,#1a5c70 100%)`,borderRadius:20,padding:"24px 28px",marginBottom:20,position:"relative",overflow:"hidden",animation:"wca-fadeUp .4s ease both"}}>
+                {/* Decorative shapes */}
+                <div style={{position:"absolute",right:-40,top:-40,width:200,height:200,borderRadius:"50%",background:"rgba(255,255,255,.04)"}}/>
+                <div style={{position:"absolute",right:40,bottom:-60,width:140,height:140,borderRadius:"50%",background:"rgba(255,187,35,.06)"}}/>
+                <div style={{position:"absolute",left:-20,bottom:-20,width:100,height:100,borderRadius:"50%",background:"rgba(255,255,255,.03)"}}/>
+
+                <div style={{position:"relative",display:"flex",alignItems:"flex-start",justifyContent:"space-between",gap:16}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:11,color:"rgba(255,255,255,.45)",textTransform:"uppercase",letterSpacing:2,marginBottom:6,fontWeight:600}}>Bienvenida de vuelta</div>
+                    <div style={{fontSize:isMobile?20:26,fontWeight:900,color:"#fff",marginBottom:8,lineHeight:1.2}}>
+                      ¡Hola, <span style={{color:Y}}>{user.name || "Estudiante"}</span>! 👋
+                    </div>
+                    <div style={{fontSize:13,color:"rgba(255,255,255,.6)",lineHeight:1.7,marginBottom:16}}>
+                      {enrolled.length > 0
+                        ? <><strong style={{color:"rgba(255,255,255,.9)"}}>{enrolled.length} programa{enrolled.length!==1?"s":""} activo{enrolled.length!==1?"s":""}</strong> — seguí construyendo tu perfil.</>
+                        : "Explorá los programas disponibles abajo."}
+                    </div>
+                    <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                      {enrolledProgs.map(p=>(
+                        <button key={p.id} onClick={()=>{setActiveProg(p.id);setView("practica");}}
+                          className="wca-btn-press"
+                          style={{display:"flex",alignItems:"center",gap:7,padding:"8px 16px",
+                            background:"rgba(255,255,255,.12)",color:"#fff",
+                            border:"1px solid rgba(255,255,255,.2)",borderRadius:10,
+                            fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",
+                            transition:"all .15s",backdropFilter:"blur(8px)"}}
+                          onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.22)";e.currentTarget.style.borderColor="rgba(255,255,255,.35)";}}
+                          onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.12)";e.currentTarget.style.borderColor="rgba(255,255,255,.2)";}}>
+                          <span style={{fontSize:15}}>{p.icon}</span> {p.shortName}
+                          <span style={{opacity:.6}}>→</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Streak flame on welcome card */}
+                  {!gami.loading && gami.streak > 0 && (
+                    <StreakFlame streak={gami.streak} size="medium" />
+                  )}
                 </div>
               </div>
 
-              {/* Active programs dashboard */}
+              {/* Stats row */}
+              {!gami.loading && (
+                <div className="wca-stagger" style={{display:"grid",gridTemplateColumns:`repeat(${isMobile?2:4},1fr)`,gap:10,marginBottom:20}}>
+                  <StatCard icon="⚡" label="XP Total" value={gami.totalXp} color={P} delay={0} />
+                  <StatCard icon="🔥" label="Racha actual" value={gami.streak} suffix=" días" color="#f97316" delay={80} />
+                  <StatCard icon="📚" label="Unidades aprobadas"
+                    value={Object.values(realProgress).flatMap(p=>Object.values(p)).filter(u=>u.passed).length}
+                    color="#7c3aed" delay={160} />
+                  {gami.myRank
+                    ? <StatCard icon="🏆" label="Ranking del mes" value={gami.myRank} prefix="#" color="#059669" delay={240} />
+                    : <StatCard icon="🎯" label="Programas activos" value={enrolled.length} color="#0e7490" delay={240} />
+                  }
+                </div>
+              )}
+
+              {/* Active programs dashboard — animated cards */}
               <div style={{marginBottom:20}}>
-                <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:12}}>📚 Mis programas activos</div>
-                <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(enrolledProgs.length,2)},minmax(0,1fr))`,gap:12}}>
-                  {enrolledProgs.map(p=>{
-                    const en = realEnrollments[p.id] || realEnrollments[p.id];
+                <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)",marginBottom:12,display:"flex",alignItems:"center",gap:8}}>
+                  <i className="ti ti-books" style={{fontSize:16,color:P}} aria-hidden="true"/>
+                  Mis programas activos
+                </div>
+                <div className="wca-stagger" style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(enrolledProgs.length,isMobile?1:2)},minmax(0,1fr))`,gap:14}}>
+                  {enrolledProgs.map((p,pi)=>{
+                    const en = realEnrollments[p.id] || {};
                     if(!enrolled.includes(p.id)) return null;
                     const unit = en?.unit || 1;
                     const cyclePct = Math.round(((unit-1)/12)*100);
-                    const nextClassStr = en?.nextClass || (en?.teamsLink ? "Clase en vivo disponible" : "Consulta tu horario");
+                    const nextClassStr = en?.nextClass || "Consulta tu horario";
+                    const progData = realProgress[p.id] || {};
                     return(
-                      <div key={p.id} onClick={()=>{setActiveProg(p.id);setView("practica");}} style={{background:"var(--bg-surface)",border:`1.5px solid ${p.color}40`,borderRadius:16,padding:18,cursor:"pointer",boxShadow:"var(--shadow-sm)",transition:"all .2s"}}
-                        onMouseEnter={e=>{e.currentTarget.style.boxShadow=`0 6px 20px ${p.color}25`;e.currentTarget.style.transform="translateY(-2px)";}}
-                        onMouseLeave={e=>{e.currentTarget.style.boxShadow="var(--shadow-sm)";e.currentTarget.style.transform="none";}}>
-                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
-                          <div style={{display:"flex",gap:8,alignItems:"center"}}>
-                            <div style={{width:42,height:42,borderRadius:11,background:p.colorLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{p.icon}</div>
+                      <div key={p.id} onClick={()=>{setActiveProg(p.id);setView("practica");}}
+                        className="wca-card-lift"
+                        style={{background:"var(--bg-surface)",border:`2px solid ${p.color}30`,
+                          borderRadius:18,padding:20,cursor:"pointer",
+                          boxShadow:"var(--shadow-sm)",animation:`wca-fadeUp .4s ${pi*100}ms ease both`}}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:14}}>
+                          <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                            <div style={{width:46,height:46,borderRadius:13,background:p.colorLight,
+                              display:"flex",alignItems:"center",justifyContent:"center",fontSize:22,
+                              boxShadow:`0 4px 12px ${p.color}25`}}>
+                              {p.icon}
+                            </div>
                             <div>
-                              <div style={{fontSize:13,fontWeight:700,color:"var(--text-primary)"}}>{p.shortName}</div>
-                              <div style={{fontSize:11,color:"var(--text-secondary)"}}>U{unit} · {nextClassStr}</div>
+                              <div style={{fontSize:14,fontWeight:800,color:"var(--text-primary)",marginBottom:2}}>{p.shortName}</div>
+                              <div style={{fontSize:11,color:"var(--text-secondary)",display:"flex",alignItems:"center",gap:4}}>
+                                <i className="ti ti-clock" style={{fontSize:10}} aria-hidden="true"/>
+                                {nextClassStr}
+                              </div>
                             </div>
                           </div>
-                          <Ring pct={cyclePct} size={44} stroke={4} color={p.color} bg={p.colorLight}/>
+                          <XPRing pct={cyclePct} size={52} stroke={5} color={p.color}
+                            bg={p.colorLight} label={`${cyclePct}%`} sublabel="avance" delay={pi*150}/>
                         </div>
-                        <div style={{display:"flex",gap:3,marginBottom:8}}>
-                          {Array.from({length:12},(_,i)=>(
-                            <div key={i} style={{flex:1,height:5,borderRadius:3,background:i+1<unit?p.color:i+1===unit?Y:"var(--bg-surface-subtle)"}}/>
-                          ))}
+                        {/* Animated unit progress bars */}
+                        <div style={{marginBottom:10}}>
+                          <UnitProgress currentUnit={unit} progressData={progData} color={p.color} />
                         </div>
-                        <div style={{display:"flex",justifyContent:"space-between",fontSize:11,color:"var(--text-secondary)"}}>
-                          <span>U{unit}/12 · {cyclePct}% completado</span>
-                          <span style={{color:p.color,fontWeight:600}}>Continuar →</span>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",fontSize:11}}>
+                          <span style={{color:"var(--text-secondary)"}}>
+                            <strong style={{color:"var(--text-primary)"}}>U{unit}</strong>/12
+                          </span>
+                          <span style={{color:p.color,fontWeight:700,display:"flex",alignItems:"center",gap:4}}>
+                            Practicar
+                            <i className="ti ti-arrow-right" style={{fontSize:11}} aria-hidden="true"/>
+                          </span>
                         </div>
                       </div>
                     );
@@ -1060,34 +1164,85 @@ export default function PortalEstudiante(){
                     : (en2.examScore || 0);
                   const cyclePct = Math.round(((realUnit-1)/12)*100);
                   if (!enrolled.includes(p.id)) return null;
+
+                  // Build sparkline data from progress history
+                  const sparkData = Object.entries(prog2)
+                    .sort(([a],[b]) => +a - +b)
+                    .map(([u, d]) => ({ name: `U${u}`, score: d.score || 0 }));
+
                   return(
-                    <div key={p.id} style={{background:"var(--bg-surface)",border:`1.5px solid ${p.color}40`,borderRadius:12,padding:18,boxShadow:"var(--shadow-sm)"}}>
-                      <div style={{display:"flex",gap:12,alignItems:"center",marginBottom:16}}>
-                        <div style={{width:42,height:42,borderRadius:11,background:p.colorLight,display:"flex",alignItems:"center",justifyContent:"center",fontSize:20}}>{p.icon}</div>
+                    <div key={p.id} className="wca-card-lift"
+                      style={{background:"var(--bg-surface)",border:`2px solid ${p.color}25`,
+                        borderRadius:18,padding:20,boxShadow:"var(--shadow-sm)",
+                        animation:"wca-fadeUp .5s ease both"}}>
+
+                      {/* Header */}
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:16}}>
+                        <div style={{display:"flex",gap:10,alignItems:"center"}}>
+                          <div style={{width:48,height:48,borderRadius:14,background:p.colorLight,
+                            display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,
+                            boxShadow:`0 4px 14px ${p.color}30`}}>
+                            {p.icon}
+                          </div>
+                          <div>
+                            <div style={{fontSize:15,fontWeight:800,color:"var(--text-primary)",marginBottom:2}}>{p.shortName}</div>
+                            <div style={{fontSize:11,color:"var(--text-secondary)",display:"flex",alignItems:"center",gap:4}}>
+                              <i className="ti ti-check" style={{color:G,fontSize:11}} aria-hidden="true"/>
+                              {passedUnits}/12 unidades aprobadas
+                            </div>
+                          </div>
+                        </div>
+                        <XPRing pct={cyclePct} size={58} stroke={6} color={p.color}
+                          bg={p.colorLight} label={`${cyclePct}%`} sublabel="progreso"/>
+                      </div>
+
+                      {/* Animated unit bars */}
+                      <div style={{marginBottom:14}}>
+                        <UnitProgress currentUnit={realUnit} progressData={prog2} color={p.color} />
+                      </div>
+
+                      {/* Stats row */}
+                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:8,marginBottom:14}}>
+                        <div style={{background:`${p.color}10`,borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
+                          <div style={{fontSize:20,fontWeight:900,color:p.color}}>
+                            <AnimatedCounter value={realUnit} />
+                          </div>
+                          <div style={{fontSize:10,color:"var(--text-tertiary)",marginTop:2}}>Unidad actual</div>
+                        </div>
+                        <div style={{background:avgScore>=70?"#ecfdf5":"#fffbeb",borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
+                          <div style={{fontSize:20,fontWeight:900,color:avgScore>=70?G:A}}>
+                            <AnimatedCounter value={avgScore} suffix="%" />
+                          </div>
+                          <div style={{fontSize:10,color:"var(--text-tertiary)",marginTop:2}}>Promedio</div>
+                        </div>
+                        <div style={{background:"var(--bg-surface-subtle)",borderRadius:10,padding:"10px 8px",textAlign:"center"}}>
+                          <div style={{fontSize:20,fontWeight:900,color:"var(--text-primary)"}}>
+                            <AnimatedCounter value={passedUnits} />
+                          </div>
+                          <div style={{fontSize:10,color:"var(--text-tertiary)",marginTop:2}}>Aprobadas</div>
+                        </div>
+                      </div>
+
+                      {/* Sparkline — score over units */}
+                      {sparkData.length >= 2 && (
+                        <div style={{marginBottom:14}}>
+                          <div style={{fontSize:11,color:"var(--text-tertiary)",marginBottom:4,fontWeight:500}}>
+                            Evolución de scores
+                          </div>
+                          <MiniAreaChart data={sparkData} color={p.color} height={55} />
+                        </div>
+                      )}
+
+                      {/* Radar chart — skill breakdown */}
+                      {p.skills?.length >= 3 && (
                         <div>
-                          <div style={{fontSize:14,fontWeight:700,color:"var(--text-primary)"}}>{p.shortName}</div>
-                          <div style={{fontSize:11,color:"var(--text-secondary)"}}>{passedUnits||0}/12 unidades aprobadas</div>
+                          <div style={{fontSize:11,color:"var(--text-tertiary)",marginBottom:4,fontWeight:500,display:"flex",alignItems:"center",gap:4}}>
+                            <i className="ti ti-chart-radar" style={{fontSize:11}} aria-hidden="true"/>
+                            Habilidades del programa
+                          </div>
+                          <SkillRadar programId={p.id} progressData={prog2} skills={p.skills} />
                         </div>
-                        <Ring pct={cyclePct} size={44} stroke={4} color={p.color} bg={p.colorLight}/>
-                      </div>
-                      <div style={{display:"flex",gap:3,marginBottom:10}}>
-                        {Array.from({length:12},(_,i)=>{
-                          const ud=prog2[i+1];
-                          return <div key={i} style={{flex:1,height:6,borderRadius:3,
-                            background:ud?.passed?p.color:i+1===realUnit?Y:"var(--bg-surface-subtle)"
-                          }}/>;
-                        })}
-                      </div>
-                      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8}}>
-                        <div style={{background:"var(--bg-surface-subtle)",borderRadius:8,padding:"8px 10px",textAlign:"center"}}>
-                          <div style={{fontSize:18,fontWeight:800,color:p.color}}>U{realUnit}</div>
-                          <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Unidad actual</div>
-                        </div>
-                        <div style={{background:"var(--bg-surface-subtle)",borderRadius:8,padding:"8px 10px",textAlign:"center"}}>
-                          <div style={{fontSize:18,fontWeight:800,color:avgScore>=70?G:A}}>{avgScore}%</div>
-                          <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Promedio exámenes</div>
-                        </div>
-                      </div>
+                      )}
                     </div>
                   );
                 })}
@@ -1635,6 +1790,12 @@ export default function PortalEstudiante(){
           onClose={()=>setShowReport(false)}
         />
       )}
+    {/* Global visual effects */}
+    <Confetti active={confetti} count={40} />
+    {floatingXP && (
+      <FloatingXP amount={floatingXP.amount} x={floatingXP.x} y={floatingXP.y}
+        onDone={() => setFloatingXP(null)} />
+    )}
     </div>
   );
 }

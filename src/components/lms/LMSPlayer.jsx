@@ -220,23 +220,12 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
   return (
     <div style={{ display:"flex", height:"100%", minHeight:"60vh", position:"relative" }}>
 
-      {/* XP Animation overlay */}
+      {/* XP + Confetti effects */}
       {xpAnim && (
-        <div style={{
-          position:"fixed", top:"20%", left:"50%", transform:"translateX(-50%)",
-          zIndex:60, pointerEvents:"none",
-          animation:"xpPop .4s cubic-bezier(.17,.67,.35,1.3), xpFade 2s 0.4s forwards",
-          background: xpAnim.bonus ? A : G,
-          color:"#fff", borderRadius:20, padding:"10px 24px",
-          fontSize:20, fontWeight:800, boxShadow:"0 8px 32px rgba(0,0,0,.25)",
-        }}>
-          {xpAnim.bonus ? "🌟 UNIDAD COMPLETADA!" : "⚡"} +{xpAnim.amount} XP
-          <style>{`
-            @keyframes xpPop { from{transform:translateX(-50%) scale(.5)} to{transform:translateX(-50%) scale(1)} }
-            @keyframes xpFade{ from{opacity:1;transform:translateX(-50%) translateY(0)} to{opacity:0;transform:translateX(-50%) translateY(-40px)} }
-          `}</style>
-        </div>
+        <FloatingXP amount={xpAnim.amount} x="50%" y="25%"
+          onDone={() => setXpAnim(null)} />
       )}
+      {xpAnim?.bonus && <Confetti active={true} count={25} />}
 
       {/* Sidebar — unit list */}
       {(sideOpen || !isMobile) && (
