@@ -7,7 +7,7 @@ import { supabase } from "../lib/supabase.js";
 import { detectTimezone, TIMEZONES, getTimezonesByRegion } from "../lib/timezone.js";
 
 const P = "#155266", PD = "#e8f3f6", Y = "#ffbb23", YD = "#fff8e6";
-const G = "#059669", GD = "#ecfdf5", R = "#dc2626", A = "#d97706";
+const G = "#059669", GD = "#ecfdf5", R = "#dc2626", RD = "#fef2f2", A = "#d97706";
 
 // ── Programs ─────────────────────────────────────────────────────
 const PROGRAMS = [
@@ -52,6 +52,8 @@ const levelFromScore = s => {
 };
 
 // ── Step indicator ────────────────────────────────────────────────
+const STEP_LABELS = ["Programa","Nivel","Horario","Datos","Pago"];
+
 function Steps({ current, total }) {
   return (
     <div style={{ display:"flex", alignItems:"center", gap:0, marginBottom:32 }}>
@@ -59,19 +61,25 @@ function Steps({ current, total }) {
         const n = i+1, done = n < current, active = n === current;
         return (
           <div key={n} style={{ display:"flex", alignItems:"center", flex: i < total-1 ? 1 : "none" }}>
-            <div style={{
-              width:32, height:32, borderRadius:"50%", flexShrink:0,
-              display:"flex", alignItems:"center", justifyContent:"center",
-              fontSize:13, fontWeight:700,
-              background: done ? G : active ? P : "var(--bg-surface-subtle)",
-              color: done || active ? "#fff" : "var(--text-tertiary)",
-              border: `2px solid ${done ? G : active ? P : "var(--border)"}`,
-              transition:"all .3s",
-            }}>
-              {done ? "✓" : n}
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center", gap:4, flexShrink:0 }}>
+              <div style={{
+                width:34, height:34, borderRadius:"50%",
+                display:"flex", alignItems:"center", justifyContent:"center",
+                fontSize:13, fontWeight:700,
+                background: done ? G : active ? P : "var(--bg-surface-subtle)",
+                color: done || active ? "#fff" : "var(--text-tertiary)",
+                border: `2px solid ${done ? G : active ? P : "var(--border)"}`,
+                transition:"all .3s",
+              }}>
+                {done ? "✓" : n}
+              </div>
+              <div style={{ fontSize:9, color: active ? P : done ? G : "var(--text-tertiary)",
+                fontWeight: active ? 700 : 500, whiteSpace:"nowrap", letterSpacing:".3px" }}>
+                {STEP_LABELS[i]}
+              </div>
             </div>
             {i < total-1 && (
-              <div style={{ flex:1, height:2, background: done ? G : "var(--border)", margin:"0 4px", transition:"background .3s" }}/>
+              <div style={{ flex:1, height:2, background: done ? G : "var(--border)", margin:"0 8px 18px", transition:"background .3s" }}/>
             )}
           </div>
         );
@@ -116,7 +124,8 @@ export default function Register() {
       .select("id, level, schedule, schedule_utc, schedule_end_utc, schedule_timezone, days, days_arr, capacity, program_id, active_unit, enrollments(id, status)")
       .eq("program_id", data.programId)
       .eq("active", true)
-      .then(({ data: grps }) => {
+      .then(({ data: grps, error }) => {
+        if (error) { console.error("Groups load error:", error.message); setGroups([]); setLoadingGroups(false); return; }
         const available = (grps || [])
           .filter(g => isIngles ? g.level === data.level : true)
           .map(g => ({
@@ -126,7 +135,8 @@ export default function Register() {
           .filter(g => g.enrolled < (g.capacity || 25));
         setGroups(available);
         setLoadingGroups(false);
-      });
+      })
+      .catch(() => { setGroups([]); setLoadingGroups(false); });
   }, [data.programId, data.level, isIngles]);
 
   // ── Step 1: Program ─────────────────────────────────────────────
@@ -276,7 +286,12 @@ export default function Register() {
           )}
         </p>
         {loadingGroups ? (
-          <div style={{ padding:32, textAlign:"center", color:"var(--text-secondary)", fontSize:13 }}>Cargando horarios...</div>
+          <div style={{ padding:40, textAlign:"center" }}>
+            <div style={{ width:28, height:28, border:"3px solid var(--border)", borderTopColor:P,
+              borderRadius:"50%", animation:"spin .7s linear infinite", margin:"0 auto 12px" }}/>
+            <div style={{ fontSize:13, color:"var(--text-secondary)" }}>Buscando grupos disponibles...</div>
+            <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+          </div>
         ) : groups.length === 0 ? (
           <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:24, textAlign:"center" }}>
             <div style={{ fontSize:32, marginBottom:12 }}>📅</div>
@@ -286,9 +301,12 @@ export default function Register() {
               Podés inscribirte en lista de espera y te avisamos cuando haya cupo.
             </div>
             <button onClick={() => { setData(d=>({...d, groupId:null})); setStep(4); }}
-              style={{...btnStyle(A), marginTop:20, fontSize:13}}>
-              Unirme a lista de espera →
+              style={{...btnStyle(P), marginTop:20, fontSize:13}}>
+              Continuar sin grupo asignado →
             </button>
+            <div style={{ fontSize:11, color:"var(--text-tertiary)", textAlign:"center", marginTop:8 }}>
+              Tu coordinadora te asignará un grupo con cupo disponible
+            </div>
           </div>
         ) : (
           <div style={{ display:"flex", flexDirection:"column", gap:10, marginBottom:20 }}>
@@ -323,9 +341,15 @@ export default function Register() {
             })}
           </div>
         )}
-        <button onClick={() => setStep(2)} style={{...btnStyle("transparent"), color:"var(--text-secondary)", border:"1px solid var(--border)"}}>
-          ← Volver
-        </button>
+        <div style={{ display:"flex", gap:8, marginTop:4 }}>
+          <button onClick={() => setStep(2)} style={{...btnStyle("transparent"), color:"var(--text-secondary)", border:"1px solid var(--border)", flex:1}}>
+            ← Volver
+          </button>
+          <button onClick={() => { setData(d=>({...d, groupId:null})); setStep(4); }}
+            style={{...btnStyle("transparent"), color:"var(--text-tertiary)", border:"1px solid var(--border)", flex:1, fontSize:12}}>
+            Saltar (asignar después)
+          </button>
+        </div>
       </div>
     );
   }
@@ -524,6 +548,26 @@ export default function Register() {
 
         {/* Steps */}
         {!transferResult && <Steps current={step} total={TOTAL_STEPS} />}
+
+        {/* Selected program banner (steps 2-5) */}
+        {step > 1 && prog && (
+          <div style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px",
+            background:`${prog.color}10`, border:`1px solid ${prog.color}30`,
+            borderRadius:12, marginBottom:12 }}>
+            <span style={{ fontSize:20 }}>{prog.icon}</span>
+            <div style={{ flex:1 }}>
+              <div style={{ fontSize:13, fontWeight:700, color:prog.color }}>{prog.name}</div>
+              <div style={{ fontSize:11, color:"var(--text-secondary)" }}>${prog.price} USD/{prog.interval}</div>
+            </div>
+            {step < 5 && (
+              <button onClick={() => { setStep(1); setTestDone(false); setAnswers({}); }}
+                style={{ fontSize:11, color:prog.color, background:"none", border:`1px solid ${prog.color}40`,
+                  borderRadius:7, padding:"4px 10px", cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>
+                Cambiar
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Step content */}
         <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:20, padding:"28px 28px 32px", boxShadow:"0 4px 24px rgba(0,0,0,.06)" }}>
