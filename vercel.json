@@ -54,6 +54,14 @@
     {
       "path": "/api/jobs/daily-billing",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/jobs/weekly-cycle",
+      "schedule": "0 6 * * 1"
+    },
+    {
+      "path": "/api/jobs/class-reminders",
+      "schedule": "0 * * * *"
     }
   ]
 }

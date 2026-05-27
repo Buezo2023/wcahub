@@ -323,13 +323,11 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        const { data: student } = await supabase.from("students").select("id")
+        // Load student with current CEFR level for level-up logic
+        const { data: student } = await supabase.from("students")
+          .select("id, level")
           .eq("profile_id", session.user.id).maybeSingle();
         if (student?.id) {
-          await supabase.from("enrollments")
-            .update({ exam_score: pct })
-            .eq("student_id", student.id)
-            .eq("program_id", activeProg);
           await supabase.from("student_progress").upsert({
             student_id:   student.id,
             program_id:   activeProg,
@@ -338,51 +336,112 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
             passed:       pct >= 70,
             updated_at:   new Date().toISOString(),
           }, { onConflict: "student_id,program_id,unit" });
+
           if (pct >= 70) {
-            // ★ ADVANCE to next unit
             const nextUnit = unit + 1;
-            const isComplete = nextUnit > 12;
-            await supabase.from("enrollments")
-              .update({
-                current_unit: isComplete ? 12 : nextUnit,
-                exam_score: pct,
-                ...(isComplete ? { status: "completed", completed_at: new Date().toISOString() } : {}),
-              })
-              .eq("student_id", student.id)
-              .eq("program_id", activeProg);
+            const isLastUnit = nextUnit > 12;
 
-            await supabase.from("audit_log").insert({
-              action: isComplete ? "program_completed" : "exam_passed",
-              entity: "enrollment",
-              metadata: { program: activeProg, unit, score: pct, nextUnit: isComplete ? "DONE" : nextUnit },
-            }).catch(() => {});
+            // ── CEFR level-up logic ───────────────────────────────────
+            // For Inglés (en): completing U12 of A1 → advance to A2 (not program completion)
+            // Program only completes when finishing C1 (the last CEFR level)
+            // For VA programs: completing U12 = full program completion
+            const CEFR_NEXT = { A1:'A2', A2:'B1', B1:'B2', B2:'C1' };
+            const isIngles = activeProg === 'en';
+            const currentLevel = student.level || 'A1';
+            const nextCEFR = CEFR_NEXT[currentLevel];
+            const isFinalLevel = !isIngles || currentLevel === 'C1'; // C1 = final for Inglés
 
-            // ★ Generate certificate if completed all 12 units
-            if (isComplete) {
-              try {
-                const { data: { session: certSess } } = await supabase.auth.getSession();
-                const profile = certSess?.user?.user_metadata;
-                const certData = {
-                  studentName: profile?.full_name || "Estudiante",
-                  programName: prog?.name || activeProg,
-                  level: enrollment?.level || "—",
-                  date: new Date().toLocaleDateString("es-HN", { day:"2-digit", month:"long", year:"numeric" }),
-                  score: pct,
-                };
-                await supabase.from("certificates").insert({
-                  student_id: student.id,
-                  program_id: activeProg,
-                  data: certData,
-                  issued_at: new Date().toISOString(),
-                });
-                const n2 = { type:"success", title:"🎓 ¡Programa completado!", body:`Completaste las 12 unidades de ${prog?.shortName}. Tu certificado está disponible.`, link:"/portal" };
-                await notifySelf(n2.type, n2.title, n2.body, n2.link).catch(() => {});
-              } catch(certErr) { console.error("Certificate:", certErr); }
+            if (isLastUnit) {
+              if (isFinalLevel) {
+                // ── Full program completion ──────────────────────────
+                await supabase.from("enrollments").update({
+                  current_unit: 12, exam_score: pct,
+                  status: "completed", completed_at: new Date().toISOString(),
+                }).eq("student_id", student.id).eq("program_id", activeProg);
+
+                // Generate certificate
+                try {
+                  const certData = {
+                    studentName: session.user.user_metadata?.full_name || "Estudiante",
+                    programName: prog?.name || activeProg,
+                    level: isIngles ? currentLevel : "Completo",
+                    date: new Date().toLocaleDateString("es-HN", { day:"2-digit", month:"long", year:"numeric" }),
+                    score: pct,
+                  };
+                  await supabase.from("certificates").insert({
+                    student_id: student.id, program_id: activeProg,
+                    level: isIngles ? currentLevel : null,
+                    data: certData, issued_at: new Date().toISOString(),
+                  });
+                } catch(certErr) { console.error("Certificate:", certErr); }
+
+                await supabase.from("audit_log").insert({
+                  actor_id: session.user.id, action: "program_completed", entity: "enrollment",
+                  metadata: { program: activeProg, level: currentLevel, score: pct },
+                }).catch(()=>{});
+                await notifySelf("success", `🎓 ¡${isIngles ? currentLevel : prog?.shortName} completado!`,
+                  `Completaste las 12 unidades. Tu certificado está disponible.`, "/portal").catch(()=>{});
+
+              } else {
+                // ── CEFR Level up: A1→A2, A2→B1, B1→B2, B2→C1 ──────
+                // Reset enrollment to unit 1, advance CEFR level, clear group assignment
+                await supabase.from("enrollments").update({
+                  current_unit: 1, exam_score: pct,
+                  status: "active", group_id: null, // clear group — coordinadora asigna nuevo grupo
+                }).eq("student_id", student.id).eq("program_id", activeProg);
+
+                await supabase.from("students")
+                  .update({ level: nextCEFR })
+                  .eq("id", student.id);
+
+                // Generate level certificate (e.g., A1 certificate)
+                try {
+                  const certData = {
+                    studentName: session.user.user_metadata?.full_name || "Estudiante",
+                    programName: `${prog?.name} — Nivel ${currentLevel}`,
+                    level: currentLevel, score: pct,
+                    date: new Date().toLocaleDateString("es-HN", { day:"2-digit", month:"long", year:"numeric" }),
+                  };
+                  await supabase.from("certificates").insert({
+                    student_id: student.id, program_id: activeProg,
+                    level: currentLevel, data: certData, issued_at: new Date().toISOString(),
+                  });
+                } catch(certErr) { console.error("Level certificate:", certErr); }
+
+                // Notify coordinadora via audit log so they can assign new group
+                await supabase.from("audit_log").insert({
+                  actor_id: session.user.id, action: "level_up", entity: "student",
+                  entity_id: student.id,
+                  metadata: {
+                    from_level: currentLevel, to_level: nextCEFR,
+                    program: activeProg, score: pct,
+                    note: `Estudiante requiere asignación a grupo ${nextCEFR}`,
+                  },
+                }).catch(()=>{});
+
+                await notifySelf("success",
+                  `🚀 ¡Subiste a ${nextCEFR}!`,
+                  `Completaste el nivel ${currentLevel} con ${pct}%. Tu coordinadora te asignará al grupo ${nextCEFR} pronto.`,
+                  "/portal").catch(()=>{});
+              }
             } else {
-              const n = Notifs.examPassed("nivel siguiente", unit, pct);
-              await notifySelf(n.type, n.title, n.body, n.link).catch(() => {});
+              // ── Advance to next unit (normal progress) ─────────────
+              await supabase.from("enrollments").update({
+                current_unit: nextUnit, exam_score: pct,
+              }).eq("student_id", student.id).eq("program_id", activeProg);
+
+              await supabase.from("audit_log").insert({
+                action: "exam_passed", entity: "enrollment",
+                metadata: { program: activeProg, unit, score: pct, nextUnit },
+              }).catch(()=>{});
+              await notifySelf("success", `✓ U${unit} aprobada — ${pct}%`,
+                `Desbloqueaste la unidad ${nextUnit}.`, "/portal").catch(()=>{});
             }
           } else {
+            // ── Failed exam ─────────────────────────────────────────
+            await supabase.from("enrollments")
+              .update({ exam_score: pct })
+              .eq("student_id", student.id).eq("program_id", activeProg);
             const n = Notifs.examFailed(unit, pct, MAX_ATTEMPTS - (attempts + 1));
             await notifySelf(n.type, n.title, n.body, n.link).catch(() => {});
           }
