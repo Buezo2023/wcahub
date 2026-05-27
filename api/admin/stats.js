@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   // Rate limiting
   try {
     const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
-    checkRateLimit(`stats:${ip}`, 60, 60000);
+    await checkRateLimit(`stats:${ip}`, 60, 60000);
   } catch (e) { return err(res, e); }
 
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });

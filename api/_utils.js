@@ -11,25 +11,41 @@ export function getSupabaseAdmin() {
   });
 }
 
-// ─── In-memory rate limiter (resets per Vercel function cold start) ──
-const rateLimitStore = new Map();
+// ─── Rate limiter — Upstash Redis (distributed) with in-memory fallback ──
+// Setup: add UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN to Vercel env vars.
+// Sin esas vars se usa el fallback in-memory automaticamente.
+// Upstash free tier: 10k req/day — mas que suficiente para esta app.
+const _memStore = new Map();
 
-export function checkRateLimit(identifier, maxReqs = 10, windowMs = 60000) {
-  const now = Date.now();
-  const key  = identifier;
-  const data = rateLimitStore.get(key) || { count: 0, resetAt: now + windowMs };
+async function _upstashIncr(key, windowMs) {
+  const url   = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  const ttlSec = Math.ceil(windowMs / 1000);
+  const res = await fetch(`${url}/pipeline`, {
+    method:  "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify([["INCR", key], ["EXPIRE", key, ttlSec]]),
+  });
+  if (!res.ok) return null;
+  const [incrResult] = await res.json();
+  return incrResult?.result ?? null;
+}
 
-  if (now > data.resetAt) {
-    data.count   = 0;
-    data.resetAt = now + windowMs;
+export async function checkRateLimit(identifier, maxReqs = 10, windowMs = 60000) {
+  // Try distributed Upstash limiter first
+  const count = await _upstashIncr(`rl:${identifier}`, windowMs).catch(() => null);
+  if (count !== null) {
+    if (count > maxReqs) throw { status: 429, message: "Demasiadas solicitudes. Intentá en un minuto." };
+    return;
   }
-
+  // Fallback: in-memory per cold-start instance
+  const now  = Date.now();
+  const data = _memStore.get(identifier) || { count: 0, resetAt: now + windowMs };
+  if (now > data.resetAt) { data.count = 0; data.resetAt = now + windowMs; }
   data.count++;
-  rateLimitStore.set(key, data);
-
-  if (data.count > maxReqs) {
-    throw { status: 429, message: "Demasiadas solicitudes. Intentá en un minuto." };
-  }
+  _memStore.set(identifier, data);
+  if (data.count > maxReqs) throw { status: 429, message: "Demasiadas solicitudes. Intentá en un minuto." };
 }
 
 // ─── Input sanitizer — prevent XSS in email templates ────────────

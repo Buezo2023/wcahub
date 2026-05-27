@@ -19,7 +19,7 @@ export default async function handler(req, res) {
 
   try {
     const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
-    checkRateLimit(`enrollments:${ip}`, 30, 60000);
+    await checkRateLimit(`enrollments:${ip}`, 30, 60000);
   } catch (e) { return err(res, e); }
 
   const action = req.body?.action || (req.method === 'POST' ? 'create' : null);

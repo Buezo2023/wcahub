@@ -4,6 +4,7 @@ import { toast } from "../lib/toast.jsx";
 import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { SuperAdminBar } from "../lib/SuperAdminBar.jsx";
 import { supabase } from "../lib/supabase.js";
+import { api } from "../lib/api.js";
 
 const B = {
   primary:"#155266", dark:"#0f3d4d", primaryDim:"var(--wca-primary-dim)",
@@ -876,22 +877,23 @@ export default function CoordAcademica() {
                   <button onClick={async()=>{
                     if(!teacherForm.name||!teacherForm.email){ toast.error("Nombre y email son requeridos"); return; }
                     if(teacherModal.mode==="add"){
-                      // Invite via Supabase - creates user profile as docente
+                      // Use API endpoint — generates audit log, sends invite email, enforces dual-role guard
                       try{
-                        await supabase.from("profiles").select("id").eq("email",teacherForm.email).maybeSingle()
-                          .then(async({data:existing})=>{
-                            if(!existing){
-                              await supabase.auth.admin?.createUser?.({email:teacherForm.email,email_confirm:true,user_metadata:{full_name:teacherForm.name}});
-                            }
-                            const {data:prof} = await supabase.from("profiles").select("id").eq("email",teacherForm.email).maybeSingle();
-                            if(prof){
-                              await supabase.from("profiles").update({role:"docente",full_name:teacherForm.name}).eq("id",prof.id);
-                              await supabase.from("staff").upsert({profile_id:prof.id,position:"Docente",department:"Académico",salary:Number(teacherForm.salary)||null,active:true},{onConflict:"profile_id"});
-                            }
-                          });
-                      }catch(e){console.error(e);}
-                      setTeachers(t=>[...t,{...teacherForm,id:Date.now(),rating:5.0,groups:[]}]);
+                        await api.post("/api/auth", {
+                          action:   "staff",
+                          email:    teacherForm.email,
+                          fullName: teacherForm.name,
+                          role:     "Docente",
+                          salary:   teacherForm.salary || null,
+                          forceStaff: false,
+                        });
+                        toast.success("Docente invitado — recibirá email para acceder");
+                        setTeachers(t=>[...t,{...teacherForm,id:Date.now(),rating:5.0,groups:[]}]);
+                      }catch(e){
+                        toast.error("Error: "+(e.message||"No se pudo agregar el docente"));
+                      }
                     } else {
+                      // Edit: only update full_name (coordinadora no puede cambiar rol)
                       const {data:prof} = await supabase.from("profiles").select("id").eq("email",teacherForm.email).maybeSingle();
                       if(prof){ const{error:upErr}=await supabase.from("profiles").update({full_name:teacherForm.name}).eq("id",prof.id); if(upErr) toast.error("Error al actualizar nombre"); }
                       setTeachers(t=>t.map(x=>x.id===teacherModal.data?.id?{...x,...teacherForm}:x));

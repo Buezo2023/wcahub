@@ -49,7 +49,7 @@ async function sendWhatsApp(to, body) {
 export default async function handler(req, res) {
   setCORS(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
-  try { checkRateLimit(`wa:${req.headers['x-forwarded-for']||'x'}`, 30, 60000); } catch(e) { return err(res, e); }
+  try { await checkRateLimit(`wa:${req.headers['x-forwarded-for']||'x'}`, 30, 60000); } catch(e) { return err(res, e); }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
   try {
     const { profile: actor } = await requireAuth(req);

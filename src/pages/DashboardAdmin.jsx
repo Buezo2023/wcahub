@@ -258,6 +258,15 @@ function B2BSection({ supabase, B, Badge, Stat }) {
       active:        true,
     }).select().single();
     if (error) { toast.error("Error: " + error.message); return; }
+    // Audit log
+    const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+    await supabase.from("audit_log").insert({
+      actor_id: session?.user?.id || null,
+      action: "created_b2b_company",
+      entity: "b2b_company",
+      entity_id: data.id,
+      metadata: { name: form.name, seats_paid: Number(form.seats_paid) || 0 },
+    }).catch(() => {});
     setCompanies(cs => [data, ...cs]);
     setNewCoForm(null);
   }
@@ -347,12 +356,19 @@ function B2BSection({ supabase, B, Badge, Stat }) {
               ↓ Factura CSV
             </button>
             <button onClick={async()=>{
-              {
-                const{error:b2bErr}=await supabase.from("b2b_companies").update({active:false}).eq("id",co.id);
-      if(b2bErr){showToast("Error al desactivar empresa","red");return;}
-                setCompanies(cs=>cs.filter(c=>c.id!==co.id));
-                toast.success(`${co.name} desactivada`);
-              }
+              const{error:b2bErr}=await supabase.from("b2b_companies").update({active:false}).eq("id",co.id);
+              if(b2bErr){toast.error("Error al desactivar empresa");return;}
+              // Audit log
+              const { data: { session } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+              await supabase.from("audit_log").insert({
+                actor_id: session?.user?.id || null,
+                action: "deactivated_b2b_company",
+                entity: "b2b_company",
+                entity_id: co.id,
+                metadata: { name: co.name },
+              }).catch(() => {});
+              setCompanies(cs=>cs.filter(c=>c.id!==co.id));
+              toast.success(`${co.name} desactivada`);
             }} style={{ fontSize:12, padding:"5px 12px", background:"#fef2f2", color:"#dc2626", border:"none", borderRadius:6, cursor:"pointer", fontFamily:"inherit" }}>
               Desactivar
             </button>

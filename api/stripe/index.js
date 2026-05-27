@@ -28,7 +28,7 @@ export default async function handler(req, res) {
 async function handleCheckout(req, res) {
   try {
     const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
-    checkRateLimit(`stripe_checkout:${ip}`, 10, 60000);
+    await checkRateLimit(`stripe_checkout:${ip}`, 10, 60000);
   } catch(e) { return err(res, e); }
 
   try {

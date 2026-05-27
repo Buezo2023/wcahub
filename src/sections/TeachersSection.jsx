@@ -55,7 +55,7 @@ export function TeachersSection({ showToast }) {
   return(
     <div>
       <div style={{display:"flex",justifyContent:"flex-end",marginBottom:16}}>
-        <button onClickCapture={e=>{e.stopPropagation();setModal({mode:"add"});}} style={{padding:"8px 16px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:8}}>
+        <button onClick={()=>setModal({mode:"add"})} style={{padding:"8px 16px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:8}}>
           <i className="ti ti-user-plus" style={{fontSize:14}}/> Agregar docente
         </button>
       </div>
@@ -98,7 +98,7 @@ export function TeachersSection({ showToast }) {
                 ))}
                 <div style={{display:"flex",gap:8,marginTop:18}}>
                   <button onClick={()=>setModal(null)} style={{flex:1,padding:"10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>Cancelar</button>
-                  <button onClickCapture={e=>{e.stopPropagation();addTeacher();}} style={{flex:2,padding:"10px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:saving?.6:1}}>
+                  <button onClick={()=>addTeacher()} style={{flex:2,padding:"10px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:saving?.6:1}}>
                     {saving?"Invitando...":"Invitar docente"}
                   </button>
                 </div>
@@ -115,7 +115,7 @@ export function TeachersSection({ showToast }) {
                     <span style={{fontWeight:500,color:"var(--text-primary)",textAlign:"right",maxWidth:"60%"}}>{v}</span>
                   </div>
                 ))}
-                <button onClickCapture={e=>{e.stopPropagation();deactivate(modal.data);}} style={{width:"100%",marginTop:16,padding:"9px",background:RD,color:R,border:"none",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+                <button onClick={()=>deactivate(modal.data)} style={{width:"100%",marginTop:16,padding:"9px",background:RD,color:R,border:"none",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
                   Desactivar docente
                 </button>
               </>

@@ -24,7 +24,7 @@ export default async function handler(req, res) {
 // ── WELCOME — sends onboarding email to the calling student ──────
 async function handleWelcome(req, res) {
   try {
-    checkRateLimit(`welcome:${req.headers['x-forwarded-for']||'x'}`, 10, 60000);
+    await checkRateLimit(`welcome:${req.headers['x-forwarded-for']||'x'}`, 10, 60000);
   } catch(e) { return err(res, e); }
 
   try {
@@ -61,7 +61,7 @@ async function handleWelcome(req, res) {
 // ── REMINDERS — sends overdue reminders to all past-due students ─
 async function handleReminders(req, res) {
   try {
-    checkRateLimit(`reminders:${req.headers['x-forwarded-for']||'x'}`, 5, 60000);
+    await checkRateLimit(`reminders:${req.headers['x-forwarded-for']||'x'}`, 5, 60000);
   } catch(e) { return err(res, e); }
 
   try {
@@ -124,7 +124,7 @@ async function handleReminders(req, res) {
 // Auth: admin, super_admin
 async function handleBlast(req, res) {
   try {
-    checkRateLimit(`blast:${req.headers['x-forwarded-for']||'x'}`, 200, 60000);
+    await checkRateLimit(`blast:${req.headers['x-forwarded-for']||'x'}`, 200, 60000);
   } catch(e) { return err(res, e); }
 
   try {

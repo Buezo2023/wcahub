@@ -62,10 +62,31 @@ function staffEmailHtml({ name, role, portalUrl, email }) {
 // ── Handlers ───────────────────────────────────────────────────────
 
 async function handleStudent(req, actor) {
-  const { email, fullName, programId = 'en', level = 'A1', price = 95, groupId, scholarship = false } = req.body;
+  const { email, fullName, programId = 'en', level = 'A1', price = 95, groupId, scholarship = false, forceStudent = false } = req.body;
   if (!email || !fullName) return { status: 400, message: 'email y fullName son requeridos' };
 
   const admin = getSupabaseAdmin();
+
+  // ── Dual-role guard: warn if email already has an active staff record ──
+  if (!forceStudent) {
+    const { data: staffCheck } = await admin.from('profiles')
+      .select('id, role, staff(id, active)')
+      .eq('email', email).maybeSingle();
+    if (staffCheck) {
+      const activeStaff = staffCheck.staff?.filter(s => s.active) || [];
+      if (activeStaff.length > 0) {
+        return {
+          status: 409,
+          message: `${email} ya es miembro del staff (rol: ${staffCheck.role}). ` +
+            `Matricularlo como estudiante duplicará su cuenta. ` +
+            `Enviá forceStudent:true si estás seguro.`,
+          conflict: true,
+          currentRole: staffCheck.role,
+        };
+      }
+    }
+  }
+
   const { data: existingProfile } = await admin.from('profiles').select('id').eq('email', email).maybeSingle();
 
   let userId, isNewUser = false;
@@ -129,12 +150,34 @@ async function handleStudent(req, actor) {
 }
 
 async function handleStaff(req, actor) {
-  const { email, fullName, role = 'Docente', salary, hireDate } = req.body;
+  const { email, fullName, role = 'Docente', salary, hireDate, forceStaff = false } = req.body;
   if (!email || !fullName) return { status: 400, message: 'email y fullName son requeridos' };
 
   const supabaseRole = ROLE_MAP[role] || 'docente';
   const portalUrl    = `https://wcahub.vercel.app${PORTAL_MAP[supabaseRole] || '/portal'}`;
   const admin        = getSupabaseAdmin();
+
+  // ── Dual-role guard: prevent a student with active enrollments from becoming staff ──
+  // Pass forceStaff=true in the body to override (super_admin only).
+  if (!forceStaff) {
+    const { data: existingProf } = await admin.from('profiles')
+      .select('id, role, students(id, enrollments(id, status))')
+      .eq('email', email).maybeSingle();
+    if (existingProf) {
+      const activeEnrolls = existingProf.students?.flatMap(s => s.enrollments || [])
+        .filter(e => e.status === 'active') || [];
+      if (activeEnrolls.length > 0) {
+        return {
+          status: 409,
+          message: `${email} tiene ${activeEnrolls.length} matrícula(s) activa(s) como estudiante. ` +
+            `Cambiar su rol a ${role} puede bloquear su acceso al portal. ` +
+            `Enviá forceStaff:true si estás seguro.`,
+          conflict: true,
+          activeEnrollments: activeEnrolls.length,
+        };
+      }
+    }
+  }
 
   const { data: existing } = await admin.from('profiles').select('id, role').eq('email', email).maybeSingle();
   let userId, isNew = false;
@@ -354,7 +397,7 @@ async function handleResendSupabase(req, actor) {
 export default async function handler(req, res) {
   setCORS(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
-  try { checkRateLimit(`invite:${req.headers['x-forwarded-for']||'x'}`, 15, 60000); } catch(e) { return err(res, e); }
+  try { await checkRateLimit(`invite:${req.headers['x-forwarded-for']||'x'}`, 15, 60000); } catch(e) { return err(res, e); }
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
@@ -366,9 +409,15 @@ export default async function handler(req, res) {
         requireRole(actor, 'admin', 'super_admin', 'coordinadora');
         return ok(res, await handleStudent(req, actor), 201);
 
-      case 'staff':
-        requireRole(actor, 'admin', 'super_admin');
+      case 'staff': {
+        // coordinadora can only invite docentes, not other roles
+        const staffRole = req.body?.role || 'Docente';
+        if (actor.role === 'coordinadora' && staffRole !== 'Docente') {
+          return err(res, { status: 403, message: 'Coordinadora solo puede agregar docentes' });
+        }
+        requireRole(actor, 'admin', 'super_admin', 'coordinadora');
         return ok(res, await handleStaff(req, actor), 201);
+      }
 
       case 'resend':
         requireRole(actor, 'admin', 'super_admin');
