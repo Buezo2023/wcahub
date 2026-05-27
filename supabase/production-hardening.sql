@@ -17,8 +17,17 @@ CREATE INDEX IF NOT EXISTS idx_staff_profile ON staff(profile_id);
 CREATE INDEX IF NOT EXISTS idx_staff_active ON staff(active);
 
 -- 2. UNIQUE CONSTRAINTS — previene duplicados
-ALTER TABLE public.staff ADD CONSTRAINT IF NOT EXISTS staff_profile_id_unique UNIQUE (profile_id);
-ALTER TABLE public.students ADD CONSTRAINT IF NOT EXISTS students_profile_id_unique UNIQUE (profile_id);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'staff_profile_id_unique') THEN
+    ALTER TABLE public.staff ADD CONSTRAINT staff_profile_id_unique UNIQUE (profile_id);
+  END IF;
+END $$;
+
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'students_profile_id_unique') THEN
+    ALTER TABLE public.students ADD CONSTRAINT students_profile_id_unique UNIQUE (profile_id);
+  END IF;
+END $$;
 
 -- 3. NO-DELETE POLICIES — solo soft delete via active:false
 DO $$ BEGIN
