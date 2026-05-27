@@ -1,7 +1,7 @@
 // ─── WCA Hub — Recuperar acceso vía magic link ─────────────────
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabase.js";
+import { supabase } from "../lib/supabase.js"; // kept for future auth use
 
 const P = "#155266", Y = "#ffbb23", G = "#059669", R = "#dc2626", RD = "#fef2f2", GD = "#ecfdf5";
 
@@ -20,24 +20,18 @@ export default function ForgotAccess() {
     setLoading(true);
     setError("");
     try {
-      const { error: e } = await supabase.auth.signInWithOtp({
-        email: email.trim().toLowerCase(),
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-          shouldCreateUser: false, // Only existing accounts
-        },
+      const res = await fetch("/api/auth/magic-link", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
       });
-      if (e) {
-        // Don't reveal whether email exists (prevent enumeration)
-        if (/rate.*limit|too.*many/i.test(e.message)) {
-          setError("Demasiados intentos. Esperá unos minutos.");
-        } else {
-          setSent(true); // Show success even if account doesn't exist
-        }
-      } else {
-        setSent(true);
+      if (res.status === 429) {
+        setError("Demasiados intentos. Esperá 15 minutos antes de intentar de nuevo.");
+        return;
       }
-    } catch (e) {
+      // Always show success — server never reveals if email exists
+      setSent(true);
+    } catch (_) {
       setError("Error de red. Intentá de nuevo.");
     } finally {
       setLoading(false);

@@ -22,6 +22,9 @@ export default async function handler(req, res) {
   try {
     const ip = req.headers['x-forwarded-for']?.split(',')[0] || 'unknown';
     await checkRateLimit(`register:${ip}`, 5, 60000);
+    // Email-based rate limit: 2 registrations per email per 24h (prevents abuse + duplicate attempts)
+    const emailForRateLimit = req.body?.email?.trim().toLowerCase() || 'unknown';
+    await checkRateLimit(`register:email:${emailForRateLimit}`, 2, 24 * 60 * 60 * 1000);
   } catch(e) { return err(res, e); }
 
   try {
