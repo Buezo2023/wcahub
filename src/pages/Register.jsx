@@ -207,7 +207,7 @@ export default function Register() {
               </div>
             </button>
           );
-          }))}
+          })}
         </div>
       </div>
     );
