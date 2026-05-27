@@ -105,12 +105,13 @@ export function PagosSection({ showToast, initialTab }) {
         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar pago..."
           style={{flex:1,minWidth:140,padding:"7px 11px",border:"1px solid var(--border)",borderRadius:8,fontSize:12,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
         <button onClick={()=>exportCSV(filtered.map(p=>({Estudiante:p.student?.profile?.full_name||"—",Monto:`$${p.amount}`,Método:p.method,Estado:p.status,Referencia:p.reference_code||"—",Fecha:new Date(p.created_at).toLocaleDateString("es-HN")})),`pagos-${new Date().toISOString().slice(0,10)}.csv`)}
+          aria-label="Exportar pagos a CSV"
           style={{padding:"7px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>
-          <i className="ti ti-download"/>
+          <i className="ti ti-download" aria-hidden="true"/>
         </button>
         <button onClickCapture={e=>{e.stopPropagation();setRegModal(true);}}
           style={{padding:"7px 16px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:5}}>
-          <i className="ti ti-plus" style={{fontSize:13}}/> Registrar pago
+          <i className="ti ti-plus" style={{fontSize:13}} aria-hidden="true"/> Registrar pago
         </button>
       </div>
 

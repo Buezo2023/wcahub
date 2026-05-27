@@ -19,7 +19,7 @@ export class ErrorBoundary extends Component {
         background:"var(--bg-page,#f8fafc)", padding:24 }}>
         <div style={{ width:56, height:56, borderRadius:"50%", background:"#fef2f2",
           display:"flex", alignItems:"center", justifyContent:"center", fontSize:28 }}>
-          <i className="ti ti-alert-triangle" style={{color:"#dc2626",fontSize:28}}/>
+          <i className="ti ti-alert-triangle" style={{color:"#dc2626",fontSize:28}} aria-hidden="true"/>
         </div>
         <div style={{ fontSize:16, fontWeight:700, color:"var(--text-primary,#0f172a)" }}>
           Algo salió mal

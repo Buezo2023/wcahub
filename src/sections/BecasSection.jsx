@@ -54,11 +54,11 @@ export function BecasSection({ showToast }) {
     <div>
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:16}}>
         <div style={{background:PD,border:`1px solid ${P}20`,borderRadius:12,padding:"12px 16px",display:"flex",gap:12,alignItems:"center"}}>
-          <i className="ti ti-certificate" style={{fontSize:24,color:P}}/>
+          <i className="ti ti-certificate" style={{fontSize:24,color:P}} aria-hidden="true"/>
           <div><div style={{fontSize:22,fontWeight:800,color:P}}>{scholars.length}</div><div style={{fontSize:11,color:"var(--text-secondary)"}}>Con beca activa</div></div>
         </div>
         <div style={{background:AD,border:`1px solid ${A}30`,borderRadius:12,padding:"12px 16px",display:"flex",gap:12,alignItems:"center"}}>
-          <i className="ti ti-star" style={{fontSize:24,color:A}}/>
+          <i className="ti ti-star" style={{fontSize:24,color:A}} aria-hidden="true"/>
           <div><div style={{fontSize:22,fontWeight:800,color:A}}>{eligible.length}</div><div style={{fontSize:11,color:"var(--text-secondary)"}}>Elegibles (≥85% promedio, U3+)</div></div>
         </div>
       </div>

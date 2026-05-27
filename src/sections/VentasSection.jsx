@@ -94,7 +94,7 @@ export function VentasSection({ showToast, externalTab }) {
         ))}
         <button onClick={()=>exportCSV(leads.map(l=>({Nombre:l.full_name,Email:l.email,Teléfono:l.phone||"—",Stage:l.stage,Fuente:l.source||"—",Score:l.test_score||0,Interés:l.level_interest||l.program_interest||"—",Fecha:new Date(l.created_at).toLocaleDateString("es-HN")})),`leads-${new Date().toISOString().slice(0,10)}.csv`)}
           style={{marginLeft:"auto",padding:"7px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>
-          <i className="ti ti-download"/> CSV
+          <i className="ti ti-download" aria-hidden="true"/> CSV
         </button>
       </div>}
 

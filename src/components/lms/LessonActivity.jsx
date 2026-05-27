@@ -38,7 +38,7 @@ export function LessonActivity({ content, onComplete, completed }) {
                 </div>
                 <div style={{ fontSize:14, fontWeight:600, color:"var(--text-primary)" }}>{sec.title}</div>
               </div>
-              <i className={`ti ti-chevron-${reading === i ? "up" : "down"}`} style={{ fontSize:16, color:"var(--text-tertiary)" }}/>
+              <i className={`ti ti-chevron-${reading === i ? "up" : "down"}`} style={{ fontSize:16, color:"var(--text-tertiary)" }} aria-hidden="true"/>
             </div>
 
             {/* Content */}

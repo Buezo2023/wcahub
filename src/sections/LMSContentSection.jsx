@@ -460,7 +460,7 @@ export function LMSContentSection({ showToast }) {
           <div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
               <button onClick={()=>setSelAct(null)} style={{display:"flex",alignItems:"center",gap:8,background:"none",border:"none",cursor:"pointer",color:"var(--text-secondary)",fontSize:13,fontFamily:"inherit",padding:0}}>
-                <i className="ti ti-arrow-left" style={{fontSize:15}}/> Volver
+                <i className="ti ti-arrow-left" style={{fontSize:15}} aria-hidden="true"/> Volver
               </button>
               <SaveBtn onClick={saveActivity} saving={saving}/>
             </div>

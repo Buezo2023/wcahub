@@ -368,7 +368,7 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
                       </div>
                       {done
                         ? <div style={{ fontSize:12, fontWeight:700, color:G, flexShrink:0 }}>+{prog.xp_earned} XP ✓</div>
-                        : !locked && <i className="ti ti-chevron-right" style={{ fontSize:18, color:"var(--text-tertiary)", flexShrink:0 }}/>
+                        : !locked && <i className="ti ti-chevron-right" style={{ fontSize:18, color:"var(--text-tertiary)", flexShrink:0 }} aria-hidden="true"/>
                       }
                     </div>
                   );
@@ -385,7 +385,7 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
               cursor:"pointer", color:"var(--text-secondary)", fontSize:13, fontFamily:"inherit",
               marginBottom:16, padding:0,
             }}>
-              <i className="ti ti-arrow-left" style={{ fontSize:16 }}/> Volver a la unidad
+              <i className="ti ti-arrow-left" style={{ fontSize:16 }} aria-hidden="true"/> Volver a la unidad
             </button>
 
             {/* Activity header */}

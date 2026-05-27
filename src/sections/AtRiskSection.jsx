@@ -50,7 +50,7 @@ export function AtRiskSection({ showToast }) {
   return(
     <div>
       <div style={{background:RD,border:`1px solid ${R}40`,borderRadius:10,padding:"10px 14px",marginBottom:16,fontSize:13,color:R,display:"flex",gap:8}}>
-        <i className="ti ti-alert-circle" style={{fontSize:14,flexShrink:0,marginTop:1}}/>
+        <i className="ti ti-alert-circle" style={{fontSize:14,flexShrink:0,marginTop:1}} aria-hidden="true"/>
         Estudiantes con promedio menor al 65% o dos o más exámenes reprobados. Coordiná un plan de apoyo con su docente.
       </div>
       {loading?<div style={{padding:32,textAlign:"center",color:"var(--text-secondary)",fontSize:13}}>Cargando...</div>

@@ -112,11 +112,11 @@ export function EstudiantesSection({ showToast }) {
         </select>
         <button onClick={()=>exportCSV(csvData,`estudiantes-${new Date().toISOString().slice(0,10)}.csv`)}
           style={{padding:"8px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)",display:"flex",alignItems:"center",gap:5}}>
-          <i className="ti ti-download" style={{fontSize:13}}/> CSV
+          <i className="ti ti-download" style={{fontSize:13}} aria-hidden="true"/> CSV
         </button>
         <button onClickCapture={e=>{e.stopPropagation();setEnrollModal(true);}}
           style={{padding:"8px 16px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:8}}>
-          <i className="ti ti-user-plus" style={{fontSize:14}}/> Matricular
+          <i className="ti ti-user-plus" style={{fontSize:14}} aria-hidden="true"/> Matricular
         </button>
       </div>
 
@@ -177,7 +177,7 @@ export function EstudiantesSection({ showToast }) {
                         <td style={{padding:"10px 12px"}}><Badge text={s.level||"—"} bg={`${P}14`} color={P}/></td>
                         <td style={{padding:"10px 12px",fontSize:12,color:"var(--text-secondary)"}}>{prog.toUpperCase()}</td>
                         <td style={{padding:"10px 12px"}}><Badge text={active?"Activo":"Inactivo"} bg={active?GD:RD} color={active?G:R}/></td>
-                        <td style={{padding:"10px 12px"}}><i className="ti ti-chevron-right" style={{color:"var(--text-tertiary)",fontSize:14}}/></td>
+                        <td style={{padding:"10px 12px"}}><i className="ti ti-chevron-right" style={{color:"var(--text-tertiary)",fontSize:14}} aria-hidden="true"/></td>
                       </tr>
                     );
                   })}

@@ -163,7 +163,7 @@ export function StudentReport({ student, enrollments, certificates, progressHist
               cursor: "pointer", fontFamily: "inherit",
               boxShadow: "0 4px 16px rgba(255,187,35,.35)",
             }}>
-              <i className="ti ti-download" style={{ fontSize: 15 }} /> Descargar PDF
+              <i className="ti ti-download" style={{ fontSize: 15 }} aria-hidden="true"/> Descargar PDF
             </button>
             <button onClick={onClose} style={{
               padding: "10px 18px", background: "rgba(255,255,255,.15)",

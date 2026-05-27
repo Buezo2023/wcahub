@@ -33,7 +33,7 @@ export function VideoActivity({ content, onComplete, completed }) {
           />
         ) : (
           <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", color:"rgba(255,255,255,.7)", gap:12 }}>
-            <i className="ti ti-video-off" style={{ fontSize:48, opacity:.4 }}/>
+            <i className="ti ti-video-off" style={{ fontSize:48, opacity:.4 }} aria-hidden="true"/>
             <div style={{ fontSize:14, textAlign:"center", padding:"0 24px" }}>
               Video próximamente — tu instructor subirá el video en breve
             </div>

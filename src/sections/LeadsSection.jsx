@@ -95,7 +95,7 @@ export function LeadsSection({ showToast }) {
         </div>
         <div style={{marginLeft:"auto"}}>
           <button onClickCapture={e=>{e.stopPropagation();setAddModal(true);}} style={{padding:"7px 16px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:5}}>
-            <i className="ti ti-plus" style={{fontSize:13}}/> Nuevo lead
+            <i className="ti ti-plus" style={{fontSize:13}} aria-hidden="true"/> Nuevo lead
           </button>
         </div>
       </div>
@@ -150,7 +150,7 @@ export function LeadsSection({ showToast }) {
                       <td style={{padding:"10px 12px"}}><span style={{fontSize:11,padding:"2px 8px",borderRadius:12,background:st.bg,color:st.color,fontWeight:600}}>{st.label}</span></td>
                       <td style={{padding:"10px 12px",fontSize:12,color:l.test_score>=70?"#059669":l.test_score>0?"#d97706":"var(--text-tertiary)",fontWeight:l.test_score>0?600:400}}>{l.test_score>0?`${l.test_score}%`:"—"}</td>
                       <td style={{padding:"10px 12px",fontSize:12,color:"var(--text-secondary)"}}>{l.source||"—"}</td>
-                      <td style={{padding:"10px 12px"}}><i className="ti ti-chevron-right" style={{color:"var(--text-tertiary)",fontSize:14}}/></td>
+                      <td style={{padding:"10px 12px"}}><i className="ti ti-chevron-right" style={{color:"var(--text-tertiary)",fontSize:14}} aria-hidden="true"/></td>
                     </tr>
                   );
                 })}

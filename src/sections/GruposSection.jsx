@@ -115,7 +115,7 @@ export function GruposSection({ showToast }) {
     <div>
       <div style={{display:"flex",justifyContent:"flex-end",marginBottom:16}}>
         <button onClickCapture={e=>{e.stopPropagation();setAddModal(true);}} style={{padding:"8px 16px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:8}}>
-          <i className="ti ti-plus" style={{fontSize:14}}/> Nuevo grupo
+          <i className="ti ti-plus" style={{fontSize:14}} aria-hidden="true"/> Nuevo grupo
         </button>
       </div>
 

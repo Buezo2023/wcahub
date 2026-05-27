@@ -53,7 +53,7 @@ export function VencidosSection({ showToast }) {
     <div>
       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,flexWrap:"wrap",gap:8}}>
         <div style={{background:RD,border:`1px solid ${R}30`,borderRadius:10,padding:"8px 14px",fontSize:13,color:R,display:"flex",gap:8,flex:1}}>
-          <i className="ti ti-alert-circle" style={{fontSize:14,flexShrink:0,marginTop:1}}/>
+          <i className="ti ti-alert-circle" style={{fontSize:14,flexShrink:0,marginTop:1}} aria-hidden="true"/>
           {overdue.length} estudiante{overdue.length!==1?"s":""} con pago vencido · el sistema auto-suspende a los 15 días
         </div>
         <button onClickCapture={e=>{e.stopPropagation();triggerCycle();}} style={{padding:"8px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)",fontWeight:600}}>

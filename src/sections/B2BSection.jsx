@@ -132,7 +132,7 @@ export function B2BSection({ showToast }) {
           Descuento:`${c.discount_pct||0}%`, Factura:`$${monthly(c)}/mes`
         })),`b2b-${new Date().toISOString().slice(0,10)}.csv`)}
           style={{padding:"7px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>
-          <i className="ti ti-download"/> CSV
+          <i className="ti ti-download" aria-hidden="true"/> CSV
         </button>
         <button onClickCapture={e=>{e.stopPropagation();openAdd();}}
           style={{padding:"8px 16px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
