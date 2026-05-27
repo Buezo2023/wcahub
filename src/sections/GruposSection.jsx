@@ -248,16 +248,28 @@ export function GruposSection({ showToast }) {
           onClick={e=>{if(e.target===e.currentTarget)setAddModal(false);}}>
           <div style={{background:"var(--bg-surface)",borderRadius:16,padding:24,width:"min(420px, calc(100vw - 32px))",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)"}}>
             <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:18}}>Nuevo grupo</div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
-              {[["Programa","program_id","select",PROGRAMS],["Nivel","level","select",LEVELS.map(l=>[l,l])]].map(([l,k,t,opts])=>(
-                <div key={k}>
-                  <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>{l}</div>
-                  <select value={form[k]} onChange={e=>setForm(p=>({...p,[k]:e.target.value}))}
+            {/* Programa + Nivel (Nivel solo para programas de idiomas) */}
+            <div style={{display:"grid",gridTemplateColumns:form.program_id==="en"?"1fr 1fr":"1fr",gap:8,marginBottom:12}}>
+              <div>
+                <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Programa</div>
+                <select value={form.program_id}
+                  onChange={e=>setForm(p=>({...p,program_id:e.target.value,
+                    // Clear level when switching to non-language program
+                    level: ["en"].includes(e.target.value) ? (p.level||"A1") : null
+                  }))}
+                  style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}>
+                  {PROGRAMS.map(([v,n])=><option key={v} value={v}>{n}</option>)}
+                </select>
+              </div>
+              {form.program_id==="en" && (
+                <div>
+                  <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Nivel CEFR</div>
+                  <select value={form.level||"A1"} onChange={e=>setForm(p=>({...p,level:e.target.value}))}
                     style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}>
-                    {opts.map(([v,n])=><option key={v} value={v}>{n}</option>)}
+                    {LEVELS.map(l=><option key={l} value={l}>{l}</option>)}
                   </select>
                 </div>
-              ))}
+              )}
             </div>
             <div style={{marginBottom:12}}>
               <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Horario (texto) *</div>
