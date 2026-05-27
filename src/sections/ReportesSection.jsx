@@ -106,10 +106,49 @@ function MiniDonut({ segments, size = 80 }) {
   );
 }
 
+// ── Shared ReportHeader (error + refresh + timestamp) ────────────
+function ReportHeader({ onRefresh, refreshedAt, exportBtn }) {
+  return (
+    <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:12,flexWrap:"wrap"}}>
+      {refreshedAt && (
+        <span style={{fontSize:11,color:"var(--text-tertiary)",marginRight:"auto"}}>
+          Actualizado: {refreshedAt.toLocaleTimeString("es-HN",{hour:"2-digit",minute:"2-digit"})}
+        </span>
+      )}
+      {!refreshedAt && <span style={{flex:1}}/>}
+      <button onClick={onRefresh}
+        style={{display:"flex",alignItems:"center",gap:5,padding:"6px 12px",
+          background:"var(--bg-surface)",border:"1px solid var(--border)",
+          borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",
+          color:"var(--text-secondary)"}}>
+        <i className="ti ti-refresh" style={{fontSize:13}} aria-hidden="true"/> Actualizar
+      </button>
+      {exportBtn}
+    </div>
+  );
+}
+function ErrorCard({ msg, onRetry }) {
+  return (
+    <div style={{padding:"24px",textAlign:"center",background:"#fef2f2",
+      border:"1px solid #fecaca",borderRadius:12,marginBottom:12}}>
+      <i className="ti ti-alert-circle" style={{fontSize:24,color:"#dc2626",display:"block",marginBottom:8}} aria-hidden="true"/>
+      <div style={{fontSize:13,fontWeight:600,color:"#dc2626",marginBottom:4}}>Error al cargar datos</div>
+      <div style={{fontSize:12,color:"#991b1b",marginBottom:12}}>{msg}</div>
+      <button onClick={onRetry}
+        style={{padding:"7px 16px",background:"#dc2626",color:"#fff",border:"none",
+          borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+        Reintentar
+      </button>
+    </div>
+  );
+}
+
 // ── Finanzas Report ──────────────────────────────────────────────
 function FinanzasReport(){
   const [data,setData]=useState(null);
   const [loading,setLoading]=useState(true);
+  const [error,setError]=useState(null);
+  const [refreshedAt,setRefreshedAt]=useState(null);
   useEffect(()=>{load();},[]);
   async function load(){
     setLoading(true);
@@ -118,6 +157,7 @@ function FinanzasReport(){
     const lastMonthStart=new Date(now.getFullYear(),now.getMonth()-1,1).toISOString();
     const lastMonthEnd=new Date(now.getFullYear(),now.getMonth(),0).toISOString();
 
+    try{
     const [paysRes,enrollRes,pendingRes,overRes]=await Promise.all([
       supabase.from("payments").select("amount,program_id,method,status,confirmed_at,created_at,student:students(profile:profiles(full_name,email))")
         .eq("status","confirmed").gte("confirmed_at",monthStart).order("confirmed_at",{ascending:false}),
@@ -137,10 +177,13 @@ function FinanzasReport(){
     const byProg=enrolls.reduce((a,e)=>{a[e.program_id]=(a[e.program_id]||0)+1;return a;},{});
 
     setData({mrr,collected,byMethod,byProg,pending,overdue,pays,enrolls});
+    setRefreshedAt(new Date());
+    }catch(e){setError(e.message||"Error al cargar datos");}
     setLoading(false);
   }
 
   if(loading) return <div style={{padding:32,textAlign:"center",fontSize:12,color:"var(--text-secondary)"}}>Cargando...</div>;
+  if(error) return <ErrorCard msg={error} onRetry={load}/>;
   if(!data) return null;
 
   const exp=()=>exportCSV(data.pays.map(p=>({
@@ -154,9 +197,8 @@ function FinanzasReport(){
 
   return(
     <div>
-      <div style={{display:"flex",justifyContent:"flex-end",marginBottom:10}}>
-        <button onClick={exp} style={{padding:"7px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>
-      </div>
+      <ReportHeader onRefresh={load} refreshedAt={refreshedAt}
+        exportBtn={<button onClick={exp} style={{padding:"6px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>}/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:6}}>
         <Kpi label="MRR" value={`$${data.mrr.toLocaleString()}`} color={P} sub="Ingresos recurrentes/mes"/>
         <Kpi label="ARR" value={`$${(data.mrr*12).toLocaleString()}`} color={P} sub="Ingresos anuales proj."/>
@@ -197,7 +239,7 @@ function FinanzasReport(){
         {Object.entries(data.byProg).map(([p,v])=>
           <ReportCard key={p} label={p.toUpperCase()} value={v} color={G} bg={GD}/>)}
       </div>
-      <SectionTitle>Vencidos ({data.overdue.length})</SectionTitle>
+      <SectionTitle>Vencidos ({data.overdue.length}) <span style={{fontSize:10,fontWeight:400,color:"var(--text-tertiary)",textTransform:"none",letterSpacing:0}}>— acumulado histórico</span></SectionTitle>
       <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",marginBottom:12}}>
         <TableWrap
           headers={["Estudiante","Email","Vence","Precio"]}
@@ -209,7 +251,7 @@ function FinanzasReport(){
           ])}
           empty="✅ Sin vencidos"/>
       </div>
-      <SectionTitle>Pagos pendientes ({data.pending.length})</SectionTitle>
+      <SectionTitle>Pagos pendientes ({data.pending.length}) <span style={{fontSize:10,fontWeight:400,color:"var(--text-tertiary)",textTransform:"none",letterSpacing:0}}>— sin confirmación aún</span></SectionTitle>
       <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden"}}>
         <TableWrap
           headers={["Estudiante","Monto"]}
@@ -224,25 +266,31 @@ function FinanzasReport(){
 function AcademiaReport(){
   const [data,setData]=useState(null);
   const [loading,setLoading]=useState(true);
+  const [error,setError]=useState(null);
+  const [refreshedAt,setRefreshedAt]=useState(null);
   useEffect(()=>{load();},[]);
   async function load(){
     setLoading(true);
+    try{
     const [enrollsRes,groupsRes,attendRes]=await Promise.all([
       supabase.from("enrollments").select("id,program_id,status,current_unit,price_locked,student:students(profile:profiles(full_name,email)),group:groups(level,schedule)").order("created_at",{ascending:false}).limit(200),
       supabase.from("groups").select("id,program_id,level,schedule,days,capacity,active_unit,teacher_groups(teacher:staff(profile:profiles(full_name))),enrollments(id,status)").eq("active",true),
-      supabase.from("attendance").select("status,enrollment_id").limit(1000),
+      supabase.from("attendance").select("status,present,enrollment_id").limit(2000),
     ]);
     const enrolls=enrollsRes.data||[];
     const groups=groupsRes.data||[];
     const att=attendRes.data||[];
-    const attRate=att.length>0?Math.round((att.filter(a=>a.status==="present").length/att.length)*100):0;
+    const attRate=att.length>0?Math.round((att.filter(a=>a.status==="present"||a.present===true).length/att.length)*100):0;
     const activeE=enrolls.filter(e=>e.status==="active");
     const byProg=activeE.reduce((a,e)=>{a[e.program_id]=(a[e.program_id]||0)+1;return a;},{});
     setData({enrolls,groups,attRate,byProg,activeCount:activeE.length});
+    setRefreshedAt(new Date());
+    }catch(e){setError(e.message||"Error al cargar datos");}
     setLoading(false);
   }
 
   if(loading) return <div style={{padding:32,textAlign:"center",fontSize:12,color:"var(--text-secondary)"}}>Cargando...</div>;
+  if(error) return <ErrorCard msg={error} onRetry={load}/>;
   if(!data) return null;
 
   const exp=()=>exportCSV(data.enrolls.map(e=>({
@@ -255,9 +303,8 @@ function AcademiaReport(){
 
   return(
     <div>
-      <div style={{display:"flex",justifyContent:"flex-end",marginBottom:10}}>
-        <button onClick={exp} style={{padding:"7px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>
-      </div>
+      <ReportHeader onRefresh={load} refreshedAt={refreshedAt}
+        exportBtn={<button onClick={exp} style={{padding:"6px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>}/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:6}}>
         <Kpi label="Matrículas activas" value={data.activeCount} color={P}/>
         <Kpi label="Grupos activos" value={data.groups.length} color={G}/>
@@ -299,9 +346,12 @@ function AcademiaReport(){
 function VentasReport(){
   const [data,setData]=useState(null);
   const [loading,setLoading]=useState(true);
+  const [error,setError]=useState(null);
+  const [refreshedAt,setRefreshedAt]=useState(null);
   useEffect(()=>{load();},[]);
   async function load(){
     setLoading(true);
+    try{
     const [leadsRes,tasksRes,b2bRes]=await Promise.all([
       supabase.from("leads").select("*").order("created_at",{ascending:false}).limit(300),
       supabase.from("crm_tasks").select("id,done,due_date,lead_id").limit(200),
@@ -318,10 +368,13 @@ function VentasReport(){
     const pendTasks=tasks.filter(t=>!t.done);
     const ovTasks=pendTasks.filter(t=>t.due_date&&new Date(t.due_date)<new Date());
     setData({leads,tasks,b2b,byStage,bySource,convRate,b2bMrr,pendTasks,ovTasks});
+    setRefreshedAt(new Date());
+    }catch(e){setError(e.message||"Error al cargar datos");}
     setLoading(false);
   }
 
   if(loading) return <div style={{padding:32,textAlign:"center",fontSize:12,color:"var(--text-secondary)"}}>Cargando...</div>;
+  if(error) return <ErrorCard msg={error} onRetry={load}/>;
   if(!data) return null;
   const STAGES=["nuevo","contactado","test","propuesta","convertido","perdido"];
 
@@ -334,9 +387,8 @@ function VentasReport(){
 
   return(
     <div>
-      <div style={{display:"flex",justifyContent:"flex-end",marginBottom:10}}>
-        <button onClick={exp} style={{padding:"7px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>
-      </div>
+      <ReportHeader onRefresh={load} refreshedAt={refreshedAt}
+        exportBtn={<button onClick={exp} style={{padding:"6px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>}/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:6}}>
         <Kpi label="Total leads" value={data.leads.length} color={P}/>
         <Kpi label="Convertidos" value={data.byStage.convertido||0} color={G}/>
@@ -385,21 +437,27 @@ function VentasReport(){
 function RRHHReport(){
   const [data,setData]=useState(null);
   const [loading,setLoading]=useState(true);
+  const [error,setError]=useState(null);
+  const [refreshedAt,setRefreshedAt]=useState(null);
   useEffect(()=>{load();},[]);
   async function load(){
     setLoading(true);
+    try{
     const [staffRes,profilesRes]=await Promise.all([
       supabase.from("staff").select("id,position,department,profile:profiles(full_name,email,role,active,created_at)").limit(100),
-      supabase.from("profiles").select("id,full_name,email,role,active,created_at").order("created_at",{ascending:false}).limit(200),
+      supabase.from("profiles").select("id,full_name,email,role,active,created_at").order("created_at",{ascending:false}).limit(1000),
     ]);
     const staff=staffRes.data||[];
     const profiles=profilesRes.data||[];
     const byRole=profiles.reduce((a,p)=>{a[p.role]=(a[p.role]||0)+1;return a;},{});
     const active=profiles.filter(p=>p.active!==false).length;
     setData({staff,profiles,byRole,active,total:profiles.length});
+    setRefreshedAt(new Date());
+    }catch(e){setError(e.message||"Error al cargar datos");}
     setLoading(false);
   }
   if(loading) return <div style={{padding:32,textAlign:"center",fontSize:12,color:"var(--text-secondary)"}}>Cargando...</div>;
+  if(error) return <ErrorCard msg={error} onRetry={load}/>;
   if(!data) return null;
   const exp=()=>exportCSV(data.profiles.map(p=>({
     Nombre:p.full_name,Email:p.email,Rol:p.role,
@@ -408,9 +466,8 @@ function RRHHReport(){
   })),`rrhh-${new Date().toISOString().slice(0,10)}.csv`);
   return(
     <div>
-      <div style={{display:"flex",justifyContent:"flex-end",marginBottom:10}}>
-        <button onClick={exp} style={{padding:"7px 14px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>
-      </div>
+      <ReportHeader onRefresh={load} refreshedAt={refreshedAt}
+        exportBtn={<button onClick={exp} style={{padding:"6px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>}/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:6}}>
         <Kpi label="Total usuarios" value={data.total} color={P}/>
         <Kpi label="Activos" value={data.active} color={G}/>
@@ -449,29 +506,52 @@ function RRHHReport(){
 function LMSReport(){
   const [data,setData]=useState(null);
   const [loading,setLoading]=useState(true);
+  const [error,setError]=useState(null);
+  const [refreshedAt,setRefreshedAt]=useState(null);
   useEffect(()=>{load();},[]);
   async function load(){
     setLoading(true);
+    try{
     const [progRes,xpRes,unitsRes]=await Promise.all([
-      supabase.from("user_activity_progress").select("profile_id,completed,score,xp_earned,activity_id").limit(500),
-      supabase.from("xp_ledger").select("profile_id,amount,source,created_at").order("created_at",{ascending:false}).limit(300),
+      supabase.from("user_activity_progress").select("profile_id,completed,score,xp_earned,activity_id").limit(2000),
+      supabase.from("xp_ledger").select("profile_id,amount,source,created_at,profile:profiles(full_name)").order("created_at",{ascending:false}).limit(300),
       supabase.from("units").select("id,program_id,unit_number,title,published").eq("published",true),
     ]);
     const prog=progRes.data||[];
     const xp=xpRes.data||[];
     const units=unitsRes.data||[];
     const totalXP=xp.reduce((a,x)=>a+x.amount,0);
-    const byStudent=xp.reduce((a,x)=>{a[x.profile_id]=(a[x.profile_id]||0)+x.amount;return a;},{});
-    const topStudents=Object.entries(byStudent).sort((a,b)=>b[1]-a[1]).slice(0,10);
+    const byStudentMap=xp.reduce((a,x)=>{
+      if(!a[x.profile_id]) a[x.profile_id]={xp:0,name:x.profile?.full_name||null};
+      a[x.profile_id].xp+=x.amount;
+      return a;
+    },{});
+    const byStudent=Object.fromEntries(Object.entries(byStudentMap).map(([k,v])=>[k,v.xp]));
+    const byStudentFull=byStudentMap;
+    const topStudents=Object.entries(byStudentFull).sort((a,b)=>b[1].xp-a[1].xp).slice(0,10);
     const completedActs=prog.filter(p=>p.completed).length;
     const avgScore=prog.length>0?Math.round(prog.filter(p=>p.score>0).reduce((a,p)=>a+p.score,0)/(prog.filter(p=>p.score>0).length||1)):0;
     setData({prog,xp,units,totalXP,topStudents,completedActs,avgScore,uniqueLearners:Object.keys(byStudent).length});
+    setRefreshedAt(new Date());
+    }catch(e){setError(e.message||"Error al cargar datos");}
     setLoading(false);
   }
   if(loading) return <div style={{padding:32,textAlign:"center",fontSize:12,color:"var(--text-secondary)"}}>Cargando...</div>;
+  if(error) return <ErrorCard msg={error} onRetry={load}/>;
   if(!data) return null;
+
+  const expLMS=()=>exportCSV([
+    ...data.topStudents.map(([pid,obj],i)=>({
+      "#":i+1,
+      Estudiante:obj.name||pid.slice(0,8),
+      "XP Total":obj.xp,
+    })),
+  ],`lms-xp-${new Date().toISOString().slice(0,10)}.csv`);
+
   return(
     <div>
+      <ReportHeader onRefresh={load} refreshedAt={refreshedAt}
+        exportBtn={<button onClick={expLMS} style={{padding:"6px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>↓ CSV</button>}/>
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:6}}>
         <Kpi label="XP total otorgado" value={data.totalXP.toLocaleString()} color={A}/>
         <Kpi label="Actividades completadas" value={data.completedActs} color={G}/>
@@ -482,8 +562,8 @@ function LMSReport(){
       <SectionTitle>Top 10 estudiantes por XP</SectionTitle>
       <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden",marginBottom:12}}>
         <TableWrap
-          headers={["#","Profile ID","XP total"]}
-          rows={data.topStudents.map(([pid,xp],i)=>[`${i+1}`,pid.slice(0,8)+"...",`⚡${xp} XP`])}
+          headers={["#","Estudiante","XP total"]}
+          rows={data.topStudents.map(([pid,obj],i)=>[`${i+1}`,obj.name||pid.slice(0,8)+"...",`⚡${obj.xp.toLocaleString()} XP`])}
           empty="Sin datos de XP aún"/>
       </div>
       <SectionTitle>Unidades LMS ({data.units.length})</SectionTitle>
@@ -498,28 +578,12 @@ function LMSReport(){
 
 // ── Main ReportesSection ─────────────────────────────────────────
 export function ReportesSection({ showToast, subView }) {
-  const [activeDept, setActiveDept] = useState("metricas");
 
   // Allow subView from SuperAdmin to override
-  const current = subView && DEPTS.find(d=>d.id===subView) ? subView : activeDept;
+  const current = subView || "metricas";
 
   return(
     <div>
-      {/* Dept selector */}
-      <div style={{display:"flex",gap:5,marginBottom:16,flexWrap:"wrap"}}>
-        {DEPTS.map(d=>(
-          <button key={d.id} onClick={()=>setActiveDept(d.id)}
-            style={{padding:"7px 14px",borderRadius:8,border:"none",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",background:current===d.id?P:"var(--bg-surface-subtle)",color:current===d.id?"#fff":"var(--text-secondary)"}}>
-            {d.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Active dept desc */}
-      <div style={{fontSize:12,color:"var(--text-secondary)",marginBottom:16}}>
-        {DEPTS.find(d=>d.id===current)?.desc}
-      </div>
-
       {/* Renders */}
       {current==="metricas"   && <BISection showToast={showToast}/>}
       {current==="finanzas"   && <FinanzasReport/>}
