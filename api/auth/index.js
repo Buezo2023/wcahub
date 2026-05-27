@@ -450,6 +450,76 @@ export default async function handler(req, res) {
       return ok(res, { message: `Rol actualizado a ${newRole}`, profile: updated });
     }
 
+    // ── resolve-conflict: limpia doble registro staff/student ────────
+    case 'resolve-conflict': {
+      requireRole(actor, 'super_admin', 'admin');
+      const { userId, resolution } = req.body;
+      // resolution: 'keep-staff' | 'keep-student'
+      if (!userId || !['keep-staff', 'keep-student'].includes(resolution)) {
+        return err(res, { status: 400, message: 'userId y resolution (keep-staff|keep-student) son requeridos' });
+      }
+      const adminRC = getSupabaseAdmin();
+
+      // Load full user data
+      const { data: user } = await adminRC.from('profiles')
+        .select('id, email, full_name, role, students(id, enrollments(id, status)), staff(id, active)')
+        .eq('id', userId).maybeSingle();
+      if (!user) return err(res, { status: 404, message: 'Usuario no encontrado' });
+
+      const auditMeta = { resolution, email: user.email, old_role: user.role };
+
+      if (resolution === 'keep-staff') {
+        // 1. Set role to docente (or existing staff role if already set)
+        const targetRole = ['docente','coordinadora','admin','cobros','asesor_ventas','directivo'].includes(user.role)
+          ? user.role : 'docente';
+        await adminRC.from('profiles').update({ role: targetRole, active: true }).eq('id', userId);
+
+        // 2. Suspend all active student enrollments
+        const activeEnrolls = user.students?.flatMap(s => s.enrollments || [])
+          .filter(e => e.status === 'active') || [];
+        for (const enroll of activeEnrolls) {
+          await adminRC.from('enrollments').update({
+            status: 'suspended',
+            suspended_at: new Date().toISOString(),
+            suspended_reason: `Suspendido: usuario migrado a rol ${targetRole} (resolución de conflicto)`,
+          }).eq('id', enroll.id);
+        }
+
+        auditMeta.new_role = targetRole;
+        auditMeta.enrollments_suspended = activeEnrolls.length;
+        await adminRC.from('audit_log').insert({
+          actor_id: actor.id, action: 'resolved_conflict_kept_staff',
+          entity: 'profile', entity_id: userId, metadata: auditMeta,
+        });
+        return ok(res, {
+          message: `${user.full_name} mantenido como ${targetRole}. ${activeEnrolls.length} matrícula(s) suspendida(s).`,
+          newRole: targetRole, enrollmentsSuspended: activeEnrolls.length,
+        });
+      }
+
+      if (resolution === 'keep-student') {
+        // 1. Set role to estudiante
+        await adminRC.from('profiles').update({ role: 'estudiante', active: true }).eq('id', userId);
+
+        // 2. Deactivate all staff records
+        const staffIds = user.staff?.map(s => s.id) || [];
+        for (const staffId of staffIds) {
+          await adminRC.from('staff').update({ active: false }).eq('id', staffId);
+        }
+
+        auditMeta.new_role = 'estudiante';
+        auditMeta.staff_deactivated = staffIds.length;
+        await adminRC.from('audit_log').insert({
+          actor_id: actor.id, action: 'resolved_conflict_kept_student',
+          entity: 'profile', entity_id: userId, metadata: auditMeta,
+        });
+        return ok(res, {
+          message: `${user.full_name} mantenido como estudiante. ${staffIds.length} registro(s) de staff desactivado(s).`,
+          newRole: 'estudiante', staffDeactivated: staffIds.length,
+        });
+      }
+    }
+
     default:
         return err(res, { status: 400, message: `action desconocida: ${action}` });
     }
