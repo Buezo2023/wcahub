@@ -28,10 +28,7 @@ CREATE TRIGGER student_code_gen
 -- 4. Ajustar secuencia al máximo existente (por si ya hay códigos)
 SELECT setval(
   'student_code_seq',
-  COALESCE(
-    MAX(CAST(REPLACE(student_code, 'WCA-', '') AS integer)),
-    0
-  )
+  GREATEST(1, COALESCE(MAX(CAST(REPLACE(student_code, 'WCA-', '') AS integer)), 0))
 ) FROM students WHERE student_code ~ '^WCA-\d+$';
 
 -- 5. Poblar estudiantes existentes sin código, en orden cronológico
