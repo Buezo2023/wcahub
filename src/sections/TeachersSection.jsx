@@ -32,7 +32,12 @@ export function TeachersSection({ showToast }) {
   }
 
   async function addTeacher(){
-    if(!form.name||!form.email){showToast("Nombre y email requeridos",R);return;}
+    const nameErr = validateName(form.name);
+    const emailErr = validateEmail(form.email);
+    const phoneErr = validatePhone(form.phone);
+    if (nameErr)  { showToast(nameErr, R); return; }
+    if (emailErr) { showToast(emailErr, R); return; }
+    if (phoneErr) { showToast(phoneErr, R); return; }
     setSaving(true);
     try{
       await api.post("/api/auth",{action:"staff",email:form.email,fullName:form.name,role:"Docente",phone:form.phone||null,salary:form.salary||null});

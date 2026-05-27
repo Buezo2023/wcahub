@@ -50,7 +50,12 @@ export function EstudiantesSection({ showToast }) {
   }), [students, search, filterLevel, filterStatus]);
 
   async function enroll() {
-    if (!enrollForm.name || !enrollForm.email) { showToast("Nombre y email requeridos", R); return; }
+    const nameErr = validateName(enrollForm.name);
+    const emailErr = validateEmail(enrollForm.email);
+    const phoneErr = validatePhone(enrollForm.phone);
+    if (nameErr)  { showToast(nameErr, R); return; }
+    if (emailErr) { showToast(emailErr, R); return; }
+    if (phoneErr) { showToast(phoneErr, R); return; }
     setEnrolling(true);
     try {
       await api.post("/api/auth", {action:"student",...enrollForm,fullName:enrollForm.name,scholarship:enrollForm.scholarship||false});
