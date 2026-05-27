@@ -742,10 +742,6 @@ export default function PortalEstudiante(){
   const [profileForm,      setProfileForm]     = useState({ full_name:"", phone:"", preferred_name:"", timezone:"" });
   const [profileSaving,    setProfileSaving]   = useState(false);
   const [profileSaved,     setProfileSaved]    = useState(false);
-  const [gdprExporting,    setGdprExporting]   = useState(false);
-  const [deleteConfirm,    setDeleteConfirm]   = useState(""); // email input for deletion
-  const [deleteModal,      setDeleteModal]     = useState(false);
-  const [deleteLoading,    setDeleteLoading]   = useState(false);
   const [myCertificates,   setMyCertificates]  = useState([]);
   const [progressHistory,  setProgressHistory] = useState([]);
 
@@ -1768,101 +1764,6 @@ export default function PortalEstudiante(){
                     </div>
                   );
                 })}
-              </div>
-            </div>
-
-            {/* ── GDPR — Datos y cuenta ──────────────────────────── */}
-            <div style={{background:"var(--bg-surface)",border:"1px solid #fca5a5",borderRadius:12,padding:18,marginTop:8}}>
-              <div style={{fontSize:13,fontWeight:700,color:"#7f1d1d",marginBottom:4}}>⚠ Zona de datos y privacidad</div>
-              <p style={{fontSize:12,color:"var(--text-secondary)",lineHeight:1.6,marginBottom:16}}>
-                Podés descargar todos tus datos personales o eliminar tu cuenta. La eliminación es irreversible.
-              </p>
-              <div style={{display:"flex",gap:10,flexWrap:"wrap"}}>
-                <button
-                  disabled={gdprExporting}
-                  onClick={async()=>{
-                    setGdprExporting(true);
-                    try {
-                      const {data:{session}} = await supabase.auth.getSession();
-                      const res = await fetch("/api/auth",{
-                        method:"POST",
-                        headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},
-                        body: JSON.stringify({action:"export-data"}),
-                      });
-                      const json = await res.json();
-                      if(!res.ok) throw new Error(json.error||"Error al exportar");
-                      // Download as JSON file
-                      const blob = new Blob([JSON.stringify(json.data.export, null, 2)], {type:"application/json"});
-                      const url  = URL.createObjectURL(blob);
-                      const a    = document.createElement("a");
-                      a.href = url; a.download = "mis-datos-wca.json"; a.click();
-                      URL.revokeObjectURL(url);
-                    } catch(e) { alert("Error: "+e.message); }
-                    finally { setGdprExporting(false); }
-                  }}
-                  style={{padding:"9px 16px",background:gdprExporting?"var(--bg-surface-subtle)":"#1e40af",color:gdprExporting?"var(--text-tertiary)":"#fff",border:"none",borderRadius:8,fontSize:12,fontWeight:600,cursor:gdprExporting?"not-allowed":"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:6}}>
-                  <i className="ti ti-download" aria-hidden="true"/>
-                  {gdprExporting?"Exportando...":"Descargar mis datos"}
-                </button>
-                <button
-                  onClick={()=>setDeleteModal(true)}
-                  style={{padding:"9px 16px",background:"transparent",color:"#dc2626",border:"1.5px solid #fca5a5",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:6}}>
-                  <i className="ti ti-trash" aria-hidden="true"/>
-                  Eliminar mi cuenta
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* DELETE ACCOUNT MODAL */}
-          {deleteModal && (
-            <div role="dialog" aria-modal="true" aria-label="Eliminar cuenta"
-              style={{position:"fixed",inset:0,background:"rgba(0,0,0,.5)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:9999,padding:16}}>
-              <div style={{background:"var(--bg-surface)",borderRadius:16,padding:28,maxWidth:420,width:"100%",boxShadow:"0 24px 80px rgba(0,0,0,.25)"}}>
-                <div style={{width:48,height:48,borderRadius:12,background:"#fee2e2",display:"flex",alignItems:"center",justifyContent:"center",marginBottom:16}}>
-                  <i className="ti ti-alert-triangle" style={{fontSize:24,color:"#dc2626"}} aria-hidden="true"/>
-                </div>
-                <div style={{fontSize:18,fontWeight:800,color:"var(--text-primary)",marginBottom:8}}>Eliminar cuenta</div>
-                <p style={{fontSize:13,color:"var(--text-secondary)",lineHeight:1.7,marginBottom:20}}>
-                  Esta acción es <strong>irreversible</strong>. Se cancelarán tus suscripciones activas, se eliminarán tus datos personales y perderás acceso al contenido.
-                </p>
-                <label style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",display:"block",marginBottom:6}}>
-                  Escribí tu email <strong>{user.email}</strong> para confirmar:
-                </label>
-                <input
-                  type="email"
-                  value={deleteConfirm}
-                  onChange={e=>setDeleteConfirm(e.target.value)}
-                  placeholder={user.email}
-                  style={{width:"100%",padding:"10px 13px",border:"1.5px solid #fca5a5",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",marginBottom:20}}
-                />
-                <div style={{display:"flex",gap:10}}>
-                  <button onClick={()=>{setDeleteModal(false);setDeleteConfirm("");}}
-                    style={{flex:1,padding:"11px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:10,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>
-                    Cancelar
-                  </button>
-                  <button
-                    disabled={deleteLoading||deleteConfirm.toLowerCase()!==user.email.toLowerCase()}
-                    onClick={async()=>{
-                      setDeleteLoading(true);
-                      try{
-                        const {data:{session}} = await supabase.auth.getSession();
-                        const res = await fetch("/api/auth",{
-                          method:"POST",
-                          headers:{"Content-Type":"application/json","Authorization":`Bearer ${session?.access_token}`},
-                          body: JSON.stringify({action:"delete-account",confirmEmail:deleteConfirm}),
-                        });
-                        const json = await res.json();
-                        if(!res.ok) throw new Error(json.error||"Error al eliminar");
-                        await supabase.auth.signOut();
-                        window.location.href="/";
-                      }catch(e){alert("Error: "+e.message);}
-                      finally{setDeleteLoading(false);}
-                    }}
-                    style={{flex:2,padding:"11px",background:deleteLoading||deleteConfirm.toLowerCase()!==user.email.toLowerCase()?"#94a3b8":"#dc2626",color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:700,cursor:deleteLoading||deleteConfirm.toLowerCase()!==user.email.toLowerCase()?"not-allowed":"pointer",fontFamily:"inherit"}}>
-                    {deleteLoading?"Eliminando...":"Eliminar permanentemente"}
-                  </button>
-                </div>
               </div>
             </div>
           )}
