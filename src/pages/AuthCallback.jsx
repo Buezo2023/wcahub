@@ -110,9 +110,13 @@ export default function AuthCallback() {
 
         clearTimeout(timeout);
 
-        // New student → onboarding
+        // New student → check for pending enrollments from self-registration
         if (profile?.role === "estudiante" && !profile?.onboarding_done) {
-          setTimeout(() => navigate("/onboarding", { replace: true }), 500);
+          // If they came from self-registration, they may have a pending enrollment
+          // The Stripe webhook activates it, but if they logged in via transfer flow
+          // we redirect to portal where they'll see "pending activation" state
+          setStatus("¡Ya estás dentro! Preparando tu portal…");
+          setTimeout(() => navigate("/onboarding", { replace: true }), 600);
           return;
         }
 

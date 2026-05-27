@@ -206,16 +206,24 @@ async function handleStripePayment({ profileId, programId, amount, currency, str
     // Advance next_payment_date + reactivate if suspended
     const base = enrollment.next_payment_date || new Date().toISOString().slice(0, 10);
     const updateFields = { next_payment_date: addOneMonth(base) };
-    if (enrollment.status === 'suspended') {
+    // Activate pending (self-registration) or suspended enrollments
+    if (enrollment.status === 'pending' || enrollment.status === 'suspended') {
       updateFields.status = 'active';
       updateFields.suspended_at = null;
       updateFields.suspended_reason = null;
     }
     await admin.from('enrollments').update(updateFields).eq('id', enrollment.id);
 
-    // Reactivate profile if it was deactivated
-    if (enrollment.status === 'suspended') {
+    // Activate profile (handles both pending self-registrations and reactivations)
+    if (enrollment.status === 'pending' || enrollment.status === 'suspended') {
       await admin.from('profiles').update({ active: true }).eq('id', profileId);
+      // Mark onboarding as needed for new self-registrations
+      if (enrollment.status === 'pending') {
+        await admin.from('profiles')
+          .update({ onboarding_done: false })
+          .eq('id', profileId)
+          .eq('onboarding_done', false); // only if not already done
+      }
     }
   } catch(e) {
     console.error('handleStripePayment error:', e.message);

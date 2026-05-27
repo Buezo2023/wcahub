@@ -171,7 +171,7 @@ export default function Landing() {
 
         <div style={{ display:"flex", gap:8 }}>
           <button className="ghost-btn" style={{ padding:"8px 16px", borderRadius:8, fontSize:12, color:T.teal, borderColor:T.border }} onClick={()=>setRoleModal(true)}>Iniciar sesión</button>
-          <button className="gold-btn" style={{ padding:"8px 16px", borderRadius:8, fontSize:12 }} onClick={()=>document.getElementById("registro")?.scrollIntoView({behavior:"smooth"})}>Comenzar gratis</button>
+          <button className="gold-btn" style={{ padding:"8px 16px", borderRadius:8, fontSize:12 }} onClick={()=>navigate("/registro")}>Comenzar gratis</button>
         </div>
       </nav>
 
@@ -217,7 +217,7 @@ export default function Landing() {
             </div>
 
             <div style={{ display:"flex", gap:12, flexWrap:"wrap", marginBottom:40 }}>
-              <button className="gold-btn" style={{ padding:"14px 32px", borderRadius:12, fontSize:15 }} onClick={()=>document.getElementById("registro")?.scrollIntoView({behavior:"smooth"})}>
+              <button className="gold-btn" style={{ padding:"14px 32px", borderRadius:12, fontSize:15 }} onClick={()=>navigate("/registro")}>
                 Comenzar gratis →
               </button>
               <button className="ghost-btn" style={{ padding:"14px 24px", borderRadius:12, fontSize:14, display:"flex", alignItems:"center", gap:8 }} onClick={()=>document.getElementById("como")?.scrollIntoView({behavior:"smooth"})}>
@@ -370,7 +370,7 @@ export default function Landing() {
                   <div style={{ display:"flex", gap:12, alignItems:"center" }}>
                     <div className="serif" style={{ fontSize:36, color:T.gold }}>${p.price}</div>
                     <div style={{ fontSize:13, color:"rgba(255,255,255,.4)" }}>/ mes</div>
-                    <button className="gold-btn" style={{ marginLeft:"auto", padding:"12px 28px", borderRadius:12, fontSize:14 }} onClick={()=>document.getElementById("registro")?.scrollIntoView({behavior:"smooth"})}>
+                    <button className="gold-btn" style={{ marginLeft:"auto", padding:"12px 28px", borderRadius:12, fontSize:14 }} onClick={()=>navigate("/registro")}>
                       Inscribirme →
                     </button>
                   </div>
@@ -470,7 +470,7 @@ export default function Landing() {
                   <span className="serif" style={{ fontSize:40, color:p.popular?T.gold:T.teal, lineHeight:1 }}>${p.price}</span>
                   <span style={{ fontSize:13, color:p.popular?"rgba(255,255,255,.5)":T.muted }}>/ mes</span>
                 </div>
-                <button className={p.popular?"gold-btn":"teal-btn"} style={{ width:"100%", padding:"13px", borderRadius:12, fontSize:14 }} onClick={()=>document.getElementById("registro")?.scrollIntoView({behavior:"smooth"})}>
+                <button className={p.popular?"gold-btn":"teal-btn"} style={{ width:"100%", padding:"13px", borderRadius:12, fontSize:14 }} onClick={()=>navigate("/registro")}>
                   Comenzar ahora
                 </button>
               </div>
@@ -689,7 +689,7 @@ export default function Landing() {
               <div style={{ fontSize:14, color:"rgba(255,255,255,.6)", marginBottom:20, fontWeight:500 }}>Registrate con tu cuenta</div>
               <div style={{ display:"flex", gap:12, marginBottom:20 }}>
                 {/* Microsoft */}
-                <button onClick={signInWithMicrosoft} style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:8, padding:"13px 16px", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+                <button onClick={()=>navigate("/registro")} style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:8, padding:"13px 16px", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
                   onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.14)";}}
                   onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.08)";}}>
                   <svg width="18" height="18" viewBox="0 0 21 21" fill="none">
@@ -699,7 +699,7 @@ export default function Landing() {
                   Continuar con Microsoft
                 </button>
                 {/* Google */}
-                <button onClick={signInWithGoogle} style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:8, padding:"13px 16px", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+                <button onClick={()=>navigate("/registro")} style={{ flex:1, display:"flex", alignItems:"center", justifyContent:"center", gap:8, padding:"13px 16px", background:"rgba(255,255,255,.08)", border:"1px solid rgba(255,255,255,.12)", borderRadius:12, color:"#fff", fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
                   onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,.14)";}}
                   onMouseLeave={e=>{e.currentTarget.style.background="rgba(255,255,255,.08)";}}>
                   <svg width="18" height="18" viewBox="0 0 48 48">
@@ -719,7 +719,7 @@ export default function Landing() {
               <div style={{ display:"flex", gap:8, marginBottom:14 }}>
                 <input value={email} onChange={e=>setEmail(e.target.value)} placeholder="tu@email.com" type="email" style={{ flex:1, padding:"13px 16px", borderRadius:12, border:"1px solid rgba(255,255,255,.15)", background:"rgba(255,255,255,.07)", color:"#fff", fontSize:14, fontFamily:"inherit", outline:"none" }}
                   onFocus={e=>{e.target.style.borderColor=T.gold;}} onBlur={e=>{e.target.style.borderColor="rgba(255,255,255,.15)";}}/>
-                <button className="gold-btn" onClick={()=>{ if(email.trim()) signInWithGoogle(); else setRoleModal(true); }} style={{ padding:"13px 24px", borderRadius:12, fontSize:14, whiteSpace:"nowrap" }}>
+                <button className="gold-btn" onClick={()=>navigate("/registro")} style={{ padding:"13px 24px", borderRadius:12, fontSize:14, whiteSpace:"nowrap" }}>
                   Comenzar gratis
                 </button>
               </div>

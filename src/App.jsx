@@ -25,6 +25,7 @@ const PlatformPreview = lazy(() => import('./pages/PlatformPreview.jsx'));
 const PlacementTestPublic = lazy(() => import('./pages/PlacementTest.jsx'));
 const PrivacyPolicy        = lazy(() => import('./pages/PrivacyPolicy.jsx'));
 const TermsOfUse           = lazy(() => import('./pages/TermsOfUse.jsx'));
+const Register             = lazy(() => import('./pages/Register.jsx'));
 
 // ── Role → portal map ────────────────────────────────────────────
 const ROLE_PORTALS = {
@@ -289,6 +290,7 @@ function AppInner() {
             <Route path="/cobros"       element={<PrivateRoute element={<GestorCobros />} allowedRoles={['cobros','admin','super_admin']} />} />
             <Route path="/coordinacion" element={<PrivateRoute element={<CoordAcademica />} allowedRoles={['coordinadora','admin','super_admin']} />} />
             <Route path="/bi"           element={<PrivateRoute element={<BIDashboard />} allowedRoles={['directivo','admin','super_admin']} />} />
+            <Route path="/registro"     element={<Register />} />
             <Route path="*"             element={<Navigate to="/" replace />} />
           </Routes>
       </Suspense>
