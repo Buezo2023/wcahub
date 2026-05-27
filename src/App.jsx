@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Link, useLocation, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Link, useLocation, Navigate, useNavigate } from 'react-router-dom';
 import { useGlobalSearch, GlobalSearchModal } from './lib/globalSearch.jsx';
 import { ToastContainer } from './lib/toast.jsx';
 import { Suspense, lazy, useState } from 'react';
@@ -38,6 +38,37 @@ const ROLE_PORTALS = {
   coordinadora:  '/coordinacion',
   directivo:     '/bi',
 };
+
+// ── SuperAdmin floating "back" button when viewing other portals ──
+function SuperAdminFloatingBack() {
+  const { profile } = useSession();
+  const loc = useLocation();
+  const navigate = useNavigate();
+  if (profile?.role !== 'super_admin' || loc.pathname === '/super') return null;
+  const portalNames = {
+    '/portal':'Estudiante', '/docente':'Docente', '/admin':'Admin',
+    '/coordinacion':'Coordinación', '/crm':'CRM', '/cobros':'Cobros',
+    '/bi':'BI', '/registro':'Registro', '/':'Landing',
+  };
+  const name = portalNames[loc.pathname];
+  if (!name) return null;
+  return (
+    <div style={{
+      position:'fixed', bottom:20, left:20, zIndex:9999,
+      display:'flex', alignItems:'center', gap:8,
+      background:'#155266', color:'#fff', padding:'10px 16px',
+      borderRadius:12, fontSize:12, fontWeight:600,
+      boxShadow:'0 4px 20px rgba(0,0,0,.3)', cursor:'pointer',
+      fontFamily:"'DM Sans','Segoe UI',sans-serif",
+    }} onClick={() => navigate('/super')}>
+      <span style={{fontSize:16}}>←</span>
+      <span>Volver a SuperAdmin</span>
+      <span style={{background:'rgba(255,255,255,.2)',padding:'2px 8px',borderRadius:6,fontSize:10}}>
+        Viendo: {name}
+      </span>
+    </div>
+  );
+}
 
 // ── PrivateRoute — uses SessionContext (single auth source of truth) ──
 function PrivateRoute({ element, allowedRoles }) {
@@ -293,6 +324,8 @@ function AppInner() {
             <Route path="/registro"     element={<Register />} />
             <Route path="*"             element={<Navigate to="/" replace />} />
           </Routes>
+          {/* Floating "Back to SuperAdmin" button when super_admin is viewing other portals */}
+          <SuperAdminFloatingBack />
       </Suspense>
       </ErrorBoundary>
     </>
