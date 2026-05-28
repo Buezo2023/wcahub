@@ -202,7 +202,7 @@ function UnitRow({unit,prog,isActive,isDone,isLocked,color}){
         <div style={{width:32,height:32,borderRadius:"50%",background:isDone?G:isActive?Y:"#d4b483",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:"#fff",flexShrink:0}}>{unit.n}</div>
         <div style={{flex:1}}>
           <div style={{fontSize:13,fontWeight:isActive?700:500,color:isLocked?"var(--text-tertiary)":"var(--text-primary)"}}>
-            Unit {unit.n} — {title}
+            Unit {unit.n}{unit.t ? ` — ${unit.t}` : ""}
             {isActive&&<span style={{marginLeft:8,fontSize:11,background:Y,color:PH,padding:"2px 8px",borderRadius:20,fontWeight:700}}>ACTIVA</span>}
             {isLocked&&<span style={{marginLeft:6,fontSize:11,color:"var(--text-tertiary)"}}>🔒</span>}
           </div>
@@ -237,12 +237,6 @@ function UnitRow({unit,prog,isActive,isDone,isLocked,color}){
           {prog.testDone>0?`${Math.round((prog.testDone/3)*100)}%`:"0%"}
         </div>
       </div>
-    {/* Global visual effects */}
-    <Confetti active={confetti} count={40} />
-    {floatingXP && (
-      <FloatingXP amount={floatingXP.amount} x={floatingXP.x} y={floatingXP.y}
-        onDone={() => setFloatingXP(null)} />
-    )}
     </div>
   );
 }
@@ -668,6 +662,7 @@ export default function PortalEstudiante(){
   const [studentId,  setStudentId]  = useState(null);
   const [confetti,    setConfetti]   = useState(false);
   const [floatingXP,  setFloatingXP] = useState(null); // {amount, x, y}
+  const [showReport,  setShowReport]  = useState(false);
 
   useEffect(() => {
     // Auth state listener — handles token expiry
