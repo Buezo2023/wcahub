@@ -2,7 +2,7 @@
 // Genera un certificado WCA en canvas y lo descarga como PNG.
 // Úsalo en cualquier lugar: generateCertificate({ name, level, date, program })
 
-export async function generateCertificate({ name, level, program, date }) {
+export async function generateCertificate({ name, level, program, date, isInternational = false }) {
   const W = 1200, H = 800;
   const canvas = document.createElement("canvas");
   canvas.width  = W;
@@ -84,18 +84,27 @@ export async function generateCertificate({ name, level, program, date }) {
   ctx.font = "bold 36px Arial, sans-serif";
   ctx.fillText(program || "Inglés Completo", W/2, 410);
 
-  // ── Level badge ──
-  const badgeX = W/2 - 60, badgeY = 438;
-  ctx.fillStyle = "#155266";
-  ctx.beginPath(); ctx.roundRect(badgeX, badgeY, 120, 40, 20); ctx.fill();
+  // ── Level badge — PH (Phonics) or CEFR level ──
+  const levelLabel = level === 'PH' ? 'Phonics' : `Nivel ${level}`;
+  const badgeW = level === 'PH' ? 140 : 120;
+  const badgeX = W/2 - badgeW/2, badgeY = 438;
+  ctx.fillStyle = level === 'PH' ? '#7c3aed' : '#155266';
+  ctx.beginPath(); ctx.roundRect(badgeX, badgeY, badgeW, 40, 20); ctx.fill();
   ctx.fillStyle = "#ffbb23";
   ctx.font = "bold 20px Arial, sans-serif";
-  ctx.fillText(`Nivel ${level}`, W/2, badgeY + 27);
+  ctx.fillText(levelLabel, W/2, badgeY + 27);
+
+  // ── International seal for C1 ──
+  if (isInternational) {
+    ctx.fillStyle = "#c0a500";
+    ctx.font = "italic 15px Arial, sans-serif";
+    ctx.fillText("✦ Certificado Internacional Reconocido — World Connect Academy ✦", W/2, badgeY + 65);
+  }
 
   // ── Date ──
   ctx.fillStyle = "#94a3b8";
   ctx.font = "16px Arial, sans-serif";
-  ctx.fillText(`Fecha de emisión: ${date}`, W/2, 520);
+  ctx.fillText(`Fecha de emisión: ${date}`, W/2, isInternational ? 540 : 520);
 
   // ── Signature line ──
   const lineY = 620;

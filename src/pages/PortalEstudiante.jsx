@@ -377,7 +377,9 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
             // For Inglés (en): completing U12 of A1 → advance to A2 (not program completion)
             // Program only completes when finishing C1 (the last CEFR level)
             // For VA programs: completing U12 = full program completion
-            const CEFR_NEXT = { A1:'A2', A2:'B1', B1:'B2', B2:'C1' };
+            // PH (Phonics) → A1 → A2 → B1 → B2 → C1 (final)
+            const CEFR_NEXT = { PH:'A1', A1:'A2', A2:'B1', B1:'B2', B2:'C1' };
+            const CEFR_LABEL = { PH:'Phonics', A1:'A1', A2:'A2', B1:'B1', B2:'B2', C1:'C1' };
             const isIngles = activeProg === 'en';
             const currentLevel = student.level || 'A1';
             const nextCEFR = CEFR_NEXT[currentLevel];
@@ -403,7 +405,15 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
                   await supabase.from("certificates").insert({
                     student_id: student.id, program_id: activeProg,
                     level: isIngles ? currentLevel : null,
-                    data: certData, issued_at: new Date().toISOString(),
+                    data: {
+                      ...certData,
+                      // C1 = official international certificate
+                      isInternational: isIngles && currentLevel === 'C1',
+                      certificateType: isIngles && currentLevel === 'C1'
+                        ? 'Certificado Internacional de Inglés — Nivel C1'
+                        : certData.programName,
+                    },
+                    issued_at: new Date().toISOString(),
                   });
                 } catch(certErr) { console.error("Certificate:", certErr); }
 
@@ -411,8 +421,10 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
                   actor_id: session.user.id, action: "program_completed", entity: "enrollment",
                   metadata: { program: activeProg, level: currentLevel, score: pct },
                 }).catch(()=>{});
-                await notifySelf("success", `🎓 ¡${isIngles ? currentLevel : prog?.shortName} completado!`,
-                  `Completaste las 12 unidades. Tu certificado está disponible.`, "/portal").catch(()=>{});
+                const certMsg = isIngles && currentLevel === 'C1'
+                  ? "🏆 ¡Certificado Internacional C1 disponible! Completaste el programa completo de Inglés."
+                  : `🎓 ¡${isIngles ? (CEFR_LABEL[currentLevel] || currentLevel) : (prog?.shortName || activeProg)} completado! Tu certificado está disponible.`;
+                await notifySelf("success", certMsg, certMsg, "/portal").catch(()=>{});
 
               } else {
                 // ── CEFR Level up: A1→A2, A2→B1, B1→B2, B2→C1 ──────
@@ -450,6 +462,12 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
                     note: `Estudiante requiere asignación a grupo ${nextCEFR}`,
                   },
                 }).catch(()=>{});
+
+                // Special message for Phonics completion
+                const levelUpMsg = currentLevel === 'PH'
+                  ? `🔤 ¡Phonics completado! Ahora empezás el nivel A1 del programa de Inglés.`
+                  : `⬆️ ¡Subiste de ${CEFR_LABEL[currentLevel] || currentLevel} a ${CEFR_LABEL[nextCEFR] || nextCEFR}! Tu grupo cambiará en los próximos días.`;
+                await notifySelf("success", levelUpMsg, levelUpMsg, "/portal").catch(()=>{});
 
                 // Streak + badges on level up
                 const strRes = await updateStreak(session.user.id).catch(()=>null);

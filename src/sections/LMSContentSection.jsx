@@ -4,8 +4,14 @@ import { useConfirm } from "../lib/ConfirmModal.jsx";
 import { supabase } from "../lib/supabase.js";
 
 const P="#155266",PD="#e8f3f6",G="#059669",GD="#ecfdf5",R="#dc2626",RD="#fef2f2",A="#d97706",AD="#fffbeb";
-const LEVELS = ["A1","A2","B1","B2","C1"];
-const PROGRAMS = [["en","Inglés Wide Angle"],["va","Asistente Virtual"]];
+const LEVELS = ["PH","A1","A2","B1","B2","C1"];  // PH = Phonics (pre-A1)
+const PROGRAMS = [
+  ["en","Inglés Wide Angle"],
+  ["en_ph","Inglés — Phonics (PH)"],  // Same program_id 'en', special label for PH content
+  ["va","Asistente Virtual"],
+];
+// Map display name → actual program_id
+const PROG_ID = {"en":"en","en_ph":"en","va":"va"};
 const TYPES = [
   {id:"video",    icon:"🎬", label:"Video"},
   {id:"lesson",   icon:"📖", label:"Lectura"},
@@ -244,7 +250,7 @@ function LessonEditor({content,onChange}){
 // ── Main Section Component ────────────────────────────────────────
 export function LMSContentSection({ showToast }) {
   const [confirm, ConfirmUI] = useConfirm();
-  const [prog,      setProg]      = useState("va");
+  const [prog,      setProg]      = useState("en");
   const [level,     setLevel]     = useState("A1");
   const [units,     setUnits]     = useState([]);
   const [selUnit,   setSelUnit]   = useState(null);
@@ -260,10 +266,13 @@ export function LMSContentSection({ showToast }) {
   useEffect(()=>{
     setSelUnit(null); setSelAct(null); setActivities([]);
     setLoading(true);
+    // Map display prog name to real program_id + level
+    const realProgId = PROG_ID[prog] || prog;
+    const realLevel  = prog === "en_ph" ? "PH" : level;
     const query = supabase.from("units")
       .select("id,unit_number,title,topic,published")
-      .eq("program_id",prog).eq("published",true).order("unit_number");
-    if(prog==="en") query.eq("level",level);
+      .eq("program_id",realProgId).eq("published",true).order("unit_number");
+    if(realProgId==="en") query.eq("level",realLevel);
     query.then(({data})=>{ if(data) setUnits(data); setLoading(false); });
   },[prog,level]);
 
