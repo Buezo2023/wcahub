@@ -128,16 +128,17 @@ export function UserManagementSection({ showToast }) {
   async function resolveConflict(user, resolution) {
     setSaving(true);
     try {
-      const data = await api.post("/api/auth", {
+      const res = await api.post("/api/auth", {
         action: "resolve-conflict",
         userId: user.id,
         resolution,
       });
-      showToast(`✓ ${data.message}`);
+      const msg = res?.data?.message || res?.message || "Resolución aplicada";
+      showToast("✓ " + msg);
       setConflictModal(null);
       await load();
     } catch(e) {
-      showToast("Error: " + e.message, R);
+      showToast("Error: " + (e.message || "Error al resolver"), R);
     } finally { setSaving(false); }
   }
 
