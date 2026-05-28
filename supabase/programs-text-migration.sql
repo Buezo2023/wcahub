@@ -1,51 +1,72 @@
 -- ══════════════════════════════════════════════════════════════════
 -- Migración: program_id enum → text + columna published
--- ORDEN CORRECTO: primero programs (PK), después FKs en otras tablas
--- Ejecutar en Supabase SQL Editor (una sola vez)
+-- VERSIÓN ROBUSTA: elimina constraints dinámicamente por tipo
 -- ══════════════════════════════════════════════════════════════════
 
--- PASO 1: Agregar columnas nuevas a programs (no afecta constraints)
+DO $$
+DECLARE
+  r RECORD;
+BEGIN
+
+-- ── PASO 1: Agregar columnas nuevas a programs ───────────────────
 ALTER TABLE programs ADD COLUMN IF NOT EXISTS published boolean NOT NULL DEFAULT true;
 ALTER TABLE programs ADD COLUMN IF NOT EXISTS description text;
 UPDATE programs SET published = true WHERE published IS NULL;
 
--- PASO 2: Eliminar las FK constraints ANTES de cambiar los tipos
-ALTER TABLE groups      DROP CONSTRAINT IF EXISTS groups_program_id_fkey;
-ALTER TABLE enrollments DROP CONSTRAINT IF EXISTS enrollments_program_id_fkey;
-ALTER TABLE units       DROP CONSTRAINT IF EXISTS units_program_id_fkey;
-ALTER TABLE lms_content DROP CONSTRAINT IF EXISTS lms_content_program_id_fkey;
-ALTER TABLE programs    DROP CONSTRAINT IF EXISTS programs_requires_fkey;
+-- ── PASO 2: Eliminar TODAS las FK que apuntan a programs(id) ─────
+FOR r IN
+  SELECT tc.constraint_name, tc.table_name
+  FROM information_schema.table_constraints tc
+  JOIN information_schema.constraint_column_usage ccu
+    ON tc.constraint_name = ccu.constraint_name
+  WHERE tc.constraint_type = 'FOREIGN KEY'
+    AND ccu.table_name = 'programs'
+    AND ccu.column_name = 'id'
+LOOP
+  EXECUTE format('ALTER TABLE %I DROP CONSTRAINT IF EXISTS %I',
+    r.table_name, r.constraint_name);
+  RAISE NOTICE 'Dropped FK: % on table %', r.constraint_name, r.table_name;
+END LOOP;
 
--- También quitar el PK de programs para poder cambiar su tipo
-ALTER TABLE programs DROP CONSTRAINT IF EXISTS programs_pkey;
+-- ── PASO 3: Eliminar self-referencing FK en programs.requires ────
+FOR r IN
+  SELECT constraint_name FROM information_schema.table_constraints
+  WHERE table_name = 'programs' AND constraint_type = 'FOREIGN KEY'
+LOOP
+  EXECUTE format('ALTER TABLE programs DROP CONSTRAINT IF EXISTS %I', r.constraint_name);
+  RAISE NOTICE 'Dropped self-FK: %', r.constraint_name;
+END LOOP;
 
--- PASO 3: Convertir programs.id y programs.requires a text (el PK primero)
+-- ── PASO 4: Eliminar PK de programs ─────────────────────────────
+FOR r IN
+  SELECT constraint_name FROM information_schema.table_constraints
+  WHERE table_name = 'programs' AND constraint_type = 'PRIMARY KEY'
+LOOP
+  EXECUTE format('ALTER TABLE programs DROP CONSTRAINT IF EXISTS %I', r.constraint_name);
+  RAISE NOTICE 'Dropped PK: %', r.constraint_name;
+END LOOP;
+
+-- ── PASO 5: Convertir programs.id → text (PK primero) ───────────
 ALTER TABLE programs ALTER COLUMN id       TYPE text USING id::text;
 ALTER TABLE programs ALTER COLUMN requires TYPE text USING requires::text;
-
--- PASO 4: Restaurar PK en programs
 ALTER TABLE programs ADD PRIMARY KEY (id);
 
--- PASO 5: Convertir FK columns en otras tablas
+-- ── PASO 6: Convertir FK columns en otras tablas ─────────────────
 ALTER TABLE groups      ALTER COLUMN program_id TYPE text USING program_id::text;
 ALTER TABLE enrollments ALTER COLUMN program_id TYPE text USING program_id::text;
 ALTER TABLE units       ALTER COLUMN program_id TYPE text USING program_id::text;
 
-DO $$ BEGIN
-  IF EXISTS (SELECT 1 FROM information_schema.columns
-    WHERE table_name='lms_content' AND column_name='program_id') THEN
-    ALTER TABLE lms_content ALTER COLUMN program_id TYPE text USING program_id::text;
-  END IF;
-END $$;
+IF EXISTS (SELECT 1 FROM information_schema.columns
+  WHERE table_name='lms_content' AND column_name='program_id') THEN
+  ALTER TABLE lms_content ALTER COLUMN program_id TYPE text USING program_id::text;
+END IF;
 
-DO $$ BEGIN
-  IF EXISTS (SELECT 1 FROM information_schema.columns
-    WHERE table_name='leads' AND column_name='program_interest') THEN
-    ALTER TABLE leads ALTER COLUMN program_interest TYPE text USING program_interest::text;
-  END IF;
-END $$;
+IF EXISTS (SELECT 1 FROM information_schema.columns
+  WHERE table_name='leads' AND column_name='program_interest') THEN
+  ALTER TABLE leads ALTER COLUMN program_interest TYPE text USING program_interest::text;
+END IF;
 
--- PASO 6: Restaurar FK constraints
+-- ── PASO 7: Restaurar FK constraints ─────────────────────────────
 ALTER TABLE groups
   ADD CONSTRAINT groups_program_id_fkey
   FOREIGN KEY (program_id) REFERENCES programs(id) ON DELETE SET NULL;
@@ -62,12 +83,16 @@ ALTER TABLE programs
   ADD CONSTRAINT programs_requires_fkey
   FOREIGN KEY (requires) REFERENCES programs(id) ON DELETE SET NULL;
 
--- PASO 7: Eliminar el tipo enum (ya no se necesita)
+-- ── PASO 8: Eliminar el tipo enum ───────────────────────────────
 DROP TYPE IF EXISTS program_id CASCADE;
 
--- PASO 8: Índice para published
+-- ── PASO 9: Índice ───────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_programs_active_published
   ON programs(active, published) WHERE active = true AND published = true;
 
--- Verificar resultado
+RAISE NOTICE '✓ Migración completada. programs.id ahora es TEXT.';
+
+END $$;
+
+-- Verificar
 SELECT id, name, active, published FROM programs ORDER BY id;
