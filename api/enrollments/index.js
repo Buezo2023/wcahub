@@ -154,7 +154,7 @@ async function handleCreate(req, res) {
     }
 
     const { data: existing } = await admin.from('enrollments')
-      .select('id, status').eq('student_id', studentId).eq('program_id', programId).maybeSingle();
+      .select('id, status, current_unit').eq('student_id', studentId).eq('program_id', programId).maybeSingle();
     if (existing?.status === 'active')
       return err(res, { status: 409, message: 'El estudiante ya está matriculado en este programa' });
 
@@ -165,7 +165,11 @@ async function handleCreate(req, res) {
         programId,
         studentLevel: student.level,
         groupId: groupId || null,
-        existingUnit: existing?.status === 'active' ? (existing.current_unit ?? null) : null,
+        // Preserve current_unit for any existing enrollment (active, pending, suspended).
+        // Only skip if the value is missing or out of range — let resolveCurrentUnit validate.
+        existingUnit: (existing?.current_unit != null && existing.current_unit >= 1 && existing.current_unit <= 12)
+          ? existing.current_unit
+          : null,
       });
     } catch (unitErr) {
       return err(res, { status: unitErr.status || 422, message: unitErr.message });
@@ -193,8 +197,7 @@ async function handleCreate(req, res) {
       .upsert({
         student_id: studentId, program_id: programId, group_id: groupId || null,
         status: 'active',
-        // Existing enrollment: keep their progress. New enrollment: start at U1.
-        // Student must pass exams sequentially from U1 regardless of group cycle.
+        // current_unit is resolved by resolveCurrentUnit() above (group.active_unit or cycle_config).
         current_unit: initialUnit,
         price_locked: price || null, enrolled_at: new Date().toISOString(),
         next_payment_date: nextPaymentStr,
