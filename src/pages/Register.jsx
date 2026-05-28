@@ -102,8 +102,9 @@ export default function Register() {
   // Load programs dynamically from Supabase
   useEffect(() => {
     supabase.from("programs")
-      .select("id, name, description, price_monthly, price_quarterly, active, prereq_program_id")
+      .select("id, name, description, price_monthly, price_quarterly, active, published, prereq_program_id")
       .eq("active", true)
+      .eq("published", true)
       .order("id")
       .then(({ data: progs, error }) => {
         if (error || !progs?.length) {

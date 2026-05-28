@@ -284,9 +284,10 @@ export default function SuperAdmin() {
           interval: p.price_monthly ? "mes" : "trimestre",
           students: 0,
           active: p.active,
+          published: p.published !== false, // default true for legacy programs
           color: { en:"#155266", va:"#7c3aed", va_mkt:"#d97706", va_legal:"#059669", va_care:"#dc2626" }[p.id] || "#155266",
           icon: { en:"🇬🇧", va:"💻", va_mkt:"📱", va_legal:"⚖️", va_care:"🏥" }[p.id] || "📚",
-          desc: p.name,
+          desc: p.description || p.name,
         })));
       }
     });
@@ -470,24 +471,46 @@ export default function SuperAdmin() {
   }
   function openEditProg(p) { setProgForm({...p}); setProgModal({mode:"edit",data:p}); }
   async function saveProg() {
+    if (!progForm.name?.trim()) { showToast("El nombre es requerido", R); return; }
     setSaving(true);
     try {
+      const priceVal = +progForm.price || 95;
+      const isMonthly = progForm.interval !== "trimestre" && progForm.interval !== "año";
+
       if (progModal.mode === "add") {
-        setPrograms(p => [...p, { ...progForm, id: Date.now(), students: 0, price: +progForm.price }]);
-        showToast(`Programa "${progForm.name}" creado (guardá en Supabase manualmente)`);
+        // Generate slug from name: "Inglés para Niños" → "en_ninos"
+        const code = (progForm.code || progForm.name)
+          .toLowerCase()
+          .normalize("NFD").replace(/[̀-ͯ]/g, "")
+          .replace(/[^a-z0-9]+/g, "_")
+          .replace(/^_|_$/g, "")
+          .slice(0, 30);
+        const newProg = {
+          id:              code,
+          name:            progForm.name.trim(),
+          description:     progForm.desc || null,
+          price_monthly:   isMonthly ? priceVal : null,
+          price_quarterly: !isMonthly ? priceVal : null,
+          active:          progForm.active !== false,
+          published:       progForm.published !== false,
+        };
+        const { data: created, error } = await supabase.from("programs").insert(newProg).select().maybeSingle();
+        if (error) throw new Error(error.message);
+        setPrograms(p => [...p, { ...newProg, students: 0, price: priceVal, id: created?.id || code }]);
+        showToast(`✓ Programa "${progForm.name}" ${newProg.published ? "publicado" : "guardado como borrador"}`);
       } else {
-        // Update price in Supabase
-        const priceVal = +progForm.price;
-        const isMonthly = progForm.interval !== "trimestre" && progForm.interval !== "año";
-        await supabase.from("programs").update({
-          name:             progForm.name,
-          price_monthly:    isMonthly ? priceVal : null,
-          price_quarterly:  !isMonthly ? priceVal : null,
-          active:           progForm.active,
+        const { error } = await supabase.from("programs").update({
+          name:            progForm.name.trim(),
+          description:     progForm.desc || null,
+          price_monthly:   isMonthly ? priceVal : null,
+          price_quarterly: !isMonthly ? priceVal : null,
+          active:          progForm.active !== false,
+          published:       progForm.published !== false,
         }).eq("id", progModal.data?.id);
+        if (error) throw new Error(error.message);
         setPrograms(p => p.map(x => x.id === progModal.data?.id
           ? { ...x, ...progForm, price: priceVal } : x));
-        showToast("Programa actualizado correctamente");
+        showToast("✓ Programa actualizado");
       }
     } catch(e) { showToast("Error: " + e.message, R); }
     finally { setSaving(false); setProgModal(null); }
@@ -744,9 +767,20 @@ export default function SuperAdmin() {
                       <div style={{ fontSize:22, fontWeight:800, color:"var(--text-primary)" }}>{p.students}</div>
                       <div style={{ fontSize:11, color:"var(--text-tertiary)" }}>estudiantes</div>
                     </div>
+                    {p.published===false && (
+                      <div style={{ position:"absolute", top:8, right:8, background:"#fef3c7", color:"#92400e", fontSize:10, fontWeight:700, padding:"2px 7px", borderRadius:5, letterSpacing:".3px" }}>BORRADOR</div>
+                    )}
                   </div>
                   <div style={{ display:"flex", gap:7 }}>
                     <button onClick={()=>openEditProg(p)} style={{ flex:1, padding:"8px", background:PD, color:P, border:"none", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✎ Editar</button>
+                    <button onClick={async()=>{
+                      const newPub=!p.published;
+                      const {error}=await supabase.from("programs").update({published:newPub}).eq("id",p.id);
+                      if(!error){setPrograms(prev=>prev.map(x=>x.id===p.id?{...x,published:newPub}:x));showToast(newPub?"✓ Publicado":"Guardado como borrador");}
+                      else showToast("Error: "+error.message,R);
+                    }} style={{ flex:1, padding:"8px", background:p.published===false?"#fef3c7":GD, color:p.published===false?"#92400e":G, border:"none", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
+                      {p.published===false?"📢 Publicar":"✓ Publicado"}
+                    </button>
                     <button onClick={()=>setPrograms(prev=>prev.map(x=>x.id===p.id?{...x,active:!x.active}:x))} style={{ flex:1, padding:"8px", background:p.active?RD:GD, color:p.active?R:G, border:"none", borderRadius:8, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>{p.active?"Desactivar":"Activar"}</button>
                     {p.students===0 && <button onClick={async()=>{
   const { error } = await supabase.from("programs").update({active:false}).eq("id",p.id);
