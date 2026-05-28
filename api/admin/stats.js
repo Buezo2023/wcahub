@@ -14,6 +14,22 @@ export default async function handler(req, res) {
 
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
+  // ── safeQuery: wraps a Supabase builder promise so a failing table never
+  //    breaks the whole stats response. Use instead of .catch() on the builder.
+  async function safeQuery(label, queryPromise, fallback = { data: [], error: null, count: 0 }) {
+    try {
+      const result = await queryPromise;
+      if (result?.error) {
+        console.error(`[stats] ${label} error:`, result.error.message);
+        return fallback;
+      }
+      return result;
+    } catch (e) {
+      console.error(`[stats] ${label} exception:`, e.message);
+      return fallback;
+    }
+  }
+
   try {
     const { profile: actor } = await requireAuth(req);
     requireRole(actor, 'super_admin', 'directivo', 'admin');
@@ -46,7 +62,7 @@ export default async function handler(req, res) {
       admin.from('students').select('id', { count: 'exact' }).gte('created_at', month1),
       admin.from('staff').select('id', { count: 'exact' }).eq('active', true),
       // leads may not exist — use catch to avoid breaking everything
-      admin.from('leads').select('stage').limit(500).catch(() => ({ data: null, error: null })),
+      safeQuery('leads', admin.from('leads').select('stage').limit(500), { data: [], error: null }),
     ]);
 
     // Validate critical queries
