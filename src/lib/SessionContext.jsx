@@ -11,8 +11,15 @@ export function SessionProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Safety timeout — if Supabase hangs, don't leave users stuck on "Verificando acceso"
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+      console.warn("[SessionContext] safety timeout — forced loading=false after 8s");
+    }, 8000);
+
     // Initial session load
     supabase.auth.getSession().then(async ({ data: { session: s } }) => {
+      clearTimeout(safetyTimer);
       setSession(s);
       if (s?.user?.id) {
         try {
@@ -27,6 +34,7 @@ export function SessionProvider({ children }) {
       }
       setLoading(false);
     }).catch(e => {
+      clearTimeout(safetyTimer);
       console.error("[SessionContext] session load failed:", e);
       setLoading(false);
     });

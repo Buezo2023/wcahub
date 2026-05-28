@@ -128,6 +128,11 @@ export function UserManagementSection({ showToast }) {
   async function resolveConflict(user, resolution) {
     setSaving(true);
     try {
+      // Optimistic update: change role immediately in local state
+      const newRole = resolution === "keep-staff" ? (user.role !== "estudiante" ? user.role : "docente") : "estudiante";
+      setUsers(prev => prev.map(u => u.id === user.id ? { ...u, role: newRole } : u));
+      setConflictModal(null); // close modal right away
+
       const res = await api.post("/api/auth", {
         action: "resolve-conflict",
         userId: user.id,
@@ -135,10 +140,12 @@ export function UserManagementSection({ showToast }) {
       });
       const msg = res?.data?.message || res?.message || "Resolución aplicada";
       showToast("✓ " + msg);
-      setConflictModal(null);
-      await load();
+      // Reload in background to sync with DB
+      setTimeout(() => load(), 1000);
     } catch(e) {
+      // Rollback: reload to restore correct state
       showToast("Error: " + (e.message || "Error al resolver"), R);
+      await load();
     } finally { setSaving(false); }
   }
 
