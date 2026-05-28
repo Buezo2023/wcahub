@@ -13,6 +13,98 @@ const PROGRAM_NAMES = {
 const PREREQUISITES = { va_mkt: 'va', va_legal: 'va', va_care: 'va' };
 const VALID_ROLES = ['estudiante','docente','admin','super_admin','asesor_ventas','cobros','coordinadora','directivo'];
 
+// ── Shared helper: resolve current_unit for continuous enrollment ──────────
+// Rules:
+//   A. groupId → use group.active_unit
+//   B. no groupId → cycle_config by program_id + level
+//   Returns { unit, source } or throws with a clear message.
+//
+// Parameters:
+//   admin      - Supabase admin client
+//   programId  - e.g. 'en', 'va', 'va_mkt'
+//   studentLevel - student.level (e.g. 'A1') — required for Inglés, optional for VA
+//   groupId    - optional UUID
+//   existingUnit - current_unit from an existing enrollment (conserve if present)
+//
+async function resolveCurrentUnit(admin, { programId, studentLevel, groupId, existingUnit }) {
+  // C: existing enrollment — always conserve progress
+  if (existingUnit != null) {
+    return { unit: existingUnit, source: 'existing_enrollment' };
+  }
+
+  // A: group provided — use group.active_unit
+  if (groupId) {
+    const { data: group, error: gErr } = await admin
+      .from('groups')
+      .select('id, active, active_unit, capacity, program_id, level')
+      .eq('id', groupId)
+      .maybeSingle();
+
+    if (gErr) throw { status: 500, message: `Error al consultar el grupo: ${gErr.message}` };
+    if (!group)          throw { status: 404, message: 'El grupo especificado no existe' };
+    if (!group.active)   throw { status: 422, message: 'El grupo está inactivo y no acepta nuevas matrículas' };
+    if (group.program_id !== programId)
+      throw { status: 422, message: `El grupo pertenece al programa "${group.program_id}" pero se solicitó "${programId}"` };
+
+    // Capacity check: count active enrollments in this group
+    const { count: enrolled } = await admin
+      .from('enrollments').select('id', { count: 'exact' })
+      .eq('group_id', groupId).eq('status', 'active');
+    if ((enrolled || 0) >= (group.capacity || 25))
+      throw { status: 422, message: `El grupo está lleno (${enrolled}/${group.capacity || 25} cupos)` };
+
+    // Level match for Inglés
+    if (programId === 'en' && studentLevel && group.level && group.level !== studentLevel)
+      throw { status: 422, message: `El nivel del grupo es ${group.level} pero el estudiante está en ${studentLevel}` };
+
+    const unit = group.active_unit;
+    if (!unit || unit < 1 || unit > 12)
+      throw { status: 422, message: `La unidad activa del grupo (${unit}) es inválida. Debe estar entre 1 y 12.` };
+
+    return { unit, source: 'group_active_unit', group };
+  }
+
+  // B: no group — look up cycle_config
+  const isIngles = programId === 'en';
+  let query = admin.from('cycle_config').select('current_unit, program_id, level')
+    .eq('program_id', programId);
+
+  if (isIngles && studentLevel) {
+    query = query.eq('level', studentLevel);
+  } else if (!isIngles && studentLevel) {
+    // VA programs: try with level first, then without
+    const { data: withLevel } = await query.eq('level', studentLevel).maybeSingle();
+    if (withLevel?.current_unit) {
+      const unit = withLevel.current_unit;
+      if (unit < 1 || unit > 12)
+        throw { status: 422, message: `La unidad en cycle_config (${unit}) es inválida. Debe estar entre 1 y 12.` };
+      return { unit, source: 'cycle_config' };
+    }
+    // fallback: try without level
+    const { data: noLevel } = await admin.from('cycle_config').select('current_unit')
+      .eq('program_id', programId).is('level', null).maybeSingle();
+    if (noLevel?.current_unit) {
+      const unit = noLevel.current_unit;
+      if (unit < 1 || unit > 12)
+        throw { status: 422, message: `La unidad en cycle_config (${unit}) es inválida. Debe estar entre 1 y 12.` };
+      return { unit, source: 'cycle_config' };
+    }
+    throw { status: 422, message: `No se encontró configuración de ciclo para el programa "${programId}". Configurá cycle_config en el panel académico antes de matricular.` };
+  }
+
+  const { data: cycle } = await query.maybeSingle();
+  if (!cycle) {
+    const levelHint = isIngles && studentLevel ? ` (nivel ${studentLevel})` : '';
+    throw { status: 422, message: `No se encontró configuración de ciclo para "${programId}"${levelHint}. Configurá cycle_config en el panel académico antes de matricular.` };
+  }
+
+  const unit = cycle.current_unit;
+  if (!unit || unit < 1 || unit > 12)
+    throw { status: 422, message: `La unidad en cycle_config (${unit}) es inválida. Debe estar entre 1 y 12.` };
+
+  return { unit, source: 'cycle_config' };
+}
+
 export default async function handler(req, res) {
   setCORS(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -66,15 +158,27 @@ async function handleCreate(req, res) {
     if (existing?.status === 'active')
       return err(res, { status: 409, message: 'El estudiante ya está matriculado en este programa' });
 
+    // ── Resolve current_unit (continuous enrollment) ─────────────────
+    let resolved;
+    try {
+      resolved = await resolveCurrentUnit(admin, {
+        programId,
+        studentLevel: student.level,
+        groupId: groupId || null,
+        existingUnit: existing?.status === 'active' ? (existing.current_unit ?? null) : null,
+      });
+    } catch (unitErr) {
+      return err(res, { status: unitErr.status || 422, message: unitErr.message });
+    }
+    const initialUnit = resolved.unit;
+
+    // Fetch group for email / capacity (already validated in resolveCurrentUnit)
     let group = null;
     if (groupId) {
       const { data: g } = await admin.from('groups')
         .select('id, schedule, days, capacity, program_id, level, teacher_groups(teacher:staff(profile:profiles(full_name)))')
         .eq('id', groupId).maybeSingle();
       group = g;
-      const { count } = await admin.from('enrollments')
-        .select('id', { count: 'exact' }).eq('group_id', groupId).eq('status', 'active');
-      if (count >= (group?.capacity || 25)) return err(res, { status: 422, message: 'El grupo está lleno' });
     }
 
     const now = new Date();
@@ -91,7 +195,7 @@ async function handleCreate(req, res) {
         status: 'active',
         // Existing enrollment: keep their progress. New enrollment: start at U1.
         // Student must pass exams sequentially from U1 regardless of group cycle.
-        current_unit: existing ? existing.current_unit || 1 : 1,
+        current_unit: initialUnit,
         price_locked: price || null, enrolled_at: new Date().toISOString(),
         next_payment_date: nextPaymentStr,
       }, { onConflict: 'student_id,program_id' }).select().maybeSingle();
@@ -100,7 +204,12 @@ async function handleCreate(req, res) {
 
     await admin.from('audit_log').insert({
       actor_id: actor.id, action: 'created_enrollment', entity: 'enrollment',
-      entity_id: enrollment.id, metadata: { studentId, programId, groupId, price },
+      entity_id: enrollment.id,
+      metadata: {
+        studentId, programId, groupId, price,
+        initial_unit: initialUnit,
+        source: resolved.source,
+      },
     });
 
     try {

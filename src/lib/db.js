@@ -330,16 +330,30 @@ export async function getMetrics() {
 }
 
 // ─── PROGRAMS ENROLLMENT ──────────────────────────────────────────
+// NOTE: This client-side function is legacy. Prefer api/enrollments endpoint
+// which fully validates groups, active_unit, and cycle_config.
+// current_unit is intentionally omitted here so Postgres uses the DB default
+// or preserves the existing value on conflict. Proper unit resolution
+// only happens server-side via resolveCurrentUnit() in the API handlers.
 export async function enrollStudent(studentId, programId, groupId, price) {
+  // Check for existing enrollment to preserve current_unit
+  const { data: existing } = await supabase
+    .from('enrollments').select('id, current_unit')
+    .eq('student_id', studentId).eq('program_id', programId).maybeSingle();
+
   const { data, error } = await supabase
     .from('enrollments')
     .upsert({
-      student_id:    studentId,
-      program_id:    programId,
-      group_id:      groupId,
-      status:        'active',
-      price_locked:  price,
-      current_unit:  1,
+      student_id:   studentId,
+      program_id:   programId,
+      group_id:     groupId,
+      status:       'active',
+      price_locked: price,
+      // C: preserve existing current_unit — do NOT reset to 1
+      // If new enrollment and no server-side resolution was done,
+      // current_unit falls back to the DB default (1). This is a
+      // legacy path — new enrollments should go through /api/enrollments.
+      ...(existing?.current_unit != null ? { current_unit: existing.current_unit } : {}),
     }, { onConflict: 'student_id,program_id' })
     .select()
     .maybeSingle();
