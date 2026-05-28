@@ -16,6 +16,9 @@ export function PagosSection({ showToast, initialTab }) {
   const [regModal, setRegModal] = useState(false);
   const [form,     setForm]     = useState({studentId:"",enrollmentId:"",amount:95,method:"transfer",bank:"",referenceCode:"",notes:""});
   const [saving,   setSaving]   = useState(false);
+  const [codeSearch, setCodeSearch] = useState("");
+  const [codeFound,  setCodeFound]  = useState(null);  // {id, name, email, code, enrollmentId, amount, program}
+  const [codeLookup, setCodeLookup] = useState(false); // loading
   const [search,   setSearch]   = useState("");
 
   useEffect(()=>{load();},[]);
@@ -24,7 +27,7 @@ export function PagosSection({ showToast, initialTab }) {
     setLoading(true);
     try {
       const {data:pays} = await supabase.from("payments")
-        .select("id,amount,method,status,reference_code,bank,created_at,confirmed_at,period_start,proof_url,student:students(id,profile:profiles(full_name,email)),enrollment:enrollments(program_id)")
+        .select("id,amount,method,status,reference_code,bank,created_at,confirmed_at,period_start,proof_url,student:students(id,student_code,profile:profiles(full_name,email)),enrollment:enrollments(program_id)")
         .order("created_at",{ascending:false}).limit(100);
       if (pays) setPayments(pays);
       const {data:sts} = await supabase.from("students")
@@ -39,7 +42,7 @@ export function PagosSection({ showToast, initialTab }) {
     const base = tab==="pending"?pending:tab==="confirmed"?confirmed:payments;
     if (!search) return base;
     const s=search.toLowerCase();
-    return base.filter(p=>(p.student?.profile?.full_name||"").toLowerCase().includes(s)||(p.reference_code||"").toLowerCase().includes(s));
+    return base.filter(p=>(p.student?.profile?.full_name||"").toLowerCase().includes(s)||(p.reference_code||"").toLowerCase().includes(s)||(p.student?.student_code||"").toLowerCase().includes(s));
   },[tab,pending,confirmed,payments,search]);
 
   async function confirm(id) {
@@ -56,6 +59,42 @@ export function PagosSection({ showToast, initialTab }) {
       showToast("Pago rechazado");
       await load();
     } catch(e) { showToast("Error: "+(e.message||""), R); }
+  }
+
+  async function lookupByCode() {
+    if (!codeSearch.trim()) return;
+    setCodeLookup(true);
+    setCodeFound(null);
+    try {
+      const q = codeSearch.trim().toUpperCase();
+      const { data: sts } = await supabase.from("students")
+        .select("id,student_code,level,profile:profiles(full_name,email),enrollments(id,program_id,status,price_locked,next_payment_date)")
+        .ilike("student_code", `%${q}%`)
+        .limit(5);
+      if (!sts?.length) {
+        showToast("No se encontró ningún estudiante con ese código", "#d97706");
+        return;
+      }
+      const s = sts[0];
+      const en = s.enrollments?.find(e => e.status === "active") || s.enrollments?.[0];
+      setCodeFound({
+        id:           s.id,
+        name:         s.profile?.full_name || "—",
+        email:        s.profile?.email || "—",
+        code:         s.student_code,
+        enrollmentId: en?.id || "",
+        amount:       en?.price_locked || 95,
+        program:      { en:"Inglés", va:"VA", va_mkt:"VA·Mkt", va_legal:"VA·Legal", va_care:"VA·Cuidador" }[en?.program_id] || en?.program_id || "—",
+        enrollStatus: en?.status || "sin matrícula",
+        nextPayment:  en?.next_payment_date,
+      });
+      // Pre-fill form
+      setForm(p => ({...p, studentId: s.id, enrollmentId: en?.id || "", amount: en?.price_locked || 95}));
+    } catch(e) {
+      showToast("Error: " + e.message, R);
+    } finally {
+      setCodeLookup(false);
+    }
   }
 
   async function register() {
@@ -162,17 +201,39 @@ export function PagosSection({ showToast, initialTab }) {
           <div style={{background:"var(--bg-surface)",borderRadius:16,padding:24,width:"min(420px, calc(100vw - 32px))",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)",maxHeight:"90vh",overflowY:"auto"}}>
             <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:18}}>Registrar pago</div>
             <div style={{marginBottom:12}}>
-              <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Estudiante *</div>
-              <select value={form.studentId} onChange={e=>{
-                const s=students.find(x=>x.id===e.target.value);
-                const en=s?.enrollments?.find(x=>x.status==="active");
-                // Auto-fill locked price (respects scholarship=$0 and B2B discount)
-                const autoPrice = en?.price_locked || 95;
-                setForm(p=>({...p,studentId:e.target.value,enrollmentId:en?.id||"",amount:autoPrice}));
-              }} style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}>
-                <option value="">Seleccionar estudiante...</option>
-                {students.map(s=><option key={s.id} value={s.id}>{s.student_code ? `[${s.student_code}] ` : ""}{s.profile?.full_name} — {s.profile?.email}</option>)}
-              </select>
+              <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Código de estudiante *</div>
+              <div style={{display:"flex",gap:8}}>
+                <input
+                  value={codeSearch}
+                  onChange={e=>{ setCodeSearch(e.target.value); setCodeFound(null); }}
+                  onKeyDown={e=>e.key==="Enter"&&lookupByCode()}
+                  placeholder="Ej: WCA-26-0001"
+                  style={{flex:1,padding:"10px 13px",border:`1px solid ${codeFound?"#059669":codeFound===null&&codeSearch?"#d97706":"var(--border)"}`,borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",textTransform:"uppercase"}}
+                />
+                <button onClick={lookupByCode} disabled={codeLookup||!codeSearch}
+                  style={{padding:"10px 16px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:12,fontWeight:700,cursor:codeLookup||!codeSearch?"not-allowed":"pointer",fontFamily:"inherit",flexShrink:0}}>
+                  {codeLookup?"...":"Buscar"}
+                </button>
+              </div>
+              {/* Found student card */}
+              {codeFound && (
+                <div style={{marginTop:8,padding:"10px 14px",background:"#ecfdf5",border:"1px solid #6ee7b7",borderRadius:8}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:700,color:"#065f46"}}>{codeFound.name}</div>
+                      <div style={{fontSize:11,color:"#047857",marginTop:2}}>{codeFound.email}</div>
+                    </div>
+                    <div style={{textAlign:"right",flexShrink:0,marginLeft:12}}>
+                      <div style={{fontSize:11,fontWeight:700,color:"#155266",background:"#e8f3f6",borderRadius:5,padding:"2px 7px",display:"inline-block"}}>{codeFound.code}</div>
+                      <div style={{fontSize:11,color:"#047857",marginTop:3}}>{codeFound.program}</div>
+                    </div>
+                  </div>
+                  <div style={{display:"flex",gap:8,marginTop:6,fontSize:11,color:"#065f46"}}>
+                    <span>Estado: <strong>{codeFound.enrollStatus}</strong></span>
+                    {codeFound.nextPayment && <span>· Próx. pago: <strong>{new Date(codeFound.nextPayment).toLocaleDateString("es-HN")}</strong></span>}
+                  </div>
+                </div>
+              )}
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
               {[["Monto (USD) *","amount","number","95"],["Banco/Cuenta","bank","text","BAC Honduras"]].map(([l,k,t,ph])=>(
@@ -196,7 +257,7 @@ export function PagosSection({ showToast, initialTab }) {
                 style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
             </div>
             <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>setRegModal(false)} style={{flex:1,padding:"10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>Cancelar</button>
+              <button onClick={()=>{setRegModal(false);setCodeSearch("");setCodeFound(null);}} style={{flex:1,padding:"10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>Cancelar</button>
               <button onClickCapture={e=>{e.stopPropagation();register();}} style={{flex:2,padding:"10px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:saving?.6:1}}>
                 {saving?"Guardando...":"Registrar pago"}
               </button>
