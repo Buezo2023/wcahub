@@ -92,11 +92,9 @@ export default function AuthCallback() {
         }
 
         if (profileError) {
-          // Log but don't expose internal error — try to redirect anyway
-          // Try to use session metadata as fallback
-          const role = session.user.user_metadata?.role || "estudiante";
+          // Profile error — always fallback to estudiante portal, never trust OAuth metadata for roles
           clearTimeout(timeout);
-          return navigate(ROLE_ROUTES[role] || "/portal", { replace: true });
+          return navigate("/portal", { replace: true });
         }
 
         if (profile && !profile.active) {
