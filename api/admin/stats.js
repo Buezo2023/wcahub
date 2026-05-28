@@ -7,7 +7,6 @@ export default async function handler(req, res) {
   setCORS(req, res);
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Rate limiting
   try {
     const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
     await checkRateLimit(`stats:${ip}`, 60, 60000);
@@ -27,7 +26,7 @@ export default async function handler(req, res) {
     const month1 = new Date(y, m, 1).toISOString();
     const month0 = new Date(y, m - 1, 1).toISOString();
 
-    // Run all queries in parallel
+    // Run all queries in parallel — each is safe to fail individually
     const [
       studentsRes,
       activeEnrollsRes,
@@ -40,13 +39,28 @@ export default async function handler(req, res) {
     ] = await Promise.all([
       admin.from('students').select('id', { count: 'exact' }),
       admin.from('enrollments').select('id, program_id', { count: 'exact' }).eq('status', 'active'),
-      admin.from('payments').select('amount, program_id:enrollments(program_id), created_at').eq('status', 'confirmed').gte('created_at', month1),
+      // Simplified: no ambiguous join — just amount and created_at for MRR calculation
+      admin.from('payments').select('amount, created_at, enrollment_id').eq('status', 'confirmed').gte('created_at', month1),
       admin.from('payments').select('amount').eq('status', 'confirmed').gte('created_at', month0).lt('created_at', month1),
       admin.from('enrollments').select('program_id, status').eq('status', 'active'),
       admin.from('students').select('id', { count: 'exact' }).gte('created_at', month1),
       admin.from('staff').select('id', { count: 'exact' }).eq('active', true),
-      admin.from('leads').select('stage'),
+      // leads may not exist — use catch to avoid breaking everything
+      admin.from('leads').select('stage').limit(500).catch(() => ({ data: null, error: null })),
     ]);
+
+    // Validate critical queries
+    if (studentsRes.error)
+      return err(res, { status: 500, message: `Error cargando estudiantes: ${studentsRes.error.message}` });
+    if (activeEnrollsRes.error)
+      return err(res, { status: 500, message: `Error cargando matrículas: ${activeEnrollsRes.error.message}` });
+
+    // Non-critical queries: log and continue with empty data
+    if (paymentsRes.error)      console.error('[stats] payments error:', paymentsRes.error.message);
+    if (paymentsLastRes.error)  console.error('[stats] payments last error:', paymentsLastRes.error.message);
+    if (programBreakdownRes.error) console.error('[stats] program breakdown error:', programBreakdownRes.error.message);
+    if (newStudentsRes.error)   console.error('[stats] new students error:', newStudentsRes.error.message);
+    if (staffRes.error)         console.error('[stats] staff error:', staffRes.error.message);
 
     const mrr      = (paymentsRes.data || []).reduce((s, p) => s + Number(p.amount || 0), 0);
     const mrrLast  = (paymentsLastRes.data || []).reduce((s, p) => s + Number(p.amount || 0), 0);
@@ -54,46 +68,55 @@ export default async function handler(req, res) {
 
     // Program breakdown
     const byProgram = (programBreakdownRes.data || []).reduce((acc, e) => {
-      acc[e.program_id] = (acc[e.program_id] || 0) + 1;
+      if (e.program_id) acc[e.program_id] = (acc[e.program_id] || 0) + 1;
       return acc;
     }, {});
 
-    // Lead funnel
+    // Lead funnel — safe even if leads table doesn't exist
     const leadFunnel = (leadsRes.data || []).reduce((acc, l) => {
-      acc[l.stage] = (acc[l.stage] || 0) + 1;
+      if (l.stage) acc[l.stage] = (acc[l.stage] || 0) + 1;
       return acc;
     }, {});
+
+    // Revenue by program via enrollments join (safe — no ambiguous column)
+    const revenueByProgram = {};
+    if (paymentsRes.data && !paymentsRes.error) {
+      const enrollmentIds = paymentsRes.data
+        .filter(p => p.enrollment_id)
+        .map(p => p.enrollment_id);
+      if (enrollmentIds.length) {
+        const { data: enrollForRevenue } = await admin
+          .from('enrollments').select('id, program_id').in('id', enrollmentIds);
+        const enrollMap = {};
+        (enrollForRevenue || []).forEach(e => { enrollMap[e.id] = e.program_id; });
+        paymentsRes.data.forEach(p => {
+          const pid = enrollMap[p.enrollment_id] || 'unknown';
+          revenueByProgram[pid] = (revenueByProgram[pid] || 0) + Number(p.amount || 0);
+        });
+      }
+    }
 
     return ok(res, {
-      // Core KPIs
-      totalStudents:   studentsRes.count  || 0,
-      activeEnrolls:   activeEnrollsRes.count || 0,
-      mrr:             mrr,
-      mrrLastMonth:    mrrLast,
-      mrrGrowthPct:    Number(mrrGrowth),
-      arr:             mrr * 12,
-      arpu:            activeEnrollsRes.count > 0 ? (mrr / activeEnrollsRes.count).toFixed(2) : 0,
+      totalStudents:    studentsRes.count  || 0,
+      activeEnrolls:    activeEnrollsRes.count || 0,
+      mrr,
+      mrrLastMonth:     mrrLast,
+      mrrGrowthPct:     Number(mrrGrowth),
+      arr:              mrr * 12,
+      arpu:             activeEnrollsRes.count > 0 ? (mrr / activeEnrollsRes.count).toFixed(2) : 0,
       newStudentsMonth: newStudentsRes.count || 0,
+      newThisMonth:     newStudentsRes.count || 0, // alias for BISection compatibility
       totalStaff:       staffRes.count || 0,
-
-      // Breakdowns
       byProgram,
       activePrograms:   Object.keys(byProgram).filter(k => byProgram[k] > 0).length,
       leadFunnel,
-
-      // Revenue by program (current month)
-      revenueByProgram: (paymentsRes.data || []).reduce((acc, p) => {
-        const pid = p.program_id?.program_id || 'unknown';
-        acc[pid] = (acc[pid] || 0) + Number(p.amount || 0);
-        return acc;
-      }, {}),
-
-      // Meta
+      revenueByProgram,
       generatedAt: new Date().toISOString(),
-      period:      `${now.toLocaleDateString('es-HN', { month: 'long', year: 'numeric' })}`,
+      period: `${now.toLocaleDateString('es-HN', { month: 'long', year: 'numeric' })}`,
     });
 
   } catch (e) {
-    return err(res, e);
+    console.error('[stats] unhandled error:', e.message);
+    return err(res, { status: 500, message: `Error cargando métricas: ${e.message}` });
   }
 }

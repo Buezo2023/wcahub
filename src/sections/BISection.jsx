@@ -22,28 +22,39 @@ export function BISection({ showToast }) {
   const [stats,    setStats]    = useState(null);
   const [loading,  setLoading]  = useState(true);
   const [history,  setHistory]  = useState([]);
+  const [biError,  setBiError]  = useState(null);
   const navigate = useNavigate();
 
   useEffect(()=>{load();},[]);
 
   async function load(){
     setLoading(true);
+    setBiError(null);
     try{
-      const data=await api.get("/api/admin/stats");
-      setStats(data.data||data);
+      const data = await api.get("/api/admin/stats");
+      setStats(data.data || data);
+
       // Load payment history for sparkline
-      const {data:pays}=await supabase.from("payments")
+      const {data:pays, error:payErr} = await supabase.from("payments")
         .select("amount,created_at").eq("status","confirmed")
-        .gte("created_at",new Date(Date.now()-90*24*60*60*1000).toISOString())
+        .gte("created_at", new Date(Date.now()-90*24*60*60*1000).toISOString())
         .order("created_at");
-      if(pays){
-        // Group by month
+      if (payErr) {
+        console.warn("[BISection] payments history failed:", payErr.message);
+        // Non-fatal — sparkline just won't show
+      } else if(pays){
         const byMonth={};
-        pays.forEach(p=>{const m=p.created_at.slice(0,7);byMonth[m]=(byMonth[m]||0)+p.amount;});
+        pays.forEach(p=>{const m=p.created_at.slice(0,7);byMonth[m]=(byMonth[m]||0)+Number(p.amount||0);});
         setHistory(Object.entries(byMonth).sort().map(([m,v])=>({month:m,amount:v})));
       }
-    }catch(e){}
-    finally{setLoading(false);}
+    } catch(e) {
+      const msg = e?.message || "Error desconocido al cargar métricas";
+      console.error("[BISection] load failed:", msg);
+      setBiError(msg);
+      if (showToast) showToast("Error al cargar métricas: " + msg, "#dc2626");
+    } finally {
+      setLoading(false);
+    }
   }
 
   const kpis=[
@@ -53,9 +64,17 @@ export function BISection({ showToast }) {
     {l:"Programas activos",v:stats?.activePrograms??0,c:"#7c3aed",i:"ti-books",sub:"Con estudiantes"},
   ];
 
+  if (loading) return <div style={{padding:32,textAlign:"center",color:"var(--text-secondary)",fontSize:13}}>Cargando métricas...</div>;
+  if (biError)  return (
+    <div style={{padding:32,textAlign:"center"}}>
+      <div style={{fontSize:22,marginBottom:8}}>⚠</div>
+      <div style={{fontWeight:700,color:"var(--text-primary)",marginBottom:4}}>Error al cargar métricas</div>
+      <div style={{fontSize:13,color:"#dc2626",marginBottom:16}}>{biError}</div>
+      <button onClick={load} style={{padding:"9px 20px",background:"#155266",color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Reintentar</button>
+    </div>
+  );
   return(
     <div>
-      {loading?<div style={{padding:32,textAlign:"center",color:"var(--text-secondary)",fontSize:13}}>Cargando métricas...</div>:<>
 
       {/* KPI grid */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:8,marginBottom:20}}>
@@ -123,7 +142,6 @@ export function BISection({ showToast }) {
           Abrir BI Dashboard →
         </button>
       </div>
-      </>}
     </div>
   );
 }

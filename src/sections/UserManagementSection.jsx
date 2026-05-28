@@ -34,31 +34,44 @@ export function UserManagementSection({ showToast }) {
 
   useEffect(() => { load(); }, []);
 
+  const [loadError, setLoadError] = useState(null);
+
   async function load() {
     setLoading(true);
-    const { data, error } = await supabase
-      .from("profiles")
-      .select(`
-        id, full_name, email, phone, role, active, created_at, total_xp,
-        students(id, level, scholarship,
-          enrollments(id, program_id, status, group_id)
-        ),
-        staff(id, position, department, active,
-          teacher_groups(groups(id, schedule, level))
-        )
-      `)
-      .order("created_at", { ascending: false })
-      .limit(500);
+    setLoadError(null);
+    try {
+      // total_xp is not guaranteed to exist in base profiles — omit to avoid column error
+      const { data, error } = await supabase
+        .from("profiles")
+        .select(`
+          id, full_name, email, phone, role, active, created_at,
+          students(id, level, scholarship,
+            enrollments(id, program_id, status, group_id)
+          ),
+          staff(id, position, department, active,
+            teacher_groups(groups(id, schedule, level))
+          )
+        `)
+        .order("created_at", { ascending: false })
+        .limit(500);
 
-    if (error) { showToast("Error: " + error.message, R); setLoading(false); return; }
-    // Supabase returns one-to-one relations as object, not array — normalize to arrays
-    const normalized = (data || []).map(p => ({
-      ...p,
-      students: Array.isArray(p.students) ? p.students : (p.students ? [p.students] : []),
-      staff:    Array.isArray(p.staff)    ? p.staff    : (p.staff    ? [p.staff]    : []),
-    }));
-    setUsers(normalized);
-    setLoading(false);
+      if (error) throw error;
+
+      // Supabase returns one-to-one relations as object, not array — normalize to arrays
+      const normalized = (data || []).map(p => ({
+        ...p,
+        students: Array.isArray(p.students) ? p.students : (p.students ? [p.students] : []),
+        staff:    Array.isArray(p.staff)    ? p.staff    : (p.staff    ? [p.staff]    : []),
+      }));
+      setUsers(normalized);
+    } catch(e) {
+      const msg = e?.message || "Error desconocido al cargar usuarios";
+      console.error("[UserManagement] load failed:", msg);
+      setLoadError(msg);
+      if (showToast) showToast("Error al cargar usuarios: " + msg, R);
+    } finally {
+      setLoading(false);
+    }
   }
 
   // Detect conflicts
@@ -167,7 +180,7 @@ export function UserManagementSection({ showToast }) {
       Activo:     u.active !== false ? "Sí" : "No",
       Matrículas: u.students?.[0]?.enrollments?.filter(e=>e.status==="active").length || 0,
       Staff:      u.staff?.filter(s=>s.active!==false).map(s=>s.position).join(", ") || "—",
-      XP:         u.total_xp || 0,
+      XP:         0, // total_xp removed from select — not in base schema
       Registro:   new Date(u.created_at).toLocaleDateString("es-HN"),
     })),
     `usuarios-${new Date().toISOString().slice(0,10)}.csv`
@@ -243,7 +256,14 @@ export function UserManagementSection({ showToast }) {
       {/* ── Table ── */}
       {loading
         ? <div style={{ padding:32, textAlign:"center", fontSize:12, color:"var(--text-secondary)" }}>Cargando usuarios...</div>
-        : (
+        : loadError
+          ? <div style={{ padding:32, textAlign:"center" }}>
+              <div style={{ fontSize:22, marginBottom:8 }}>⚠</div>
+              <div style={{ fontWeight:700, color:"var(--text-primary)", marginBottom:4 }}>Error al cargar usuarios</div>
+              <div style={{ fontSize:13, color:R, marginBottom:16 }}>{loadError}</div>
+              <button onClick={load} style={{ padding:"9px 20px", background:P, color:"#fff", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>Reintentar</button>
+            </div>
+          : (
           <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, overflow:"hidden" }}>
             <div style={{ overflowX:"auto" }}>
               <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12 }}>
