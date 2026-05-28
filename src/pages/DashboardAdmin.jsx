@@ -450,7 +450,7 @@ export default function AdminDashboard() {
             group_id,
             students!inner(
               id, level, scholarship,
-              profiles!inner(full_name, email, avatar_url, active)
+              profiles!inner(id, full_name, email, avatar_url, active, role)
             ),
             groups(level, schedule, days)
           `)
@@ -473,8 +473,10 @@ export default function AdminDashboard() {
             enrolled:  new Date(e.students.created_at||Date.now()).toLocaleDateString("es-HN",{month:"short",year:"numeric"}),
             enrollId:  e.id,
             profileId: e.students.profiles.id,
+            _role:     e.students.profiles.role,
           }));
-          setRealStudents(mapped);
+          // Only show users whose role is 'estudiante' (filter out staff/admins with old enrollments)
+          setRealStudents(mapped.filter(s => !s._role || s._role === "estudiante"));
         }
         // Groups
         const { data: grps } = await supabase

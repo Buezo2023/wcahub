@@ -31,9 +31,10 @@ export function EstudiantesSection({ showToast }) {
     setLoading(true);
     try {
       const { data: sts } = await supabase.from("students")
-        .select("id,student_code,level,scholarship,created_at,profile:profiles(id,full_name,email,phone,active),enrollments(id,program_id,status,current_unit,group_id,groups(schedule,level))")
+        .select("id,student_code,level,scholarship,created_at,profile:profiles!inner(id,full_name,email,phone,active,role),enrollments(id,program_id,status,current_unit,group_id,groups(schedule,level))")
         .order("created_at", { ascending: false });
-      if (sts) setStudents(sts);
+      // Filter client-side: only show users whose active role is 'estudiante'
+      if (sts) setStudents(sts.filter(s => !s.profile?.role || s.profile.role === "estudiante"));
       const { data: grps } = await supabase.from("groups")
         .select("id,level,schedule,days,capacity,active_unit,program_id,enrollments(id,status)").eq("active",true);
       if (grps) setGroups(grps);
