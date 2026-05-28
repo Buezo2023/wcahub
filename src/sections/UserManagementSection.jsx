@@ -97,31 +97,33 @@ export function UserManagementSection({ showToast }) {
     if (!editModal) return;
     setSaving(true);
     try {
-      // Role change goes through the API (audit log + validation)
+      // D: Role change — goes through API (audit log + student/staff sync + signOut)
       if (editForm.role !== editModal.user.role) {
-        await api.post("/api/auth", {
+        const res = await api.post("/api/auth", {
           action: "change-role",
           userId: editModal.user.id,
           role:   editForm.role,
         });
+        // Show warning if active enrollments detected
+        const warning = res?.data?.warning || res?.warning;
+        if (warning) showToast("⚠ " + warning, "#d97706");
       }
-      // Active toggle via direct Supabase (non-sensitive field, covered by RLS)
+      // Active / name change via direct Supabase
       if (editForm.active !== (editModal.user.active !== false) || editForm.full_name !== editModal.user.full_name) {
         const { error } = await supabase.from("profiles")
           .update({ active: editForm.active, full_name: editForm.full_name })
           .eq("id", editModal.user.id);
         if (error) throw error;
       }
-      setUsers(us => us.map(u =>
-        u.id === editModal.user.id
-          ? { ...u, role: editForm.role, active: editForm.active, full_name: editForm.full_name }
-          : u
-      ));
+      // E: Close modal first, then reload from DB (don't trust local state for role changes)
       setEditModal(null);
       showToast(`✓ Usuario actualizado — rol: ${editForm.role}`);
+      await load(); // Reload all users from DB to reflect student/staff sync
     } catch(e) {
-      showToast("Error: " + e.message, R);
-    } finally { setSaving(false); }
+      showToast("Error: " + (e.message || "Error al guardar"), R);
+    } finally {
+      setSaving(false); // D: always reset saving — prevents infinite "Guardando..."
+    }
   }
 
   // ── Resolve conflict via API ─────────────────────────────────────
