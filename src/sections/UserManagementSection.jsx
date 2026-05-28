@@ -51,7 +51,13 @@ export function UserManagementSection({ showToast }) {
       .limit(500);
 
     if (error) { showToast("Error: " + error.message, R); setLoading(false); return; }
-    setUsers(data || []);
+    // Supabase returns one-to-one relations as object, not array — normalize to arrays
+    const normalized = (data || []).map(p => ({
+      ...p,
+      students: Array.isArray(p.students) ? p.students : (p.students ? [p.students] : []),
+      staff:    Array.isArray(p.staff)    ? p.staff    : (p.staff    ? [p.staff]    : []),
+    }));
+    setUsers(normalized);
     setLoading(false);
   }
 
