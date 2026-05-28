@@ -150,45 +150,91 @@ async function handleConfirm(req, res) {
       .maybeSingle();
     if (error) throw error;
 
-    // Advance next_payment_date + reactivate if suspended
-    if (action === 'confirm' && payment.enrollment_id) {
-      const { data: enroll } = await admin
-        .from('enrollments')
-        .select('next_payment_date, status, student_id')
-        .eq('id', payment.enrollment_id)
-        .maybeSingle();
+    // ── Advance enrollment after payment confirmation ──────────────
+    if (action === 'confirm') {
+      let enrollmentId = payment.enrollment_id;
 
-      if (enroll) {
-        const base = enroll.next_payment_date || new Date().toISOString().slice(0, 10);
-        const nextDate = addOneMonth(base);
+      // ── Resolve enrollment_id if missing on the payment ──────────
+      if (!enrollmentId) {
+        const { data: enrolls } = await admin
+          .from('enrollments')
+          .select('id, status, program_id')
+          .eq('student_id', payment.student_id)
+          .in('status', ['active', 'pending', 'suspended'])
+          .order('created_at', { ascending: false });
 
-        // Bug 3 fix: if enrollment was suspended, reactivate it on payment
-        const updateFields = { next_payment_date: nextDate };
-        if (enroll.status === 'suspended') {
-          updateFields.status = 'active';
-          updateFields.suspended_at = null;
-          updateFields.suspended_reason = null;
+        if (!enrolls?.length) {
+          // Non-fatal: payment confirmed but no enrollment to advance.
+          // Log and continue so cobros is not blocked.
+          console.warn(`[confirm_payment] no active enrollment for student ${payment.student_id} — skipping enrollment update`);
+          await admin.from('audit_log').insert({
+            actor_id: actor.id, action: 'payment_confirmed_no_enrollment',
+            entity: 'payment', entity_id: paymentId,
+            metadata: { warning: 'No enrollment found to advance' },
+          }).catch(() => {});
+        } else if (enrolls.length === 1) {
+          // Only one enrollment — associate it automatically
+          enrollmentId = enrolls[0].id;
+          await admin.from('payments').update({ enrollment_id: enrollmentId }).eq('id', paymentId);
+          console.log(`[confirm_payment] auto-linked payment ${paymentId} → enrollment ${enrollmentId}`);
+        } else {
+          // Multiple enrollments — cannot auto-resolve safely.
+          // Still confirm the payment but log for manual resolution.
+          console.warn(`[confirm_payment] multiple enrollments (${enrolls.length}) for student ${payment.student_id} — enrollment_id not set on payment`);
+          await admin.from('audit_log').insert({
+            actor_id: actor.id, action: 'payment_confirmed_ambiguous_enrollment',
+            entity: 'payment', entity_id: paymentId,
+            metadata: {
+              warning: 'Multiple enrollments found — link manually',
+              enrollments: enrolls.map(e => ({ id: e.id, program_id: e.program_id, status: e.status })),
+            },
+          }).catch(() => {});
         }
-        await admin.from('enrollments')
-          .update(updateFields)
-          .eq('id', payment.enrollment_id);
+      }
 
-        // Also reactivate profile if it was deactivated by auto-suspend
-        if (enroll.status === 'suspended' && enroll.student_id) {
-          const { data: student } = await admin
-            .from('students').select('profile_id').eq('id', enroll.student_id).maybeSingle();
-          if (student?.profile_id) {
-            await admin.from('profiles')
-              .update({ active: true })
-              .eq('id', student.profile_id);
+      // ── Update the enrollment ─────────────────────────────────────
+      if (enrollmentId) {
+        const { data: enroll } = await admin
+          .from('enrollments')
+          .select('next_payment_date, status, student_id')
+          .eq('id', enrollmentId)
+          .maybeSingle();
+
+        if (enroll) {
+          const base = enroll.next_payment_date || new Date().toISOString().slice(0, 10);
+          const nextDate = addOneMonth(base);
+
+          // Reactivate if pending or suspended; leave graduated/dropped as-is
+          const updateFields = { next_payment_date: nextDate };
+          if (['pending', 'suspended'].includes(enroll.status)) {
+            updateFields.status = 'active';
+            if (enroll.status === 'suspended') {
+              updateFields.suspended_at = null;
+              updateFields.suspended_reason = null;
+            }
           }
-          // Log the reactivation
+          await admin.from('enrollments').update(updateFields).eq('id', enrollmentId);
+
+          // Reactivate profile.active if it was disabled
+          if (['pending', 'suspended'].includes(enroll.status) && enroll.student_id) {
+            const { data: stud } = await admin
+              .from('students').select('profile_id').eq('id', enroll.student_id).maybeSingle();
+            if (stud?.profile_id) {
+              await admin.from('profiles').update({ active: true }).eq('id', stud.profile_id);
+            }
+          }
+
           await admin.from('audit_log').insert({
             actor_id:  actor.id,
-            action:    'reactivated_after_payment',
+            action:    'enrollment_advanced_after_payment',
             entity:    'enrollment',
-            entity_id: payment.enrollment_id,
-            metadata:  { next_payment_date: nextDate },
+            entity_id: enrollmentId,
+            metadata:  {
+              prev_status:       enroll.status,
+              new_status:        updateFields.status || enroll.status,
+              next_payment_date: nextDate,
+              payment_id:        paymentId,
+            },
           }).catch(() => {});
         }
       }
