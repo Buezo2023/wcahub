@@ -205,7 +205,7 @@ async function handleConfirm(req, res) {
         .select('id, status, program_id, next_payment_date')
         .eq('student_id', payment.student_id)
         .in('status', ['active', 'pending', 'suspended'])
-        .order('created_at', { ascending: false });
+        .order('enrolled_at', { ascending: false });
 
       if (enrErr) {
         console.error('[confirm_payment] error fetching enrollments:', enrErr.message);
