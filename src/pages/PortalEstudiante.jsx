@@ -138,12 +138,6 @@ function ProgTag({prog}){
     <div style={{display:"inline-flex",alignItems:"center",gap:5,padding:"3px 10px",borderRadius:20,background:prog.colorLight,border:`1px solid ${prog.color}30`}}>
       <span style={{fontSize:12}}>{prog.icon}</span>
       <span style={{fontSize:11,fontWeight:600,color:prog.color}}>{prog.shortName}</span>
-    {/* Global visual effects */}
-    <Confetti active={confetti} count={40} />
-    {floatingXP && (
-      <FloatingXP amount={floatingXP.amount} x={floatingXP.x} y={floatingXP.y}
-        onDone={() => setFloatingXP(null)} />
-    )}
     </div>
   );
 }
@@ -360,14 +354,30 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
           .select("id, level")
           .eq("profile_id", session.user.id).maybeSingle();
         if (student?.id) {
-          await supabase.from("student_progress").upsert({
-            student_id:   student.id,
-            program_id:   activeProg,
-            unit:         unit,
-            exam_score:   pct,
-            passed:       pct >= 70,
-            updated_at:   new Date().toISOString(),
-          }, { onConflict: "student_id,program_id,unit" });
+          // TODO(business): student_progress links to enrollment_id+unit_id (FKs).
+          // For now we look up the enrollment and unit to get the right IDs.
+          // If no unit_id is found, we skip progress write silently to avoid crash.
+          try {
+            const { data: enrollment } = await supabase.from("enrollments")
+              .select("id").eq("student_id", student.id).eq("program_id", activeProg)
+              .eq("status", "active").maybeSingle();
+            const { data: unitRow } = await supabase.from("units")
+              .select("id").eq("program_id", activeProg).eq("unit_number", unit)
+              .maybeSingle();
+            if (enrollment?.id && unitRow?.id) {
+              await supabase.from("student_progress").upsert({
+                enrollment_id:  enrollment.id,
+                unit_id:        unitRow.id,
+                score:          pct,
+                test_done:      1,
+                completed:      pct >= 70,
+                completed_at:   pct >= 70 ? new Date().toISOString() : null,
+              }, { onConflict: "enrollment_id,unit_id" });
+            }
+          } catch (progressErr) {
+            console.warn("[student_progress] upsert failed:", progressErr.message);
+            // Non-fatal — progress tracking failure should not block level-up
+          }
 
           if (pct >= 70) {
             const nextUnit = unit + 1;
@@ -388,9 +398,11 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
             if (isLastUnit) {
               if (isFinalLevel) {
                 // ── Full program completion ──────────────────────────
+                // TODO(business): "completed" is not in enrollment_status enum.
+                // Using "graduated" as the closest semantic match for full program completion.
                 await supabase.from("enrollments").update({
                   current_unit: 12, exam_score: pct,
-                  status: "completed", completed_at: new Date().toISOString(),
+                  status: "graduated", completed_at: new Date().toISOString(),
                 }).eq("student_id", student.id).eq("program_id", activeProg);
 
                 // Generate certificate

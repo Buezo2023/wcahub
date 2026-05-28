@@ -4,7 +4,7 @@
 // PATCH  + action=upload-proof → upload proof URL
 // Merges: api/payments/record.js + api/payments/confirm.js
 
-import { requireAuth, requireRole, getSupabaseAdmin, sendEmail, EmailTemplates, ok, err, setCORS, checkRateLimit } from '../_utils.js';
+import { requireAuth, requireRole, getSupabaseAdmin, sendEmail, EmailTemplates, ok, err, setCORS, checkRateLimit, addOneMonth } from '../_utils.js';
 
 export default async function handler(req, res) {
   setCORS(req, res);
