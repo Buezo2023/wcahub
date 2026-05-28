@@ -311,7 +311,7 @@ function generateQuestions(unit, progId) {
 }
 
 // ─── EXAM MODULE COMPONENT ────────────────────────────────────────
-function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg, supabase }) {
+function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg, supabase, setConfetti, setFloatingXP }) {
   const P = prog?.color || "#155266";
   const G = "#059669", GD = "#ecfdf5";
   const R = "#dc2626", RD = "#fef2f2";
@@ -361,9 +361,13 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
             const { data: enrollment } = await supabase.from("enrollments")
               .select("id").eq("student_id", student.id).eq("program_id", activeProg)
               .eq("status", "active").maybeSingle();
-            const { data: unitRow } = await supabase.from("units")
-              .select("id").eq("program_id", activeProg).eq("unit_number", unit)
-              .maybeSingle();
+            // I2: For Inglés, include level to avoid ambiguous rows across CEFR levels
+            let unitsQuery = supabase.from("units")
+              .select("id").eq("program_id", activeProg).eq("unit_number", unit);
+            if (activeProg === "en" && currentLevel) {
+              unitsQuery = unitsQuery.eq("level", currentLevel);
+            }
+            const { data: unitRow } = await unitsQuery.maybeSingle();
             if (enrollment?.id && unitRow?.id) {
               await supabase.from("student_progress").upsert({
                 enrollment_id:  enrollment.id,
@@ -728,20 +732,31 @@ export default function PortalEstudiante(){
             setRealEnrollments(patch);
             setEnrolled(enrolls.map(e => e.program_id));
           }
-          // Load real student_progress (exam history per unit)
-          const { data: progress } = await supabase
-            .from("student_progress")
-            .select("program_id, unit, exam_score, passed, updated_at")
+          // Load real student_progress via enrollments (student_progress has no student_id column)
+          // Columns: enrollment_id, unit_id, score, completed, test_done, completed_at
+          const { data: allEnrolls } = await supabase
+            .from("enrollments")
+            .select("id, program_id, student_progress(unit_id, score, completed, test_done, completed_at, units(unit_number, level))")
             .eq("student_id", student.id)
-            .order("unit", { ascending: true });
-          if (progress?.length) {
+            .in("status", ["active", "pending", "graduated"]);
+          if (allEnrolls?.length) {
             const byProg = {};
-            progress.forEach(p => {
-              if (!byProg[p.program_id]) byProg[p.program_id] = {};
-              byProg[p.program_id][p.unit] = { score: p.exam_score, passed: p.passed };
+            const histArr = [];
+            allEnrolls.forEach(enroll => {
+              const pid = enroll.program_id;
+              if (!byProg[pid]) byProg[pid] = {};
+              (enroll.student_progress || []).forEach(sp => {
+                const unitNum = sp.units?.unit_number;
+                if (unitNum != null) {
+                  byProg[pid][unitNum] = { score: sp.score || 0, passed: sp.completed === true };
+                  if ((sp.test_done || 0) > 0) {
+                    histArr.push({ program_id: pid, unit: unitNum, exam_score: sp.score || 0, passed: sp.completed === true });
+                  }
+                }
+              });
             });
             setRealProgress(byProg);
-            setProgressHistory(prog || []);
+            setProgressHistory(histArr);
           }
           // Load payment history
           const { data: pays } = await supabase
@@ -1167,6 +1182,8 @@ export default function PortalEstudiante(){
               activeProg={activeProg}
               setActiveProg={setActiveProg}
               supabase={supabase}
+              setConfetti={setConfetti}
+              setFloatingXP={setFloatingXP}
             />
           )}
 
