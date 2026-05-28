@@ -149,17 +149,27 @@ async function handleStudent(req, actor) {
   // ── Resolve current_unit (continuous enrollment) ──────────────────
   let _resolved;
   try {
-    // Check for existing enrollment to preserve progress
+    // H1: include status so _existing is complete
     const { data: _existing } = await admin.from('enrollments')
-      .select('id, current_unit').eq('student_id', student.id).eq('program_id', programId).maybeSingle();
+      .select('id, status, current_unit').eq('student_id', student.id).eq('program_id', programId).maybeSingle();
+    // H4: validate range 1-12 before passing; corrupt data falls back to group/cycle_config
+    const _existingUnit = (_existing?.current_unit != null
+      && _existing.current_unit >= 1
+      && _existing.current_unit <= 12)
+      ? _existing.current_unit
+      : null;
     _resolved = await resolveCurrentUnit(admin, {
       programId,
       studentLevel: level,
       groupId: groupId || null,
-      existingUnit: _existing?.current_unit ?? null,
+      existingUnit: _existingUnit,
     });
   } catch (unitErr) {
-    throw new Error(unitErr.message || 'No se pudo resolver la unidad inicial del ciclo');
+    // H2: preserve HTTP status from resolveCurrentUnit — do not swallow it with new Error()
+    throw {
+      status: unitErr.status || 422,
+      message: unitErr.message || 'No se pudo resolver la unidad inicial del ciclo',
+    };
   }
 
   const { data: enrollment, error: eErr } = await admin.from('enrollments').upsert({

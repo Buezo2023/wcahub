@@ -220,9 +220,11 @@ export default async function handler(req, res) {
 
     let _regResolved;
     try {
+      // H3: normalize level — undefined breaks cycle_config query
+      const _studentLevel = programId === 'en' ? (level || 'A1') : (level || null);
       _regResolved = await resolveCurrentUnit(admin, {
         programId,
-        studentLevel: level,
+        studentLevel: _studentLevel,
         groupId: groupId || null,
         existingUnit: _existingEnroll?.current_unit ?? null,
       });
