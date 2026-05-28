@@ -532,6 +532,9 @@ export default async function handler(req, res) {
           actor_id: actor.id, action: 'resolved_conflict_kept_staff',
           entity: 'profile', entity_id: userId, metadata: auditMeta,
         });
+        // Force re-login so the user gets the updated role on next session
+        await adminRC.auth.admin.signOut(userId, 'global').catch(() => {});
+
         return ok(res, {
           message: `${user.full_name} mantenido como ${targetRole}. ${activeEnrolls.length} matrícula(s) suspendida(s).`,
           newRole: targetRole, enrollmentsSuspended: activeEnrolls.length,
@@ -554,6 +557,9 @@ export default async function handler(req, res) {
           actor_id: actor.id, action: 'resolved_conflict_kept_student',
           entity: 'profile', entity_id: userId, metadata: auditMeta,
         });
+        // Force re-login so the user gets the updated role on next session
+        await adminRC.auth.admin.signOut(userId, 'global').catch(() => {});
+
         return ok(res, {
           message: `${user.full_name} mantenido como estudiante. ${staffIds.length} registro(s) de staff desactivado(s).`,
           newRole: 'estudiante', staffDeactivated: staffIds.length,

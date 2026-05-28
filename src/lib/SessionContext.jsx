@@ -65,7 +65,21 @@ export function SessionProvider({ children }) {
       window.location.href = "/";
     });
 
-    return () => subscription.unsubscribe();
+    // Refresh profile when tab regains focus — catches role changes made by admin
+    async function onFocus() {
+      const { data: { session: s } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+      if (!s?.user?.id) return;
+      const { data } = await supabase.from("profiles")
+        .select("id, full_name, email, role, active, total_xp, xp_level, onboarding_done")
+        .eq("id", s.user.id).maybeSingle().catch(() => ({ data: null }));
+      if (data) setProfile(data);
+    }
+    window.addEventListener("focus", onFocus);
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("focus", onFocus);
+    };
   }, []);
 
   const signOut = async () => {
