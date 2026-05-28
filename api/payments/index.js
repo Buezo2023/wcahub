@@ -117,121 +117,189 @@ async function handleConfirm(req, res) {
     requireRole(actor, 'cobros', 'admin', 'super_admin');
 
     const { paymentId, action, reason } = req.body;
-    if (!paymentId || !action) return err(res, { status: 400, message: 'paymentId y action requeridos' });
-    if (!['confirm','reject'].includes(action)) return err(res, { status: 400, message: "action debe ser 'confirm' o 'reject'" });
+    if (!paymentId || !action) {
+      return err(res, { status: 400, message: 'paymentId y action son requeridos' });
+    }
+    if (!['confirm', 'reject'].includes(action)) {
+      return err(res, { status: 400, message: "action debe ser 'confirm' o 'reject'" });
+    }
 
     const admin = getSupabaseAdmin();
 
-    // Get payment with student info
-    const { data: payment } = await admin
+    // ── Load payment with student + profile info ───────────────────
+    const { data: payment, error: payErr } = await admin
       .from('payments')
       .select(`
-        *, student:students(
+        id, student_id, enrollment_id, amount, status, method,
+        reference_code, period_start,
+        student:students(
           id,
-          profile:profiles(full_name, email),
-          enrollments(program_id)
+          profile:profiles(id, full_name, email)
         )
       `)
       .eq('id', paymentId)
       .maybeSingle();
 
+    if (payErr) throw payErr;
     if (!payment) return err(res, { status: 404, message: 'Pago no encontrado' });
-    if (payment.status !== 'pending') return err(res, { status: 409, message: `El pago ya está ${payment.status}` });
+    if (payment.status !== 'pending') {
+      return err(res, { status: 409, message: `El pago ya fue procesado (estado actual: ${payment.status})` });
+    }
 
-    const updates = action === 'confirm'
-      ? { status: 'confirmed', confirmed_by: actor.id, confirmed_at: new Date().toISOString() }
-      : { status: 'failed',    notes: reason || 'Rechazado por cobros' };
+    // ── REJECT path ────────────────────────────────────────────────
+    // C. Only update payment status. Do not touch enrollment or profile.
+    if (action === 'reject') {
+      const { error: rejErr } = await admin
+        .from('payments')
+        .update({ status: 'failed', notes: reason || 'Rechazado por cobros' })
+        .eq('id', paymentId);
+      if (rejErr) throw rejErr;
 
-    const { data: updated, error } = await admin
-      .from('payments')
-      .update(updates)
-      .eq('id', paymentId)
-      .select()
-      .maybeSingle();
-    if (error) throw error;
+      await admin.from('audit_log').insert({
+        actor_id: actor.id, action: 'rejected_payment',
+        entity: 'payment', entity_id: paymentId,
+        metadata: { reason: reason || null },
+      }).catch(() => {});
 
-    // ── Advance enrollment after payment confirmation ──────────────
-    if (action === 'confirm') {
-      let enrollmentId = payment.enrollment_id;
-
-      // ── Resolve enrollment_id if missing on the payment ──────────
-      if (!enrollmentId) {
-        const { data: enrolls } = await admin
-          .from('enrollments')
-          .select('id, status, program_id')
-          .eq('student_id', payment.student_id)
-          .in('status', ['active', 'pending', 'suspended'])
-          .order('created_at', { ascending: false });
-
-        if (!enrolls?.length) {
-          // Non-fatal: payment confirmed but no enrollment to advance.
-          // Log and continue so cobros is not blocked.
-          console.warn(`[confirm_payment] no active enrollment for student ${payment.student_id} — skipping enrollment update`);
-          await admin.from('audit_log').insert({
-            actor_id: actor.id, action: 'payment_confirmed_no_enrollment',
-            entity: 'payment', entity_id: paymentId,
-            metadata: { warning: 'No enrollment found to advance' },
-          }).catch(() => {});
-        } else if (enrolls.length === 1) {
-          // Only one enrollment — associate it automatically
-          enrollmentId = enrolls[0].id;
-          await admin.from('payments').update({ enrollment_id: enrollmentId }).eq('id', paymentId);
-          console.log(`[confirm_payment] auto-linked payment ${paymentId} → enrollment ${enrollmentId}`);
-        } else {
-          // Multiple enrollments — cannot auto-resolve safely.
-          // Still confirm the payment but log for manual resolution.
-          console.warn(`[confirm_payment] multiple enrollments (${enrolls.length}) for student ${payment.student_id} — enrollment_id not set on payment`);
-          await admin.from('audit_log').insert({
-            actor_id: actor.id, action: 'payment_confirmed_ambiguous_enrollment',
-            entity: 'payment', entity_id: paymentId,
-            metadata: {
-              warning: 'Multiple enrollments found — link manually',
-              enrollments: enrolls.map(e => ({ id: e.id, program_id: e.program_id, status: e.status })),
-            },
-          }).catch(() => {});
-        }
+      // Notify student via email
+      if (payment.student?.profile?.email) {
+        const firstName = (payment.student.profile.full_name || '').split(' ')[0] || 'Estudiante';
+        sendEmail({
+          to: payment.student.profile.email,
+          toName: payment.student.profile.full_name,
+          subject: 'Tu comprobante de pago fue rechazado — WCA Academy',
+          html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px">
+            <h2 style="color:#dc2626;margin:0 0 12px">Comprobante rechazado</h2>
+            <p style="color:#475569;line-height:1.7">Hola <strong>${firstName}</strong>, tu comprobante de <strong>$${Number(payment.amount).toFixed(2)}</strong> no pudo ser aprobado.</p>
+            ${reason ? `<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;margin:16px 0;color:#991b1b"><strong>Motivo:</strong> ${reason}</div>` : ''}
+            <p style="color:#475569;line-height:1.7">Volvé a subir tu comprobante desde tu portal.</p>
+            <a href="https://wcahub.vercel.app/portal" style="display:inline-block;background:#155266;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:700;margin-top:8px">Ir a mi portal →</a>
+          </div>`,
+        }).catch(() => {});
       }
 
-      // ── Update the enrollment ─────────────────────────────────────
-      if (enrollmentId) {
-        const { data: enroll } = await admin
-          .from('enrollments')
-          .select('next_payment_date, status, student_id')
-          .eq('id', enrollmentId)
-          .maybeSingle();
+      return ok(res, { message: 'Pago rechazado correctamente' });
+    }
 
-        if (enroll) {
-          const base = enroll.next_payment_date || new Date().toISOString().slice(0, 10);
-          const nextDate = addOneMonth(base);
+    // ── CONFIRM path ───────────────────────────────────────────────
+    // Step 1: Mark payment as confirmed
+    const { error: confErr } = await admin
+      .from('payments')
+      .update({
+        status:       'confirmed',
+        confirmed_by: actor.id,
+        confirmed_at: new Date().toISOString(),
+      })
+      .eq('id', paymentId);
+    if (confErr) throw confErr;
 
-          // Reactivate if pending or suspended; leave graduated/dropped as-is
-          const updateFields = { next_payment_date: nextDate };
-          if (['pending', 'suspended'].includes(enroll.status)) {
-            updateFields.status = 'active';
-            if (enroll.status === 'suspended') {
-              updateFields.suspended_at = null;
-              updateFields.suspended_reason = null;
-            }
+    // Step 2: Resolve enrollment_id
+    let enrollmentId   = payment.enrollment_id || null;
+    let enrollAction   = 'confirmed_payment'; // default audit action
+    let warningMessage = null;
+
+    if (!enrollmentId) {
+      // Lookup active/pending/suspended enrollments for this student
+      const { data: enrolls, error: enrErr } = await admin
+        .from('enrollments')
+        .select('id, status, program_id, next_payment_date')
+        .eq('student_id', payment.student_id)
+        .in('status', ['active', 'pending', 'suspended'])
+        .order('created_at', { ascending: false });
+
+      if (enrErr) {
+        console.error('[confirm_payment] error fetching enrollments:', enrErr.message);
+      }
+
+      const count = enrolls?.length || 0;
+
+      if (count === 0) {
+        // B3 — No enrollment found
+        enrollAction = 'payment_confirmed_no_enrollment';
+        warningMessage = 'Pago confirmado, pero el estudiante no tiene matrícula activa, pendiente ni suspendida. Asociá la matrícula manualmente si corresponde.';
+
+      } else if (count === 1) {
+        // B1 — Exactly one enrollment: auto-link
+        enrollmentId = enrolls[0].id;
+        enrollAction = 'payment_auto_linked_enrollment';
+        // Persist the link on the payment row
+        await admin
+          .from('payments')
+          .update({ enrollment_id: enrollmentId })
+          .eq('id', paymentId);
+
+      } else {
+        // B2 — Multiple enrollments: confirm payment, do NOT touch enrollments
+        enrollAction = 'payment_confirmed_ambiguous_enrollment';
+        warningMessage = `Pago confirmado, pero el estudiante tiene ${count} matrículas activas/pendientes. Asociá la matrícula manualmente en Cobros → editar pago.`;
+        await admin.from('audit_log').insert({
+          actor_id: actor.id, action: enrollAction,
+          entity: 'payment', entity_id: paymentId,
+          metadata: {
+            student_id:  payment.student_id,
+            enrollments: enrolls.map(e => ({ id: e.id, program_id: e.program_id, status: e.status })),
+          },
+        }).catch(() => {});
+      }
+    }
+
+    // Step 3: Update enrollment (only when we have a single resolved ID)
+    let enrollmentUpdated = false;
+    if (enrollmentId) {
+      const { data: enroll, error: enrFetchErr } = await admin
+        .from('enrollments')
+        .select('id, status, next_payment_date, student_id')
+        .eq('id', enrollmentId)
+        .maybeSingle();
+
+      if (enrFetchErr) {
+        console.error('[confirm_payment] error fetching enrollment:', enrFetchErr.message);
+      } else if (enroll) {
+        const base     = enroll.next_payment_date || new Date().toISOString().slice(0, 10);
+        const nextDate = addOneMonth(base);
+        const prevStatus = enroll.status;
+
+        const enrollUpdates = { next_payment_date: nextDate };
+
+        // Activate if was pending or suspended
+        if (['pending', 'suspended'].includes(prevStatus)) {
+          enrollUpdates.status = 'active';
+          if (prevStatus === 'suspended') {
+            enrollUpdates.suspended_at     = null;
+            enrollUpdates.suspended_reason = null;
           }
-          await admin.from('enrollments').update(updateFields).eq('id', enrollmentId);
+        }
 
-          // Reactivate profile.active if it was disabled
-          if (['pending', 'suspended'].includes(enroll.status) && enroll.student_id) {
+        const { error: euErr } = await admin
+          .from('enrollments')
+          .update(enrollUpdates)
+          .eq('id', enrollmentId);
+
+        if (euErr) {
+          console.error('[confirm_payment] error updating enrollment:', euErr.message);
+        } else {
+          enrollmentUpdated = true;
+
+          // Step 4: Activate profile if enrollment was pending/suspended
+          if (['pending', 'suspended'].includes(prevStatus) && enroll.student_id) {
             const { data: stud } = await admin
               .from('students').select('profile_id').eq('id', enroll.student_id).maybeSingle();
             if (stud?.profile_id) {
-              await admin.from('profiles').update({ active: true }).eq('id', stud.profile_id);
+              await admin.from('profiles')
+                .update({ active: true })
+                .eq('id', stud.profile_id);
             }
           }
 
+          // Step 5: Audit log for enrollment update
           await admin.from('audit_log').insert({
             actor_id:  actor.id,
-            action:    'enrollment_advanced_after_payment',
+            action:    enrollAction,
             entity:    'enrollment',
             entity_id: enrollmentId,
             metadata:  {
-              prev_status:       enroll.status,
-              new_status:        updateFields.status || enroll.status,
+              prev_status:       prevStatus,
+              new_status:        enrollUpdates.status || prevStatus,
               next_payment_date: nextDate,
               payment_id:        paymentId,
             },
@@ -240,60 +308,57 @@ async function handleConfirm(req, res) {
       }
     }
 
+    // Step 6: Main payment audit log
     await admin.from('audit_log').insert({
       actor_id:  actor.id,
-      action:    action === 'confirm' ? 'confirmed_payment' : 'rejected_payment',
+      action:    'confirmed_payment',
       entity:    'payment',
       entity_id: paymentId,
-      metadata:  { reason },
-    });
+      metadata:  {
+        enrollment_id:      enrollmentId || null,
+        enrollment_updated: enrollmentUpdated,
+        warning:            warningMessage || null,
+      },
+    }).catch(() => {});
 
-    // Send email notification
+    // Step 7: Send confirmation email
     if (payment.student?.profile?.email) {
       try {
-        const programNames = { en:'Inglés Completo', va:'Asistente Virtual', va_mkt:'VA Marketing', va_legal:'VA Legal', va_care:'VA Cuidador' };
-        const programId = payment.student.enrollments?.[0]?.program_id;
-        const firstName = payment.student.profile.full_name.split(' ')[0];
-
-        if (action === 'confirm') {
-          const { subject, html } = EmailTemplates.paymentConfirmed({
-            name:        firstName,
-            amount:      Number(payment.amount).toFixed(2),
-            programName: programNames[programId] || 'WCA Academy',
-            period:      payment.period_start
-              ? new Date(payment.period_start).toLocaleDateString('es-HN', { month: 'long', year: 'numeric' })
-              : '—',
-            code: payment.reference_code,
-          });
-          await sendEmail({ to: payment.student.profile.email, toName: payment.student.profile.full_name, subject, html });
-        } else {
-          // Rejection — notify student so they can re-submit proof
-          await sendEmail({
-            to:     payment.student.profile.email,
-            toName: payment.student.profile.full_name,
-            subject: 'Tu comprobante de pago fue rechazado — WCA Academy',
-            html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px">
-              <h2 style="color:#dc2626;margin:0 0 12px">Comprobante rechazado</h2>
-              <p style="color:#475569;line-height:1.7">Hola <strong>${firstName}</strong>, tu comprobante de pago de <strong>$${Number(payment.amount).toFixed(2)}</strong> fue revisado y no pudo ser aprobado.</p>
-              ${reason ? `<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:8px;padding:12px 16px;margin:16px 0;color:#991b1b"><strong>Motivo:</strong> ${reason}</div>` : ''}
-              <p style="color:#475569;line-height:1.7">Por favor volvé a subir tu comprobante desde tu portal asegurándote de que sea legible y muestre el monto y la referencia correctamente.</p>
-              <a href="https://wcahub.vercel.app/portal" style="display:inline-block;background:#155266;color:#fff;text-decoration:none;padding:12px 24px;border-radius:8px;font-weight:700;margin-top:8px">Ir a mi portal →</a>
-              <p style="color:#94a3b8;font-size:12px;margin-top:20px">Si tenés dudas, contactá a cobros por WhatsApp.</p>
-            </div>`,
-          });
+        const firstName  = (payment.student.profile.full_name || '').split(' ')[0] || 'Estudiante';
+        const PROG_NAMES = { en:'Inglés Completo', va:'Asistente Virtual', va_mkt:'VA Marketing', va_legal:'VA Legal', va_care:'VA Cuidador' };
+        // Get program from enrollment if we have it
+        let programName = 'WCA Academy';
+        if (enrollmentId) {
+          const { data: enrProg } = await admin.from('enrollments').select('program_id').eq('id', enrollmentId).maybeSingle();
+          programName = PROG_NAMES[enrProg?.program_id] || enrProg?.program_id || 'WCA Academy';
         }
+        const { subject, html } = EmailTemplates.paymentConfirmed({
+          name:        firstName,
+          amount:      Number(payment.amount).toFixed(2),
+          programName,
+          period:      payment.period_start
+            ? new Date(payment.period_start).toLocaleDateString('es-HN', { month: 'long', year: 'numeric' })
+            : '—',
+          code: payment.reference_code,
+        });
+        await sendEmail({ to: payment.student.profile.email, toName: payment.student.profile.full_name, subject, html });
       } catch (emailErr) {
-        console.error('Email error (non-fatal):', emailErr);
+        console.error('[confirm_payment] email error (non-fatal):', emailErr.message);
       }
     }
 
-    return ok(res, {
-      message: action === 'confirm' ? 'Pago confirmado' : 'Pago rechazado',
-      payment: updated,
-    });
+    // Step 8: Return response — include warning if enrollment was ambiguous or missing
+    const responseMessage = warningMessage
+      ? `Pago confirmado. ⚠ ${warningMessage}`
+      : enrollmentUpdated
+        ? 'Pago confirmado y matrícula actualizada correctamente'
+        : 'Pago confirmado';
 
-  
-  } catch (e) { return err(res, e); }
+    return ok(res, { message: responseMessage, paymentId, enrollmentId, warning: warningMessage || null });
+
+  } catch (e) {
+    return err(res, e);
+  }
 }
 
 // ── Upload proof URL ───────────────────────────────────────────────
