@@ -93,16 +93,32 @@ async function handleStudent(req, actor) {
   if (existingProfile) {
     userId = existingProfile.id;
   } else {
-    const { data: newUser, error } = await admin.auth.admin.createUser({
-      email, email_confirm: true, user_metadata: { full_name: fullName },
-    });
-    if (error) throw error;
-    userId = newUser.user.id;
-    isNewUser = true;
-    await admin.auth.admin.inviteUserByEmail(email, {
-      redirectTo: 'https://wcahub.vercel.app/auth/callback',
+    // Use ONLY inviteUserByEmail — it creates the user AND sends the magic link in one call.
+    // Never call createUser first: if the user already exists in auth.users, inviteUserByEmail
+    // fails with 422 and the student never gets their access link.
+    const siteUrl = process.env.SITE_URL || 'https://wcahub.vercel.app';
+    const { data: invited, error: invErr } = await admin.auth.admin.inviteUserByEmail(email, {
+      redirectTo: `${siteUrl}/auth/callback`,
       data: { full_name: fullName },
-    }).catch(e => console.warn('Magic link:', e.message));
+    });
+    if (invErr) {
+      // User already exists in auth.users but has no profile — look them up
+      if (invErr.message?.includes('already been registered') || invErr.status === 422) {
+        const { data: { users } } = await admin.auth.admin.listUsers({ perPage: 1000 });
+        const found = users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
+        if (found) {
+          userId = found.id;
+          // Re-send invite so the existing user gets a fresh magic link
+          await admin.auth.admin.inviteUserByEmail(email, {
+            redirectTo: `${siteUrl}/auth/callback`,
+            data: { full_name: fullName },
+          }).catch(() => {});
+        } else throw invErr;
+      } else throw invErr;
+    } else {
+      userId = invited.user.id;
+      isNewUser = true;
+    }
   }
 
   await admin.from('profiles').upsert({ id: userId, email, full_name: fullName, role: 'estudiante', active: true }, { onConflict: 'id' });
@@ -139,14 +155,45 @@ async function handleStudent(req, actor) {
 
   await admin.from('audit_log').insert({ actor_id: actor.id, action: 'invited_student', entity: 'student', entity_id: student.id, metadata: { email, programId, level } });
 
+  // Send branded Resend email (with student code) in addition to Supabase magic link
+  let emailSent = !isNewUser; // existing students already have access
+  let emailError = null;
   if (isNewUser) {
     try {
       const progNames = { en:'Inglés Completo', va:'Asistente Virtual', va_mkt:'VA·Marketing', va_legal:'VA·Legal', va_care:'VA·Cuidador' };
-      const { subject, html } = EmailTemplates.invite({ name: fullName.split(' ')[0], email, programName: progNames[programId] || programId, studentCode: student.student_code || null });
+      const { subject, html } = EmailTemplates.invite({
+        name: fullName.split(' ')[0],
+        email,
+        programName: progNames[programId] || programId,
+        studentCode: student.student_code || null,
+      });
       await sendEmail({ to: email, toName: fullName, subject, html });
-    } catch(e) { console.error('Student email:', e.message); }
+      emailSent = true;
+      console.log(`[invite] Email sent to ${email} via Resend`);
+    } catch(e) {
+      emailError = e.message;
+      console.error(`[invite] Resend failed for ${email}:`, e.message);
+      // Supabase already sent the magic link — student can still log in
+      // Log to audit for visibility
+      try {
+        await admin.from('audit_log').insert({
+          actor_id: actor.id, action: 'email_failed', entity: 'student',
+          entity_id: student.id,
+          metadata: { email, error: e.message, type: 'invite_resend' },
+        });
+      } catch(_) {}
+    }
   }
-  return { message: `Estudiante ${existingProfile ? 'matriculado' : 'invitado'} exitosamente`, studentId: student.id, studentCode: student.student_code, enrolled: !!enrollment, emailSent: isNewUser };
+  return {
+    message: `Estudiante ${existingProfile ? 'matriculado' : 'invitado'} exitosamente`,
+    studentId: student.id,
+    studentCode: student.student_code,
+    enrolled: !!enrollment,
+    emailSent,
+    emailNote: emailError
+      ? `Magic link enviado por Supabase. Email de bienvenida falló: ${emailError}`
+      : isNewUser ? 'Magic link + email de bienvenida enviados' : 'Matrícula actualizada',
+  };
 }
 
 async function handleStaff(req, actor) {

@@ -243,7 +243,13 @@ export default async function handler(req, res) {
             </body></html>`,
         });
       } catch(emailErr) {
-        console.error('Transfer email error:', emailErr.message);
+        console.error(`[register] Transfer email failed for ${email}:`, emailErr.message);
+        try {
+          await admin.from('audit_log').insert({
+            actor_id: null, action: 'email_failed', entity: 'register', entity_id: null,
+            metadata: { email, error: emailErr.message, type: 'register_transfer' },
+          });
+        } catch(_) {}
       }
 
       return ok(res, {

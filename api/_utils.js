@@ -154,7 +154,15 @@ export function err(res, error) {
 // FROM: si tenés dominio propio verificado en Resend, agregá RESEND_FROM_EMAIL en Vercel
 // Por ahora usa el dominio de prueba de Resend que funciona sin verificación
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-const FROM_NAME  = process.env.MAILRELAY_FROM_NAME || "WCA Academy";
+const FROM_NAME  = process.env.RESEND_FROM_NAME || process.env.MAILRELAY_FROM_NAME || "WCA Academy";
+
+if (FROM_EMAIL === "onboarding@resend.dev") {
+  console.warn(
+    "[sendEmail] ⚠ RESEND_FROM_EMAIL not set — usando onboarding@resend.dev. " +
+    "Solo funciona para el owner de la cuenta Resend. " +
+    "Configurá RESEND_FROM_EMAIL=noreply@tudominio.com en Vercel."
+  );
+}
 
 export async function sendEmail({ to, toName, subject, html }) {
   const resendKey = process.env.RESEND_API_KEY;
@@ -180,8 +188,11 @@ export async function sendEmail({ to, toName, subject, html }) {
 
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(`Resend ${res.status}: ${data.message || data.name || JSON.stringify(data).slice(0, 200)}`);
+    const errMsg = `Resend ${res.status}: ${data.message || data.name || JSON.stringify(data).slice(0, 200)}`;
+    console.error(`[sendEmail] FAILED to: ${to} subject: "${subject}" — ${errMsg}`);
+    throw new Error(errMsg);
   }
+  console.log(`[sendEmail] OK → ${Array.isArray(to) ? to[0] : to} | id: ${data.id || '?'}`);
   return data;
 }
 
