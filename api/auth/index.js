@@ -503,6 +503,10 @@ export default async function handler(req, res) {
         .eq('id', userId).maybeSingle();
       if (!user) return err(res, { status: 404, message: 'Usuario no encontrado' });
 
+      // Normalize one-to-one relations to arrays (Supabase returns object, not array)
+      user.students = Array.isArray(user.students) ? user.students : (user.students ? [user.students] : []);
+      user.staff    = Array.isArray(user.staff)    ? user.staff    : (user.staff    ? [user.staff]    : []);
+
       const auditMeta = { resolution, email: user.email, old_role: user.role };
 
       if (resolution === 'keep-staff') {
