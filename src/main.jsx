@@ -3,32 +3,12 @@ import ReactDOM from 'react-dom/client'
 import './theme.css'
 import App from './App.jsx'
 
-// ── Service Worker registration with update handling ──────────────
+// ── Service Worker: desregistrar cualquier SW previo ─────────────
+// No se usa PWA offline en esta app — el banner de "actualizar" era
+// un falso positivo que aparecía en cada deploy.
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').then(reg => {
-      if (import.meta.env.DEV) console.log('SW registered:', reg.scope);
-
-      // Check for updates every time user visits
-      reg.addEventListener('updatefound', () => {
-        const newSW = reg.installing;
-        newSW?.addEventListener('statechange', () => {
-          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-            // New version available — show reload prompt
-            dispatchEvent(new CustomEvent('wca:sw-update'));
-          }
-        });
-      });
-    }).catch(err => {
-      if (import.meta.env.DEV) console.warn('SW registration failed:', err);
-    });
-
-    // Message from SW that an update activated
-    navigator.serviceWorker.addEventListener('message', event => {
-      if (event.data?.type === 'SW_UPDATED') {
-        dispatchEvent(new CustomEvent('wca:sw-update'));
-      }
-    });
+  navigator.serviceWorker.getRegistrations().then(regs => {
+    regs.forEach(reg => reg.unregister());
   });
 }
 

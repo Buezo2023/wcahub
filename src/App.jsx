@@ -269,41 +269,14 @@ function AppInner() {
     window.addEventListener("unhandledrejection", h);
     return () => { window.removeEventListener("error", h); window.removeEventListener("unhandledrejection", h); };
   }, []);
-  // SW update notification
-  const [swUpdate, setSwUpdate] = React.useState(false);
-  React.useEffect(() => {
-    const handler = () => setSwUpdate(true);
-    window.addEventListener('wca:sw-update', handler);
-    return () => window.removeEventListener('wca:sw-update', handler);
-  }, []);
+
 
   return (
     <>
       <ConnectionGuard />
       <ToastContainer />
       <GlobalSearchModal search={search} />
-      {swUpdate && (
-        <div style={{
-          position:"fixed", bottom:16, left:"50%", transform:"translateX(-50%)",
-          zIndex:60, background:"var(--wca-primary)", color:"#fff",
-          padding:"10px 20px", borderRadius:12, fontSize:13, fontWeight:600,
-          display:"flex", gap:12, alignItems:"center",
-          boxShadow:"0 4px 20px rgba(0,0,0,.3)", whiteSpace:"nowrap",
-        }}>
-          🆕 Nueva versión disponible
-          <button onClick={() => window.location.reload()}
-            style={{ padding:"5px 14px", background:"var(--wca-secondary)",
-              color:"var(--wca-primary)", border:"none", borderRadius:8,
-              fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
-            Actualizar
-          </button>
-          <button onClick={() => setSwUpdate(false)}
-            style={{ background:"none", border:"none", color:"rgba(255,255,255,.6)",
-              fontSize:16, cursor:"pointer", padding:"0 4px" }}>
-            ✕
-          </button>
-        </div>
-      )}
+
       <ErrorBoundary>
       <CookieBanner />
       <Suspense fallback={<PageLoader />}>
