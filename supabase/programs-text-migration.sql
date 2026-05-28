@@ -1,72 +1,73 @@
 -- ══════════════════════════════════════════════════════════════════
--- Migración: programs.id de enum → text + columna published
+-- Migración: program_id enum → text + columna published
+-- ORDEN CORRECTO: primero programs (PK), después FKs en otras tablas
 -- Ejecutar en Supabase SQL Editor (una sola vez)
 -- ══════════════════════════════════════════════════════════════════
 
--- PASO 1: Agregar columna published a programs (borrador vs publicado)
-ALTER TABLE programs
-  ADD COLUMN IF NOT EXISTS published boolean NOT NULL DEFAULT true;
-
--- Programas existentes están publicados por defecto
+-- PASO 1: Agregar columnas nuevas a programs (no afecta constraints)
+ALTER TABLE programs ADD COLUMN IF NOT EXISTS published boolean NOT NULL DEFAULT true;
+ALTER TABLE programs ADD COLUMN IF NOT EXISTS description text;
 UPDATE programs SET published = true WHERE published IS NULL;
 
--- PASO 2: Agregar description si no existe
-ALTER TABLE programs
-  ADD COLUMN IF NOT EXISTS description text;
+-- PASO 2: Eliminar las FK constraints ANTES de cambiar los tipos
+ALTER TABLE groups      DROP CONSTRAINT IF EXISTS groups_program_id_fkey;
+ALTER TABLE enrollments DROP CONSTRAINT IF EXISTS enrollments_program_id_fkey;
+ALTER TABLE units       DROP CONSTRAINT IF EXISTS units_program_id_fkey;
+ALTER TABLE lms_content DROP CONSTRAINT IF EXISTS lms_content_program_id_fkey;
+ALTER TABLE programs    DROP CONSTRAINT IF EXISTS programs_requires_fkey;
 
--- PASO 3: Convertir program_id de enum a text en todas las tablas
--- Postgres no permite ALTER COLUMN cuando hay FKs, así que lo hacemos
--- columna a columna usando un cast temporal.
+-- También quitar el PK de programs para poder cambiar su tipo
+ALTER TABLE programs DROP CONSTRAINT IF EXISTS programs_pkey;
 
--- 3a. groups
-ALTER TABLE groups
-  ALTER COLUMN program_id TYPE text USING program_id::text;
+-- PASO 3: Convertir programs.id y programs.requires a text (el PK primero)
+ALTER TABLE programs ALTER COLUMN id       TYPE text USING id::text;
+ALTER TABLE programs ALTER COLUMN requires TYPE text USING requires::text;
 
--- 3b. enrollments
-ALTER TABLE enrollments
-  ALTER COLUMN program_id TYPE text USING program_id::text;
+-- PASO 4: Restaurar PK en programs
+ALTER TABLE programs ADD PRIMARY KEY (id);
 
--- 3c. lms_content
-ALTER TABLE lms_content
-  ALTER COLUMN program_id TYPE text USING program_id::text;
+-- PASO 5: Convertir FK columns en otras tablas
+ALTER TABLE groups      ALTER COLUMN program_id TYPE text USING program_id::text;
+ALTER TABLE enrollments ALTER COLUMN program_id TYPE text USING program_id::text;
+ALTER TABLE units       ALTER COLUMN program_id TYPE text USING program_id::text;
 
--- 3d. gamification_events (si existe)
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.columns
-    WHERE table_name='gamification_events' AND column_name='program_id') THEN
-    ALTER TABLE gamification_events
-      ALTER COLUMN program_id TYPE text USING program_id::text;
+    WHERE table_name='lms_content' AND column_name='program_id') THEN
+    ALTER TABLE lms_content ALTER COLUMN program_id TYPE text USING program_id::text;
   END IF;
 END $$;
 
--- 3e. leads
 DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM information_schema.columns
     WHERE table_name='leads' AND column_name='program_interest') THEN
-    ALTER TABLE leads
-      ALTER COLUMN program_interest TYPE text USING program_interest::text;
+    ALTER TABLE leads ALTER COLUMN program_interest TYPE text USING program_interest::text;
   END IF;
 END $$;
 
--- 3f. programs table itself (PK last)
-ALTER TABLE programs
-  ALTER COLUMN id TYPE text USING id::text;
+-- PASO 6: Restaurar FK constraints
+ALTER TABLE groups
+  ADD CONSTRAINT groups_program_id_fkey
+  FOREIGN KEY (program_id) REFERENCES programs(id) ON DELETE SET NULL;
 
-ALTER TABLE programs
-  ALTER COLUMN requires TYPE text USING requires::text;
+ALTER TABLE enrollments
+  ADD CONSTRAINT enrollments_program_id_fkey
+  FOREIGN KEY (program_id) REFERENCES programs(id) ON DELETE SET NULL;
 
--- PASO 4: Eliminar el tipo enum (ya no se necesita)
-DROP TYPE IF EXISTS program_id CASCADE;
+ALTER TABLE units
+  ADD CONSTRAINT units_program_id_fkey
+  FOREIGN KEY (program_id) REFERENCES programs(id) ON DELETE CASCADE;
 
--- PASO 5: Re-agregar FK de programs.requires → programs.id
 ALTER TABLE programs
   ADD CONSTRAINT programs_requires_fkey
   FOREIGN KEY (requires) REFERENCES programs(id) ON DELETE SET NULL;
 
--- PASO 6: Índices
-CREATE INDEX IF NOT EXISTS idx_programs_active_published
-  ON programs(active, published)
-  WHERE active = true AND published = true;
+-- PASO 7: Eliminar el tipo enum (ya no se necesita)
+DROP TYPE IF EXISTS program_id CASCADE;
 
--- Verificar
+-- PASO 8: Índice para published
+CREATE INDEX IF NOT EXISTS idx_programs_active_published
+  ON programs(active, published) WHERE active = true AND published = true;
+
+-- Verificar resultado
 SELECT id, name, active, published FROM programs ORDER BY id;
