@@ -76,8 +76,25 @@ function PrivateRoute({ element, allowedRoles }) {
   const { profile, session, loading } = useSession();
   const [auth, setAuth] = React.useState({ ready: false, ok: false, redirect: null });
 
+  // sessionWaitRef: tracks how long we've waited for profile after session confirmed
+  const sessionWaitStart = React.useRef(null);
+  const [sessionTimeout, setSessionTimeout] = React.useState(false);
+
   React.useEffect(() => {
     if (loading) return;
+    // Session confirmed but profile still loading — wait up to 6s before giving up
+    if (session && !profile) {
+      if (!sessionWaitStart.current) sessionWaitStart.current = Date.now();
+      const waited = Date.now() - sessionWaitStart.current;
+      if (waited < 6000) {
+        // Still within window — stay on loading screen, don't redirect yet
+        const retry = setTimeout(() => setSessionTimeout(t => !t), 300); // force re-eval
+        return () => clearTimeout(retry);
+      }
+      // 6s passed, profile never loaded — redirect
+      setAuth({ ready: true, ok: false, redirect: '/' }); return;
+    }
+    sessionWaitStart.current = null; // reset if session or profile changes
     if (!session) { setAuth({ ready: true, ok: false, redirect: '/' }); return; }
     if (!profile) { setAuth({ ready: true, ok: false, redirect: '/' }); return; }
     if (allowedRoles && profile.role !== 'super_admin' && !allowedRoles.includes(profile.role)) {
@@ -85,7 +102,7 @@ function PrivateRoute({ element, allowedRoles }) {
       return;
     }
     setAuth({ ready: true, ok: true, redirect: null });
-  }, [loading, session, profile]);
+  }, [loading, session, profile, sessionTimeout]);
 
   if (!auth.ready) return (
     <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',

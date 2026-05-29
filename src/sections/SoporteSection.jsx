@@ -1,7 +1,7 @@
 // ─── SoporteSection — Soporte Estudiantil ──────────────────────
 // Requiere ejecutar supabase/support-tickets.sql en Supabase.
 // Maneja gracefully si las tablas no existen.
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "../lib/supabase.js";
 
 const P="#155266", PD="#e8f3f6", G="#059669", GD="#ecfdf5",
@@ -42,8 +42,19 @@ export function SoporteSection({ showToast }) {
   const [form, setForm] = useState({ email:"", category:"otro", priority:"media", subject:"", description:"" });
   const [creating, setCreating] = useState(false);
 
+  const mountedRef = useRef(true);
+
   const load = useCallback(async () => {
     setLoading(true); setError(null); setNoTable(false);
+    // Timeout: if Supabase hangs, unblock after 8s
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      if (mountedRef.current) {
+        setError("La carga de tickets tardó demasiado. Intentá de nuevo.");
+        setLoading(false);
+      }
+    }, 8000);
     try {
       const { data, error: qErr } = await supabase
         .from("support_tickets")
@@ -54,6 +65,9 @@ export function SoporteSection({ showToast }) {
         .order("created_at", { ascending: false })
         .limit(100);
 
+      if (timedOut || !mountedRef.current) return; // unmounted or timed out — discard result
+      clearTimeout(timer);
+
       if (qErr) {
         if (qErr.message?.includes("does not exist") || qErr.code === "42P01") {
           setNoTable(true); return;
@@ -62,11 +76,20 @@ export function SoporteSection({ showToast }) {
       }
       setTickets(data || []);
     } catch(e) {
+      clearTimeout(timer);
+      if (!mountedRef.current) return;
       setError(e.message || "Error al cargar tickets");
-    } finally { setLoading(false); }
+    } finally {
+      clearTimeout(timer);
+      if (mountedRef.current && !timedOut) setLoading(false);
+    }
   }, []);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    mountedRef.current = true;
+    load();
+    return () => { mountedRef.current = false; }; // mark unmount — prevents stale setState
+  }, [load]);
 
   async function loadMessages(ticketId) {
     setMsgLoading(true);
@@ -183,7 +206,8 @@ export function SoporteSection({ showToast }) {
       showToast?.("✓ Ticket creado");
       setCreateOpen(false);
       setForm({ email:"", category:"otro", priority:"media", subject:"", description:"" });
-      await load();
+      // Non-blocking reload — if it fails, toast is already shown and modal already closed
+      load().catch(e => console.warn("[support] post-create reload failed:", e?.message));
     } catch(e) {
       showToast?.("Error: " + e.message, R);
     } finally { setCreating(false); }
