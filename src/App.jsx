@@ -249,7 +249,7 @@ function NavHub() {
         </div>
 
         <div style={{ textAlign:'center', marginTop:32, fontSize:11, color: dark?'#334155':'#cbd5e1' }}>
-          Plataforma de gestión académica · WCA Academy<br/>
+          Plataforma de gestión académica · World Connect Academy<br/>
           <code style={{ color: dark?'#475569':'#94a3b8' }}>worldconnectacademy.com</code>
         </div>
       </div>

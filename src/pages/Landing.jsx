@@ -481,7 +481,7 @@ export default function Landing() {
         {/* Especializations */}
         <FadeIn delay={0.2}>
           <div style={{ marginTop:20, background:"var(--bg-surface, #fff)", border:`1px solid ${T.border}`, borderRadius:22, padding:"24px 28px" }}>
-            <div style={{ fontSize:13, fontWeight:700, color:T.muted, marginBottom:16, textTransform:"uppercase", letterSpacing:.8 }}>Especializaciones VA · $95/mes c/u · Requieren VA General</div>
+            <div style={{ fontSize:13, fontWeight:700, color:T.muted, marginBottom:16, textTransform:"uppercase", letterSpacing:.8 }}>Especializaciones VA · Requieren VA General</div>
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(260px,1fr))", gap:14 }}>
               {programs.slice(2).map((p,i)=>(
                 <div key={i} style={{ display:"flex", gap:12, alignItems:"center", padding:"12px 14px", background:"var(--bg-page)", borderRadius:12, border:`1px solid ${T.border}` }}>
@@ -739,7 +739,7 @@ export default function Landing() {
                   <span style={{ fontSize:16, fontWeight:800, color:T.gold }}>W</span>
                 </div>
                 <div>
-                  <div style={{ fontSize:14, fontWeight:800, color:"#fff" }}>WCA Academy</div>
+                  <div style={{ fontSize:14, fontWeight:800, color:"#fff" }}>World Connect Academy</div>
                   <div style={{ fontSize:11, color:"rgba(255,255,255,.3)", letterSpacing:1.5 }}>VIRTUAL ASSISTANT TRAINING</div>
                 </div>
               </div>
@@ -845,7 +845,7 @@ export default function Landing() {
                 <span style={{ color:T.teal, cursor:"pointer" }}>Términos de uso</span>
                 {" "}y la{" "}
                 <a href="/privacidad" style={{ color:"#ffbb23", cursor:"pointer", textDecoration:"underline", fontSize:"inherit" }}>Política de privacidad</a>
-                {" "}de WCA Academy.
+                {" "}de World Connect Academy.
               </p>
             </div>
           </div>

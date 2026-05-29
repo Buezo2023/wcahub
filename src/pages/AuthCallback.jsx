@@ -99,7 +99,7 @@ export default function AuthCallback() {
 
         if (profile && !profile.active) {
           clearTimeout(timeout);
-          setError("Tu cuenta está suspendida. Contactá a WCA Academy: info@worldconnectacademy.com");
+          setError("Tu cuenta está suspendida. Contactá a World Connect Academy: info@worldconnectacademy.com");
           return;
         }
 

@@ -92,7 +92,7 @@ export function AtRiskSection({ showToast }) {
                 </div>
                 <div style={{display:"flex",gap:8}}>
                   <a href={`mailto:${s.email}`} style={{flex:1,fontSize:12,padding:"6px",background:P,color:"#fff",border:"none",borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:600,textAlign:"center",textDecoration:"none"}}>✉ Email</a>
-                  {s.phone&&<a href={`https://wa.me/${s.phone.replace(/\D/g,"")}?text=${encodeURIComponent(`Hola ${s.name}, queríamos contactarte para hablar de tu progreso en WCA Academy.`)}`} target="_blank" rel="noopener noreferrer" style={{flex:1,fontSize:12,padding:"6px",background:"#ecfdf5",color:G,border:"none",borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:600,textAlign:"center",textDecoration:"none"}}>💬 WhatsApp</a>}
+                  {s.phone&&<a href={`https://wa.me/${s.phone.replace(/\D/g,"")}?text=${encodeURIComponent(`Hola ${s.name}, queríamos contactarte para hablar de tu progreso en World Connect Academy.`)}`} target="_blank" rel="noopener noreferrer" style={{flex:1,fontSize:12,padding:"6px",background:"#ecfdf5",color:G,border:"none",borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:600,textAlign:"center",textDecoration:"none"}}>💬 WhatsApp</a>}
                 </div>
               </div>
             );

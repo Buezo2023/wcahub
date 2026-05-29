@@ -374,7 +374,7 @@ async function handleResend(req, actor) {
   <div style="padding:32px;">
     <h2 style="font-size:22px;color:#0f172a;margin:0 0 16px;">Tu acceso a WCA Hub, ${firstName}</h2>
     <p style="font-size:14px;color:#475569;line-height:1.7;margin:0 0 20px;">
-      ${isStaff ? `Sos parte del equipo WCA como <strong>${roleLabel}</strong>.` : `Tu matrícula en WCA Academy está activa.`}
+      ${isStaff ? `Sos parte del equipo WCA como <strong>${roleLabel}</strong>.` : `Tu matrícula en World Connect Academy está activa.`}
       Iniciá sesión con tu cuenta de <strong>Google</strong>.
     </p>
     <a href="${portalUrl}" style="display:block;text-align:center;background:#155266;color:#fff;text-decoration:none;padding:14px 28px;border-radius:10px;font-weight:700;font-size:15px;margin-bottom:16px;">Acceder a WCA Hub →</a>
@@ -393,7 +393,7 @@ async function handleTestEmail(req, actor) {
   const target    = to || actor.email;
   const resendKey = process.env.RESEND_API_KEY;
   const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-  const fromName  = process.env.MAILRELAY_FROM_NAME || "WCA Academy";
+  const fromName  = process.env.MAILRELAY_FROM_NAME || "World Connect Academy";
 
   if (!resendKey) {
     return {

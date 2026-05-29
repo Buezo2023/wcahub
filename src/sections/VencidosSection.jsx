@@ -85,7 +85,7 @@ export function VencidosSection({ showToast }) {
             </div>
             <div style={{display:"flex",gap:8}}>
               <button onClickCapture={e=>{e.stopPropagation();runReminder(o);}} style={{flex:1,fontSize:12,padding:"6px",background:P,color:"#fff",border:"none",borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>✉ Recordatorio</button>
-              {o.phone&&<a href={`https://wa.me/${o.phone.replace(/\D/g,"")}?text=${encodeURIComponent(`Hola ${o.name}, tu pago de $${o.amount} lleva ${o.days} días vencido en WCA Academy.`)}`} target="_blank" rel="noopener noreferrer" style={{flex:1,fontSize:12,padding:"6px",background:GD,color:G,border:"none",borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:600,textAlign:"center",textDecoration:"none"}}>💬 WhatsApp</a>}
+              {o.phone&&<a href={`https://wa.me/${o.phone.replace(/\D/g,"")}?text=${encodeURIComponent(`Hola ${o.name}, tu pago de $${o.amount} lleva ${o.days} días vencido en World Connect Academy.`)}`} target="_blank" rel="noopener noreferrer" style={{flex:1,fontSize:12,padding:"6px",background:GD,color:G,border:"none",borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:600,textAlign:"center",textDecoration:"none"}}>💬 WhatsApp</a>}
             </div>
           </div>
         ))}

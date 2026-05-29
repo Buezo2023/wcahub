@@ -211,7 +211,7 @@ function UnitRow({unit,prog,isActive,isDone,isLocked,color}){
         <div style={{display:"flex",alignItems:"center",gap:7,minWidth:130,justifyContent:"flex-end"}}>
           <div style={{textAlign:"right"}}>
             <div style={{fontSize:12,color:"var(--text-secondary)"}}>{prog.actsDone}/{unit.acts}</div>
-            <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Activities done</div>
+            <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Actividades</div>
           </div>
           <Ring pct={actsPct} size={34} stroke={3} color={isDone?G:isActive?Y:"#d1d5db"}/>
         </div>
@@ -224,13 +224,13 @@ function UnitRow({unit,prog,isActive,isDone,isLocked,color}){
         onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";}}>
         <div style={{width:32,height:32,borderRadius:"50%",background:isDone?G:isActive?Y:"#d4b483",display:"flex",alignItems:"center",justifyContent:"center",fontSize:12,fontWeight:700,color:"#fff",flexShrink:0}}>{unit.n}</div>
         <div style={{flex:1,fontSize:13,color:isLocked||(!isDone&&!isActive)?"var(--text-tertiary)":"var(--text-primary)"}}>
-          Unit {unit.n} Test
+          Unidad {unit.n} — Examen
           {isDone&&prog.testDone===3&&<span style={{marginLeft:8,fontSize:11,background:GD,color:G,padding:"2px 8px",borderRadius:20,fontWeight:700}}>✓</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:7,minWidth:130,justifyContent:"flex-end"}}>
           <div style={{textAlign:"right"}}>
             <div style={{fontSize:12,color:"var(--text-secondary)"}}>{prog.testDone}/3</div>
-            <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Activities done</div>
+            <div style={{fontSize:11,color:"var(--text-tertiary)"}}>Actividades</div>
           </div>
           <Ring pct={testPct} size={34} stroke={3} color={prog.testDone===3?G:color}/>
         </div>
@@ -1249,7 +1249,7 @@ export default function PortalEstudiante(){
                   <div style={{fontSize:18,fontWeight:800,color:"var(--text-primary)"}}>Plataforma 24/7 — Plan Completo</div>
                   <div style={{fontSize:14,color:"var(--text-secondary)",maxWidth:380,lineHeight:1.7}}>
                     Tu beca incluye clases en vivo y seguimiento académico.<br/>
-                    La plataforma de práctica 24/7 está disponible en el plan completo ($95/mes).<br/>
+                    La plataforma de práctica 24/7 está disponible con matrícula activa. Consultá con tu coordinadora sobre opciones de plan.
                     Hablá con tu coordinadora para hacer el upgrade.
                   </div>
                   <div style={{background:"#e8f3f6",borderRadius:12,padding:"12px 20px",fontSize:13,color:"#155266",fontWeight:600}}>

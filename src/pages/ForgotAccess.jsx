@@ -47,7 +47,7 @@ export default function ForgotAccess() {
             <div style={{ width:42, height:42, borderRadius:11, background:P, display:"flex", alignItems:"center", justifyContent:"center" }}>
               <span style={{ fontSize:19, fontWeight:900, color:Y }}>W</span>
             </div>
-            <span style={{ fontSize:16, fontWeight:800, color:"var(--text-primary)" }}>WCA Academy</span>
+            <span style={{ fontSize:16, fontWeight:800, color:"var(--text-primary)" }}>World Connect Academy</span>
           </div>
         </div>
 

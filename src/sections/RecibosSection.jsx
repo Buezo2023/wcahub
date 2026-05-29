@@ -47,7 +47,7 @@ export function RecibosSection({ showToast }) {
       ${p.bank?`<div class="row"><span class="label">Banco</span><span>${p.bank}</span></div>`:""}
       <div class="row"><span class="label">Fecha de confirmación</span><span>${fecha}</span></div>
     </div>
-    <div class="footer">WCA Academy · wcahub.vercel.app · info@worldconnectacademy.com<br>Este documento es el comprobante oficial de tu pago.</div>
+    <div class="footer">World Connect Academy · wcahub.vercel.app · info@worldconnectacademy.com<br>Este documento es el comprobante oficial de tu pago.</div>
     <button onclick="window.print()" style="margin-top:20px;padding:10px 24px;background:#155266;color:#fff;border:none;border-radius:8px;font-size:14px;cursor:pointer">↓ Imprimir / Guardar PDF</button>
     </body></html>`);
     w.document.close();

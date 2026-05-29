@@ -903,7 +903,7 @@ export default function CoordAcademica() {
                     </div>
                     {eligible && (
                       <button onClick={()=>setUpgradeModal({...s, eligible})} style={{ width:"100%", padding:"9px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
-                        Hacer upgrade a Plan Completo ($95/mes)
+                        Hacer upgrade a Plan Completo
                       </button>
                     )}
                     {!eligible && <div style={{ fontSize:13, color:B.textSec, textAlign:"center", padding:"6px 0" }}>Necesita ≥70% de asistencia para ser elegible.</div>}
@@ -962,7 +962,7 @@ export default function CoordAcademica() {
             <div style={{ fontSize:13, color:B.textSec, marginBottom:14 }}>{upgradeModal.name} · Beca {upgradeModal.program}</div>
             <div style={{ background:B.secondaryDim, borderRadius:10, padding:12, marginBottom:14 }}>
               <div style={{ fontSize:13, fontWeight:600, color:"#92400e", marginBottom:6 }}>¿Qué cambia?</div>
-              {["Acceso 24/7 a plataforma completa","Todos los niveles hasta C1","Exámenes digitales incluidos","Cobro mensual de $95/mes desde hoy","El progreso actual se conserva"].map((item,i) => (
+              {["Acceso 24/7 a plataforma completa","Todos los niveles hasta C1","Exámenes digitales incluidos","Cobro mensual según plan activo","El progreso actual se conserva"].map((item,i) => (
                 <div key={i} style={{ fontSize:12, color:"#92400e", display:"flex", gap:8, marginBottom:4 }}>
                   <i className="ti ti-check" style={{ fontSize:13, color:B.green, flexShrink:0 }} aria-hidden="true" />{item}
                 </div>
@@ -980,7 +980,7 @@ export default function CoordAcademica() {
     }
   }
   setUpgradeModal(null);
-  toast.success(`✓ Upgrade confirmado para ${upgradeModal?.name}. Cobro de $95/mes desde hoy.`);
+  toast.success(`✓ Upgrade confirmado para ${upgradeModal?.name}.`);
 }} style={{ flex:2, padding:"9px", background:B.primary, color:"var(--bg-surface)", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>✓ Confirmar upgrade</button>
             </div>
           </div>

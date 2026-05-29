@@ -67,7 +67,7 @@ export default async function handler(req, res) {
       const diffDays   = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
       const daysLate   = -diffDays; // positive = overdue
       const firstName  = profile.full_name?.split(' ')[0] || 'Estudiante';
-      const programName= PROG_NAMES[enroll.program_id] || 'WCA Academy';
+      const programName= PROG_NAMES[enroll.program_id] || 'World Connect Academy';
       const amount     = enroll.price_locked || 95;
 
       // ── A: Pre-reminder — 5 days before due (window [5,6] for 1-day cron recovery) ──
@@ -75,12 +75,12 @@ export default async function handler(req, res) {
         try {
           await sendEmail({
             to: profile.email, toName: profile.full_name,
-            subject: `📅 Tu pago vence en ${GRACE_DAYS} días — WCA Academy`,
+            subject: `📅 Tu pago vence en ${GRACE_DAYS} días — World Connect Academy`,
             html: `<p>Hola ${firstName},</p>
               <p>Tu próximo pago de <strong>$${amount}</strong> para <strong>${programName}</strong> 
               vence el <strong>${new Date(enroll.next_payment_date).toLocaleDateString('es-HN',{day:'2-digit',month:'long'})}</strong>.</p>
               <p>Para realizar tu pago, ingresá a tu portal y elegí el método de pago o coordiná con tu asesor.</p>
-              <p style="color:#666;font-size:12px">WCA Academy · wcahub.vercel.app</p>`,
+              <p style="color:#666;font-size:12px">World Connect Academy · wcahub.vercel.app</p>`,
           });
           results.preReminders.sent++;
           // In-app notification
@@ -98,12 +98,12 @@ export default async function handler(req, res) {
         try {
           await sendEmail({
             to: profile.email, toName: profile.full_name,
-            subject: `⚠️ Tu pago vence HOY — WCA Academy`,
+            subject: `⚠️ Tu pago vence HOY — World Connect Academy`,
             html: `<p>Hola ${firstName},</p>
               <p>Tu pago de <strong>$${amount}</strong> para <strong>${programName}</strong> 
               vence <strong>hoy</strong>.</p>
               <p>Realizá tu transferencia y enviá el comprobante para mantener tu cuenta activa.</p>
-              <p style="color:#666;font-size:12px">WCA Academy · wcahub.vercel.app</p>`,
+              <p style="color:#666;font-size:12px">World Connect Academy · wcahub.vercel.app</p>`,
           });
           results.dueToday.sent++;
           await admin.from('notifications').insert({
@@ -193,7 +193,7 @@ export default async function handler(req, res) {
                 <p>Tu matrícula en <strong>${programName}</strong> ha sido <strong>suspendida</strong> 
                 por ${daysLate} días de pago pendiente.</p>
                 <p>Para reactivar tu cuenta, regularizá tu pago y contactá a cobros.</p>
-                <p style="color:#666;font-size:12px">WCA Academy · wcahub.vercel.app</p>`,
+                <p style="color:#666;font-size:12px">World Connect Academy · wcahub.vercel.app</p>`,
             }).catch(() => {});
 
             // Log audit

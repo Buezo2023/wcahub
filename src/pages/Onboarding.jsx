@@ -152,19 +152,19 @@ function StepProgram({ selectedProgram, onSelect, onNext, onPrev }) {
   const PROGRAMS = [
     {
       id:"en", icon:"🇬🇧", title:"Inglés Completo",
-      sub:"Marco CEFR A1 → C1", price:"$95/mes",
+      sub:"Marco CEFR A1 → C1", price:"Consultar con admisiones",
       desc:"Clases en vivo 3x por semana + práctica digital 24/7. Incluye examen de placement para detectar tu nivel.",
       color:B.primary, bg:B.primaryDim,
     },
     {
       id:"va", icon:"💻", title:"Asistente Virtual",
-      sub:"Formación VA bilingüe", price:"$75/mes",
+      sub:"Formación VA bilingüe", price:"Consultar con admisiones",
       desc:"Aprende a trabajar remotamente para clientes en EE.UU. Herramientas, comunicación y habilidades digitales.",
       color:"#7c3aed", bg:"#ede9fe",
     },
     {
       id:"en_va", icon:"⚡", title:"Inglés + VA",
-      sub:"Programa combinado", price:"$170/mes",
+      sub:"Programa combinado", price:"Consultar con admisiones",
       desc:"La combinación más completa. Inglés CEFR + formación VA en paralelo. Progreso independiente en cada programa.",
       color:B.dark, bg:"#e8f3f6",
     },
@@ -316,7 +316,7 @@ function StepHow({ onNext, onPrev }) {
     { icon:"ti-video",          bg:B.primary, title:"Clase en vivo",         tag:"3x por semana",    desc:"Lunes, miércoles y viernes tu docente imparte la clase en Microsoft Teams. Todos los estudiantes del mismo nivel ven la misma unidad esa semana." },
     { icon:"ti-device-laptop",  bg:B.dark,    title:"Práctica 24/7",         tag:"Sin restricción",  desc:"Después de clase accedés a videos, ejercicios y actividades en la plataforma. A cualquier hora, desde cualquier dispositivo." },
     { icon:"ti-writing",        bg:"#7c3aed", title:"Examen de unidad",      tag:"≥70% para aprobar",desc:"Tenés hasta 3 intentos para aprobar con 70% o más. Al aprobar, la siguiente unidad se desbloquea automáticamente." },
-    { icon:"ti-certificate",    bg:B.green,   title:"Certificación por nivel",tag:"A1 → C1",          desc:"Al completar los 5 niveles CEFR obtenés tu certificado WCA Academy avalado internacionalmente." },
+    { icon:"ti-certificate",    bg:B.green,   title:"Certificación por nivel",tag:"A1 → C1",          desc:"Al completar los 5 niveles CEFR obtenés tu certificado World Connect Academy avalado internacionalmente." },
   ];
   return (
     <div style={{ padding:"24px 20px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"space-between" }}>
@@ -413,7 +413,7 @@ function StepReady({ name, program, level, onFinish, saving }) {
   const [show, setShow] = useState(false);
   useEffect(() => { const t = setTimeout(() => setShow(true), 100); return () => clearTimeout(t); }, []);
   const programNames = { en:"Inglés Completo", va:"Asistente Virtual", en_va:"Inglés + VA" };
-  const progName = programNames[program] || "WCA Academy";
+  const progName = programNames[program] || "World Connect Academy";
 
   return (
     <div style={{ padding:"28px 24px", height:"100%", display:"flex", flexDirection:"column", justifyContent:"space-between", textAlign:"center", position:"relative", overflow:"hidden" }}>

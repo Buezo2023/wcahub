@@ -154,7 +154,7 @@ export function err(res, error) {
 // FROM: si tenés dominio propio verificado en Resend, agregá RESEND_FROM_EMAIL en Vercel
 // Por ahora usa el dominio de prueba de Resend que funciona sin verificación
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
-const FROM_NAME  = process.env.RESEND_FROM_NAME || process.env.MAILRELAY_FROM_NAME || "WCA Academy";
+const FROM_NAME  = process.env.RESEND_FROM_NAME || process.env.MAILRELAY_FROM_NAME || "World Connect Academy";
 
 if (FROM_EMAIL === "onboarding@resend.dev") {
   console.warn(
@@ -222,7 +222,7 @@ export const EmailTemplates = {
     const n = sanitize(name), e = sanitize(email), p = sanitize(programName);
     const code = studentCode ? sanitize(studentCode) : null;
     return {
-      subject: `Bienvenido a WCA Academy — Accedé a tu portal`,
+      subject: `Bienvenido a World Connect Academy — Accedé a tu portal`,
       html: wrap(`
         <h2 style="color:#0f172a;font-size:22px;margin:0 0 8px;">¡Bienvenido, ${n}!</h2>
         <p style="color:#475569;font-size:14px;line-height:1.7;margin:0 0 20px;">
@@ -249,7 +249,7 @@ export const EmailTemplates = {
       subject: `Matrícula confirmada — ${p}`,
       html: wrap(`
         <h2 style="color:#0f172a;font-size:22px;margin:0 0 8px;">¡Tu matrícula está lista! 🎉</h2>
-        <p style="color:#475569;font-size:14px;line-height:1.7;margin:0 0 20px;">Hola <strong>${n}</strong>, confirmamos tu matrícula en WCA Academy.</p>
+        <p style="color:#475569;font-size:14px;line-height:1.7;margin:0 0 20px;">Hola <strong>${n}</strong>, confirmamos tu matrícula en World Connect Academy.</p>
         <div style="border:1.5px solid #e2e8f0;border-radius:12px;overflow:hidden;margin-bottom:24px;">
           <div style="background:#155266;padding:12px 16px;color:#fff;font-weight:700;font-size:14px;">${p}</div>
           ${rows.map(([k,v]) => `<div style="display:flex;justify-content:space-between;padding:10px 16px;border-bottom:1px solid #f1f5f9;"><span style="font-size:12px;color:#64748b;">${k}</span><span style="font-size:13px;color:#0f172a;font-weight:600;">${sanitize(String(v))}</span></div>`).join("")}
@@ -261,7 +261,7 @@ export const EmailTemplates = {
   paymentConfirmed({ name, amount, programName, period, code }) {
     const n = sanitize(name), p = sanitize(programName), c = sanitize(code || "");
     return {
-      subject: `Pago recibido — WCA Academy`,
+      subject: `Pago recibido — World Connect Academy`,
       html: wrap(`
         <h2 style="color:#0f172a;font-size:22px;margin:0 0 8px;">Pago confirmado ✅</h2>
         <p style="color:#475569;font-size:14px;margin:0 0 20px;">Hola <strong>${n}</strong>, confirmamos tu pago.</p>
@@ -294,7 +294,7 @@ export const EmailTemplates = {
   welcome({ name, programName, teamsLink, nextClass }) {
     const n = sanitize(name), p = sanitize(programName);
     return {
-      subject: `¡Ya estás dentro! Tu primera clase en WCA Academy`,
+      subject: `¡Ya estás dentro! Tu primera clase en World Connect Academy`,
       html: wrap(`
         <h2 style="color:#0f172a;font-size:22px;margin:0 0 8px;">¡Todo listo, ${n}! 🎓</h2>
         <p style="color:#475569;font-size:14px;margin:0 0 20px;">Completaste el onboarding y ya estás listo para <strong>${p}</strong>.</p>

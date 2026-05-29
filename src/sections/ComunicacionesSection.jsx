@@ -24,9 +24,9 @@ export function ComunicacionesSection({ showToast, subView }) {
 
     const TARGETS=[["all","Todos los estudiantes activos"],["overdue","Estudiantes con pago vencido"],["program","Por programa"],["group","Por grupo"]];
     const TEMPLATES=[
-      {l:"Cambio de horario",s:"Cambio de horario — WCA Academy",b:"Estimado/a estudiante,\n\nTe informamos que a partir de la próxima semana habrá un cambio en el horario de tu grupo.\n\nPor favor revisa tu portal para ver los detalles actualizados.\n\n¡Gracias por tu comprensión!\n\nEquipo WCA Academy"},
-      {l:"Recordatorio de pago",s:"Recordatorio de pago — WCA Academy",b:"Hola,\n\nTe recordamos que tu próximo pago está por vencer. Para continuar disfrutando de tus clases, por favor realizá tu transferencia y envianos el comprobante.\n\n¡Gracias!\n\nEquipo WCA Academy"},
-      {l:"Anuncio nuevo contenido",s:"¡Nuevo contenido disponible! — WCA Academy",b:"¡Hola!\n\nTenemos buenas noticias: hemos actualizado el material de tu programa con nuevos recursos y actividades.\n\nIngresá a tu portal para acceder al nuevo contenido.\n\n¡Que aprendas mucho!\n\nEquipo WCA Academy"},
+      {l:"Cambio de horario",s:"Cambio de horario — World Connect Academy",b:"Estimado/a estudiante,\n\nTe informamos que a partir de la próxima semana habrá un cambio en el horario de tu grupo.\n\nPor favor revisa tu portal para ver los detalles actualizados.\n\n¡Gracias por tu comprensión!\n\nEquipo World Connect Academy"},
+      {l:"Recordatorio de pago",s:"Recordatorio de pago — World Connect Academy",b:"Hola,\n\nTe recordamos que tu próximo pago está por vencer. Para continuar disfrutando de tus clases, por favor realizá tu transferencia y envianos el comprobante.\n\n¡Gracias!\n\nEquipo World Connect Academy"},
+      {l:"Anuncio nuevo contenido",s:"¡Nuevo contenido disponible! — World Connect Academy",b:"¡Hola!\n\nTenemos buenas noticias: hemos actualizado el material de tu programa con nuevos recursos y actividades.\n\nIngresá a tu portal para acceder al nuevo contenido.\n\n¡Que aprendas mucho!\n\nEquipo World Connect Academy"},
     ];
 
     async function send(){

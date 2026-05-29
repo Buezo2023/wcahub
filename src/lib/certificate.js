@@ -126,7 +126,7 @@ export async function generateCertificate({ name, level, program, date, isIntern
   ctx.fillText("Coordinación Académica", 900, lineY+20);
   ctx.fillStyle = "#64748b";
   ctx.font = "12px Arial, sans-serif";
-  ctx.fillText("WCA Academy", 900, lineY+38);
+  ctx.fillText("World Connect Academy", 900, lineY+38);
 
   // ── Bottom seal ──
   ctx.fillStyle = "#155266";

@@ -48,7 +48,7 @@ async function handleWelcome(req, res) {
 
     const { subject, html } = EmailTemplates.welcome({
       name:        student.profile.full_name.split(' ')[0],
-      programName: programNames[enroll?.program_id] || 'WCA Academy',
+      programName: programNames[enroll?.program_id] || 'World Connect Academy',
       teamsLink:   group?.teams_link || null,
       nextClass,
     });
@@ -99,7 +99,7 @@ async function handleReminders(req, res) {
       try {
         const { subject, html } = EmailTemplates.paymentReminder({
           name:        student.profile.full_name.split(' ')[0],
-          programName: programNames[enroll.program_id] || 'WCA Academy',
+          programName: programNames[enroll.program_id] || 'World Connect Academy',
           amount:      enroll.price_locked || 95,
           daysOverdue: actualDaysOverdue,
         });

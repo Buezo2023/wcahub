@@ -391,7 +391,7 @@ export function StudentReport({ student, enrollments, certificates, progressHist
                     <text x="16" y="22" fontFamily="sans-serif" fontSize="16" fontWeight="900" fill={Y} textAnchor="middle">W</text>
                   </svg>
                   <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: P }}>WCA Academy Hub</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: P }}>WCA Hub</div>
                     <div style={{ fontSize:11, color: "#94a3b8" }}>wcahub.vercel.app</div>
                   </div>
                 </div>
