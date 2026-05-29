@@ -1568,9 +1568,9 @@ export default function PortalEstudiante(){
                         })()}
                       </div>
                       <div style={{textAlign:"right"}}>
-                        {/* PE-A03: use real price_locked from DB, not hardcoded ALL_PROGRAMS price */}
+                        {/* PE-A03: use real price_locked from DB */}
                         <div style={{fontSize:isMobile?17:22,fontWeight:800,color:p.color}}>
-                          {realEnrollments[p.id]?.priceLocked ? `$${Number(realEnrollments[p.id].priceLocked).toFixed(2)}` : "—"}
+                          {realEnrollments[p.id]?.priceLocked ? `$${Number(realEnrollments[p.id].priceLocked).toFixed(2)}` : "Consultar"}
                         </div>
                         <div style={{fontSize:11,color:"var(--text-tertiary)"}}>/{prog2?.interval}</div>
                       </div>
@@ -1585,7 +1585,10 @@ export default function PortalEstudiante(){
                         </div>;
                       })()}
                     </div>
-                    <a href="mailto:info@worldconnectacademy.com?subject=Solicitud%20de%20pago%20-%20{p.id}" style={{display:"block",width:"100%",padding:"9px",background:"var(--bg-surface-subtle)",color:P,border:`1px solid ${P}40`,borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginTop:10,textAlign:"center",textDecoration:"none",boxSizing:"border-box"}}>
+                    <a href={`mailto:info@worldconnectacademy.com?subject=${encodeURIComponent(`Solicitud de pago — ${p.name}`)}&body=${encodeURIComponent(`Hola, soy ${user.name}. Solicito el enlace de pago para mi matrícula en ${p.name}.${user.studentCode ? `
+
+Código de estudiante: ${user.studentCode}` : ""}`)}`}
+                      style={{display:"block",width:"100%",padding:"9px",background:"var(--bg-surface-subtle)",color:P,border:`1px solid ${P}40`,borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginTop:10,textAlign:"center",textDecoration:"none",boxSizing:"border-box"}}>
                       📩 Solicitar enlace de pago
                     </a>
                   </div>
@@ -1603,7 +1606,13 @@ export default function PortalEstudiante(){
                     </div>
                   </div>
                   {p.proof_url
-                    ? <div style={{fontSize:11,color:G,fontWeight:600}}>✓ Comprobante enviado</div>
+                    ? <div style={{display:"flex",flexDirection:"column",alignItems:"flex-end",gap:4}}>
+                        <div style={{fontSize:11,color:G,fontWeight:600}}>✓ Comprobante enviado</div>
+                        <a href={p.proof_url} target="_blank" rel="noopener noreferrer"
+                          style={{fontSize:11,color:P,fontWeight:600,textDecoration:"underline",cursor:"pointer"}}>
+                          📎 Ver comprobante
+                        </a>
+                      </div>
                     : <label style={{fontSize:12,padding:"6px 14px",background:p.status==="failed"?R:A,color:"#fff",borderRadius:8,cursor:"pointer",fontWeight:600,fontFamily:"inherit"}}>
                         📎 {p.status==="failed"?"Subir nuevo comprobante":"Subir comprobante"}
                         <input type="file" accept="image/*,.pdf" style={{display:"none"}} onChange={async e=>{
@@ -1618,7 +1627,8 @@ export default function PortalEstudiante(){
                             // PE-M01: correct action — updates existing payment, failed→pending handled by api/payments
                             await api.patch("/api/payments", { paymentId: p.id, action: "upload-proof", proofUrl: publicUrl });
                             toast.success("✓ Comprobante enviado — cobros lo revisará en breve");
-                            setRealPayments(ps=>ps.map(x=>x.id===p.id?{...x,proof_url:publicUrl}:x));
+                            // Fix 3: reflect failed→pending optimistically (api/payments handles DB change)
+                            setRealPayments(ps=>ps.map(x=>x.id===p.id?{...x,proof_url:publicUrl,status:x.status==="failed"?"pending":x.status}:x));
                           } catch(err){ toast.error("Error al subir: "+err.message); }
                         }}/>
                       </label>
@@ -1632,16 +1642,21 @@ export default function PortalEstudiante(){
                   <div style={{fontSize:12,fontWeight:700,color:"var(--text-primary)"}}>Historial de pagos</div>
                   <div style={{fontSize:11,color:"var(--text-secondary)"}}>{realPayments.filter(p=>p.status==="confirmed").length} pagos confirmados</div>
                 </div>
-                {realPayments.length > 0 ? realPayments.map((p,i)=>{
+                {realPayments.length > 0 ? (()=>{
+                  // Build enrollment→programId map once for all rows
+                  // realEnrollments is indexed by program_id; allEnrollments rows have id+program_id
+                  const enrollIdProgMap = {};
+                  enrolledProgs.forEach(ep => {
+                    const enData = realEnrollments[ep.id];
+                    if (enData?.enrollmentId) enrollIdProgMap[enData.enrollmentId] = ep.id;
+                  });
+                  return realPayments.map((p,i)=>{
                   const fecha = new Date(p.created_at).toLocaleDateString("es-HN",{day:"2-digit",month:"short",year:"numeric"});
-                  // PE-C01: programs join removed — derive program name from enrollment
-                  const progEnrollId = p.enrollment_id;
-                  const progEntry = progEnrollId
-                    ? Object.entries(realEnrollments).find(([pid, e]) => e) // fallback
-                    : null;
-                  const prog3 = enrolledProgs.find(ep =>
-                    Object.keys(realEnrollments).includes(ep.id)
-                  )?.name || p.bank || p.method || "Programa";
+                  // Derive program name: enrollment_id → program_id → display name
+                  const payProgId = p.enrollment_id ? enrollIdProgMap[p.enrollment_id] : null;
+                  const prog3 = payProgId
+                    ? (PROG_DISPLAY_NAMES[payProgId] || enrolledProgs.find(ep=>ep.id===payProgId)?.name || payProgId)
+                    : (p.bank || p.method || "Pago registrado");
                   const statusColor = p.status==="confirmed"?G:p.status==="pending"?A:R;
                   const statusBg    = p.status==="confirmed"?GD:p.status==="pending"?AD:RD;
                   const statusText  = p.status==="confirmed"?"✓ Confirmado":p.status==="pending"?"Pendiente":"Rechazado";
@@ -1654,11 +1669,15 @@ export default function PortalEstudiante(){
                     <div style={{textAlign:"right"}}>
                       <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)"}}>${Number(p.amount).toFixed(2)}</div>
                       <div style={{fontSize:11,padding:"2px 7px",background:statusBg,color:statusColor,borderRadius:12,fontWeight:600,marginTop:2}}>{statusText}</div>
+                      {p.proof_url&&<a href={p.proof_url} target="_blank" rel="noopener noreferrer" style={{fontSize:10,color:P,display:"block",marginTop:3,textDecoration:"underline"}}>📎 Ver</a>}
                     </div>
                   </div>);
-                }) : (
-                  <div style={{padding:"18px",fontSize:12,color:"var(--text-secondary)",textAlign:"center"}}>
-                    No hay pagos registrados aún.
+                  });
+                })() : (
+                  <div style={{padding:"24px 18px",textAlign:"center"}}>
+                    <div style={{fontSize:32,marginBottom:8}}>💳</div>
+                    <div style={{fontSize:13,fontWeight:600,color:"var(--text-primary)",marginBottom:4}}>No tienes pagos registrados todavía.</div>
+                    <div style={{fontSize:12,color:"var(--text-secondary)",lineHeight:1.6}}>Cuando realices un pago, aparecerá aquí el historial y estado de revisión.</div>
                   </div>
                 )}
               </div>
