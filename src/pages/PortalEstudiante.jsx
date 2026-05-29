@@ -8,6 +8,12 @@ import { api } from "../lib/api.js";
 import { toast } from "../lib/toast.jsx";
 import { generateCertificate } from "../lib/certificate.js";
 import { PaymentPendingGate } from "../components/student/PaymentPendingGate.jsx";
+
+const PROG_DISPLAY_NAMES = {
+  en: "Inglés Completo", va: "Certificado en Asistencia Virtual",
+  va_mkt: "VA · Marketing Digital", va_legal: "VA · Legal Assistant",
+  va_care: "VA · Cuidador Remoto",
+};
 import { StudentReport } from "../lib/StudentReport.jsx";
 import { useNotifications } from "../lib/useNotifications.js";
 import { LEVELS, UNITS, SKILLS_BY_LEVEL } from "../data/englishContent.js";
@@ -349,6 +355,9 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
           .select("id, level")
           .eq("profile_id", session.user.id).maybeSingle();
         if (student?.id) {
+          // C1 fix: declare currentLevel HERE from student.level, before the units query
+          // (previously declared only at line 393, so was always undefined when filtering units)
+          const currentLevel = student.level || "A1";
           // TODO(business): student_progress links to enrollment_id+unit_id (FKs).
           // For now we look up the enrollment and unit to get the right IDs.
           // If no unit_id is found, we skip progress write silently to avoid crash.
@@ -356,7 +365,7 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
             const { data: enrollment } = await supabase.from("enrollments")
               .select("id").eq("student_id", student.id).eq("program_id", activeProg)
               .eq("status", "active").maybeSingle();
-            // I2: For Inglés, include level to avoid ambiguous rows across CEFR levels
+            // For Inglés, include level to avoid ambiguous rows across CEFR levels
             let unitsQuery = supabase.from("units")
               .select("id").eq("program_id", activeProg).eq("unit_number", unit);
             if (activeProg === "en" && currentLevel) {
@@ -390,7 +399,7 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
             const CEFR_NEXT = { PH:'A1', A1:'A2', A2:'B1', B1:'B2', B2:'C1' };
             const CEFR_LABEL = { PH:'Phonics', A1:'A1', A2:'A2', B1:'B1', B2:'B2', C1:'C1' };
             const isIngles = activeProg === 'en';
-            const currentLevel = student.level || 'A1';
+            // currentLevel already declared above from student.level
             const nextCEFR = CEFR_NEXT[currentLevel];
             const isFinalLevel = !isIngles || currentLevel === 'C1'; // C1 = final for Inglés
 
@@ -854,7 +863,7 @@ export default function PortalEstudiante(){
   const _baseEnroll = realEnrollments[activeProg] || realEnrollments[enrolled[0]] || {};
   const _realPatch  = realEnrollments[activeProg] || realEnrollments[enrolled[0]] || {};
   const enrollment  = { ..._baseEnroll, ..._realPatch };
-  const currentLevel = enrollment?.level || "B1";
+  const currentLevel = enrollment?.level || "A1";  // A1 is the starting level
   const units = activeProg === "en"
     ? (UNITS[currentLevel] || UNITS["B1"] || [])
     : (PROGRAM_UNITS[activeProg] || []);
@@ -1270,6 +1279,7 @@ export default function PortalEstudiante(){
                   profileId={user?.id}
                   enrollment={enrollment}
                   isMobile={isMobile}
+                  studentLevel={currentLevel}
                 />
               )}
             </div>
@@ -1932,7 +1942,11 @@ export default function PortalEstudiante(){
       {showReport && (
         <StudentReport
           student={user}
-          enrollments={enrolledProgs.map(p=>({...p,...(realEnrollments[p.id]||{})}))}
+          enrollments={enrolledProgs.map(p=>({
+            ...p,
+            ...(realEnrollments[p.id]||{}),
+            program: p.name || PROG_DISPLAY_NAMES[p.id] || p.id,
+          }))}
           certificates={myCertificates}
           progressHistory={progressHistory}
           skills={SKILLS[activeProg]||SKILLS.en}

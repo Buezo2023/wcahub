@@ -15,7 +15,7 @@ const ACTIVITY_ICONS = { video:"🎬", lesson:"📖", quiz:"📝", matching:"�
 const ACTIVITY_LABELS= { video:"Video", lesson:"Lectura", quiz:"Quiz", matching:"Matching", fill_blank:"Completar", roleplay:"Roleplay", typing:"Typing" };
 const ACTIVITY_XP    = { video:20, lesson:15, quiz:50, matching:25, fill_blank:25, roleplay:35, typing:20 };
 
-export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
+export function LMSPlayer({ programId, profileId, enrollment, isMobile, studentLevel }) {
   // ── IMP-01: Access gate — never show LMS for non-active enrollments ──
   if (enrollment?.status && enrollment.status !== "active") {
     return (
@@ -45,12 +45,16 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
     setLoading(true);
     try {
       // Load units for this program
-      const { data: unitData } = await supabase
+      // C2 fix: filter by level for English (en) to avoid mixing A1/A2/B1/B2/C1 units
+      let unitsQuery = supabase
         .from("units")
         .select("id,unit_number,title,topic,level,program_id")
         .eq("program_id", programId)
-        .eq("published", true)
-        .order("unit_number");
+        .eq("published", true);
+      if (programId === "en" && studentLevel) {
+        unitsQuery = unitsQuery.eq("level", studentLevel);
+      }
+      const { data: unitData } = await unitsQuery.order("unit_number");
       if (!unitData?.length) { setLoading(false); return; }
       setUnits(unitData);
 
