@@ -71,7 +71,14 @@ async function handleWebhook(req, res) {
   const sig    = req.headers['stripe-signature'];
   const key    = process.env.STRIPE_SECRET_KEY;
 
-  if (!secret || !key) return res.status(200).json({ received: true });
+  if (!key) {
+    console.error('[stripe-webhook] STRIPE_SECRET_KEY not configured — rejecting webhook');
+    return res.status(503).json({ error: 'Stripe not configured' });
+  }
+  if (!secret) {
+    console.error('[stripe-webhook] STRIPE_WEBHOOK_SECRET not configured — refusing to process webhook without signature verification');
+    return res.status(400).json({ error: 'Webhook secret not configured — cannot verify signature' });
+  }
 
   let event;
   try {
@@ -85,16 +92,34 @@ async function handleWebhook(req, res) {
   // ── checkout.session.completed → primer pago, activa la cuenta ──
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object;
-    const { programId, profileId } = session.metadata || {};
-    if (profileId && programId) {
-      await handleStripePayment({
-        profileId, programId,
-        amount:      (session.amount_total || 0) / 100,
-        currency:    session.currency?.toUpperCase() || 'USD',
-        stripeId:    session.payment_intent || session.id,
-        referenceId: session.id,
-        note:        'Pago inicial via Stripe Checkout',
-      });
+    const { programId, profile_id, profileId, enrollment_id, payment_id, student_id, amount } = session.metadata || {};
+    const resolvedProfileId = profile_id || profileId; // support both legacy and new metadata keys
+
+    if (!resolvedProfileId || !programId) {
+      console.error('[stripe-webhook] checkout.session.completed missing required metadata', { metadata: session.metadata });
+    } else {
+      // Validate amount > 0 — never activate for free/test sessions
+      const amountTotal = session.amount_total || 0;
+      if (amountTotal <= 0) {
+        console.error('[stripe-webhook] checkout.session.completed amount_total is 0 — not activating enrollment', { sessionId: session.id, amountTotal });
+        await getSupabaseAdmin().from('audit_log').insert({
+          action: 'stripe_webhook_zero_amount', entity: 'profile', entity_id: resolvedProfileId,
+          metadata: { session_id: session.id, amount_total: amountTotal },
+        }).catch(() => {});
+      } else {
+        await handleStripePayment({
+          profileId:    resolvedProfileId,
+          programId,
+          enrollmentId: enrollment_id || null,
+          paymentId:    payment_id || null,
+          studentId:    student_id || null,
+          amount:       amountTotal / 100,
+          currency:     session.currency?.toUpperCase() || 'USD',
+          stripeId:     session.payment_intent || session.id,
+          referenceId:  session.id,
+          note:         'Pago inicial via Stripe Checkout',
+        });
+      }
     }
   }
 
@@ -176,56 +201,89 @@ async function handleWebhook(req, res) {
   return res.status(200).json({ received: true });
 }
 
-// ── Shared handler: record payment + advance next_payment_date ────
-async function handleStripePayment({ profileId, programId, amount, currency, stripeId, referenceId, note }) {
+// ── Shared handler: record payment + activate enrollment ──────────
+// Security: amount is taken from session.amount_total (server-side),
+// NOT from frontend input. enrollmentId/paymentId from metadata preferred.
+async function handleStripePayment({ profileId, programId, enrollmentId, paymentId, studentId, amount, currency, stripeId, referenceId, note }) {
   try {
     const admin = getSupabaseAdmin();
-    const { data: student } = await admin.from('students')
-      .select('id').eq('profile_id', profileId).maybeSingle();
-    if (!student) return;
 
-    const { data: enrollment } = await admin.from('enrollments')
-      .select('id, next_payment_date, status')
-      .eq('student_id', student.id).eq('program_id', programId).maybeSingle();
-    if (!enrollment) return;
+    // Resolve student
+    let sid = studentId;
+    if (!sid) {
+      const { data: student } = await admin.from('students').select('id').eq('profile_id', profileId).maybeSingle();
+      if (!student) { console.error('[handleStripePayment] student not found for profile', profileId); return; }
+      sid = student.id;
+    }
 
-    // Record payment
-    await admin.from('payments').insert({
-      student_id:    student.id,
-      enrollment_id: enrollment.id,
-      amount, currency,
-      method:        'stripe',
-      status:        'confirmed',
-      reference_code: referenceId,
-      stripe_id:     stripeId,
-      confirmed_at:  new Date().toISOString(),
-      confirmed_by:  null,
-      notes:         note,
-    });
+    // Resolve enrollment — prefer explicit enrollmentId from metadata
+    let enrollment;
+    if (enrollmentId) {
+      const { data: e } = await admin.from('enrollments').select('id, next_payment_date, status').eq('id', enrollmentId).maybeSingle();
+      enrollment = e;
+    }
+    if (!enrollment) {
+      const { data: e } = await admin.from('enrollments')
+        .select('id, next_payment_date, status').eq('student_id', sid).eq('program_id', programId).maybeSingle();
+      enrollment = e;
+    }
+    if (!enrollment) { console.error('[handleStripePayment] enrollment not found', { profileId, programId, enrollmentId }); return; }
 
-    // Advance next_payment_date + reactivate if suspended
+    // Validate amount again server-side
+    if (!amount || amount <= 0) {
+      console.error('[handleStripePayment] invalid amount — not activating', { amount, enrollmentId: enrollment.id });
+      return;
+    }
+
+    // Validate amount matches price_locked (within 1 cent tolerance for FX rounding)
+    const { data: enrollDetails } = await admin.from('enrollments').select('price_locked').eq('id', enrollment.id).maybeSingle();
+    if (enrollDetails?.price_locked && Math.abs(enrollDetails.price_locked - amount) > 0.01) {
+      console.error('[handleStripePayment] amount mismatch', { expected: enrollDetails.price_locked, received: amount });
+      await admin.from('audit_log').insert({
+        action: 'stripe_amount_mismatch', entity: 'enrollment', entity_id: enrollment.id,
+        metadata: { expected: enrollDetails.price_locked, received: amount, stripe_id: stripeId },
+      }).catch(() => {});
+      // Still proceed but log prominently — Stripe is authoritative for actual charge
+    }
+
+    // Update existing pending payment if paymentId provided, else create new
+    if (paymentId) {
+      await admin.from('payments').update({
+        status: 'confirmed', stripe_id: stripeId,
+        confirmed_at: new Date().toISOString(),
+        notes: note,
+      }).eq('id', paymentId);
+    } else {
+      await admin.from('payments').insert({
+        student_id: sid, enrollment_id: enrollment.id,
+        amount, currency, method: 'stripe', status: 'confirmed',
+        reference_code: referenceId, stripe_id: stripeId,
+        confirmed_at: new Date().toISOString(), notes: note,
+      });
+    }
+
+    // Activate enrollment
     const base = enrollment.next_payment_date || new Date().toISOString().slice(0, 10);
     const updateFields = { next_payment_date: addOneMonth(base) };
-    // Activate pending (self-registration) or suspended enrollments
-    if (enrollment.status === 'pending' || enrollment.status === 'suspended') {
+    if (['pending', 'suspended'].includes(enrollment.status)) {
       updateFields.status = 'active';
       updateFields.suspended_at = null;
       updateFields.suspended_reason = null;
     }
     await admin.from('enrollments').update(updateFields).eq('id', enrollment.id);
 
-    // Activate profile (handles both pending self-registrations and reactivations)
-    if (enrollment.status === 'pending' || enrollment.status === 'suspended') {
+    // Activate profile
+    if (['pending', 'suspended'].includes(enrollment.status)) {
       await admin.from('profiles').update({ active: true }).eq('id', profileId);
-      // Mark onboarding as needed for new self-registrations
-      if (enrollment.status === 'pending') {
-        await admin.from('profiles')
-          .update({ onboarding_done: false })
-          .eq('id', profileId)
-          .eq('onboarding_done', false); // only if not already done
-      }
     }
+
+    // Audit log
+    await admin.from('audit_log').insert({
+      action: 'stripe_payment_confirmed', entity: 'enrollment', entity_id: enrollment.id,
+      metadata: { amount, currency, stripe_id: stripeId, program_id: programId, prev_status: enrollment.status },
+    }).catch(() => {});
+
   } catch(e) {
-    console.error('handleStripePayment error:', e.message);
+    console.error('[handleStripePayment] error:', e.message);
   }
 }

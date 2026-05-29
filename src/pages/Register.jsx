@@ -93,6 +93,7 @@ export default function Register() {
     name: "", email: "", phone: "", country: "", timezone: detectTimezone(),
     termsAccepted: false,
     paymentMethod: null,
+    transferType: null, // "honduras" | "usa"
   });
   const [programs, setPrograms] = useState([]);
   const [loadingPrograms, setLoadingPrograms] = useState(true);
@@ -108,24 +109,17 @@ export default function Register() {
       .order("id")
       .then(({ data: progs, error }) => {
         if (error || !progs?.length) {
-          // Fallback to basic programs if table doesn't exist yet
-          setPrograms([
-            { id:"en",      name:"Inglés Completo",       price_monthly:95, description:"CEFR A1–C1, clases en vivo 3x/semana + plataforma 24/7", prereq_program_id:null },
-            { id:"va",      name:"Asistente Virtual",     price_monthly:95, description:"VA bilingüe: herramientas digitales, gestión remota, inglés profesional", prereq_program_id:null },
-            { id:"va_mkt",  name:"VA · Marketing Digital",price_monthly:95, description:"Redes sociales, copywriting, email marketing.", prereq_program_id:"va" },
-            { id:"va_legal",name:"VA · Legal Assistant",  price_monthly:95, description:"Documentos legales, inglés jurídico.", prereq_program_id:"va" },
-            { id:"va_care", name:"VA · Cuidador Remoto",  price_monthly:95, description:"Terminología médica, coordinación de citas.", prereq_program_id:"va" },
-          ]);
+          // No fallback — show clear error, never register with fake program data
+          setError("No pudimos cargar los programas disponibles. Intentá de nuevo.");
+          setPrograms([]);
         } else {
           setPrograms(progs);
         }
         setLoadingPrograms(false);
       })
       .catch(() => {
-        setPrograms([
-          { id:"en", name:"Inglés Completo", price_monthly:95, description:"CEFR A1–C1, clases en vivo 3x/semana + plataforma 24/7", prereq_program_id:null },
-          { id:"va", name:"Asistente Virtual", price_monthly:95, description:"VA bilingüe: herramientas digitales, gestión remota.", prereq_program_id:null },
-        ]);
+        setError("No pudimos cargar los programas disponibles. Intentá de nuevo.");
+        setPrograms([]);
         setLoadingPrograms(false);
       });
   }, []);
@@ -141,7 +135,10 @@ export default function Register() {
     icon:     ui.icon,
     color:    ui.color,
     tag:      ui.tag,
-    price:    _progBase.price_monthly || 95,
+    // Real price from DB — never hardcoded
+    price:    _progBase.prereq_program_id
+                ? (_progBase.price_quarterly || _progBase.price_monthly || null)
+                : (_progBase.price_monthly || null),
     interval: _progBase.prereq_program_id ? "3 meses" : "mes",
     desc:     _progBase.description || "",
     prereq:   _progBase.prereq_program_id,
@@ -186,9 +183,20 @@ export default function Register() {
         <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
           {loadingPrograms ? (
             <div style={{ padding:32, textAlign:"center", color:"var(--text-secondary)", fontSize:13 }}>Cargando programas...</div>
+          ) : programs.length === 0 ? (
+            <div style={{ padding:32, textAlign:"center" }}>
+              <div style={{ fontSize:13, color:"#dc2626", marginBottom:12 }}>
+                No pudimos cargar los programas disponibles. Intentá de nuevo.
+              </div>
+              <button onClick={() => { setError(""); setLoadingPrograms(true); window.location.reload(); }}
+                style={{ padding:"8px 20px", background:P, color:"#fff", border:"none", borderRadius:8, fontSize:13, fontWeight:600, cursor:"pointer", fontFamily:"inherit" }}>
+                Reintentar
+              </button>
+            </div>
           ) : programs.map(p => {
             const ui = PROG_UI[p.id] || PROG_UI.en;
-            const pDisplay = {...p, icon:ui.icon, color:ui.color, tag:ui.tag, price:p.price_monthly||95, interval:p.prereq_program_id?"3 meses":"mes", desc:p.description||""};
+            const realPrice = p.prereq_program_id ? (p.price_quarterly || p.price_monthly) : p.price_monthly;
+            const pDisplay = {...p, icon:ui.icon, color:ui.color, tag:ui.tag, price:realPrice, interval:p.prereq_program_id?"3 meses":"mes", desc:p.description||""};
             return (
             <button key={pDisplay.id} onClick={() => { setData(d => ({...d, programId:pDisplay.id, level:pDisplay.id==="en"?null:"A1"})); setStep(2); }}
               style={{ display:"flex", alignItems:"flex-start", gap:16, padding:"16px 20px",
@@ -206,7 +214,7 @@ export default function Register() {
                   {pDisplay.tag && <span style={{ fontSize:10, padding:"2px 8px", borderRadius:10, background:pDisplay.color+"20", color:pDisplay.color, fontWeight:700 }}>{pDisplay.tag}</span>}
                 </div>
                 <div style={{ fontSize:12, color:"var(--text-secondary)", marginBottom:6, lineHeight:1.5 }}>{pDisplay.desc}</div>
-                <div style={{ fontSize:13, fontWeight:700, color:pDisplay.color }}>${pDisplay.price} USD/{pDisplay.interval}</div>
+                <div style={{ fontSize:13, fontWeight:700, color:pDisplay.color }}>{pDisplay.price ? `$${pDisplay.price} USD/${pDisplay.interval}` : "Consultar precio"}</div>
               </div>
             </button>
           );
@@ -505,8 +513,8 @@ export default function Register() {
             </div>
           ))}
           <div style={{ display:"flex", justifyContent:"space-between", fontSize:16, padding:"12px 0 0", fontWeight:800 }}>
-            <span style={{ color:"var(--text-primary)" }}>Total mensual</span>
-            <span style={{ color:P }}>$95 USD</span>
+            <span style={{ color:"var(--text-primary)" }}>Total {prog?.interval || "mensual"}</span>
+            <span style={{ color:P }}>{prog?.price ? `$${prog.price} USD` : "Precio no disponible"}</span>
           </div>
         </div>
 
@@ -524,59 +532,94 @@ export default function Register() {
           <div style={{ fontSize:12, color:"var(--text-secondary)", lineHeight:1.6 }}>
             Acepto los <a href="/terminos" target="_blank" rel="noopener" style={{ color:P, fontWeight:600 }}>Términos de Servicio</a>
             {" "}y la <a href="/privacidad" target="_blank" rel="noopener" style={{ color:P, fontWeight:600 }}>Política de Privacidad</a>
-            {" "}de WCA Academy. Entiendo que los pagos son recurrentes y puedo cancelarlos cuando quiera.
+            {" "}de World Connect Academy. Entiendo que los pagos son recurrentes y puedo cancelarlos cuando quiera.
           </div>
         </label>
 
+        {/* Payment methods — split clearly by type */}
         <div style={{ display:"flex", flexDirection:"column", gap:10 }}>
-          {/* Stripe */}
-          <button disabled={saving || !data.termsAccepted} onClick={async () => {
+
+          {/* Stripe — card */}
+          <button disabled={saving || !data.termsAccepted || !prog?.price} onClick={async () => {
             if (!data.termsAccepted) { setError("Aceptá los términos para continuar"); return; }
+            if (!prog?.price) { setError("No se pudo obtener el precio del programa. Recargá la página."); return; }
             setSaving(true); setError("");
             try {
               const res = await fetch("/api/register", {
                 method:"POST", headers:{"Content-Type":"application/json"},
-                body: JSON.stringify({...data, paymentMethod:"stripe", termsAcceptedAt:new Date().toISOString()}),
+                body: JSON.stringify({ ...data, paymentMethod:"stripe", termsAcceptedAt:new Date().toISOString() }),
               });
               const json = await res.json();
-              if (!res.ok) { setError(json.error || "Error al procesar"); return; }
+              if (!res.ok) { setError(json.error || json.message || "Error al procesar"); return; }
               window.location.href = json.data.checkoutUrl;
             } catch(e) { setError("Error de red. Intentá de nuevo."); }
             finally { setSaving(false); }
           }} style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"15px",
-            background: (saving || !data.termsAccepted) ? "var(--bg-surface-subtle)" : P,
-            color: (saving || !data.termsAccepted) ? "var(--text-secondary)" : "#fff",
+            background: (saving || !data.termsAccepted || !prog?.price) ? "var(--bg-surface-subtle)" : P,
+            color: (saving || !data.termsAccepted || !prog?.price) ? "var(--text-secondary)" : "#fff",
             border:"none", borderRadius:12, fontSize:15, fontWeight:700,
-            cursor:(saving || !data.termsAccepted) ? "not-allowed" : "pointer", fontFamily:"inherit",
-            transition:"all .2s" }}>
-            {saving ? "Procesando..." : "💳 Pagar con tarjeta — $95/mes"}
+            cursor:(saving || !data.termsAccepted || !prog?.price) ? "not-allowed" : "pointer", fontFamily:"inherit" }}>
+            {saving && data.paymentMethod === "stripe" ? "Procesando..." : `💳 Pagar con tarjeta${prog?.price ? ` — $${prog.price}/mes` : ""}`}
           </button>
-
-          <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-            <div style={{ flex:1, height:1, background:"var(--border)" }}/><span style={{ fontSize:11, color:"var(--text-tertiary)" }}>o</span><div style={{ flex:1, height:1, background:"var(--border)" }}/>
+          <div style={{ fontSize:11, color:"var(--text-secondary)", textAlign:"center", marginTop:-4 }}>
+            Serás redirigido a Stripe para completar el pago de forma segura.
           </div>
 
-          {/* Transfer */}
-          <button disabled={saving || !data.termsAccepted} onClick={async () => {
+          <div style={{ display:"flex", alignItems:"center", gap:10, margin:"4px 0" }}>
+            <div style={{ flex:1, height:1, background:"var(--border)" }}/>
+            <span style={{ fontSize:11, color:"var(--text-tertiary)" }}>o pagá por transferencia</span>
+            <div style={{ flex:1, height:1, background:"var(--border)" }}/>
+          </div>
+
+          {/* Transferencia Honduras */}
+          <button disabled={saving || !data.termsAccepted || !prog?.price} onClick={async () => {
             if (!data.termsAccepted) { setError("Aceptá los términos para continuar"); return; }
-            setSaving(true); setError("");
+            if (!prog?.price) { setError("No se pudo obtener el precio del programa. Recargá la página."); return; }
+            setSaving(true); setError(""); setData(d => ({...d, paymentMethod:"transfer", transferType:"honduras"}));
             try {
               const res = await fetch("/api/register", {
                 method:"POST", headers:{"Content-Type":"application/json"},
-                body: JSON.stringify({...data, paymentMethod:"transfer", termsAcceptedAt:new Date().toISOString()}),
+                body: JSON.stringify({ ...data, paymentMethod:"transfer", transferType:"honduras", termsAcceptedAt:new Date().toISOString() }),
               });
               const json = await res.json();
-              if (!res.ok) { setError(json.error || "Error al procesar"); return; }
+              if (!res.ok) { setError(json.error || json.message || "Error al procesar"); return; }
               setTransferResult(json.data);
             } catch(e) { setError("Error de red. Intentá de nuevo."); }
             finally { setSaving(false); }
           }} style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"14px",
             background:"var(--bg-surface)", color:"var(--text-primary)",
             border:"1.5px solid var(--border)", borderRadius:12, fontSize:14, fontWeight:600,
-            cursor:(saving || !data.termsAccepted)?"not-allowed":"pointer", fontFamily:"inherit",
-            opacity: !data.termsAccepted ? 0.6 : 1 }}>
-            🏦 Pagar por transferencia bancaria
+            cursor:(saving || !data.termsAccepted || !prog?.price)?"not-allowed":"pointer", fontFamily:"inherit",
+            opacity: (!data.termsAccepted || !prog?.price) ? 0.6 : 1 }}>
+            🇭🇳 Transferencia bancaria — Honduras
           </button>
+
+          {/* Transferencia USA */}
+          <button disabled={saving || !data.termsAccepted || !prog?.price} onClick={async () => {
+            if (!data.termsAccepted) { setError("Aceptá los términos para continuar"); return; }
+            if (!prog?.price) { setError("No se pudo obtener el precio del programa. Recargá la página."); return; }
+            setSaving(true); setError(""); setData(d => ({...d, paymentMethod:"transfer", transferType:"usa"}));
+            try {
+              const res = await fetch("/api/register", {
+                method:"POST", headers:{"Content-Type":"application/json"},
+                body: JSON.stringify({ ...data, paymentMethod:"transfer", transferType:"usa", termsAcceptedAt:new Date().toISOString() }),
+              });
+              const json = await res.json();
+              if (!res.ok) { setError(json.error || json.message || "Error al procesar"); return; }
+              setTransferResult(json.data);
+            } catch(e) { setError("Error de red. Intentá de nuevo."); }
+            finally { setSaving(false); }
+          }} style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:10, padding:"14px",
+            background:"var(--bg-surface)", color:"var(--text-primary)",
+            border:"1.5px solid var(--border)", borderRadius:12, fontSize:14, fontWeight:600,
+            cursor:(saving || !data.termsAccepted || !prog?.price)?"not-allowed":"pointer", fontFamily:"inherit",
+            opacity: (!data.termsAccepted || !prog?.price) ? 0.6 : 1 }}>
+            🇺🇸 Transferencia bancaria — USA
+          </button>
+
+          <div style={{ fontSize:12, color:"var(--text-secondary)", textAlign:"center", lineHeight:1.5 }}>
+            Tu acceso académico se desbloqueará cuando el equipo confirme tu pago.
+          </div>
         </div>
 
         <div style={{ fontSize:11, color:"var(--text-tertiary)", textAlign:"center", marginTop:14, lineHeight:1.6 }}>
@@ -609,7 +652,7 @@ export default function Register() {
             <div style={{ width:36, height:36, borderRadius:9, background:P, display:"flex", alignItems:"center", justifyContent:"center" }}>
               <span style={{ fontSize:17, fontWeight:900, color:Y }}>W</span>
             </div>
-            <span style={{ fontSize:15, fontWeight:800, color:"var(--text-primary)" }}>WCA Academy</span>
+            <span style={{ fontSize:15, fontWeight:800, color:"var(--text-primary)" }}>World Connect Academy</span>
           </div>
           <div style={{ fontSize:22, fontWeight:800, color:"var(--text-primary)", marginBottom:4 }}>Inscripción</div>
           <div style={{ fontSize:13, color:"var(--text-secondary)" }}>Sin tarjeta requerida en el primer paso</div>
