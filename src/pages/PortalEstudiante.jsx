@@ -279,12 +279,6 @@ function UpsellBanner({prog,canEnroll,onEnroll}){
           </button>
         </div>
       </div>
-    {/* Global visual effects */}
-    <Confetti active={confetti} count={40} />
-    {floatingXP && (
-      <FloatingXP amount={floatingXP.amount} x={floatingXP.x} y={floatingXP.y}
-        onDone={() => setFloatingXP(null)} />
-    )}
     </div>
   );
 }
