@@ -368,8 +368,9 @@ function VentasReport(){
     const leads=leadsRes.data||[];
     const tasks=tasksRes.data||[];
     const b2b=b2bRes.data||[];
-    const PROGRAMS=[{id:"en",price:95},{id:"va",price:95},{id:"va_mkt",price:110},{id:"va_legal",price:110},{id:"va_care",price:110}];
-    const b2bMrr=b2b.reduce((a,c)=>{const prog=PROGRAMS.find(p=>p.id===c.program_id)||{price:95};return a+Math.round((c.seats_paid||1)*prog.price*(1-((c.discount_pct||0)/100)));},0);
+    // B2B MRR: use contract_value if stored, otherwise price_monthly from b2b_companies row
+    // TODO: fetch real prices from programs table to avoid hardcoded fallbacks
+    const b2bMrr=b2b.reduce((a,c)=>a+Math.round((c.seats_paid||1)*(c.price_monthly||c.contract_value||0)*(1-((c.discount_pct||0)/100))),0);
     const byStage=leads.reduce((a,l)=>{a[l.stage]=(a[l.stage]||0)+1;return a;},{});
     const bySource=leads.reduce((a,l)=>{const s=l.source||"Directo";a[s]=(a[s]||0)+1;return a;},{});
     const convRate=leads.length>0?Math.round(((byStage.convertido||0)/leads.length)*100):0;
@@ -434,9 +435,8 @@ function VentasReport(){
         <TableWrap
           headers={["Empresa","Programa","Cupos","Descuento","Factura/mes"]}
           rows={data.b2b.map(b=>{
-            const PROGRAMS=[{id:"en",price:95},{id:"va",price:95},{id:"va_mkt",price:110}];
-            const prog=PROGRAMS.find(p=>p.id===b.program_id)||{price:95};
-            const mo=Math.round((b.seats_paid||1)*prog.price*(1-((b.discount_pct||0)/100)));
+            // Use contract_value or price_monthly from b2b_companies row
+            const mo=Math.round((b.seats_paid||1)*(b.price_monthly||b.contract_value||0)*(1-((b.discount_pct||0)/100)));
             return[b.name,b.program_name||b.program_id,b.seats_paid,`${b.discount_pct||0}%`,`$${mo}`];
           })}/>
       </div>
