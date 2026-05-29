@@ -67,8 +67,8 @@ CREATE INDEX IF NOT EXISTS idx_students_created
 
 -- ── Notifications ─────────────────────────────────────────────
 -- Notifications panel: unread by profile + date
-CREATE INDEX IF NOT EXISTS idx_notifications_profile_read
-  ON notifications(profile_id, read, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_notifications_user_read
+  ON notifications(user_id, read, created_at DESC);
 
 -- ── Audit log ─────────────────────────────────────────────────
 -- Audit queries by entity + entity_id (actor/created already indexed)

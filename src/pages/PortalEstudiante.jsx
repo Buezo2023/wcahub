@@ -694,7 +694,7 @@ export default function PortalEstudiante(){
       // E4: Parallelize profile + student queries (both only need uid)
       const [{ data: profile }, { data: student, error: studentErr }] = await Promise.all([
         supabase.from("profiles")
-          .select("full_name, email, avatar_url, phone, preferred_name, timezone")
+          .select("full_name, email, avatar_url, phone")
           .eq("id", uid).maybeSingle(),
         supabase.from("students")
           .select("id, level, student_code, scholarship")
@@ -702,17 +702,17 @@ export default function PortalEstudiante(){
       ]);
       if (profile) {
         setUser({
-          name:   profile.preferred_name || profile.full_name?.split(" ")[0] || profile.email?.split("@")[0] || "Estudiante",
+          name:   profile.full_name?.split(" ")[0] || profile.email?.split("@")[0] || "Estudiante",
           email:  profile.email || session.user.email || "",
           avatar: profile.avatar_url || null,
           id:     uid,
         });
-        if (profile.timezone) setStudentTimezone(profile.timezone);
+        setStudentTimezone(detectTimezone()); // timezone not in base schema — use local detection
         setProfileForm({
           full_name:      profile.full_name || "",
           phone:          profile.phone || "",
-          preferred_name: profile.preferred_name || "",
-          timezone:       profile.timezone || detectTimezone(),
+          preferred_name: "", // preferred_name not in base schema — kept as empty until migration
+          timezone:       detectTimezone(), // timezone not in base schema — use local detection
         });
       }
 
