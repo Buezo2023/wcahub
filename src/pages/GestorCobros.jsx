@@ -200,42 +200,18 @@ export default function GestorCobros() {
 
   async function confirmTransfer(id) {
     setSelTransfer(null);
-    // Find the transfer to get student info
     const transfer = [...(pending||[]), ...(displayHistory||[])].find(t => t.id === id);
-    if (transfer?._dbId) {
-      // Fetch authenticated user for confirmed_by — never block confirmation on this
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError && import.meta.env.DEV) {
-        console.warn("[GestorCobros] getUser warn:", userError.message);
-      }
-
-      // Update Supabase FIRST — only set local state if it succeeds
-      const { error: updateErr } = await supabase.from("payments")
-        .update({
-          status:       "confirmed",
-          confirmed_at: new Date().toISOString(),
-          confirmed_by: user?.id || null,
-        })
-        .eq("id", transfer._dbId);
-
-      if (updateErr) {
-        console.error("[GestorCobros] confirm failed:", updateErr);
-        toast.error("Error al confirmar el pago. Intentá de nuevo.");
-        return; // do NOT update local state
-      }
-    }
-
-    // Only mark as confirmed locally after Supabase succeeded (or no _dbId)
-    setConfirmed(c => [...c, id]);
-    // Find student profile to notify
-    if (transfer?.studentId || transfer?.student) {
-      const name = transfer.student || "";
-      const { data: prof } = await supabase.from("profiles")
-        .select("id").ilike("full_name", `%${name.split(" ")[0]}%`).limit(1);
-      if (prof?.[0]) {
-        const n = Notifs.paymentConfirmed(transfer.amount || "—");
-        await notify(prof[0].id, n.type, n.title, n.body, n.link).catch(() => {});
-      }
+    const dbId = transfer?._dbId || id;
+    // Always go through api/payments — activates enrollment, calculates next_payment_date, writes audit_log
+    try {
+      const res = await api.patch("/api/payments", { paymentId: dbId, action: "confirm" });
+      const warning = res?.data?.warning || res?.warning;
+      if (warning) toast.warn("Pago aprobado. ⚠ " + warning);
+      else toast.success("✓ Pago aprobado y matrícula activada.");
+      setConfirmed(c => [...c, id]);
+    } catch(e) {
+      console.error("[GestorCobros] confirmTransfer failed:", e.message);
+      toast.error("Error al confirmar el pago: " + (e.message || "Intentá de nuevo."));
     }
   }
 
@@ -543,7 +519,7 @@ export default function GestorCobros() {
                         toast.success("✓ WhatsApp enviado via Twilio");
                       } catch {
                         // Fallback to wa.me direct link
-                        const msg = encodeURIComponent(`Hola ${o.student}, tu pago de \$${o.amount} lleva ${o.days} días vencido en WCA Academy. ¿Podemos ayudarte a regularizarlo? 🙏`);
+                        const msg = encodeURIComponent(`Hola ${o.student}, tu pago de \$${o.amount} lleva ${o.days} días vencido en World Connect Academy. ¿Podemos ayudarte a regularizarlo? 🙏`);
                         window.open(`https://wa.me/${phone.replace(/^\+/,"")}?text=${msg}`, "_blank");
                       }
                     }} style={{ flex:1, fontSize:12, padding:"8px", background:"#ecfdf5", color:"#059669", border:"1px solid #059669", borderRadius:8, cursor:"pointer", fontFamily:"inherit", fontWeight:600 }}>

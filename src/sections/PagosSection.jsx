@@ -1,266 +1,241 @@
-// ─── PagosSection — para SuperAdmin ────────────────────────────
+// ─── PagosSection — Cobros & Pagos (SuperAdmin / Cobros) ────────
 import { useState, useEffect, useMemo } from "react";
 import { api } from "../lib/api.js";
 import { supabase } from "../lib/supabase.js";
 import { EmptyState } from "../lib/EmptyState.jsx";
 import { exportCSV } from "../lib/exportCSV.js";
 
-const P="#155266",G="#059669",GD="#ecfdf5",R="#dc2626",RD="#fef2f2",A="#d97706",AD="#fffbeb";
+const PX="#155266",PD="#e8f3f6",G="#059669",GD="#ecfdf5",R="#dc2626",RD="#fef2f2",A="#d97706",AD="#fffbeb";
+
+const PROG = { en:"Inglés", va:"Asistente Virtual", va_mkt:"VA · Mkt", va_legal:"VA · Legal", va_care:"VA · Care" };
 
 export function PagosSection({ showToast, initialTab }) {
-  const [payments, setPayments] = useState([]);
-  const [students, setStudents] = useState([]);
-  const [groups,   setGroups]   = useState([]);
-  const [loading,  setLoading]  = useState(true);
-  const [tab,      setTab]      = useState(initialTab || "pending");
-  const [regModal, setRegModal] = useState(false);
-  const [form,     setForm]     = useState({studentId:"",enrollmentId:"",amount:95,method:"transfer",bank:"",referenceCode:"",notes:""});
-  const [saving,   setSaving]   = useState(false);
-  const [codeSearch, setCodeSearch] = useState("");
-  const [codeFound,  setCodeFound]  = useState(null);  // {id, name, email, code, enrollmentId, amount, program}
-  const [codeLookup, setCodeLookup] = useState(false); // loading
-  const [search,   setSearch]   = useState("");
+  const [payments,     setPayments]     = useState([]);
+  const [loading,      setLoading]      = useState(true);
+  const [tab,          setTab]          = useState(initialTab || "pending");
+  const [search,       setSearch]       = useState("");
+  const [rejectTarget, setRejectTarget] = useState(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejecting,    setRejecting]    = useState(false);
+  const [proofUrl,     setProofUrl]     = useState(null);
 
-  useEffect(()=>{load();},[]);
+  const TABS = [
+    { id:"pending",   label:"Pendientes" },
+    { id:"failed",    label:"Rechazados" },
+    { id:"confirmed", label:"Confirmados"},
+    { id:"all",       label:"Todos"      },
+  ];
+
+  useEffect(()=>{ load(); },[]);
 
   async function load() {
     setLoading(true);
     try {
-      const {data:pays} = await supabase.from("payments")
-        .select("id,amount,method,status,reference_code,bank,created_at,confirmed_at,period_start,proof_url,student:students(id,student_code,profile:profiles(full_name,email)),enrollment:enrollments(program_id)")
-        .order("created_at",{ascending:false}).limit(100);
-      if (pays) setPayments(pays);
-      const {data:sts} = await supabase.from("students")
-        .select("id,level,profile:profiles(full_name,email),enrollments(id,program_id,status,price_locked)").limit(200);
-      if (sts) setStudents(sts.filter(s=>s.enrollments?.some(e=>e.status==="active")));
+      const { data, error } = await supabase.from("payments")
+        .select("id,amount,currency,method,status,reference_code,bank,created_at,confirmed_at,proof_url,notes,student:students(id,student_code,profile:profiles(full_name,email)),enrollment:enrollments(program_id)")
+        .order("created_at", { ascending:false })
+        .limit(300);
+      if (error) throw error;
+      setPayments(data || []);
+    } catch(e) {
+      showToast?.("Error al cargar pagos: " + e.message, R);
     } finally { setLoading(false); }
   }
 
-  const pending  = useMemo(()=>payments.filter(p=>p.status==="pending"),[payments]);
-  const confirmed= useMemo(()=>payments.filter(p=>p.status==="confirmed"),[payments]);
   const filtered = useMemo(()=>{
-    const base = tab==="pending"?pending:tab==="confirmed"?confirmed:payments;
-    if (!search) return base;
-    const s=search.toLowerCase();
-    return base.filter(p=>(p.student?.profile?.full_name||"").toLowerCase().includes(s)||(p.reference_code||"").toLowerCase().includes(s)||(p.student?.student_code||"").toLowerCase().includes(s));
-  },[tab,pending,confirmed,payments,search]);
+    const base = tab==="all" ? payments : payments.filter(p=>p.status===tab);
+    if (!search.trim()) return base;
+    const q = search.toLowerCase();
+    return base.filter(p=>
+      p.student?.profile?.full_name?.toLowerCase().includes(q) ||
+      p.student?.profile?.email?.toLowerCase().includes(q) ||
+      p.reference_code?.toLowerCase().includes(q)
+    );
+  },[tab,payments,search]);
 
-  async function confirm(id) {
+  async function confirmPayment(id) {
     try {
-      await api.patch("/api/payments",{paymentId:id,action:"confirm"});
-      showToast("✓ Pago confirmado — email enviado al estudiante");
+      const res = await api.patch("/api/payments", { paymentId:id, action:"confirm" });
+      const warn = res?.data?.warning || res?.warning;
+      if (warn) showToast?.("Pago aprobado. \u26a0 " + warn, A);
+      else showToast?.("\u2713 Pago aprobado y matr\u00edcula activada.");
       await load();
-    } catch(e) { showToast("Error: "+(e.message||""), R); }
+    } catch(e) { showToast?.("Error al aprobar: " + (e.message||"Error"), R); }
   }
 
-  async function reject(id) {
+  async function submitReject() {
+    if (!rejectTarget) return;
+    setRejecting(true);
     try {
-      await api.patch("/api/payments",{paymentId:id,action:"reject",reason:"Rechazado por admin"});
-      showToast("Pago rechazado");
+      await api.patch("/api/payments", { paymentId:rejectTarget.id, action:"reject", reason:rejectReason||"Rechazado por cobros" });
+      showToast?.("Pago rechazado. El estudiante podr\u00e1 subir un nuevo comprobante.");
+      setRejectTarget(null); setRejectReason("");
       await load();
-    } catch(e) { showToast("Error: "+(e.message||""), R); }
-  }
-
-  async function lookupByCode() {
-    if (!codeSearch.trim()) return;
-    setCodeLookup(true);
-    setCodeFound(null);
-    try {
-      const q = codeSearch.trim().toUpperCase();
-      const { data: sts } = await supabase.from("students")
-        .select("id,student_code,level,profile:profiles(full_name,email),enrollments(id,program_id,status,price_locked,next_payment_date)")
-        .ilike("student_code", `%${q}%`)
-        .limit(5);
-      if (!sts?.length) {
-        showToast("No se encontró ningún estudiante con ese código", "#d97706");
-        return;
-      }
-      const s = sts[0];
-      const en = s.enrollments?.find(e => e.status === "active") || s.enrollments?.[0];
-      setCodeFound({
-        id:           s.id,
-        name:         s.profile?.full_name || "—",
-        email:        s.profile?.email || "—",
-        code:         s.student_code,
-        enrollmentId: en?.id || "",
-        amount:       en?.price_locked || 95,
-        program:      { en:"Inglés", va:"VA", va_mkt:"VA·Mkt", va_legal:"VA·Legal", va_care:"VA·Cuidador" }[en?.program_id] || en?.program_id || "—",
-        enrollStatus: en?.status || "sin matrícula",
-        nextPayment:  en?.next_payment_date,
-      });
-      // Pre-fill form
-      setForm(p => ({...p, studentId: s.id, enrollmentId: en?.id || "", amount: en?.price_locked || 95}));
-    } catch(e) {
-      showToast("Error: " + e.message, R);
-    } finally {
-      setCodeLookup(false);
-    }
-  }
-
-  async function register() {
-    if (!form.studentId||!form.amount) { showToast("Estudiante y monto requeridos", R); return; }
-    setSaving(true);
-    try {
-      await api.post("/api/payments",{...form,autoConfirm:false});
-      showToast("✓ Pago registrado — pendiente de confirmación");
-      setRegModal(false);
-      setForm({studentId:"",enrollmentId:"",amount:95,method:"transfer",bank:"",referenceCode:"",notes:""});
-      await load();
-    } catch(e){showToast("Error: "+(e.message||"Error de red"),R);}
-    finally{setSaving(false);}
+    } catch(e) { showToast?.("Error al rechazar: " + (e.message||"Error"), R); }
+    finally { setRejecting(false); }
   }
 
   const statusColor = s=>s==="confirmed"?[GD,G]:s==="pending"?[AD,A]:[RD,R];
-  const statusLabel = s=>({confirmed:"✓ Confirmado",pending:"⏳ Pendiente",failed:"✗ Rechazado"}[s]||s);
+  const statusLabel = s=>({confirmed:"\u2713 Confirmado",pending:"\u23f3 Pendiente",failed:"\u2717 Rechazado"}[s]||s);
+  const pendingCount = payments.filter(p=>p.status==="pending").length;
 
   return (
-    <div>
-      {/* Stats */}
-      <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))",gap:8,marginBottom:16}}>
+    <div style={{padding:24,maxWidth:1100,margin:"0 auto"}}>
+
+      {/* Header */}
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,flexWrap:"wrap",gap:12}}>
+        <div>
+          <div style={{fontSize:20,fontWeight:800,color:"var(--text-primary)"}}>Cobros &amp; Pagos</div>
+          <div style={{fontSize:13,color:"var(--text-secondary)",marginTop:2}}>Verific\u00e1 comprobantes, aprobá o rechazá pagos de transferencia.</div>
+        </div>
+        <div style={{display:"flex",gap:8}}>
+          <button onClick={load} style={{padding:"8px 16px",background:"var(--bg-surface)",color:"var(--text-secondary)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit"}}>🔄 Refrescar</button>
+          <button onClick={()=>exportCSV(filtered.map(p=>({Nombre:p.student?.profile?.full_name||"",Email:p.student?.profile?.email||"",Programa:PROG[p.enrollment?.program_id]||p.enrollment?.program_id||"",Monto:p.amount,Moneda:p.currency||"USD",Método:p.method,Banco:p.bank||"",Referencia:p.reference_code||"",Estado:p.status,Fecha:p.created_at})),"pagos")} style={{padding:"8px 16px",background:PX,color:"#fff",border:"none",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>↓ CSV</button>
+        </div>
+      </div>
+
+      {/* KPIs */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:12,marginBottom:20}}>
         {[
-          {label:"Pendientes",value:pending.length,color:A,icon:"ti-clock"},
-          {label:"Confirmados",value:confirmed.length,color:G,icon:"ti-check"},
-          {label:"Total cobrado",value:`$${confirmed.reduce((s,p)=>s+(p.amount||0),0).toLocaleString()}`,color:P,icon:"ti-coin"},
-        ].map((s,i)=>(
-          <div key={i} style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:"12px 14px",display:"flex",alignItems:"center",gap:8}}>
-            <div style={{width:36,height:36,borderRadius:8,background:`${s.color}14`,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>
-              <i className={`ti ${s.icon}`} style={{fontSize:16,color:s.color}}/>
-            </div>
-            <div><div style={{fontSize:18,fontWeight:800,color:"var(--text-primary)",lineHeight:1}}>{s.value}</div>
-              <div style={{fontSize:11,color:"var(--text-secondary)"}}>{s.label}</div></div>
+          {label:"Pendientes",value:pendingCount,color:A,bg:AD,icon:"⏳"},
+          {label:"Con comprobante",value:payments.filter(p=>p.status==="pending"&&p.proof_url).length,color:G,bg:GD,icon:"📎"},
+          {label:"Confirmados (mes)",value:payments.filter(p=>p.status==="confirmed"&&p.created_at?.startsWith(new Date().toISOString().slice(0,7))).length,color:G,bg:GD,icon:"✅"},
+          {label:"Total cobrado (mes)",value:`$${payments.filter(p=>p.status==="confirmed"&&p.created_at?.startsWith(new Date().toISOString().slice(0,7))).reduce((s,p)=>s+Number(p.amount||0),0).toFixed(0)}`,color:PX,bg:PD,icon:"💰"},
+        ].map(k=>(
+          <div key={k.label} style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:16,textAlign:"center"}}>
+            <div style={{fontSize:22,marginBottom:4}}>{k.icon}</div>
+            <div style={{fontSize:20,fontWeight:800,color:k.color}}>{k.value}</div>
+            <div style={{fontSize:11,color:"var(--text-secondary)",fontWeight:600}}>{k.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Toolbar */}
-      <div style={{display:"flex",gap:8,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
+      {/* Search + Tabs */}
+      <div style={{display:"flex",gap:10,marginBottom:16,flexWrap:"wrap",alignItems:"center"}}>
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar por nombre, email o referencia..."
+          style={{flex:1,minWidth:200,padding:"8px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit",outline:"none"}} />
         <div style={{display:"flex",gap:4}}>
-          {[["pending","Pendientes"],["confirmed","Confirmados"],["all","Todos"]].map(([id,label])=>(
-            <button key={id} onClick={()=>setTab(id)} style={{padding:"7px 14px",borderRadius:8,border:"none",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",background:tab===id?P:"var(--bg-surface-subtle)",color:tab===id?"#fff":"var(--text-secondary)"}}>
-              {label}{id==="pending"&&pending.length>0?` (${pending.length})`:""}
+          {TABS.map(t=>(
+            <button key={t.id} onClick={()=>setTab(t.id)}
+              style={{padding:"7px 14px",background:tab===t.id?PX:"var(--bg-surface)",color:tab===t.id?"#fff":"var(--text-secondary)",border:tab===t.id?"none":"1px solid var(--border)",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+              {t.label}{t.id==="pending"&&pendingCount>0?` (${pendingCount})`:""}
             </button>
           ))}
         </div>
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar pago..."
-          style={{flex:1,minWidth:140,padding:"7px 11px",border:"1px solid var(--border)",borderRadius:8,fontSize:12,background:"var(--bg-surface)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
-        <button onClick={()=>exportCSV(filtered.map(p=>({Estudiante:p.student?.profile?.full_name||"—",Monto:`$${p.amount}`,Método:p.method,Estado:p.status,Referencia:p.reference_code||"—",Fecha:new Date(p.created_at).toLocaleDateString("es-HN")})),`pagos-${new Date().toISOString().slice(0,10)}.csv`)}
-          aria-label="Exportar pagos a CSV"
-          style={{padding:"7px 12px",background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:8,fontSize:12,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>
-          <i className="ti ti-download" aria-hidden="true"/>
-        </button>
-        <button onClickCapture={e=>{e.stopPropagation();setRegModal(true);}}
-          style={{padding:"7px 16px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:5}}>
-          <i className="ti ti-plus" style={{fontSize:13}} aria-hidden="true"/> Registrar pago
-        </button>
       </div>
 
-      {/* List */}
+      {/* Table */}
       <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,overflow:"hidden"}}>
-        {loading ? <div style={{padding:32,textAlign:"center",color:"var(--text-secondary)",fontSize:13}}>Cargando...</div>
-        : filtered.length===0 ? <EmptyState icon="💳" title="Sin pagos" subtitle="Aquí aparecen los pagos pendientes de confirmar."/>
-        : <div style={{overflowX:"auto"}}>
-          <table style={{width:"100%",borderCollapse:"collapse",fontSize:13}}>
-            <thead><tr style={{background:"var(--bg-surface-subtle)"}}>
-              {["Estudiante","Monto","Método","Estado","Fecha","Acciones"].map(h=>(
-                <th key={h} style={{padding:"10px 12px",textAlign:"left",fontSize:11,fontWeight:700,color:"var(--text-tertiary)",textTransform:"uppercase",letterSpacing:.5,whiteSpace:"nowrap"}}>{h}</th>
-              ))}
-            </tr></thead>
-            <tbody>
-              {filtered.map(p=>{
-                const [bg,color]=statusColor(p.status);
-                return (
-                  <tr key={p.id} onMouseEnter={e=>e.currentTarget.style.background="var(--bg-surface-subtle)"}
-              onMouseLeave={e=>e.currentTarget.style.background=""}
-              style={{borderTop:"1px solid var(--border-tertiary)",transition:"background .1s"}}>
-                    <td style={{padding:"10px 12px"}}>
-                      <div style={{fontWeight:600,color:"var(--text-primary)"}}>{p.student?.profile?.full_name||"—"}</div>
-                      <div style={{fontSize:11,color:"var(--text-secondary)"}}>{p.enrollment?.program_id?.toUpperCase()||"—"}</div>
-                    </td>
-                    <td style={{padding:"10px 12px",fontWeight:700,color:"var(--text-primary)"}}>${p.amount}</td>
-                    <td style={{padding:"10px 12px",fontSize:12,color:"var(--text-secondary)",textTransform:"capitalize"}}>{p.method}</td>
-                    <td style={{padding:"10px 12px"}}><span style={{fontSize:11,padding:"2px 8px",borderRadius:12,background:bg,color,fontWeight:600}}>{statusLabel(p.status)}</span></td>
-                    <td style={{padding:"10px 12px",fontSize:11,color:"var(--text-secondary)"}}>{new Date(p.created_at).toLocaleDateString("es-HN",{day:"2-digit",month:"short"})}</td>
-                    <td style={{padding:"10px 12px"}}>
-                      {p.status==="pending"&&<div style={{display:"flex",gap:4}}>
-                        <button onClickCapture={e=>{e.stopPropagation();confirm(p.id);}} style={{fontSize:11,padding:"4px 10px",background:GD,color:G,border:`1px solid ${G}40`,borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>✓ Confirmar</button>
-                        <button onClickCapture={e=>{e.stopPropagation();reject(p.id);}} style={{fontSize:11,padding:"4px 10px",background:RD,color:R,border:"none",borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:600}}>✗</button>
-                      </div>}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>}
+        {loading
+          ? <div style={{padding:32,textAlign:"center",color:"var(--text-secondary)",fontSize:13}}>Cargando pagos...</div>
+          : filtered.length===0
+            ? <EmptyState icon="💳" title="Sin pagos" subtitle={`No hay pagos ${tab==="pending"?"pendientes":tab==="failed"?"rechazados":tab==="confirmed"?"confirmados":""} en este momento.`}/>
+            : <div style={{overflowX:"auto"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+                  <thead>
+                    <tr style={{background:"var(--bg-surface-subtle)"}}>
+                      {["Estudiante","Programa","Monto","Método","Referencia","Comprobante","Estado","Fecha","Acciones"].map(h=>(
+                        <th key={h} style={{padding:"10px 12px",textAlign:"left",fontSize:11,fontWeight:700,color:"var(--text-tertiary)",textTransform:"uppercase",letterSpacing:.5,whiteSpace:"nowrap"}}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map(p=>{
+                      const [bg,color]=statusColor(p.status);
+                      return (
+                        <tr key={p.id}
+                          onMouseEnter={e=>e.currentTarget.style.background="var(--bg-surface-subtle)"}
+                          onMouseLeave={e=>e.currentTarget.style.background=""}
+                          style={{borderTop:"1px solid var(--border-tertiary)",transition:"background .1s"}}>
+                          <td style={{padding:"10px 12px"}}>
+                            <div style={{fontWeight:600,color:"var(--text-primary)",whiteSpace:"nowrap"}}>{p.student?.profile?.full_name||"—"}</div>
+                            <div style={{fontSize:11,color:"var(--text-secondary)"}}>{p.student?.profile?.email||""}</div>
+                          </td>
+                          <td style={{padding:"10px 12px",fontSize:12,color:"var(--text-secondary)"}}>{PROG[p.enrollment?.program_id]||p.enrollment?.program_id?.toUpperCase()||"—"}</td>
+                          <td style={{padding:"10px 12px",fontWeight:700,color:"var(--text-primary)",whiteSpace:"nowrap"}}>${Number(p.amount||0).toFixed(2)} <span style={{fontSize:10,color:"var(--text-tertiary)"}}>{p.currency||"USD"}</span></td>
+                          <td style={{padding:"10px 12px",fontSize:12}}>
+                            <div style={{textTransform:"capitalize",color:"var(--text-primary)"}}>{p.method}</div>
+                            {p.bank&&<div style={{fontSize:11,color:"var(--text-secondary)"}}>{p.bank}</div>}
+                          </td>
+                          <td style={{padding:"10px 12px"}}>
+                            {p.reference_code
+                              ? <span style={{fontSize:11,fontFamily:"monospace",background:PD,color:PX,padding:"2px 7px",borderRadius:5,fontWeight:700}}>{p.reference_code}</span>
+                              : <span style={{color:"var(--text-tertiary)",fontSize:11}}>—</span>}
+                          </td>
+                          <td style={{padding:"10px 12px"}}>
+                            {p.proof_url
+                              ? <button onClick={()=>setProofUrl(p.proof_url)}
+                                  style={{fontSize:11,padding:"4px 10px",background:PD,color:PX,border:`1px solid ${PX}40`,borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:600,whiteSpace:"nowrap"}}>
+                                  📎 Ver comprobante
+                                </button>
+                              : <span style={{fontSize:11,color:"var(--text-tertiary)"}}>Sin comprobante</span>}
+                          </td>
+                          <td style={{padding:"10px 12px"}}>
+                            <span style={{fontSize:11,padding:"2px 8px",borderRadius:12,background:bg,color,fontWeight:600}}>{statusLabel(p.status)}</span>
+                            {p.status==="failed"&&p.notes&&<div style={{fontSize:10,color:"var(--text-secondary)",marginTop:2,maxWidth:120,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}} title={p.notes}>{p.notes}</div>}
+                          </td>
+                          <td style={{padding:"10px 12px",fontSize:11,color:"var(--text-secondary)",whiteSpace:"nowrap"}}>{new Date(p.created_at).toLocaleDateString("es-HN",{day:"2-digit",month:"short",year:"2-digit"})}</td>
+                          <td style={{padding:"10px 12px"}}>
+                            {(p.status==="pending"||p.status==="failed")&&(
+                              <div style={{display:"flex",gap:4}}>
+                                <button onClick={()=>confirmPayment(p.id)}
+                                  style={{fontSize:11,padding:"5px 10px",background:GD,color:G,border:`1px solid ${G}40`,borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:700,whiteSpace:"nowrap"}}>
+                                  ✓ Aprobar pago
+                                </button>
+                                <button onClick={()=>{setRejectTarget({id:p.id});setRejectReason("");}}
+                                  style={{fontSize:11,padding:"5px 10px",background:RD,color:R,border:"none",borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:700}}>
+                                  ✗ Rechazar
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+        }
       </div>
 
-      {/* Register modal */}
-      {regModal&&(
-        <div style={{position:"fixed",inset:0,zIndex:50,background:"rgba(0,0,0,.45)",display:"flex",alignItems:"center",justifyContent:"center",padding:16}}
-          onClick={e=>{if(e.target===e.currentTarget)setRegModal(false);}}>
-          <div style={{background:"var(--bg-surface)",borderRadius:16,padding:24,width:"min(420px, calc(100vw - 32px))",border:"1px solid var(--border)",boxShadow:"0 20px 60px rgba(0,0,0,.15)",maxHeight:"90vh",overflowY:"auto"}}>
-            <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:18}}>Registrar pago</div>
-            <div style={{marginBottom:12}}>
-              <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Código de estudiante *</div>
-              <div style={{display:"flex",gap:8}}>
-                <input
-                  value={codeSearch}
-                  onChange={e=>{ setCodeSearch(e.target.value); setCodeFound(null); }}
-                  onKeyDown={e=>e.key==="Enter"&&lookupByCode()}
-                  placeholder="Ej: WCA-26-0001"
-                  style={{flex:1,padding:"10px 13px",border:`1px solid ${codeFound?"#059669":codeFound===null&&codeSearch?"#d97706":"var(--border)"}`,borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit",textTransform:"uppercase"}}
-                />
-                <button onClick={lookupByCode} disabled={codeLookup||!codeSearch}
-                  style={{padding:"10px 16px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:12,fontWeight:700,cursor:codeLookup||!codeSearch?"not-allowed":"pointer",fontFamily:"inherit",flexShrink:0}}>
-                  {codeLookup?"...":"Buscar"}
-                </button>
-              </div>
-              {/* Found student card */}
-              {codeFound && (
-                <div style={{marginTop:8,padding:"10px 14px",background:"#ecfdf5",border:"1px solid #6ee7b7",borderRadius:8}}>
-                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start"}}>
-                    <div>
-                      <div style={{fontSize:13,fontWeight:700,color:"#065f46"}}>{codeFound.name}</div>
-                      <div style={{fontSize:11,color:"#047857",marginTop:2}}>{codeFound.email}</div>
-                    </div>
-                    <div style={{textAlign:"right",flexShrink:0,marginLeft:12}}>
-                      <div style={{fontSize:11,fontWeight:700,color:"#155266",background:"#e8f3f6",borderRadius:5,padding:"2px 7px",display:"inline-block"}}>{codeFound.code}</div>
-                      <div style={{fontSize:11,color:"#047857",marginTop:3}}>{codeFound.program}</div>
-                    </div>
-                  </div>
-                  <div style={{display:"flex",gap:8,marginTop:6,fontSize:11,color:"#065f46"}}>
-                    <span>Estado: <strong>{codeFound.enrollStatus}</strong></span>
-                    {codeFound.nextPayment && <span>· Próx. pago: <strong>{new Date(codeFound.nextPayment).toLocaleDateString("es-HN")}</strong></span>}
-                  </div>
-                </div>
-              )}
-            </div>
-            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
-              {[["Monto (USD) *","amount","number","95"],["Banco/Cuenta","bank","text","BAC Honduras"]].map(([l,k,t,ph])=>(
-                <div key={k}>
-                  <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>{l}</div>
-                  <input type={t} value={form[k]} placeholder={ph} onChange={e=>setForm(p=>({...p,[k]:t==="number"?+e.target.value:e.target.value}))}
-                    style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
-                </div>
-              ))}
-            </div>
-            <div style={{marginBottom:12}}>
-              <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Método</div>
-              <select value={form.method} onChange={e=>setForm(p=>({...p,method:e.target.value}))}
-                style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}>
-                {[["transfer","Transferencia bancaria"],["cash","Efectivo"],["stripe","Stripe / Tarjeta"]].map(([v,l])=><option key={v} value={v}>{l}</option>)}
-              </select>
-            </div>
-            <div style={{marginBottom:18}}>
-              <div style={{fontSize:11,fontWeight:600,color:"var(--text-secondary)",marginBottom:5}}>Referencia / Notas</div>
-              <input value={form.notes} placeholder="Número de transacción o notas" onChange={e=>setForm(p=>({...p,notes:e.target.value}))}
-                style={{width:"100%",padding:"10px 13px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,background:"var(--bg-surface-subtle)",color:"var(--text-primary)",fontFamily:"inherit"}}/>
-            </div>
-            <div style={{display:"flex",gap:8}}>
-              <button onClick={()=>{setRegModal(false);setCodeSearch("");setCodeFound(null);}} style={{flex:1,padding:"10px",background:"var(--bg-surface-subtle)",border:"1px solid var(--border)",borderRadius:8,fontSize:13,cursor:"pointer",fontFamily:"inherit",color:"var(--text-secondary)"}}>Cancelar</button>
-              <button onClickCapture={e=>{e.stopPropagation();register();}} style={{flex:2,padding:"10px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",opacity:saving?.6:1}}>
-                {saving?"Guardando...":"Registrar pago"}
+      {/* Reject modal */}
+      {rejectTarget&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.45)",zIndex:50,display:"flex",alignItems:"center",justifyContent:"center"}}
+          onClick={()=>{if(!rejecting){setRejectTarget(null);setRejectReason("");}}}> 
+          <div style={{background:"var(--bg-surface)",borderRadius:16,padding:28,maxWidth:420,width:"90%",boxShadow:"0 8px 32px rgba(0,0,0,.2)"}}
+            onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:16,fontWeight:800,color:"var(--text-primary)",marginBottom:12}}>Rechazar pago</div>
+            <div style={{fontSize:13,color:"var(--text-secondary)",marginBottom:16}}>Indicá el motivo. El estudiante podrá subir un nuevo comprobante.</div>
+            <textarea value={rejectReason} onChange={e=>setRejectReason(e.target.value)}
+              placeholder="Ej: El monto transferido no corresponde / La imagen no es legible..."
+              rows={3} style={{width:"100%",padding:10,border:"1px solid var(--border)",borderRadius:8,fontSize:13,fontFamily:"inherit",background:"var(--bg-surface)",color:"var(--text-primary)",resize:"vertical",boxSizing:"border-box"}}/>
+            <div style={{display:"flex",gap:10,marginTop:16}}>
+              <button onClick={submitReject} disabled={rejecting}
+                style={{flex:1,padding:"10px 0",background:rejecting?"var(--bg-surface-subtle)":R,color:rejecting?"var(--text-secondary)":"#fff",border:"none",borderRadius:10,fontSize:14,fontWeight:700,cursor:rejecting?"not-allowed":"pointer",fontFamily:"inherit"}}>
+                {rejecting?"Rechazando...":"Rechazar pago"}
               </button>
+              <button onClick={()=>{setRejectTarget(null);setRejectReason("");}} disabled={rejecting}
+                style={{padding:"10px 18px",background:"var(--bg-surface-subtle)",color:"var(--text-secondary)",border:"1px solid var(--border)",borderRadius:10,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Proof viewer */}
+      {proofUrl&&(
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.75)",zIndex:60,display:"flex",alignItems:"center",justifyContent:"center"}}
+          onClick={()=>setProofUrl(null)}>
+          <div style={{maxWidth:"90vw",maxHeight:"90vh",position:"relative"}} onClick={e=>e.stopPropagation()}>
+            <button onClick={()=>setProofUrl(null)}
+              style={{position:"absolute",top:-12,right:-12,width:32,height:32,borderRadius:"50%",background:"#fff",border:"none",fontSize:16,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",boxShadow:"0 2px 8px rgba(0,0,0,.2)",zIndex:1}}>✕</button>
+            {proofUrl.match(/\.pdf$/i)
+              ? <iframe src={proofUrl} style={{width:"80vw",height:"80vh",border:"none",borderRadius:12}} title="Comprobante PDF"/>
+              : <img src={proofUrl} alt="Comprobante" style={{maxWidth:"80vw",maxHeight:"80vh",borderRadius:12,objectFit:"contain"}}/>}
+            <div style={{textAlign:"center",marginTop:8}}>
+              <a href={proofUrl} target="_blank" rel="noopener noreferrer"
+                style={{fontSize:12,color:"#fff",background:PX,padding:"6px 14px",borderRadius:8,textDecoration:"none",fontWeight:600}}>Abrir en nueva pestaña ↗</a>
             </div>
           </div>
         </div>

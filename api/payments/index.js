@@ -90,7 +90,7 @@ async function handleRecord(req, res) {
         const { subject, html } = EmailTemplates.paymentConfirmed({
           name:        student.profile.full_name.split(' ')[0],
           amount:      Number(amount).toFixed(2),
-          programName: programNames[programId] || programId || 'WCA Academy',
+          programName: programNames[programId] || programId || 'World Connect Academy',
           period:      periodStart ? new Date(periodStart).toLocaleDateString('es-HN', { month: 'long', year: 'numeric' }) : '—',
           code,
         });
@@ -114,7 +114,7 @@ async function handleRecord(req, res) {
 async function handleConfirm(req, res) {
   try {
     const { profile: actor } = await requireAuth(req);
-    requireRole(actor, 'cobros', 'admin', 'super_admin');
+    requireRole(actor, 'cobros', 'admin', 'super_admin', 'coordinadora');
 
     const { paymentId, action, reason } = req.body;
     if (!paymentId || !action) {
@@ -167,7 +167,7 @@ async function handleConfirm(req, res) {
         sendEmail({
           to: payment.student.profile.email,
           toName: payment.student.profile.full_name,
-          subject: 'Tu comprobante de pago fue rechazado — WCA Academy',
+          subject: 'Tu comprobante de pago fue rechazado — World Connect Academy',
           html: `<div style="font-family:sans-serif;max-width:520px;margin:0 auto;padding:32px">
             <h2 style="color:#dc2626;margin:0 0 12px">Comprobante rechazado</h2>
             <p style="color:#475569;line-height:1.7">Hola <strong>${firstName}</strong>, tu comprobante de <strong>$${Number(payment.amount).toFixed(2)}</strong> no pudo ser aprobado.</p>
@@ -327,10 +327,10 @@ async function handleConfirm(req, res) {
         const firstName  = (payment.student.profile.full_name || '').split(' ')[0] || 'Estudiante';
         const PROG_NAMES = { en:'Inglés Completo', va:'Asistente Virtual', va_mkt:'VA Marketing', va_legal:'VA Legal', va_care:'VA Cuidador' };
         // Get program from enrollment if we have it
-        let programName = 'WCA Academy';
+        let programName = 'World Connect Academy';
         if (enrollmentId) {
           const { data: enrProg } = await admin.from('enrollments').select('program_id').eq('id', enrollmentId).maybeSingle();
-          programName = PROG_NAMES[enrProg?.program_id] || enrProg?.program_id || 'WCA Academy';
+          programName = PROG_NAMES[enrProg?.program_id] || enrProg?.program_id || 'World Connect Academy';
         }
         const { subject, html } = EmailTemplates.paymentConfirmed({
           name:        firstName,
@@ -390,25 +390,29 @@ async function handleUploadProof(req, res) {
     }
 
     if (payment.status === 'confirmed') {
-      return err(res, { status: 409, message: 'El pago ya está confirmado' });
+      return err(res, { status: 409, message: 'El pago ya está confirmado — no es necesario subir otro comprobante' });
     }
 
-    const { error } = await admin
-      .from('payments')
-      .update({ proof_url: proofUrl })
-      .eq('id', paymentId);
+    // If payment was failed, resubmitting moves it back to pending for review
+    const wasRejected  = payment.status === 'failed';
+    const updateFields = { proof_url: proofUrl };
+    if (wasRejected) updateFields.status = 'pending';
 
+    const { error } = await admin.from('payments')
+      .update(updateFields).eq('id', paymentId);
     if (error) throw error;
 
+    const auditAction = wasRejected ? 'resubmitted_proof' : 'uploaded_proof';
     await admin.from('audit_log').insert({
-      actor_id: actor.id,
-      action: 'uploaded_proof',
-      entity: 'payment',
-      entity_id: paymentId,
-      metadata: { proofUrl },
-    });
+      actor_id: actor.id, action: auditAction,
+      entity: 'payment', entity_id: paymentId,
+      metadata: { proofUrl, wasRejected, newStatus: updateFields.status || payment.status },
+    }).catch(() => {});
 
-    return ok(res, { message: 'Comprobante guardado — cobros lo revisará en breve' });
+    const msg = wasRejected
+      ? 'Comprobante reenviado — el equipo lo revisará pronto.'
+      : 'Comprobante recibido. El equipo lo revisará pronto.';
+    return ok(res, { message: msg, newStatus: updateFields.status || payment.status });
   } catch(e) {
     return err(res, e);
   }
