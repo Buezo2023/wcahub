@@ -72,121 +72,78 @@ function SuperAdminFloatingBack() {
 }
 
 // ── PrivateRoute — uses SessionContext (single auth source of truth) ──
+// ── AccessRecovery: shown when session exists but profile failed ──
+function AccessRecovery({ message, onRetry, onSignOut }) {
+  const [retrying, setRetrying] = React.useState(false);
+  async function handleRetry() {
+    setRetrying(true);
+    try { await onRetry(); } catch(e) {}
+    setRetrying(false);
+  }
+  return (
+    <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+      minHeight:'100vh', gap:20, background:'var(--bg-page,#f8fafc)',
+      fontFamily:"'DM Sans','Segoe UI',sans-serif", padding:24, textAlign:'center' }}>
+      <div style={{ fontSize:48, marginBottom:4 }}>⚠️</div>
+      <div style={{ fontSize:18, fontWeight:800, color:'#0f172a' }}>No pudimos verificar tu perfil</div>
+      <div style={{ fontSize:14, color:'#475569', maxWidth:380, lineHeight:1.7 }}>
+        Tu sesión sigue activa, pero no pudimos cargar tu perfil institucional.<br/>
+        {message && <span style={{ fontSize:12, color:'#94a3b8', display:'block', marginTop:4 }}>{message}</span>}
+      </div>
+      <div style={{ display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center' }}>
+        <button onClick={handleRetry} disabled={retrying}
+          style={{ padding:'10px 24px', background:'#155266', color:'#fff', border:'none',
+            borderRadius:10, fontSize:14, fontWeight:700, cursor:retrying?'wait':'pointer',
+            fontFamily:'inherit', opacity:retrying?.7:1 }}>
+          {retrying ? 'Verificando…' : '🔄 Reintentar'}
+        </button>
+        <button onClick={onSignOut}
+          style={{ padding:'10px 24px', background:'#fff', color:'#475569',
+            border:'1px solid #e2e8f0', borderRadius:10, fontSize:14, cursor:'pointer', fontFamily:'inherit' }}>
+          Cerrar sesión
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function PrivateRoute({ element, allowedRoles }) {
-  const { profile, session, loading } = useSession();
-  const [auth, setAuth] = React.useState({ ready: false, ok: false, redirect: null });
+  const { profile, session, loading, profileLoading, profileError, refreshProfile, signOut } = useSession();
 
-  // sessionWaitRef: tracks how long we've waited for profile after session confirmed
-  const sessionWaitStart = React.useRef(null);
-  const [sessionTimeout, setSessionTimeout] = React.useState(false);
-
-  React.useEffect(() => {
-    if (loading) return;
-    // Session confirmed but profile still loading — wait up to 6s before giving up
-    if (session && !profile) {
-      if (!sessionWaitStart.current) sessionWaitStart.current = Date.now();
-      const waited = Date.now() - sessionWaitStart.current;
-      if (waited < 6000) {
-        // Still within window — stay on loading screen, don't redirect yet
-        const retry = setTimeout(() => setSessionTimeout(t => !t), 300); // force re-eval
-        return () => clearTimeout(retry);
-      }
-      // 6s passed, profile never loaded — redirect
-      setAuth({ ready: true, ok: false, redirect: '/' }); return;
-    }
-    sessionWaitStart.current = null; // reset if session or profile changes
-    if (!session) { setAuth({ ready: true, ok: false, redirect: '/' }); return; }
-    if (!profile) { setAuth({ ready: true, ok: false, redirect: '/' }); return; }
-    if (allowedRoles && profile.role !== 'super_admin' && !allowedRoles.includes(profile.role)) {
-      setAuth({ ready: true, ok: false, redirect: ROLE_PORTALS[profile.role] || '/' });
-      return;
-    }
-    setAuth({ ready: true, ok: true, redirect: null });
-  }, [loading, session, profile, sessionTimeout]);
-
-  if (!auth.ready) return (
+  // 1. Still doing initial auth or profile check → show spinner
+  if (loading || profileLoading) return (
     <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
       minHeight:'100vh', gap:16, background:'var(--bg-page,#f8fafc)',
       fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
       <div style={{ width:32, height:32, border:'3px solid #e2e8f0',
-        borderTopColor:'#155266', borderRadius:'50%',
-        animation:'spin .7s linear infinite' }}/>
+        borderTopColor:'#155266', borderRadius:'50%', animation:'spin .7s linear infinite' }}/>
       <div style={{ fontSize:14, color:'#475569', fontWeight:500 }}>Verificando acceso…</div>
       <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
     </div>
   );
 
-  if (!auth.ok) return <Navigate to={auth.redirect || '/'} replace />;
+  // 2. No session at all → redirect to home
+  if (!session) return <Navigate to="/" replace />;
+
+  // 3. Session exists but profile failed or is null → recoverable, NOT redirect
+  if (!profile) {
+    const handleSignOut = async () => { await signOut(); window.location.href = '/'; };
+    return (
+      <AccessRecovery
+        message={profileError || "No encontramos tu perfil institucional."}
+        onRetry={refreshProfile}
+        onSignOut={handleSignOut}
+      />
+    );
+  }
+
+  // 4. Profile loaded but wrong role → redirect to correct portal
+  if (allowedRoles && profile.role !== 'super_admin' && !allowedRoles.includes(profile.role)) {
+    return <Navigate to={ROLE_PORTALS[profile.role] || '/'} replace />;
+  }
 
   return element;
 }
-
-const PORTALS = [
-  { path:'/portal',       icon:'👨‍🎓', label:'Portal Estudiante',      role:'Estudiante',   color:'#155266' },
-  { path:'/docente',      icon:'👩‍🏫', label:'Portal Docente',          role:'Docente',      color:'#92400e' },
-  { path:'/admin',        icon:'⚙️',  label:'Dashboard Admin',         role:'Admin',        color:'#0f3d4d' },
-  { path:'/super',        icon:'⭐',  label:'Super Admin',             role:'Super Admin',  color:'#2d1b69' },
-  { path:'/crm',          icon:'💼',  label:'CRM Ventas',              role:'Ventas',       color:'#059669' },
-  { path:'/cobros',       icon:'💳',  label:'Gestor de Cobros',        role:'Cobros',       color:'#92400e' },
-  { path:'/coordinacion', icon:'🎓',  label:'Coordinación Académica',  role:'Coordinadora', color:'#155266' },
-  { path:'/bi',           icon:'📊',  label:'Dashboard BI',            role:'Directivos',   color:'#3c3489' },
-  { path:'/onboarding',   icon:'🎯',  label:'Onboarding Wizard',       role:'Primer acceso',color:'#7c3aed' },
-  { path:'/preview',      icon:'🗺️',  label:'Platform Preview',        role:'Todos',        color:'#475569' },
-];
-
-// ── Inject global WCA styles ──────────────────────────────────────
-const WCA_GLOBAL_CSS = `
-/* ── WCA Global Micro-interactions ──────────────────────────────── */
-@keyframes fadeUp  { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
-@keyframes slideIn { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:none} }
-@keyframes popIn   { 0%{opacity:0;transform:scale(.94)} 60%{transform:scale(1.01)} 100%{opacity:1;transform:none} }
-@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-@keyframes menuUp  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
-@keyframes pulse   { 0%,100%{opacity:1} 50%{opacity:.4} }
-
-/* Focus ring — replaces browser default */
-*:focus-visible {
-  outline: none;
-  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #155266;
-  border-radius: 6px;
-}
-
-/* Smooth interactive elements */
-button, a, [role="button"] { cursor: pointer; }
-
-/* Skeleton shimmer */
-.skeleton {
-  background: linear-gradient(90deg, var(--bg-surface-subtle) 25%, var(--border) 50%, var(--bg-surface-subtle) 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite linear;
-  border-radius: 6px;
-}
-
-/* Modal enter animation */
-.modal-enter { animation: popIn .22s cubic-bezier(.34,1.56,.64,1) both; }
-
-/* Toast enter */
-.toast-enter { animation: slideIn .3s ease both; }
-
-/* Card hover lift */
-.card-hover {
-  transition: transform .15s ease, box-shadow .15s ease;
-}
-.card-hover:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,.1);
-}
-`;
-if (typeof document !== 'undefined') {
-  const existing = document.getElementById('wca-global');
-  if (!existing) {
-    const s = document.createElement('style');
-    s.id = 'wca-global';
-    s.textContent = WCA_GLOBAL_CSS;
-    document.head.appendChild(s);
-  }
-}
-
 function PageLoader() {
   return (
     <div style={{ height:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'var(--bg-page)', gap:16 }}>

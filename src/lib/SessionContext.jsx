@@ -1,63 +1,96 @@
 // SessionContext — shared user session across the app
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { supabase } from "./supabase.js";
 import { setUnauthorizedHandler } from "./api.js";
 
-const SessionCtx = createContext({ profile: null, session: null, loading: true, signOut: () => {} });
+const SessionCtx = createContext({
+  profile: null, session: null,
+  loading: true, profileLoading: false, profileError: null,
+  signOut: () => {}, refreshProfile: () => {},
+});
 
 export function SessionProvider({ children }) {
-  const [profile, setProfile] = useState(null);
-  const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [profile,        setProfile]        = useState(null);
+  const [session,        setSession]        = useState(null);
+  const [loading,        setLoading]        = useState(true);   // initial auth check
+  const [profileLoading, setProfileLoading] = useState(false);  // profile query
+  const [profileError,   setProfileError]   = useState(null);   // non-fatal profile error
+
+  // ── loadProfile: fetches profile for a given userId ───────────
+  // NEVER signOut on failure — only sets profileError so UI can offer retry
+  const loadProfile = useCallback(async (userId) => {
+    if (!userId) return;
+    setProfileLoading(true);
+    setProfileError(null);
+    try {
+      const { data, error } = await supabase.from("profiles")
+        .select("id, full_name, email, role, active, onboarding_done")
+        .eq("id", userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error("[SessionContext] profile query failed:", error.message);
+        setProfile(null);
+        setProfileError(error.message || "No pudimos cargar tu perfil.");
+        return; // NOT signOut — session stays intact
+      }
+      if (!data) {
+        setProfile(null);
+        setProfileError("Tu cuenta existe, pero no encontramos tu perfil institucional.");
+        return;
+      }
+      setProfile(data);
+      setProfileError(null);
+    } catch(e) {
+      console.error("[SessionContext] loadProfile exception:", e);
+      setProfile(null);
+      setProfileError(e?.message || "Error inesperado al cargar el perfil.");
+    } finally {
+      setProfileLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    // Safety timeout — if Supabase hangs, don't leave users stuck on "Verificando acceso"
+    // Safety timeout — if Supabase auth hangs entirely, don't block forever
     const safetyTimer = setTimeout(() => {
       setLoading(false);
+      setProfileLoading(false);
       console.warn("[SessionContext] safety timeout — forced loading=false after 8s");
     }, 8000);
 
-    // Initial session load
+    // Initial session check
     supabase.auth.getSession().then(async ({ data: { session: s } }) => {
       clearTimeout(safetyTimer);
       setSession(s);
       if (s?.user?.id) {
-        try {
-          const { data } = await supabase.from("profiles")
-            .select("id, full_name, email, role, active, onboarding_done")
-            .eq("id", s.user.id)
-            .maybeSingle();
-          setProfile(data);
-        } catch(e) {
-          console.error("[SessionContext] profile load failed:", e);
-        }
+        await loadProfile(s.user.id);
       }
       setLoading(false);
     }).catch(e => {
       clearTimeout(safetyTimer);
-      console.error("[SessionContext] session load failed:", e);
+      console.error("[SessionContext] getSession failed:", e);
       setLoading(false);
     });
 
-    // Listen for auth changes
+    // Auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, s) => {
-      setSession(s);
-      if (s?.user?.id && event !== "SIGNED_OUT") {
-        try {
-          const { data } = await supabase.from("profiles")
-            .select("id, full_name, email, role, active, onboarding_done")
-            .eq("id", s.user.id)
-            .maybeSingle();
-          setProfile(data);
-        } catch(e) {
-          console.error("[SessionContext] auth change profile load failed:", e);
+      try {
+        if (event === "SIGNED_OUT" || !s) {
+          setSession(null);
+          setProfile(null);
+          setProfileError(null);
+          return;
         }
-      } else {
-        setProfile(null);
+        setSession(s);
+        if (s?.user?.id) {
+          await loadProfile(s.user.id);
+        }
+      } catch(e) {
+        console.error("[SessionContext] onAuthStateChange error:", e);
       }
     });
 
-    // Wire 401 handler to sign out
+    // Wire 401 handler — only for real API 401, not profile query errors
     setUnauthorizedHandler(async () => {
       await supabase.auth.signOut();
       setProfile(null);
@@ -65,14 +98,14 @@ export function SessionProvider({ children }) {
       window.location.href = "/";
     });
 
-    // Refresh profile when tab regains focus — catches role changes made by admin
+    // Refresh profile when tab regains focus — catches role changes by admin
     async function onFocus() {
-      const { data: { session: s } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
-      if (!s?.user?.id) return;
-      const { data } = await supabase.from("profiles")
-        .select("id, full_name, email, role, active, onboarding_done")
-        .eq("id", s.user.id).maybeSingle().catch(() => ({ data: null }));
-      if (data) setProfile(data);
+      try {
+        const { data: { session: s } } = await supabase.auth.getSession();
+        if (s?.user?.id) await loadProfile(s.user.id);
+      } catch(e) {
+        console.warn("[SessionContext] focus refresh failed:", e?.message);
+      }
     }
     window.addEventListener("focus", onFocus);
 
@@ -80,30 +113,27 @@ export function SessionProvider({ children }) {
       subscription.unsubscribe();
       window.removeEventListener("focus", onFocus);
     };
-  }, []);
+  }, [loadProfile]);
 
   const signOut = async () => {
     await supabase.auth.signOut();
-    // Clear app-specific localStorage keys on logout
-    try {
-      localStorage.removeItem('wca_pending_progress');
-      // Keep wca-theme (user preference, not sensitive)
-    } catch(e) {}
+    try { localStorage.removeItem("wca_pending_progress"); } catch(e) {}
     setProfile(null);
     setSession(null);
+    setProfileError(null);
   };
 
-  const refreshProfile = async () => {
-    if (!session?.user?.id) return;
-    const { data } = await supabase.from("profiles")
-      .select("id, full_name, email, role, active, onboarding_done")
-      .eq("id", session.user.id)
-      .maybeSingle();
-    setProfile(data);
-  };
+  const refreshProfile = useCallback(async () => {
+    const { data: { session: s } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+    if (s?.user?.id) await loadProfile(s.user.id);
+  }, [loadProfile]);
 
   return (
-    <SessionCtx.Provider value={{ profile, session, loading, signOut, refreshProfile }}>
+    <SessionCtx.Provider value={{
+      profile, session, loading,
+      profileLoading, profileError,
+      signOut, refreshProfile,
+    }}>
       {children}
     </SessionCtx.Provider>
   );
