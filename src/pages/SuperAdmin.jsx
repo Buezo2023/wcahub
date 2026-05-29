@@ -15,6 +15,7 @@ const B2BSection           = React.lazy(()=>import("../sections/B2BSection.jsx")
 const VencidosSection      = React.lazy(()=>import("../sections/VencidosSection.jsx").then(m=>({default:m.VencidosSection})));
 const BISection            = React.lazy(()=>import("../sections/BISection.jsx").then(m=>({default:m.BISection})));
 const HorariosSection      = React.lazy(()=>import("../sections/HorariosSection.jsx").then(m=>({default:m.HorariosSection})));
+const DepartmentPlaceholder = React.lazy(()=>import("../sections/DepartmentPlaceholder.jsx").then(m=>({default:m.DepartmentPlaceholder})));
 const ComunicacionesSection= React.lazy(()=>import("../sections/ComunicacionesSection.jsx").then(m=>({default:m.ComunicacionesSection})));
 const ReportesSection      = React.lazy(()=>import("../sections/ReportesSection.jsx").then(m=>({default:m.ReportesSection})));
 const RecibosSection       = React.lazy(()=>import("../sections/RecibosSection.jsx").then(m=>({default:m.RecibosSection})));
@@ -67,10 +68,14 @@ const NAV = [
   { id:"overview",        icon:"ti-layout-dashboard", label:"Panel general"     },
   { id:"academia",        icon:"ti-school",            label:"Academia"          },
   { id:"ventas",          icon:"ti-briefcase",         label:"Ventas & CRM"      },
-  { id:"contab",          icon:"ti-credit-card",       label:"Contabilidad"      },
+  { id:"contab",          icon:"ti-credit-card",       label:"Cobros & Pagos"    },
   { id:"comunicaciones",  icon:"ti-send",              label:"Comunicaciones"    },
-  { id:"reportes",        icon:"ti-chart-bar",         label:"Reportes"          },
+  { id:"reportes",        icon:"ti-chart-bar",         label:"BI & Reportes"     },
   { id:"rrhh",            icon:"ti-users-group",       label:"RRHH & Personal"   },
+  { id:"admisiones",      icon:"ti-user-check",        label:"Admisiones & Matrícula" },
+  { id:"soporte",         icon:"ti-headset",            label:"Soporte Estudiantil" },
+  { id:"tecnologia",      icon:"ti-code",               label:"Tecnología & Producto" },
+  { id:"alianzas",        icon:"ti-building-estate",    label:"Alianzas & Empleabilidad" },
 
 ];
 
@@ -581,7 +586,7 @@ export default function SuperAdmin() {
           <div>
             <div style={{ display:"flex", alignItems:"center", gap:6 }}>
               <span style={{ fontSize:14, fontWeight:700, color:"var(--text-primary)" }}>
-                {{"overview":"Panel general","academia":"Academia","ventas":"Ventas & CRM","contab":"Contabilidad","comunicaciones":"Comunicaciones","reportes":"Reportes","rrhh":"RRHH & Personal",}[view]}
+                {{"overview":"Panel general","academia":"Academia","ventas":"Ventas & CRM","contab":"Cobros & Pagos","comunicaciones":"Comunicaciones","reportes":"BI & Reportes","rrhh":"RRHH & Personal","admisiones":"Admisiones & Matrícula","soporte":"Soporte Estudiantil","tecnologia":"Tecnología & Producto","alianzas":"Alianzas & Empleabilidad",}[view]}
               </span>
               {SUB_TABS[view] && subView && (() => {
                 const sub = (SUB_TABS[view]||[]).find(([id])=>id===subView);
@@ -688,7 +693,7 @@ export default function SuperAdmin() {
               </div>
               <div style={{ background:"var(--bg-surface)", border:"1px solid var(--border)", borderRadius:12, padding:18, boxShadow:"var(--shadow-sm)" }}>
                 <SectionTitle>Accesos rápidos</SectionTitle>
-                {[["ti-books","Nuevo programa","programs"],["ti-user-plus","Agregar personal","hr"],["ti-coin","Editar precios","programs"],["ti-chart-bar","Ver BI","bi"],["ti-refresh","Control ciclo","cycle"],["ti-calendar","Agregar festivo","programs"]].map(([ic,lb,ac],i)=>(
+                {[["ti-books","Programas","academia"],["ti-user-plus","Agregar personal","rrhh"],["ti-coin","Precios","academia"],["ti-chart-bar","BI & Reportes","reportes"],["ti-refresh","Ciclo académico","academia"],["ti-user-check","Admisiones","admisiones"]].map(([ic,lb,ac],i)=>(
                   <button key={i} onClick={()=>setView(ac)} style={{ width:"100%", display:"flex", alignItems:"center", gap:8, padding:"10px 12px", background:"var(--bg-surface-subtle)", border:"1px solid var(--border)", borderRadius:8, cursor:"pointer", marginBottom:7, textAlign:"left", fontFamily:"inherit", transition:"all .15s" }}
                     onMouseEnter={e=>{e.currentTarget.style.borderColor=P;e.currentTarget.style.background=PD;}}
                     onMouseLeave={e=>{e.currentTarget.style.borderColor="var(--border)";e.currentTarget.style.background="var(--bg-surface-subtle)";}}>
@@ -1369,6 +1374,10 @@ export default function SuperAdmin() {
 
           {/* ══ COMUNICACIONES ════════════════════════════════════════ */}
           {view==="comunicaciones" && <Suspense fallback={<SectionFallback/>}><ComunicacionesSection showToast={showToast} subView={subView} /></Suspense>}
+          {view==="admisiones"    && <Suspense fallback={<SectionFallback/>}><DepartmentPlaceholder dept="admisiones" /></Suspense>}
+          {view==="soporte"       && <Suspense fallback={<SectionFallback/>}><DepartmentPlaceholder dept="soporte" /></Suspense>}
+          {view==="tecnologia"    && <Suspense fallback={<SectionFallback/>}><DepartmentPlaceholder dept="tecnologia" /></Suspense>}
+          {view==="alianzas"      && <Suspense fallback={<SectionFallback/>}><DepartmentPlaceholder dept="alianzas" /></Suspense>}
 
           {/* ══ REPORTES ══════════════════════════════════════════════ */}
           {view==="reportes" && <Suspense fallback={<SectionFallback/>}><ReportesSection showToast={showToast} subView={subView} /></Suspense>}
