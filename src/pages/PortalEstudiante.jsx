@@ -408,9 +408,10 @@ function ExamModule({ prog, enrollment, enrolledProgs, activeProg, setActiveProg
                 // ── Full program completion ──────────────────────────
                 // TODO(business): "completed" is not in enrollment_status enum.
                 // Using "graduated" as the closest semantic match for full program completion.
+                // completed_at is NOT in enrollments schema — date recorded in certificates.issued_at
                 await supabase.from("enrollments").update({
                   current_unit: 12, exam_score: pct,
-                  status: "graduated", completed_at: new Date().toISOString(),
+                  status: "graduated",
                 }).eq("student_id", student.id).eq("program_id", activeProg);
 
                 // Generate certificate
@@ -865,7 +866,7 @@ export default function PortalEstudiante(){
   const enrollment  = { ..._baseEnroll, ..._realPatch };
   const currentLevel = enrollment?.level || "A1";  // A1 is the starting level
   const units = activeProg === "en"
-    ? (UNITS[currentLevel] || UNITS["B1"] || [])
+    ? (UNITS[currentLevel] || UNITS["A1"] || [])
     : (PROGRAM_UNITS[activeProg] || []);
   const skills = activeProg === "en"
     ? (SKILLS_BY_LEVEL[currentLevel] || SKILLS_BY_LEVEL["B1"] || [])

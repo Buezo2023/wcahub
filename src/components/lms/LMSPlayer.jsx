@@ -39,9 +39,14 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile, studentL
   const [loading, setLoading]   = useState(true);
   const [xpAnim,  setXpAnim]   = useState(null);       // { amount, x, y }
 
-  useEffect(() => { load(); }, [programId, profileId]);
+  useEffect(() => { load(); }, [programId, profileId, studentLevel]);
 
   async function load() {
+    // Guard: never query if programId or profileId are missing
+    if (!programId || !profileId) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       // Load units for this program
