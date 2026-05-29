@@ -110,8 +110,9 @@ function AccessRecovery({ message, onRetry, onSignOut }) {
 function PrivateRoute({ element, allowedRoles }) {
   const { profile, session, loading, profileLoading, profileError, refreshProfile, signOut } = useSession();
 
-  // 1. Still doing initial auth or profile check → show spinner
-  if (loading || profileLoading) return (
+  // 1. Still doing initial auth check → show spinner
+  // But if profile already exists and profileLoading is a background silent refresh → don't block
+  if (loading || (profileLoading && !profile)) return (
     <div style={{ display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
       minHeight:'100vh', gap:16, background:'var(--bg-page,#f8fafc)',
       fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>

@@ -1,5 +1,5 @@
 // SessionContext — shared user session across the app
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "./supabase.js";
 import { setUnauthorizedHandler } from "./api.js";
 
@@ -18,35 +18,63 @@ export function SessionProvider({ children }) {
 
   // ── loadProfile: fetches profile for a given userId ───────────
   // NEVER signOut on failure — only sets profileError so UI can offer retry
-  const loadProfile = useCallback(async (userId) => {
+  const lastFocusRefreshAt = useRef(0);
+
+  // options.silent = true → background refresh, never blocks UI, keeps existing profile on error
+  const loadProfile = useCallback(async (userId, options = {}) => {
     if (!userId) return;
-    setProfileLoading(true);
-    setProfileError(null);
+    const { silent = false } = options;
+
+    if (!silent) {
+      setProfileLoading(true);
+      setProfileError(null);
+    }
+
+    let timer;
+    const timeoutMs = silent ? 6000 : 8000;
+    const timeoutPromise = new Promise((_, rej) =>
+      (timer = setTimeout(() => rej(new Error("timeout")), timeoutMs))
+    );
+
     try {
-      const { data, error } = await supabase.from("profiles")
-        .select("id, full_name, email, role, active, onboarding_done")
-        .eq("id", userId)
-        .maybeSingle();
+      const { data, error } = await Promise.race([
+        supabase.from("profiles")
+          .select("id, full_name, email, role, active, onboarding_done")
+          .eq("id", userId)
+          .maybeSingle(),
+        timeoutPromise,
+      ]);
+      clearTimeout(timer);
 
       if (error) {
         console.error("[SessionContext] profile query failed:", error.message);
-        setProfile(null);
-        setProfileError(error.message || "No pudimos cargar tu perfil.");
-        return; // NOT signOut — session stays intact
+        if (!silent) {
+          setProfile(null);
+          setProfileError(error.message || "No pudimos cargar tu perfil.");
+        }
+        // silent: keep existing profile, just warn
+        return;
       }
       if (!data) {
-        setProfile(null);
-        setProfileError("Tu cuenta existe, pero no encontramos tu perfil institucional.");
+        if (!silent) {
+          setProfile(null);
+          setProfileError("Tu cuenta existe, pero no encontramos tu perfil institucional.");
+        }
         return;
       }
       setProfile(data);
-      setProfileError(null);
+      if (!silent) setProfileError(null);
     } catch(e) {
-      console.error("[SessionContext] loadProfile exception:", e);
-      setProfile(null);
-      setProfileError(e?.message || "Error inesperado al cargar el perfil.");
+      clearTimeout(timer);
+      const isTimeout = e?.message === "timeout";
+      console.warn(`[SessionContext] loadProfile ${isTimeout ? "timeout" : "error"}${silent ? " (silent)" : ""}:`, e?.message);
+      if (!silent) {
+        setProfile(null);
+        setProfileError(isTimeout ? "La verificación tardó demasiado. Intentá de nuevo." : (e?.message || "Error inesperado."));
+      }
+      // silent: keep existing profile on any error
     } finally {
-      setProfileLoading(false);
+      if (!silent) setProfileLoading(false);
     }
   }, []);
 
@@ -100,9 +128,14 @@ export function SessionProvider({ children }) {
 
     // Refresh profile when tab regains focus — catches role changes by admin
     async function onFocus() {
+      // Guard: skip if refreshed < 10s ago (prevents multiple calls on rapid tab switching)
+      const now = Date.now();
+      if (now - lastFocusRefreshAt.current < 10000) return;
+      lastFocusRefreshAt.current = now;
       try {
         const { data: { session: s } } = await supabase.auth.getSession();
-        if (s?.user?.id) await loadProfile(s.user.id);
+        // silent:true — background refresh, never blocks UI, keeps existing profile on error
+        if (s?.user?.id) await loadProfile(s.user.id, { silent: true });
       } catch(e) {
         console.warn("[SessionContext] focus refresh failed:", e?.message);
       }
