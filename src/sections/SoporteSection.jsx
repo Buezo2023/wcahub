@@ -20,6 +20,12 @@ const Badge = ({bg,color,children})=>(
   <span style={{fontSize:11,padding:"2px 8px",borderRadius:12,background:bg,color,fontWeight:600}}>{children}</span>
 );
 
+// ── safeAudit: audit_log is non-blocking — never throws ─────────
+async function safeAudit(sb, payload) {
+  try { await sb.from("audit_log").insert(payload); }
+  catch(e) { console.warn("[support] audit_log failed:", e?.message); }
+}
+
 export function SoporteSection({ showToast }) {
   const [tickets,    setTickets]   = useState([]);
   const [loading,    setLoading]   = useState(true);
@@ -64,11 +70,18 @@ export function SoporteSection({ showToast }) {
 
   async function loadMessages(ticketId) {
     setMsgLoading(true);
-    const { data } = await supabase.from("support_ticket_messages")
-      .select("id, message, internal, created_at, sender:profiles!support_ticket_messages_sender_profile_id_fkey(full_name, email)")
-      .eq("ticket_id", ticketId).order("created_at");
-    setMessages(data || []);
-    setMsgLoading(false);
+    try {
+      const { data, error: mErr } = await supabase.from("support_ticket_messages")
+        .select("id, message, internal, created_at, sender:profiles!support_ticket_messages_sender_profile_id_fkey(full_name, email)")
+        .eq("ticket_id", ticketId).order("created_at");
+      if (mErr) throw mErr;
+      setMessages(data || []);
+    } catch(e) {
+      console.error("[support] loadMessages failed:", e?.message);
+      setMessages([]);
+    } finally {
+      setMsgLoading(false); // always reset — never leaves msgLoading stuck
+    }
   }
 
   async function openDetail(t) {
@@ -86,11 +99,11 @@ export function SoporteSection({ showToast }) {
         message: reply.trim(), internal,
       });
       if (mErr) throw mErr;
-      await supabase.from("audit_log").insert({
+      await safeAudit(supabase, {
         actor_id: user.id, action: "support_ticket_replied",
         entity: "support_ticket", entity_id: detail.id,
         metadata: { internal },
-      }).catch(() => {});
+      });
       setReply(""); setInternal(false);
       await loadMessages(detail.id);
       showToast?.("✓ Respuesta enviada");
@@ -105,11 +118,11 @@ export function SoporteSection({ showToast }) {
     if (newStatus === "cerrado") update.closed_at = new Date().toISOString();
     const { error: uErr } = await supabase.from("support_tickets").update(update).eq("id", ticketId);
     if (uErr) { showToast?.("Error: " + uErr.message, R); return; }
-    await supabase.from("audit_log").insert({
+    await safeAudit(supabase, {
       actor_id: user.id, action: "support_ticket_status_changed",
       entity: "support_ticket", entity_id: ticketId,
       metadata: { new_status: newStatus },
-    }).catch(() => {});
+    });
     showToast?.("✓ Estado actualizado");
     // Refresh detail and list
     setDetail(d => d?.id === ticketId ? { ...d, status: newStatus } : d);
@@ -121,17 +134,18 @@ export function SoporteSection({ showToast }) {
     const { error: aErr } = await supabase.from("support_tickets")
       .update({ assigned_to: user.id }).eq("id", ticketId);
     if (aErr) { showToast?.("Error: " + aErr.message, R); return; }
-    await supabase.from("audit_log").insert({
+    await safeAudit(supabase, {
       actor_id: user.id, action: "support_ticket_assigned",
       entity: "support_ticket", entity_id: ticketId,
       metadata: { assigned_to: user.id },
-    }).catch(() => {});
+    });
     showToast?.("✓ Ticket asignado a ti");
     await load();
     setDetail(d => d?.id === ticketId ? { ...d, assignee: { full_name: "Yo" } } : d);
   }
 
   async function createTicket() {
+    if (creating) return; // anti double-submit guard
     if (!form.subject.trim() || !form.description.trim()) {
       showToast?.("Asunto y descripción son requeridos", A); return;
     }
@@ -141,11 +155,16 @@ export function SoporteSection({ showToast }) {
       // Find profile_id from email if provided
       let profileId = null, studentId = null;
       if (form.email.trim()) {
-        const { data: prof } = await supabase.from("profiles")
-          .select("id, students(id)").eq("email", form.email.toLowerCase()).maybeSingle();
-        if (prof) {
-          profileId = prof.id;
-          studentId = prof.students?.[0]?.id || null;
+        try {
+          const { data: prof } = await supabase.from("profiles")
+            .select("id, students(id)").eq("email", form.email.toLowerCase()).maybeSingle();
+          if (prof) {
+            profileId = prof.id;
+            studentId = prof.students?.[0]?.id || null;
+          }
+          // Email not found → create ticket without student link, no error thrown
+        } catch(lookupErr) {
+          console.warn("[support] profile lookup failed (non-fatal):", lookupErr?.message);
         }
       }
       const { error: cErr } = await supabase.from("support_tickets").insert({
@@ -156,11 +175,11 @@ export function SoporteSection({ showToast }) {
         source: "admin",
       });
       if (cErr) throw cErr;
-      await supabase.from("audit_log").insert({
+      await safeAudit(supabase, {
         actor_id: user.id, action: "support_ticket_created",
         entity: "support_ticket", entity_id: null,
         metadata: { category: form.category, source: "admin" },
-      }).catch(() => {});
+      });
       showToast?.("✓ Ticket creado");
       setCreateOpen(false);
       setForm({ email:"", category:"otro", priority:"media", subject:"", description:"" });
