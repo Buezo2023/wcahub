@@ -176,7 +176,7 @@ export function PagosSection({ showToast, initialTab }) {
                           </td>
                           <td style={{padding:"10px 12px",fontSize:11,color:"var(--text-secondary)",whiteSpace:"nowrap"}}>{new Date(p.created_at).toLocaleDateString("es-HN",{day:"2-digit",month:"short",year:"2-digit"})}</td>
                           <td style={{padding:"10px 12px"}}>
-                            {(p.status==="pending"||p.status==="failed")&&(
+                            {p.status==="pending"&&(
                               <div style={{display:"flex",gap:4}}>
                                 <button onClick={()=>confirmPayment(p.id)}
                                   style={{fontSize:11,padding:"5px 10px",background:GD,color:G,border:`1px solid ${G}40`,borderRadius:7,cursor:"pointer",fontFamily:"inherit",fontWeight:700,whiteSpace:"nowrap"}}>
@@ -187,6 +187,11 @@ export function PagosSection({ showToast, initialTab }) {
                                   ✗ Rechazar
                                 </button>
                               </div>
+                            )}
+                            {p.status==="failed"&&(
+                              <span style={{fontSize:11,padding:"4px 10px",background:"var(--bg-surface-subtle)",color:"var(--text-tertiary)",borderRadius:7,fontStyle:"italic"}}>
+                                ⏳ Esperando reenvío
+                              </span>
                             )}
                           </td>
                         </tr>

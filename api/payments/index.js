@@ -182,7 +182,13 @@ async function handleConfirm(req, res) {
     }
 
     // ── CONFIRM path ───────────────────────────────────────────────
-    // Step 1: Mark payment as confirmed
+    // Step 1: Validate amount > 0 before doing anything
+    const paymentAmount = Number(payment.amount);
+    if (!paymentAmount || paymentAmount <= 0 || isNaN(paymentAmount)) {
+      return err(res, { status: 422, message: 'No se puede aprobar un pago con monto inválido.' });
+    }
+
+    // Step 2: Mark payment as confirmed
     const { error: confErr } = await admin
       .from('payments')
       .update({
