@@ -7,7 +7,8 @@ import { notifySelf, Notifs } from "../lib/notify.js";
 import { api } from "../lib/api.js";
 import { toast } from "../lib/toast.jsx";
 import { generateCertificate } from "../lib/certificate.js";
-import { PaymentPendingGate } from "../components/student/PaymentPendingGate.jsx";
+import { PaymentPendingGate }   from "../components/student/PaymentPendingGate.jsx";
+import { StudentSupportPanel }  from "../components/student/StudentSupportPanel.jsx";
 
 const PROG_DISPLAY_NAMES = {
   en: "Inglés Completo", va: "Certificado en Asistencia Virtual",
@@ -1832,14 +1833,13 @@ export default function PortalEstudiante(){
           )}
 
           {view==="soporte"&&(
-            <div style={{padding:24,maxWidth:560}}>
-              <div style={{fontSize:18,fontWeight:800,color:P,marginBottom:8}}>Solicitar soporte</div>
-              <div style={{fontSize:13,color:"var(--text-secondary)",lineHeight:1.7,marginBottom:20}}>¿Tenés algún problema con el acceso, el LMS, tus pagos o tus clases? El equipo de World Connect Academy está para ayudarte.</div>
-              <a href="mailto:soporte@worldconnectacademy.com" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"12px 22px",background:P,color:"#fff",borderRadius:10,fontWeight:700,fontSize:14,textDecoration:"none"}}>
-                📧 Enviar email de soporte
-              </a>
-              <div style={{fontSize:12,color:"var(--text-secondary)",marginTop:12}}>También podés escribirnos por WhatsApp o contactar a tu coordinadora académica.</div>
-            </div>
+            <StudentSupportPanel
+              profileId={user?.id}
+              studentId={studentId}
+              enrollments={Object.values(realEnrollments)}
+              payments={[]}
+              showToast={showToast}
+            />
           )}
 
           {view==="perfil"&&(
