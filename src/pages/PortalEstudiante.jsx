@@ -7,6 +7,7 @@ import { notifySelf, Notifs } from "../lib/notify.js";
 import { api } from "../lib/api.js";
 import { toast } from "../lib/toast.jsx";
 import { generateCertificate } from "../lib/certificate.js";
+import { PaymentPendingGate } from "../components/student/PaymentPendingGate.jsx";
 import { StudentReport } from "../lib/StudentReport.jsx";
 import { useNotifications } from "../lib/useNotifications.js";
 import { LEVELS, UNITS, SKILLS_BY_LEVEL } from "../data/englishContent.js";
@@ -663,6 +664,155 @@ export default function PortalEstudiante(){
   const [confetti,    setConfetti]   = useState(false);
   const [floatingXP,  setFloatingXP] = useState(null); // {amount, x, y}
   const [showReport,  setShowReport]  = useState(false);
+  // ── Access gate states (IMP-01) ─────────────────────────────
+  const [loadingAccess,      setLoadingAccess]      = useState(true);
+  const [accessError,        setAccessError]        = useState(null);
+  // accessStatus: active | pending_payment | payment_rejected | no_enrollment | no_student
+  const [accessStatus,       setAccessStatus]       = useState(null);
+  const [pendingEnrollments, setPendingEnrollments] = useState([]);
+  const [relevantPayments,   setRelevantPayments]   = useState([]);
+
+  // ── loadPortalData: loads all portal data, determines access gate ──
+  async function loadPortalData() {
+    setLoadingAccess(true);
+    setAccessError(null);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) { navigate("/", { replace: true }); return; }
+      const uid = session.user.id;
+
+      // Load profile
+      const { data: profile } = await supabase.from("profiles")
+        .select("full_name, email, avatar_url, phone, preferred_name, timezone")
+        .eq("id", uid).maybeSingle();
+      if (profile) {
+        setUser({
+          name:   profile.preferred_name || profile.full_name?.split(" ")[0] || profile.email?.split("@")[0] || "Estudiante",
+          email:  profile.email || session.user.email || "",
+          avatar: profile.avatar_url || null,
+          id:     uid,
+        });
+        if (profile.timezone) setStudentTimezone(profile.timezone);
+        setProfileForm({
+          full_name:      profile.full_name || "",
+          phone:          profile.phone || "",
+          preferred_name: profile.preferred_name || "",
+          timezone:       profile.timezone || detectTimezone(),
+        });
+      }
+
+      // Load student row
+      const { data: student, error: studentErr } = await supabase.from("students")
+        .select("id, level, student_code, scholarship")
+        .eq("profile_id", uid).maybeSingle();
+
+      if (studentErr) throw new Error("Error cargando datos de estudiante: " + studentErr.message);
+      if (!student) { setAccessStatus("no_student"); return; }
+
+      if (student.student_code) setUser(u => ({ ...u, studentCode: student.student_code }));
+      setStudentId(student.id);
+      setIsScholarship(!!student.scholarship);
+
+      // Load all enrollments (active, pending, graduated, suspended)
+      const { data: allEnrollments, error: enrollErr } = await supabase.from("enrollments")
+        .select("id, program_id, current_unit, exam_score, status, group_id, groups(teams_link, schedule, days, level, teacher_groups(staff(profiles(full_name))))")
+        .eq("student_id", student.id)
+        .in("status", ["active", "pending", "suspended", "graduated"]);
+      if (enrollErr) throw new Error("Error cargando matrículas: " + enrollErr.message);
+
+      const activeEnrolls  = (allEnrollments || []).filter(e => e.status === "active");
+      const pendingEnrolls = (allEnrollments || []).filter(e => e.status === "pending");
+
+      // Load payments for this student (to check pending/rejected)
+      const { data: allPayments } = await supabase.from("payments")
+        .select("id, amount, status, reference_code, method, created_at, enrollment_id, enrollment:enrollments(program_id)")
+        .eq("student_id", student.id)
+        .order("created_at", { ascending: false })
+        .limit(20);
+      const payments = allPayments || [];
+
+      // ── Determine accessStatus ─────────────────────────────────
+      let status;
+      if (activeEnrolls.length > 0) {
+        status = "active";
+      } else {
+        const hasRejected = payments.some(p => p.status === "failed");
+        const hasPending  = pendingEnrolls.length > 0 || payments.some(p => p.status === "pending");
+        if (hasRejected && !hasPending) status = "payment_rejected";
+        else if (hasPending || hasRejected) status = "pending_payment";
+        else if ((allEnrollments || []).length === 0 && payments.length === 0) status = "no_enrollment";
+        else status = "pending_payment"; // has enrollments/payments but none active
+      }
+
+      setAccessStatus(status);
+      setPendingEnrollments(pendingEnrolls);
+      setRelevantPayments(payments.filter(p => ["pending", "failed"].includes(p.status)));
+
+      // If active, load full portal data
+      if (status === "active") {
+        // Build realEnrollments map from active enrollments
+        const patch = {};
+        activeEnrolls.forEach(e => {
+          const grp = e.groups;
+          const teacherName = grp?.teacher_groups?.[0]?.staff?.profiles?.full_name || null;
+          const link  = grp?.teams_link || null;
+          const sched = grp ? `${grp.days || "L·M·V"} · ${formatSchedule(grp, studentTimezone)}` : null;
+          patch[e.program_id] = {
+            unit: e.current_unit || 1,
+            examScore: e.exam_score || 0,
+            teamsLink: link || "#",
+            nextClass: sched || "Consulta con tu coordinadora",
+            teacher: teacherName || "Docente asignado",
+            level: grp?.level || student.level || "A1",
+          };
+        });
+        setRealEnrollments(patch);
+        setEnrolled(activeEnrolls.map(e => e.program_id));
+
+        // Load student_progress via enrollment join
+        const { data: progressEnrolls } = await supabase.from("enrollments")
+          .select("id, program_id, student_progress(unit_id, score, completed, test_done, completed_at, units(unit_number, level))")
+          .eq("student_id", student.id)
+          .in("status", ["active", "graduated"]);
+        if (progressEnrolls?.length) {
+          const byProg = {}, histArr = [];
+          progressEnrolls.forEach(enroll => {
+            const pid = enroll.program_id;
+            if (!byProg[pid]) byProg[pid] = {};
+            (enroll.student_progress || []).forEach(sp => {
+              const unitNum = sp.units?.unit_number;
+              if (unitNum != null) {
+                byProg[pid][unitNum] = { score: sp.score || 0, passed: sp.completed === true };
+                if ((sp.test_done || 0) > 0)
+                  histArr.push({ program_id: pid, unit: unitNum, exam_score: sp.score || 0, passed: sp.completed === true });
+              }
+            });
+          });
+          setRealProgress(byProg);
+          setProgressHistory(histArr);
+        }
+
+        // Payment history for "Mis pagos" tab
+        const { data: payHist } = await supabase.from("payments")
+          .select("amount, created_at, method, status, programs(name)")
+          .eq("student_id", student.id)
+          .order("created_at", { ascending: false }).limit(10);
+        if (payHist?.length) setRealPayments(payHist);
+
+        // Certificates
+        const { data: certs } = await supabase.from("certificates")
+          .select("id,program_id,level,issued_at")
+          .eq("student_id", student.id)
+          .order("issued_at", { ascending: false });
+        setMyCertificates(certs || []);
+      }
+    } catch(e) {
+      console.error("[PortalEstudiante] loadPortalData failed:", e.message);
+      setAccessError(e.message || "Error cargando el portal");
+    } finally {
+      setLoadingAccess(false);
+    }
+  }
 
   useEffect(() => {
     // Auth state listener — handles token expiry
@@ -671,106 +821,8 @@ export default function PortalEstudiante(){
         navigate("/", { replace: true });
       }
     });
-
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) { navigate("/", { replace: true }); return; }
-      const uid = session.user.id;
-      // Load profile
-      supabase.from("profiles").select("full_name, email, avatar_url, phone, preferred_name, timezone")
-        .eq("id", uid).maybeSingle()
-        .then(({ data }) => {
-          if (data) {
-            setUser({
-              name:   data.preferred_name || data.full_name?.split(" ")[0] || data.email?.split("@")[0] || "Estudiante",
-              email:  data.email || session.user.email || "",
-              avatar: data.avatar_url || null,
-            });
-            if (data.timezone) setStudentTimezone(data.timezone);
-            setProfileForm({
-              full_name:      data.full_name || "",
-              phone:          data.phone || "",
-              preferred_name: data.preferred_name || "",
-              timezone:       data.timezone || detectTimezone(),
-            });
-          }
-        });
-      // Load enrollments + group + student_progress
-      supabase.from("students").select("id, level, student_code, scholarship")
-        .eq("profile_id", uid).maybeSingle()
-        .then(async ({ data: student }) => {
-          if (!student) return;
-          if (student.student_code) setUser(u => ({ ...u, studentCode: student.student_code }));
-          setStudentId(student.id);
-          setIsScholarship(!!student.scholarship);
-          const { data: enrolls } = await supabase
-            .from("enrollments")
-            .select("program_id, current_unit, exam_score, status, group_id, groups(teams_link, schedule, days, level, teacher_groups(staff(profiles(full_name))))")
-            .eq("student_id", student.id)
-            .eq("status", "active");
-          if (enrolls?.length) {
-            const patch = {};
-            enrolls.forEach(e => {
-              const grp = e.groups;
-              const teacherName = grp?.teacher_groups?.[0]?.staff?.profiles?.full_name || null;
-              const link = grp?.teams_link || null;
-              const schedule = grp
-                ? `${grp.days || "L·M·V"} · ${formatSchedule(grp, studentTimezone)}`
-                : null;
-              patch[e.program_id] = {
-                unit: e.current_unit || 1,
-                examScore: e.exam_score || 0,
-                teamsLink: link || "#",
-                nextClass: schedule || "Consulta con tu coordinadora",
-                teacher: teacherName || "Docente asignado",
-              };
-            });
-            setRealEnrollments(patch);
-            setEnrolled(enrolls.map(e => e.program_id));
-          }
-          // Load real student_progress via enrollments (student_progress has no student_id column)
-          // Columns: enrollment_id, unit_id, score, completed, test_done, completed_at
-          const { data: allEnrolls } = await supabase
-            .from("enrollments")
-            .select("id, program_id, student_progress(unit_id, score, completed, test_done, completed_at, units(unit_number, level))")
-            .eq("student_id", student.id)
-            .in("status", ["active", "pending", "graduated"]);
-          if (allEnrolls?.length) {
-            const byProg = {};
-            const histArr = [];
-            allEnrolls.forEach(enroll => {
-              const pid = enroll.program_id;
-              if (!byProg[pid]) byProg[pid] = {};
-              (enroll.student_progress || []).forEach(sp => {
-                const unitNum = sp.units?.unit_number;
-                if (unitNum != null) {
-                  byProg[pid][unitNum] = { score: sp.score || 0, passed: sp.completed === true };
-                  if ((sp.test_done || 0) > 0) {
-                    histArr.push({ program_id: pid, unit: unitNum, exam_score: sp.score || 0, passed: sp.completed === true });
-                  }
-                }
-              });
-            });
-            setRealProgress(byProg);
-            setProgressHistory(histArr);
-          }
-          // Load payment history
-          const { data: pays } = await supabase
-            .from("payments")
-            .select("amount, created_at, method, status, programs(name)")
-            .eq("student_id", student.id)
-            .order("created_at", { ascending: false })
-            .limit(10);
-          if (pays?.length) setRealPayments(pays);
-
-          // Load certificates
-          const { data: certs } = await supabase
-            .from('certificates')
-            .select('id,program_id,level,issued_at')
-            .eq('student_id', student.id)
-            .order('issued_at', { ascending: false });
-          setMyCertificates(certs || []);
-        });
-    });
+    loadPortalData();
+    return () => authSub?.unsubscribe();
   }, [navigate]);
   const [showEnrollSuccess, setEnrollSuccess] = useState(null);
   const [showNotifs, setShowNotifs] = useState(false);
@@ -817,7 +869,60 @@ export default function PortalEstudiante(){
     setTimeout(()=>setEnrollSuccess(null),4000);
   }
 
-  return(
+  // ── Access gate render (IMP-01) ───────────────────────────────
+  if (loadingAccess) return (
+    <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"var(--bg-page)", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+      <div style={{ textAlign:"center" }}>
+        <div style={{ width:36,height:36,border:`3px solid ${P}`,borderTopColor:"transparent",borderRadius:"50%",animation:"spin 0.8s linear infinite",margin:"0 auto 16px" }}/>
+        <div style={{ fontSize:13,color:"var(--text-secondary)" }}>Cargando tu portal...</div>
+      </div>
+    </div>
+  );
+
+  if (accessError) return (
+    <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"var(--bg-page)", padding:24, fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+      <div style={{ textAlign:"center", maxWidth:400 }}>
+        <div style={{ fontSize:40, marginBottom:12 }}>⚠</div>
+        <div style={{ fontSize:18, fontWeight:700, color:"var(--text-primary)", marginBottom:8 }}>Error al cargar el portal</div>
+        <div style={{ fontSize:13, color:"#dc2626", marginBottom:20 }}>{accessError}</div>
+        <button onClick={loadPortalData} style={{ padding:"10px 24px", background:P, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Reintentar</button>
+      </div>
+    </div>
+  );
+
+  if (accessStatus === "no_student") return (
+    <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"var(--bg-page)", padding:24, fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+      <div style={{ textAlign:"center", maxWidth:400 }}>
+        <div style={{ fontSize:48, marginBottom:12 }}>📋</div>
+        <div style={{ fontSize:18, fontWeight:700, color:"var(--text-primary)", marginBottom:8 }}>Cuenta no vinculada</div>
+        <div style={{ fontSize:13, color:"var(--text-secondary)", marginBottom:20 }}>Tu cuenta aún no tiene un perfil de estudiante. Contactá al equipo de World Connect Academy.</div>
+        <a href="mailto:info@worldconnectacademy.com" style={{ padding:"10px 24px", background:P, color:"#fff", borderRadius:10, fontSize:13, fontWeight:700, textDecoration:"none" }}>Contactar soporte</a>
+      </div>
+    </div>
+  );
+
+  if (accessStatus === "no_enrollment") return (
+    <div style={{ minHeight:"100vh", display:"flex", alignItems:"center", justifyContent:"center", background:"var(--bg-page)", padding:24, fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+      <div style={{ textAlign:"center", maxWidth:400 }}>
+        <div style={{ fontSize:48, marginBottom:12 }}>📚</div>
+        <div style={{ fontSize:18, fontWeight:700, color:"var(--text-primary)", marginBottom:8 }}>No tienes una matrícula activa todavía</div>
+        <div style={{ fontSize:13, color:"var(--text-secondary)", marginBottom:24 }}>Inscribite en un programa para comenzar tu experiencia académica en World Connect Academy.</div>
+        <a href="/registro" style={{ padding:"12px 28px", background:P, color:"#fff", borderRadius:10, fontSize:14, fontWeight:700, textDecoration:"none", display:"inline-block" }}>Ir a inscripción →</a>
+      </div>
+    </div>
+  );
+
+  if (accessStatus === "pending_payment" || accessStatus === "payment_rejected") return (
+    <PaymentPendingGate
+      accessStatus={accessStatus}
+      pendingEnrollments={pendingEnrollments}
+      relevantPayments={relevantPayments}
+      onRefresh={loadPortalData}
+    />
+  );
+
+  // accessStatus === "active" — render full portal
+    return(
     <div style={{display:"flex",flexDirection:isMobile?"column":"row",minHeight:"100vh",background:"var(--bg-page)",fontFamily:"'DM Sans','Segoe UI',sans-serif"}}>
       <style dangerouslySetInnerHTML={{__html:"@media(max-width:400px){.wca-sidebar{display:none!important}.wca-mobile-only{display:flex!important}}@media(min-width:401px){.wca-mobile-only{display:none!important}}"}}/>
 
@@ -1394,7 +1499,7 @@ export default function PortalEstudiante(){
                     </div>
                     <button onClick={() => {
                       navigator.clipboard?.writeText(gami.referralCode).catch(()=>{});
-                      const msg = `Estudiá inglés y conviértite en VA bilingüe con WCA Academy 🎓\n\nUsá mi código ${gami.referralCode} al inscribirte en wcahub.vercel.app/registro`;
+                      const msg = `Estudiá inglés y conviértite en VA bilingüe con World Connect Academy 🎓\n\nUsá mi código ${gami.referralCode} al inscribirte en wcahub.vercel.app/registro`;
                       if(navigator.share) navigator.share({text:msg}).catch(()=>{});
                     }} style={{padding:"10px 14px",background:P,color:"#fff",border:"none",borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",flexShrink:0}}>
                       Compartir

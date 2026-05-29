@@ -16,6 +16,19 @@ const ACTIVITY_LABELS= { video:"Video", lesson:"Lectura", quiz:"Quiz", matching:
 const ACTIVITY_XP    = { video:20, lesson:15, quiz:50, matching:25, fill_blank:25, roleplay:35, typing:20 };
 
 export function LMSPlayer({ programId, profileId, enrollment, isMobile }) {
+  // ── IMP-01: Access gate — never show LMS for non-active enrollments ──
+  if (enrollment?.status && enrollment.status !== "active") {
+    return (
+      <div style={{ display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", height:"60vh", gap:12, padding:24, textAlign:"center", fontFamily:"'DM Sans','Segoe UI',sans-serif" }}>
+        <div style={{ fontSize:36 }}>🔒</div>
+        <div style={{ fontSize:16, fontWeight:700, color:"var(--text-primary)" }}>Acceso académico no activo</div>
+        <div style={{ fontSize:13, color:"var(--text-secondary)", maxWidth:300 }}>
+          Tu acceso al contenido académico se desbloqueará cuando se confirme tu pago.
+        </div>
+      </div>
+    );
+  }
+
   const [units,      setUnits]      = useState([]);
   const [activities, setActivities] = useState([]);
   const [progress,   setProgress]   = useState({});    // { activity_id: {completed,score,xp} }
