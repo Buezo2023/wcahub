@@ -73,11 +73,16 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile, studentL
         .order("order_num");
       setActivities(actData || []);
 
-      // Load student progress
-      const { data: progData } = await supabase
-        .from("user_activity_progress")
-        .select("activity_id,completed,score,xp_earned")
-        .eq("profile_id", profileId);
+      // Load student progress — only for activities in this level (not full history)
+      // E2 fix: filter by activity IDs in current level to avoid loading entire history
+      const activityIds = (actData || []).map(a => a.id);
+      const { data: progData } = activityIds.length
+        ? await supabase
+            .from("user_activity_progress")
+            .select("activity_id,completed,score,xp_earned")
+            .eq("profile_id", profileId)
+            .in("activity_id", activityIds)
+        : { data: [] };
       const progMap = {};
       let xp = 0;
       (progData || []).forEach(p => { progMap[p.activity_id] = p; xp += (p.xp_earned || 0); });
@@ -89,7 +94,10 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile, studentL
     } finally { setLoading(false); }
 
     // Sync any offline progress saved in localStorage
-    const pending = JSON.parse(localStorage.getItem("wca_pending_progress") || "[]");
+    // Guard: localStorage may not be available in all browsers/contexts
+    let pending = [];
+    try { pending = JSON.parse(localStorage.getItem("wca_pending_progress") || "[]"); }
+    catch(e) { console.warn("[LMS] localStorage not available:", e.message); }
     if (pending.length) {
       const synced = [];
       for (const p of pending) {

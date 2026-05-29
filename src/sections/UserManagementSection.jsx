@@ -53,7 +53,7 @@ export function UserManagementSection({ showToast }) {
           )
         `)
         .order("created_at", { ascending: false })
-        .limit(500);
+        .limit(200); // TODO IMP-06: implement real pagination (offset/cursor) for 1500+ users
 
       if (error) throw error;
 

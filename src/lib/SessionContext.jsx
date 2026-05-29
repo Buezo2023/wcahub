@@ -24,7 +24,7 @@ export function SessionProvider({ children }) {
       if (s?.user?.id) {
         try {
           const { data } = await supabase.from("profiles")
-            .select("id, full_name, email, role, active, total_xp, xp_level, onboarding_done")
+            .select("id, full_name, email, role, active, onboarding_done")
             .eq("id", s.user.id)
             .maybeSingle();
           setProfile(data);
@@ -45,7 +45,7 @@ export function SessionProvider({ children }) {
       if (s?.user?.id && event !== "SIGNED_OUT") {
         try {
           const { data } = await supabase.from("profiles")
-            .select("id, full_name, email, role, active, total_xp, xp_level, onboarding_done")
+            .select("id, full_name, email, role, active, onboarding_done")
             .eq("id", s.user.id)
             .maybeSingle();
           setProfile(data);
@@ -70,7 +70,7 @@ export function SessionProvider({ children }) {
       const { data: { session: s } } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
       if (!s?.user?.id) return;
       const { data } = await supabase.from("profiles")
-        .select("id, full_name, email, role, active, total_xp, xp_level, onboarding_done")
+        .select("id, full_name, email, role, active, onboarding_done")
         .eq("id", s.user.id).maybeSingle().catch(() => ({ data: null }));
       if (data) setProfile(data);
     }
@@ -96,7 +96,7 @@ export function SessionProvider({ children }) {
   const refreshProfile = async () => {
     if (!session?.user?.id) return;
     const { data } = await supabase.from("profiles")
-      .select("id, full_name, email, role, active, total_xp, xp_level, onboarding_done")
+      .select("id, full_name, email, role, active, onboarding_done")
       .eq("id", session.user.id)
       .maybeSingle();
     setProfile(data);

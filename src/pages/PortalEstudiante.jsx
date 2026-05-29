@@ -691,10 +691,15 @@ export default function PortalEstudiante(){
       if (!session) { navigate("/", { replace: true }); return; }
       const uid = session.user.id;
 
-      // Load profile
-      const { data: profile } = await supabase.from("profiles")
-        .select("full_name, email, avatar_url, phone, preferred_name, timezone")
-        .eq("id", uid).maybeSingle();
+      // E4: Parallelize profile + student queries (both only need uid)
+      const [{ data: profile }, { data: student, error: studentErr }] = await Promise.all([
+        supabase.from("profiles")
+          .select("full_name, email, avatar_url, phone, preferred_name, timezone")
+          .eq("id", uid).maybeSingle(),
+        supabase.from("students")
+          .select("id, level, student_code, scholarship")
+          .eq("profile_id", uid).maybeSingle(),
+      ]);
       if (profile) {
         setUser({
           name:   profile.preferred_name || profile.full_name?.split(" ")[0] || profile.email?.split("@")[0] || "Estudiante",
@@ -710,11 +715,6 @@ export default function PortalEstudiante(){
           timezone:       profile.timezone || detectTimezone(),
         });
       }
-
-      // Load student row
-      const { data: student, error: studentErr } = await supabase.from("students")
-        .select("id, level, student_code, scholarship")
-        .eq("profile_id", uid).maybeSingle();
 
       if (studentErr) throw new Error("Error cargando datos de estudiante: " + studentErr.message);
       if (!student) { setAccessStatus("no_student"); return; }
