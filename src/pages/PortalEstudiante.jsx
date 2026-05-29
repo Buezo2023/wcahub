@@ -736,12 +736,17 @@ export default function PortalEstudiante(){
       if (activeEnrolls.length > 0) {
         status = "active";
       } else {
-        const hasRejected = payments.some(p => p.status === "failed");
-        const hasPending  = pendingEnrolls.length > 0 || payments.some(p => p.status === "pending");
-        if (hasRejected && !hasPending) status = "payment_rejected";
-        else if (hasPending || hasRejected) status = "pending_payment";
-        else if ((allEnrollments || []).length === 0 && payments.length === 0) status = "no_enrollment";
-        else status = "pending_payment"; // has enrollments/payments but none active
+        // payments are already ordered by created_at desc from the query
+        const latestRelevantPayment = payments.find(p => p.status === "pending" || p.status === "failed");
+        if (latestRelevantPayment?.status === "failed") {
+          status = "payment_rejected";
+        } else if (latestRelevantPayment?.status === "pending" || pendingEnrolls.length > 0) {
+          status = "pending_payment";
+        } else if ((allEnrollments || []).length === 0 && payments.length === 0) {
+          status = "no_enrollment";
+        } else {
+          status = "pending_payment"; // has enrollments/payments but none active
+        }
       }
 
       setAccessStatus(status);
@@ -764,10 +769,16 @@ export default function PortalEstudiante(){
             nextClass: sched || "Consulta con tu coordinadora",
             teacher: teacherName || "Docente asignado",
             level: grp?.level || student.level || "A1",
+            status: e.status, // IMP-01.1: LMSPlayer and other components can check active
           };
         });
         setRealEnrollments(patch);
         setEnrolled(activeEnrolls.map(e => e.program_id));
+        // IMP-01.1: auto-set activeProg if null or not in active enrollments
+        setActiveProg(prev => {
+          const ids = activeEnrolls.map(e => e.program_id);
+          return (!prev || !ids.includes(prev)) ? (ids[0] || null) : prev;
+        });
 
         // Load student_progress via enrollment join
         const { data: progressEnrolls } = await supabase.from("enrollments")
