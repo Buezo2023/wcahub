@@ -125,6 +125,7 @@ const NAV=[
   {id:"pagos",   icon:"ti-credit-card",     label:"Pagos"},
   {id:"reporte", icon:"ti-file-analytics",   label:"Mi reporte"},
   {id:"perfil",  icon:"ti-user-circle",     label:"Mi perfil"},
+  {id:"soporte", icon:"ti-headset",          label:"Soporte"},
 ];
 
 // ─── UI helpers ───────────────────────────────────────────────────
@@ -1827,6 +1828,17 @@ export default function PortalEstudiante(){
               <p style={{fontSize:12,color:"var(--text-secondary)",marginTop:8}}>
                 El reporte incluye gráfico de habilidades, historial de exámenes, certificados y métricas de rendimiento.
               </p>
+            </div>
+          )}
+
+          {view==="soporte"&&(
+            <div style={{padding:24,maxWidth:560}}>
+              <div style={{fontSize:18,fontWeight:800,color:P,marginBottom:8}}>Solicitar soporte</div>
+              <div style={{fontSize:13,color:"var(--text-secondary)",lineHeight:1.7,marginBottom:20}}>¿Tenés algún problema con el acceso, el LMS, tus pagos o tus clases? El equipo de World Connect Academy está para ayudarte.</div>
+              <a href="mailto:soporte@worldconnectacademy.com" style={{display:"inline-flex",alignItems:"center",gap:8,padding:"12px 22px",background:P,color:"#fff",borderRadius:10,fontWeight:700,fontSize:14,textDecoration:"none"}}>
+                📧 Enviar email de soporte
+              </a>
+              <div style={{fontSize:12,color:"var(--text-secondary)",marginTop:12}}>También podés escribirnos por WhatsApp o contactar a tu coordinadora académica.</div>
             </div>
           )}
 
