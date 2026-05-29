@@ -42,9 +42,9 @@ export function SoporteSection({ showToast }) {
       const { data, error: qErr } = await supabase
         .from("support_tickets")
         .select(`id, subject, category, priority, status, created_at, updated_at, closed_at, source,
-          profile:profiles!profile_id(full_name, email),
-          student:students(student_code, level),
-          assignee:profiles!assigned_to(full_name)`)
+          profile:profiles!support_tickets_profile_id_fkey(full_name, email),
+          student:students!support_tickets_student_id_fkey(student_code, level),
+          assignee:profiles!support_tickets_assigned_to_fkey(full_name)`)
         .order("created_at", { ascending: false })
         .limit(100);
 
@@ -65,7 +65,7 @@ export function SoporteSection({ showToast }) {
   async function loadMessages(ticketId) {
     setMsgLoading(true);
     const { data } = await supabase.from("support_ticket_messages")
-      .select("id, message, internal, created_at, sender:profiles!sender_profile_id(full_name, email)")
+      .select("id, message, internal, created_at, sender:profiles!support_ticket_messages_sender_profile_id_fkey(full_name, email)")
       .eq("ticket_id", ticketId).order("created_at");
     setMessages(data || []);
     setMsgLoading(false);
