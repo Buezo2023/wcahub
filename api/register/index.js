@@ -158,13 +158,13 @@ export default async function handler(req, res) {
       }
     }
 
-    // ── Upsert profile ─────────────────────────────────────────────
+    // ── Upsert profile — only columns guaranteed in base schema ────
+    // timezone and terms_accepted_at are NOT in the base profiles schema.
+    // They are preserved in audit_log metadata until a migration adds them.
     await admin.from('profiles').upsert({
       id: userId, email: email.toLowerCase(), full_name: name,
       phone: phone || null, country: country || null,
-      timezone: timezone || 'America/Tegucigalpa',
       role: 'estudiante', active: true,
-      terms_accepted_at: termsAcceptedAt,
     }, { onConflict: 'id' });
 
     // ── Create student row if not exists ───────────────────────────
@@ -222,7 +222,14 @@ export default async function handler(req, res) {
     await admin.from('audit_log').insert({
       actor_id: userId, action: 'self_registered',
       entity: 'enrollment', entity_id: enrollment.id,
-      metadata: { programId, level, groupId, paymentMethod, transferType: transferType || null, country, price: priceDollars },
+      // timezone and termsAcceptedAt stored here until schema migration adds them to profiles
+      metadata: {
+        programId, level, groupId, paymentMethod,
+        transferType: transferType || null, country,
+        price: priceDollars,
+        timezone: timezone || null,
+        termsAcceptedAt: termsAcceptedAt || null,
+      },
     }).catch(() => {});
 
     // ══════════════════════════════════════════════════════════════
