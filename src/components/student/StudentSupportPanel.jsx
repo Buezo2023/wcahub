@@ -95,7 +95,7 @@ export function StudentSupportPanel({ profileId, studentId, enrollments = [], pa
     try {
       const { data, error: mErr } = await supabase
         .from("support_ticket_messages")
-        .select("id, message, internal, created_at, sender:profiles!support_ticket_messages_sender_profile_id_fkey(full_name)")
+        .select("id, sender_profile_id, message, internal, created_at, sender:profiles!support_ticket_messages_sender_profile_id_fkey(full_name)")
         .eq("ticket_id", ticketId)
         .eq("internal", false)    // student never sees internal notes
         .order("created_at");
@@ -118,13 +118,7 @@ export function StudentSupportPanel({ profileId, studentId, enrollments = [], pa
         internal:          false,   // student can NEVER set internal=true
       });
       if (mErr) throw mErr;
-      // If ticket was waiting for student, move to en_revision
-      if (detail.status === "esperando_estudiante") {
-        await supabase.from("support_tickets")
-          .update({ status: "en_revision" }).eq("id", detail.id);
-        setDetail(d => ({ ...d, status: "en_revision" }));
-        setTickets(ts => ts.map(t => t.id === detail.id ? { ...t, status: "en_revision" } : t));
-      }
+      // Status changes are staff-only — student never updates support_tickets directly
       setReply("");
       await loadMessages(detail.id);
       showToast?.("✓ Respuesta enviada");
