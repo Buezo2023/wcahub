@@ -1366,10 +1366,10 @@ export default function SuperAdmin() {
           {view==="ventas" && subView==="pipeline"&& <Suspense fallback={<SectionFallback/>}><VentasSection showToast={showToast} externalTab="pipeline" /></Suspense>}
           {view==="ventas" && subView==="b2b"     && <Suspense fallback={<SectionFallback/>}><B2BSection    showToast={showToast} /></Suspense>}
 
-          {/* ══ CONTABILIDAD ══════════════════════════════════════════ */}
+          {/* ══ COBROS & PAGOS ══════════════════════════════════════════ */}
           {view==="contab"   && subView==="payments"  && <Suspense fallback={<SectionFallback/>}><PagosSection     showToast={showToast} /></Suspense>}
           {view==="contab"   && subView==="vencidos"  && <Suspense fallback={<SectionFallback/>}><VencidosSection  showToast={showToast} /></Suspense>}
-          {view==="contab"   && subView==="register"  && <Suspense fallback={<SectionFallback/>}><PagosSection     showToast={showToast} initialTab="register" /></Suspense>}
+          
           {view==="contab"   && subView==="recibos"   && <Suspense fallback={<SectionFallback/>}><RecibosSection   showToast={showToast} /></Suspense>}
 
           {/* ══ COMUNICACIONES ════════════════════════════════════════ */}
