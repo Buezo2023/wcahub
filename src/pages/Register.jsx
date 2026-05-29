@@ -103,9 +103,8 @@ export default function Register() {
   // Load programs dynamically from Supabase
   useEffect(() => {
     supabase.from("programs")
-      .select("id, name, description, price_monthly, price_quarterly, active, published, prereq_program_id")
+      .select("id, name, description, price_monthly, price_quarterly, active, requires")
       .eq("active", true)
-      .eq("published", true)
       .order("id")
       .then(({ data: progs, error }) => {
         if (error || !progs?.length) {
@@ -136,12 +135,12 @@ export default function Register() {
     color:    ui.color,
     tag:      ui.tag,
     // Real price from DB — never hardcoded
-    price:    _progBase.prereq_program_id
+    price:    _progBase.requires
                 ? (_progBase.price_quarterly || _progBase.price_monthly || null)
                 : (_progBase.price_monthly || null),
-    interval: _progBase.prereq_program_id ? "3 meses" : "mes",
+    interval: _progBase.requires ? "3 meses" : "mes",
     desc:     _progBase.description || "",
-    prereq:   _progBase.prereq_program_id,
+    prereq:   _progBase.requires,
   } : null;
   const isIngles = data.programId === "en";
   const TOTAL_STEPS = 5;
@@ -195,8 +194,8 @@ export default function Register() {
             </div>
           ) : programs.map(p => {
             const ui = PROG_UI[p.id] || PROG_UI.en;
-            const realPrice = p.prereq_program_id ? (p.price_quarterly || p.price_monthly) : p.price_monthly;
-            const pDisplay = {...p, icon:ui.icon, color:ui.color, tag:ui.tag, price:realPrice, interval:p.prereq_program_id?"3 meses":"mes", desc:p.description||""};
+            const realPrice = p.requires ? (p.price_quarterly || p.price_monthly) : p.price_monthly;
+            const pDisplay = {...p, icon:ui.icon, color:ui.color, tag:ui.tag, price:realPrice, interval:p.requires?"3 meses":"mes", desc:p.description||""};
             return (
             <button key={pDisplay.id} onClick={() => { setData(d => ({...d, programId:pDisplay.id, level:pDisplay.id==="en"?null:"A1"})); setStep(2); }}
               style={{ display:"flex", alignItems:"flex-start", gap:16, padding:"16px 20px",

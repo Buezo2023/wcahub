@@ -25,44 +25,15 @@ export default async function handler(req, res) {
 }
 
 // ── Checkout session ──────────────────────────────────────────────
+// Ajuste 4: legacy direct checkout disabled.
+// All new checkouts must go through /api/register which creates enrollment+payment
+// pending rows first and passes them in Stripe metadata.
+// PROGRAM_PRICES hardcoded table is intentionally not used as source of truth.
 async function handleCheckout(req, res) {
-  try {
-    const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket?.remoteAddress || 'unknown';
-    await checkRateLimit(`stripe_checkout:${ip}`, 10, 60000);
-  } catch(e) { return err(res, e); }
-
-  try {
-    const { profile } = await requireAuth(req);
-    const { programId, studentEmail, studentName, successUrl, cancelUrl } = req.body;
-
-    const price = PROGRAM_PRICES[programId];
-    if (!price) return err(res, { status: 400, message: 'Programa inválido' });
-
-    const key = process.env.STRIPE_SECRET_KEY;
-    if (!key) return err(res, { status: 503, message: 'Stripe no configurado' });
-
-    const stripe = (await import('stripe')).default(key);
-
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode:                 'subscription',
-      customer_email:       studentEmail || profile.email,
-      line_items: [{
-        price_data: {
-          currency:     'usd',
-          unit_amount:  price.amount,
-          recurring:    { interval: price.interval },
-          product_data: { name: price.name },
-        },
-        quantity: 1,
-      }],
-      success_url: successUrl || `${process.env.SITE_URL || 'https://wcahub.vercel.app'}/portal?payment=success`,
-      cancel_url:  cancelUrl  || `${process.env.SITE_URL || 'https://wcahub.vercel.app'}/portal?payment=cancel`,
-      metadata: { programId, profileId: profile.id, studentName: studentName || profile.full_name },
-    });
-
-    return ok(res, { sessionId: session.id, url: session.url });
-  } catch(e) { return err(res, e); }
+  return res.status(410).json({
+    error: 'Checkout directo deshabilitado. Usá /api/register para crear matrícula y pago pendiente.',
+    code: 'LEGACY_CHECKOUT_DISABLED',
+  });
 }
 
 // ── Webhook handler ───────────────────────────────────────────────
@@ -235,15 +206,27 @@ async function handleStripePayment({ profileId, programId, enrollmentId, payment
       return;
     }
 
-    // Validate amount matches price_locked (within 1 cent tolerance for FX rounding)
+    // Ajuste 3: validate amount against payment.amount and enrollment.price_locked.
+    // Mismatch > $0.01 → abort: do NOT confirm payment, do NOT activate enrollment.
+    if (paymentId) {
+      const { data: existingPay } = await admin.from('payments').select('amount').eq('id', paymentId).maybeSingle();
+      if (existingPay?.amount && Math.abs(existingPay.amount - amount) > 0.01) {
+        console.error('[handleStripePayment] amount mismatch vs payment row', { paymentId, expected: existingPay.amount, received: amount });
+        await admin.from('audit_log').insert({
+          action: 'stripe_amount_mismatch', entity: 'enrollment', entity_id: enrollment.id,
+          metadata: { source: 'payment_row', expected: existingPay.amount, received: amount, stripe_id: stripeId, payment_id: paymentId },
+        }).catch(() => {});
+        return; // abort — do NOT activate enrollment
+      }
+    }
     const { data: enrollDetails } = await admin.from('enrollments').select('price_locked').eq('id', enrollment.id).maybeSingle();
     if (enrollDetails?.price_locked && Math.abs(enrollDetails.price_locked - amount) > 0.01) {
-      console.error('[handleStripePayment] amount mismatch', { expected: enrollDetails.price_locked, received: amount });
+      console.error('[handleStripePayment] amount mismatch vs price_locked', { expected: enrollDetails.price_locked, received: amount });
       await admin.from('audit_log').insert({
         action: 'stripe_amount_mismatch', entity: 'enrollment', entity_id: enrollment.id,
-        metadata: { expected: enrollDetails.price_locked, received: amount, stripe_id: stripeId },
+        metadata: { source: 'price_locked', expected: enrollDetails.price_locked, received: amount, stripe_id: stripeId },
       }).catch(() => {});
-      // Still proceed but log prominently — Stripe is authoritative for actual charge
+      return; // abort — do NOT activate enrollment
     }
 
     // Update existing pending payment if paymentId provided, else create new

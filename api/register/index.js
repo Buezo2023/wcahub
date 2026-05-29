@@ -106,13 +106,13 @@ export default async function handler(req, res) {
 
     // ── Validate program from DB — never trust frontend price ─────
     const { data: program, error: progErr } = await admin.from('programs')
-      .select('id, name, description, price_monthly, price_quarterly, active, prereq_program_id')
+      .select('id, name, description, price_monthly, price_quarterly, active, requires')
       .eq('id', programId).eq('active', true).maybeSingle();
     if (progErr)  return err(res, { status: 500, message: `Error al verificar programa: ${progErr.message}` });
     if (!program) return err(res, { status: 400, message: `Programa "${programId}" no encontrado o inactivo` });
 
     // ── Real price from DB ─────────────────────────────────────────
-    const isSpecialization = !!program.prereq_program_id;
+    const isSpecialization = !!(program.requires);  // requires = prereq program_id in schema
     const priceRaw   = isSpecialization ? (program.price_quarterly || program.price_monthly) : program.price_monthly;
     const priceDollars = Number(priceRaw);
     if (!priceDollars || priceDollars <= 0)
@@ -300,7 +300,12 @@ export default async function handler(req, res) {
         reference_code: refCode,
         bank:           transferType === 'usa' ? 'USA' : 'Honduras',
       }).select('id').maybeSingle();
-      if (payErr) console.error('[register] payment insert failed:', payErr.message);
+      // Ajuste 2: payment insert is mandatory — no paymentId null, no email without payment row
+      if (payErr || !payment?.id) {
+        const detail = payErr?.message || 'resultado vacío';
+        console.error('[register] payment insert failed:', { detail, studentId: student.id, enrollmentId: enrollment.id });
+        return err(res, { status: 500, message: `No se pudo crear el pago pendiente: ${detail}` });
+      }
 
       try {
         const banksHtml = bankAccounts.map(b => `
