@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
 import { supabase } from "../lib/supabase.js";
@@ -669,6 +669,10 @@ export default function PortalEstudiante(){
   const [studentId,  setStudentId]  = useState(null);
   const [confetti,    setConfetti]   = useState(false);
   const [floatingXP,  setFloatingXP] = useState(null); // {amount, x, y}
+  // Pausa de matrícula (within pagos view) — moved from IIFE to component level (hooks rules)
+  const [pauseOpen,   setPauseOpen]   = useState(false);
+  const [pauseSaving, setPauseSaving] = useState(false);
+  const [pauseDone,   setPauseDone]   = useState(false);
   const [showReport,  setShowReport]  = useState(false);
   // ── Access gate states (IMP-01) ─────────────────────────────
   const [loadingAccess,      setLoadingAccess]      = useState(true);
@@ -1716,11 +1720,7 @@ export default function PortalEstudiante(){
           )}
 
           {/* ── PAUSA DE MATRÍCULA (dentro de pagos) ── */}
-          {view==="pagos" && (() => {
-            const [pauseOpen, setPauseOpen] = React.useState(false);
-            const [pauseSaving, setPauseSaving] = React.useState(false);
-            const [pauseDone, setPauseDone] = React.useState(false);
-            return pauseOpen ? (
+          {view==="pagos" && (pauseOpen ? (
               <div style={{padding:"0 24px 24px",maxWidth:650}}>
                 <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:14,padding:24}}>
                   <div style={{fontSize:15,fontWeight:700,color:"var(--text-primary)",marginBottom:8}}>⏸ Pausar matrícula</div>
@@ -1771,8 +1771,7 @@ export default function PortalEstudiante(){
                   ⏸ Necesito pausar mi matrícula temporalmente
                 </button>
               </div>
-            );
-          })()}
+          ))}
 
           {/* ── PERFIL ── */}
           {view==="reporte"&&(
