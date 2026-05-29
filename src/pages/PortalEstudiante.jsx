@@ -773,6 +773,7 @@ export default function PortalEstudiante(){
           const link  = grp?.teams_link || null;
           const sched = grp ? `${grp.days || "L·M·V"} · ${formatSchedule(grp, studentTimezone)}` : null;
           patch[e.program_id] = {
+            enrollmentId: e.id,
             unit: e.current_unit || 1,
             examScore: e.exam_score || 0,
             teamsLink: link || "#",
