@@ -859,7 +859,7 @@ export default function PortalEstudiante(){
   const { notifications, unread, markRead, markAllRead } = useNotifications();
   const [realEnrollments,  setRealEnrollments] = useState({});
   const [realPayments,     setRealPayments]    = useState([]);
-  const [uploadState,      setUploadState]     = useState({ loading:false, done:false, error:null });
+  // uploadState removed — PE-C03 eliminated the generic upload block that used it
   const [realProgress,     setRealProgress]     = useState({}); // {programId: {unit: {score, passed}}}
   const [profileForm,      setProfileForm]     = useState({ full_name:"", phone:"", preferred_name:"", timezone:"" });
   const [profileSaving,    setProfileSaving]   = useState(false);
@@ -1058,7 +1058,7 @@ export default function PortalEstudiante(){
           {!gami.loading && (
             <div style={{marginBottom:10,background:"rgba(255,255,255,.07)",borderRadius:10,padding:"8px 10px"}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:5}}>
-                <span style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>⚡ {gami.totalXp.toLocaleString()} XP</span>
+                <span style={{fontSize:11,color:"rgba(255,255,255,.5)"}}>⚡ {(gami.totalXp??0).toLocaleString()} XP</span>
                 <span style={{fontSize:13,color:streakColor(gami.streak),fontWeight:700}}>
                   🔥 {gami.streak}d
                 </span>
@@ -1937,7 +1937,7 @@ export default function PortalEstudiante(){
                 <div style={{background:`linear-gradient(135deg,#0f3d4d,#155266)`,padding:"24px 28px",color:"#fff"}}>
                   <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
                     <svg viewBox="0 0 32 32" style={{width:36,height:36}}><rect width="32" height="32" rx="8" fill="#ffbb23"/><text x="16" y="23" fontFamily="sans-serif" fontSize="18" fontWeight="800" fill="#0f3d4d" textAnchor="middle">W</text></svg>
-                    <div><div style={{fontSize:14,fontWeight:800}}>WCA <span style={{color:"#ffbb23"}}>Academy</span></div><div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>Reporte del estudiante</div></div>
+                    <div><div style={{fontSize:14,fontWeight:800}}>World <span style={{color:"#ffbb23"}}>Connect Academy</span></div><div style={{fontSize:11,color:"rgba(255,255,255,.5)",letterSpacing:1,textTransform:"uppercase"}}>Reporte del estudiante</div></div>
                   </div>
                   <div style={{fontSize:22,fontWeight:800,letterSpacing:-0.3}}>{user?.name||"Estudiante"}</div>
                   <div style={{display:"flex",gap:8,marginTop:8,flexWrap:"wrap"}}>
@@ -2048,12 +2048,11 @@ export default function PortalEstudiante(){
                     try{
                       const {data:{session}} = await supabase.auth.getSession();
                       if(!session) return;
-                      await supabase.from("profiles").update({
-                        full_name:      profileForm.full_name||undefined,
-                        phone:          profileForm.phone||undefined,
-                        preferred_name: profileForm.preferred_name||undefined,
-                        timezone:       profileForm.timezone||undefined,
-                      }).eq("id",session.user.id);
+                      // Only update schema-safe columns (preferred_name and timezone not in base schema)
+                      const profileUpdate = {};
+                      if (profileForm.full_name) profileUpdate.full_name = profileForm.full_name;
+                      if (profileForm.phone !== undefined) profileUpdate.phone = profileForm.phone || null;
+                      await supabase.from("profiles").update(profileUpdate).eq("id",session.user.id);
                       setUser(u=>({...u,name:profileForm.preferred_name||profileForm.full_name?.split(" ")[0]||u.name}));
                       setProfileSaved(true);
                       setTimeout(()=>setProfileSaved(false),4000);
