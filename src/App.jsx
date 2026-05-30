@@ -31,6 +31,8 @@ const ForgotAccess      = lazy(() => import('./pages/ForgotAccess.jsx'));
 // ── Role → portal map ────────────────────────────────────────────
 const ROLE_PORTALS = {
   estudiante:    '/portal',
+  admin:         '/admin',
+  directivo:     '/bi',
   docente:       '/docente',
   admin:         '/admin',
   super_admin:   '/super',

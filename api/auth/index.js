@@ -447,6 +447,7 @@ async function handleResendSupabase(req, actor) {
   const PORTAL_MAP_LOCAL = {
     docente: '/docente', coordinadora: '/coordinacion', admin: '/admin',
     cobros: '/cobros', asesor_ventas: '/crm', super_admin: '/super', estudiante: '/portal',
+    directivo: '/bi', // ROLES-B01: directivo portal path
   };
   const portalPath = PORTAL_MAP_LOCAL[profile.role] || '/portal';
 
@@ -872,7 +873,7 @@ export default async function handler(req, res) {
         admin.from('payments').select('amount, status, method, confirmed_at, reference_code').eq('student_id',
           (await admin.from('students').select('id').eq('profile_id', uid).maybeSingle()).data?.id || ''
         ),
-        admin.from('progress').select('*').eq('profile_id', uid),
+        admin.from('student_progress').select('unit_id, score, completed, completed_at, updated_at').eq('enrollment_id', (await admin.from('enrollments').select('id').eq('student_id', (await admin.from('students').select('id').eq('profile_id', uid).maybeSingle()).data?.id || '').limit(1).maybeSingle()).data?.id || ''), // ROLES-C02: was 'progress' — correct table is student_progress
       ]);
 
       const exportData = {
@@ -902,25 +903,18 @@ export default async function handler(req, res) {
 
       const uid = actor.id;
 
-      // 1. Cancel Stripe subscription if active
-      try {
-        const { data: student } = await admin.from('students').select('id, stripe_subscription_id')
-          .eq('profile_id', uid).maybeSingle();
-        if (student?.stripe_subscription_id) {
-          const stripe = (await import('stripe')).default(process.env.STRIPE_SECRET_KEY);
-          await stripe.subscriptions.cancel(student.stripe_subscription_id).catch(() => {});
-        }
-      } catch (_) {}
+      // 1. Stripe subscription cancellation — ROLES-C03: stripe_subscription_id not in students schema
+      // Skipping — Stripe integration pending (STRIPE-01)
 
       // 2. Soft delete — anonymize personal data, keep financial records for compliance
       const anonymized = `deleted_${Date.now()}`;
+      // ROLES-C01: only update columns that exist in profiles schema
       await admin.from('profiles').update({
         full_name: 'Cuenta eliminada',
         email: `${anonymized}@deleted.wca`,
         phone: null,
-        preferred_name: null,
         active: false,
-        deleted_at: new Date().toISOString(),
+        // preferred_name and deleted_at are not in schema — excluded
       }).eq('id', uid);
 
       // 3. Deactivate enrollments

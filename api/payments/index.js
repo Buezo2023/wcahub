@@ -27,7 +27,7 @@ export default async function handler(req, res) {
 async function handleRecord(req, res) {
   try {
     const { profile: actor } = await requireAuth(req);
-    requireRole(actor, 'cobros', 'admin', 'super_admin');
+    requireRole(actor, 'cobros', 'admin', 'super_admin', 'coordinadora'); // ROLES-M02
 
     const {
       studentId, enrollmentId, amount, method = 'transfer',
