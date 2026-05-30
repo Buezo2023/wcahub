@@ -842,19 +842,13 @@ export default function PortalEstudiante(){
   }
 
   useEffect(() => {
-    // Auth state listener — handles token expiry
-    const { data: { subscription: authSub } } = supabase.auth.onAuthStateChange((event, s) => {
-      if (event === "SIGNED_OUT" || (!s && event !== "INITIAL_SESSION")) {
-        navigate("/", { replace: true });
-      }
-    });
+    // PE-D02: auth listener removed — SessionContext/PrivateRoute handle session globally.
     loadPortalData();
     // PE-C04: load uid for gamification once on mount
     supabase.auth.getSession().then(({data:{session}}) => {
       if (session?.user?.id) setUid(session.user.id);
     }).catch(()=>{});
-    return () => authSub?.unsubscribe();
-  }, [navigate]);
+  }, []);
   const [showEnrollSuccess, setEnrollSuccess] = useState(null);
   const [showNotifs, setShowNotifs] = useState(false);
   const { notifications, unread, markRead, markAllRead } = useNotifications();
@@ -1060,7 +1054,7 @@ export default function PortalEstudiante(){
         {/* Topbar */}
         <div style={{height:60,background:"var(--bg-surface)",borderBottom:"1px solid var(--border)",display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 24px",flexShrink:0,boxShadow:"0 1px 4px rgba(0,0,0,.04)"}}>
           <div style={{fontSize:14,fontWeight:700,color:"var(--text-primary)"}}>
-            {{"inicio":"Inicio","practica":"Práctica 24/7","clases":"Clases en vivo","examen":"Examen","progreso":"Mi progreso","pagos":"Pagos","perfil":"Mi perfil"}[view]}
+            {{"inicio":"Inicio","practica":"Práctica 24/7","clases":"Clases en vivo","examen":"Examen","progreso":"Mi progreso","pagos":"Pagos","reporte":"Mi reporte","perfil":"Mi perfil","soporte":"Soporte"}[view]}
           </div>
           <div style={{display:"flex",gap:8,alignItems:"center",position:"relative"}}>
             <button onClick={()=>setShowNotifs(s=>!s)} aria-label="Notificaciones"
@@ -1317,6 +1311,60 @@ export default function PortalEstudiante(){
           )}
 
           {/* ── PROGRESO ── */}
+          {/* ── CLASES EN VIVO — PE-CLASES-01 ── */}
+          {view==="clases"&&(
+            <div style={{padding:24,maxWidth:700}}>
+              <div style={{marginBottom:20}}>
+                <div style={{fontSize:18,fontWeight:800,color:"var(--text-primary)"}}>Clases en vivo</div>
+                <div style={{fontSize:13,color:"var(--text-secondary)",marginTop:4}}>Accedé a tus clases programadas y revisá la información de tu grupo.</div>
+              </div>
+              {enrolledProgs.length === 0 ? (
+                <div style={{textAlign:"center",padding:"40px 24px",background:"var(--bg-surface)",borderRadius:16,border:"1px solid var(--border)"}}>
+                  <div style={{fontSize:36,marginBottom:12}}>📹</div>
+                  <div style={{fontSize:14,fontWeight:700,color:"var(--text-primary)",marginBottom:6}}>Aún no tenés clases en vivo asignadas.</div>
+                  <div style={{fontSize:13,color:"var(--text-secondary)",lineHeight:1.7}}>Cuando coordinación asigne tu grupo, verás aquí el enlace de acceso y el horario de clases.</div>
+                </div>
+              ) : enrolledProgs.map(p => {
+                const enData = realEnrollments[p.id] || {};
+                const teamsLink = enData.teamsLink && enData.teamsLink !== "#" ? enData.teamsLink : null;
+                const nextClass = enData.nextClass || null;
+                const teacher   = enData.teacher   || null;
+                const level     = enData.level      || null;
+                return (
+                  <div key={p.id} style={{background:"var(--bg-surface)",border:`1px solid ${p.color}30`,borderRadius:16,padding:24,marginBottom:16,boxShadow:"var(--shadow-sm)"}}>
+                    <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+                      <span style={{fontSize:24}}>{p.icon}</span>
+                      <div>
+                        <div style={{fontSize:15,fontWeight:800,color:"var(--text-primary)"}}>{p.name}</div>
+                        {level && <div style={{fontSize:12,color:"var(--text-secondary)",marginTop:2}}>Nivel: <strong>{level}</strong></div>}
+                      </div>
+                    </div>
+                    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:18}}>
+                      <div style={{background:"var(--bg-surface-subtle)",borderRadius:10,padding:"12px 14px"}}>
+                        <div style={{fontSize:10,color:"var(--text-tertiary)",fontWeight:700,textTransform:"uppercase",letterSpacing:.5,marginBottom:4}}>Docente</div>
+                        <div style={{fontSize:13,fontWeight:600,color:"var(--text-primary)"}}>{teacher || "Por asignar"}</div>
+                      </div>
+                      <div style={{background:"var(--bg-surface-subtle)",borderRadius:10,padding:"12px 14px"}}>
+                        <div style={{fontSize:10,color:"var(--text-tertiary)",fontWeight:700,textTransform:"uppercase",letterSpacing:.5,marginBottom:4}}>Horario</div>
+                        <div style={{fontSize:12,color:"var(--text-primary)",lineHeight:1.5}}>{nextClass || "Consultar con coordinación"}</div>
+                      </div>
+                    </div>
+                    {teamsLink ? (
+                      <a href={teamsLink} target="_blank" rel="noopener noreferrer"
+                        style={{display:"flex",alignItems:"center",justifyContent:"center",gap:8,width:"100%",padding:"11px",background:P,color:"#fff",border:"none",borderRadius:10,fontSize:13,fontWeight:700,textDecoration:"none",boxSizing:"border-box"}}>
+                        🎥 Entrar a clase en Teams
+                      </a>
+                    ) : (
+                      <div style={{padding:"11px 14px",background:"var(--bg-surface-subtle)",borderRadius:10,fontSize:12,color:"var(--text-secondary)",textAlign:"center",border:"1px dashed var(--border)"}}>
+                        El enlace de Teams aún no ha sido asignado. Contactá a tu coordinadora académica.
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
           {view==="progreso"&&(
             <div style={{padding:24}}>
               <div style={{display:"grid",gridTemplateColumns:`repeat(${Math.min(enrolledProgs.length,2)},minmax(0,1fr))`,gap:12,marginBottom:16}}>

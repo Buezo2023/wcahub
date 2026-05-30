@@ -267,7 +267,7 @@ function AppInner() {
             <Route path="/admin"        element={<PrivateRoute element={<DashboardAdmin />} allowedRoles={['admin','super_admin']} />} />
             <Route path="/super"        element={<PrivateRoute element={<SuperAdmin />} allowedRoles={['super_admin']} />} />
             <Route path="/crm"          element={<PrivateRoute element={<CRM />} allowedRoles={['asesor_ventas','admin','super_admin']} />} />
-            <Route path="/cobros"       element={<PrivateRoute element={<GestorCobros />} allowedRoles={['cobros','admin','super_admin']} />} />
+            <Route path="/cobros"       element={<PrivateRoute element={<GestorCobros />} allowedRoles={['cobros','admin','super_admin','coordinadora']} />} />
             <Route path="/coordinacion" element={<PrivateRoute element={<CoordAcademica />} allowedRoles={['coordinadora','admin','super_admin']} />} />
             <Route path="/bi"           element={<PrivateRoute element={<BIDashboard />} allowedRoles={['directivo','admin','super_admin']} />} />
             <Route path="/registro"     element={<Register />} />

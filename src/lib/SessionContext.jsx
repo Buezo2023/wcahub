@@ -111,7 +111,10 @@ export function SessionProvider({ children }) {
         }
         setSession(s);
         if (s?.user?.id) {
-          await loadProfile(s.user.id);
+          // AUTH-01: if profile already loaded (TOKEN_REFRESHED, re-login), refresh silently
+          // Only block UI for first login when profile is null
+          const currentProfile = profile; // capture via closure
+          await loadProfile(s.user.id, { silent: Boolean(currentProfile) });
         }
       } catch(e) {
         console.error("[SessionContext] onAuthStateChange error:", e);

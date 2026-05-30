@@ -60,15 +60,8 @@ function Stat({ label, value, sub, color, icon, loading }) {
 export default function GestorCobros() {
   const navigate = useNavigate();
 
-  // Session guard — only listen for sign-out (PrivateRoute handles role verification)
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, s) => {
-      if (event === "SIGNED_OUT" || (!s && event !== "INITIAL_SESSION")) {
-        navigate("/", { replace: true });
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+  // COBROS-01: auth listener removed — PrivateRoute + SessionContext handle session globally.
+  // Having a local onAuthStateChange here caused duplicate navigate("/") on any 401 response.
   const [view, setView]             = useState("home");
   const isMobile = useMobile();
   const [sideOpen, setSideOpen] = useState(false);
