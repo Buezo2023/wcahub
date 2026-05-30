@@ -16,7 +16,7 @@ export function AtRiskSection({ showToast }) {
     // Load enrollments with student_progress to compute risk
     const {data}=await supabase.from("enrollments")
       .select("id,program_id,current_unit,student:students(id,level,scholarship,profile:profiles(full_name,email,phone)),groups(level,schedule),student_progress(score,completed)")
-      .eq("status","active");
+      .eq("status","active").limit(200); // ACA-C02: cap at 200 active (SCALE-01 will add pagination)
     if(data){
       const mapped = data.map(e=>{
         const scores = e.student_progress?.map(p=>p.score||0).filter(s=>s>0);

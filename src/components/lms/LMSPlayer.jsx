@@ -70,7 +70,7 @@ export function LMSPlayer({ programId, profileId, enrollment, isMobile, studentL
         .select("id,unit_id,type,order_num,title,xp_reward,content")
         .in("unit_id", unitIds)
         .eq("published", true)
-        .order("order_num");
+        .order("order_num").limit(500); // ACA-A01: max 500 activities (12 units × ~40 activities)
       setActivities(actData || []);
 
       // Load student progress — only for activities in this level (not full history)

@@ -32,7 +32,7 @@ export function EstudiantesSection({ showToast }) {
     try {
       const { data: sts } = await supabase.from("students")
         .select("id,student_code,level,scholarship,created_at,profile:profiles!inner(id,full_name,email,phone,active,role),enrollments(id,program_id,status,current_unit,group_id,groups(schedule,level))")
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false }).limit(300); // ACA-C01: cap at 300 (SCALE-01 will add pagination)
       // Filter client-side: only show users whose active role is 'estudiante'
       if (sts) setStudents(sts.filter(s => !s.profile?.role || s.profile.role === "estudiante"));
       const { data: grps } = await supabase.from("groups")

@@ -23,7 +23,7 @@ export function GruposSection({ showToast }) {
   async function load(){
     setLoading(true);
     const {data:grps}=await supabase.from("groups")
-      .select("id,level,schedule,schedule_utc,schedule_end_utc,days,capacity,active_unit,program_id,teams_link,active,teacher_groups(teacher:staff(id,profile:profiles(full_name))),enrollments(id,status)").order("level");
+      .select("id,level,schedule,schedule_utc,schedule_end_utc,days,capacity,active_unit,program_id,teams_link,active,teacher_groups(teacher:staff(id,profile:profiles(full_name))),enrollments(id,status)").order("level").limit(100); // ACA-A02
     if(grps) setGroups(grps);
     const {data:st}=await supabase.from("staff").select("id,profile:profiles(full_name)").eq("active",true);
     if(st) setStaff(st);

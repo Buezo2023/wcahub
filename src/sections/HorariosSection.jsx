@@ -16,7 +16,7 @@ export function HorariosSection() {
   async function load(){
     setLoading(true);
     const {data}=await supabase.from("groups")
-      .select("id,level,schedule,days,days_arr,capacity,active_unit,program_id,teams_link,active,teacher_groups(teacher:staff(profile:profiles(full_name))),enrollments(id,status)")
+      .select("id,level,schedule,days,days_arr,capacity,active_unit,program_id,teams_link,active,teacher_groups(teacher:staff(profile:profiles(full_name))),enrollments(id,status)").limit(100) // ACA-B01
       .eq("active",true).order("level");
     if(data) setGroups(data);
     setLoading(false);
