@@ -673,6 +673,11 @@ export default function PortalEstudiante(){
   const [pauseOpen,   setPauseOpen]   = useState(false);
   const [pauseSaving, setPauseSaving] = useState(false);
   const [pauseDone,   setPauseDone]   = useState(false);
+  // PAYREQ-01: payment request modal state
+  const [payReqModal,   setPayReqModal]   = useState(null);  // {progId, enrollmentId, progName, priceLocked}
+  const [payReqComment, setPayReqComment] = useState("");
+  const [payReqSending, setPayReqSending] = useState(false);
+  const [payReqSent,    setPayReqSent]    = useState({});   // {[progId]: true} — per-program sent state
   const [showReport,  setShowReport]  = useState(false);
   // ── Access gate states (IMP-01) ─────────────────────────────
   const [loadingAccess,      setLoadingAccess]      = useState(true);
@@ -889,6 +894,60 @@ export default function PortalEstudiante(){
     setEnrolled(e=>[...e,progId]);
     setEnrollSuccess(progId);
     setTimeout(()=>setEnrollSuccess(null),4000);
+  }
+
+  // PAYREQ-01: create support_ticket category="pagos" as internal payment link request
+  async function createPaymentRequest(progId, enrollmentId, progName, priceLocked, comment) {
+    if (payReqSending) return;
+    setPayReqSending(true);
+    try {
+      // Phase C: check for existing open request to avoid duplicates
+      const { data: existing } = await supabase.from("support_tickets")
+        .select("id, status")
+        .eq("profile_id", user?.id)
+        .eq("category", "pagos")
+        .in("status", ["abierto", "en_revision", "esperando_estudiante"])
+        .limit(1)
+        .maybeSingle();
+
+      if (existing) {
+        toast?.info("Ya tienes una solicitud de pago abierta. El equipo de Cobros la revisará pronto.");
+        setPayReqModal(null); setPayReqComment("");
+        return;
+      }
+
+      const desc = [
+        `Nombre: ${user?.name || "—"}`,
+        user?.studentCode ? `Código de estudiante: ${user.studentCode}` : null,
+        `Programa: ${progName}`,
+        enrollmentId ? `Matrícula ID: ${enrollmentId}` : null,
+        priceLocked ? `Monto: $${Number(priceLocked).toFixed(2)} USD` : null,
+        comment?.trim() ? `Comentario: ${comment.trim()}` : null,
+      ].filter(Boolean).join("\n");
+
+      const { error } = await supabase.from("support_tickets").insert({
+        profile_id:          user?.id,
+        student_id:          studentId || null,
+        created_by:          user?.id,
+        category:            "pagos",
+        priority:            "media",
+        status:              "abierto",
+        source:              "portal",
+        subject:             `Solicitud de enlace de pago — ${progName}`,
+        description:         desc,
+        related_enrollment_id: enrollmentId || null,
+      });
+      if (error) throw error;
+
+      toast?.success("✓ Solicitud enviada a Cobros");
+      setPayReqSent(s => ({ ...s, [progId]: true }));
+      setPayReqModal(null); setPayReqComment("");
+    } catch(e) {
+      toast?.error("No pudimos enviar la solicitud. Intentá de nuevo o contactá a coordinación.");
+      console.error("[PAYREQ-01]", e?.message);
+    } finally {
+      setPayReqSending(false);
+    }
   }
 
   // ── Access gate render (IMP-01) ───────────────────────────────
@@ -1665,12 +1724,23 @@ export default function PortalEstudiante(){
                         </div>;
                       })()}
                     </div>
-                    <a href={`mailto:info@worldconnectacademy.com?subject=${encodeURIComponent(`Solicitud de pago — ${p.name}`)}&body=${encodeURIComponent(`Hola, soy ${user.name}. Solicito el enlace de pago para mi matrícula en ${p.name}.${user.studentCode ? `
-
-Código de estudiante: ${user.studentCode}` : ""}`)}`}
-                      style={{display:"block",width:"100%",padding:"9px",background:"var(--bg-surface-subtle)",color:P,border:`1px solid ${P}40`,borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginTop:10,textAlign:"center",textDecoration:"none",boxSizing:"border-box"}}>
-                      📩 Solicitar enlace de pago
-                    </a>
+                    {/* PAYREQ-01: internal payment request via support_tickets */}
+                    {payReqSent[p.id] ? (
+                      <div style={{marginTop:10,padding:"9px",background:GD,borderRadius:8,fontSize:12,fontWeight:600,color:"#065f46",textAlign:"center"}}>
+                        ✓ Solicitud enviada — Cobros revisará tu caso pronto
+                      </div>
+                    ) : (
+                      <button
+                        onClick={()=>setPayReqModal({
+                          progId: p.id,
+                          enrollmentId: realEnrollments[p.id]?.enrollmentId || null,
+                          progName: p.name,
+                          priceLocked: realEnrollments[p.id]?.priceLocked || null,
+                        })}
+                        style={{display:"block",width:"100%",padding:"9px",background:"var(--bg-surface-subtle)",color:P,border:`1px solid ${P}40`,borderRadius:8,fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginTop:10,textAlign:"center",boxSizing:"border-box"}}>
+                        📩 Solicitar enlace de pago
+                      </button>
+                    )}
                   </div>
                 );
               })}
@@ -1763,6 +1833,42 @@ Código de estudiante: ${user.studentCode}` : ""}`)}`}
               </div>
               {/* PE-C03: removed generic upload block that created payments with amount=0.
                   Uploads are now handled per-payment above using api.patch + action:"upload-proof" */}
+            </div>
+          )}
+
+          {/* PAYREQ-01: Payment request modal */}
+          {payReqModal && (
+            <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.45)",zIndex:60,display:"flex",alignItems:"center",justifyContent:"center"}}
+              onClick={()=>!payReqSending&&(setPayReqModal(null),setPayReqComment(""))}>
+              <div style={{background:"var(--bg-surface)",borderRadius:16,padding:28,maxWidth:440,width:"92%",boxShadow:"0 8px 32px rgba(0,0,0,.2)"}}
+                onClick={e=>e.stopPropagation()}>
+                <div style={{fontSize:16,fontWeight:800,color:"var(--text-primary)",marginBottom:8}}>Solicitar enlace de pago</div>
+                <div style={{fontSize:13,color:"var(--text-secondary)",lineHeight:1.7,marginBottom:16}}>
+                  Nuestro equipo de Cobros revisará tu solicitud y te contactará con las opciones de pago disponibles para <strong>{payReqModal.progName}</strong>.
+                </div>
+                {payReqModal.priceLocked && (
+                  <div style={{background:PD,borderRadius:8,padding:"8px 12px",fontSize:13,color:P,fontWeight:600,marginBottom:14}}>
+                    💰 Monto: ${Number(payReqModal.priceLocked).toFixed(2)} USD / mes
+                  </div>
+                )}
+                <div style={{marginBottom:16}}>
+                  <div style={{fontSize:12,fontWeight:600,color:"var(--text-secondary)",marginBottom:4}}>Comentario para Cobros (opcional)</div>
+                  <textarea value={payReqComment} onChange={e=>setPayReqComment(e.target.value)} rows={3}
+                    placeholder="Ej: ¿Aceptan depósito bancario? ¿Tienen plan de cuotas?"
+                    style={{width:"100%",padding:"9px 12px",border:"1px solid var(--border)",borderRadius:8,fontSize:13,fontFamily:"inherit",background:"var(--bg-surface)",color:"var(--text-primary)",resize:"vertical",boxSizing:"border-box"}}/>
+                </div>
+                <div style={{display:"flex",gap:10}}>
+                  <button onClick={()=>createPaymentRequest(payReqModal.progId,payReqModal.enrollmentId,payReqModal.progName,payReqModal.priceLocked,payReqComment)}
+                    disabled={payReqSending}
+                    style={{flex:1,padding:"11px 0",background:payReqSending?"var(--bg-surface-subtle)":P,color:payReqSending?"var(--text-tertiary)":"#fff",border:"none",borderRadius:10,fontSize:14,fontWeight:700,cursor:payReqSending?"wait":"pointer",fontFamily:"inherit"}}>
+                    {payReqSending?"Enviando...":"Enviar solicitud"}
+                  </button>
+                  <button onClick={()=>{if(!payReqSending){setPayReqModal(null);setPayReqComment("");}}}
+                    style={{padding:"11px 18px",background:"var(--bg-surface-subtle)",color:"var(--text-secondary)",border:"1px solid var(--border)",borderRadius:10,fontSize:14,cursor:"pointer",fontFamily:"inherit"}}>
+                    Cancelar
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
