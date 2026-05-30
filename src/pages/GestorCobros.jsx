@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect} from "react";
-import { api } from "../lib/api.js";
+import { api }        from "../lib/api.js";
+import { useSession } from "../lib/SessionContext.jsx";
 import { useNavigate } from 'react-router-dom';
 import { toast } from "../lib/toast.jsx";
 import { MobileLayout, useMobile } from "../lib/MobileLayout.jsx";
@@ -59,6 +60,7 @@ function Stat({ label, value, sub, color, icon, loading }) {
 
 export default function GestorCobros() {
   const navigate = useNavigate();
+  const { signOut, profile } = useSession();
 
   // COBROS-01: auth listener removed — PrivateRoute + SessionContext handle session globally.
   // Having a local onAuthStateChange here caused duplicate navigate("/") on any 401 response.
@@ -254,16 +256,33 @@ export default function GestorCobros() {
         </div>
       
 
-        <button
-          onClick={()=>navigate("/")}
-          title="Cerrar sesión"
-          aria-label="Cerrar sesión y volver al inicio"
-          style={{ width:"100%", display:"flex", alignItems:"center", gap:9, padding:"10px 18px", background:"transparent", border:"none", borderTop:"1px solid rgba(255,255,255,.08)", marginTop:8, color:"rgba(255,255,255,.35)", fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
-          onMouseEnter={e=>{e.currentTarget.style.color="#fff";e.currentTarget.style.background="rgba(220,38,38,.15)";}}
-          onMouseLeave={e=>{e.currentTarget.style.color="rgba(255,255,255,.35)";e.currentTarget.style.background="transparent";}}>
-          <i className="ti ti-logout" style={{fontSize:14}} aria-hidden="true"/>
-          Cerrar sesión
-        </button>
+        {/* COBROS-01.1: Two distinct actions, visually separated from nav */}
+        <div style={{ borderTop:"1px solid rgba(255,255,255,.1)", marginTop:12, paddingTop:10, display:"flex", flexDirection:"column", gap:4 }}>
+          {profile?.role === "super_admin" && (
+            <button
+              onClick={()=>navigate("/super")}
+              title="Volver al panel SuperAdmin"
+              style={{ width:"100%", display:"flex", alignItems:"center", gap:8, padding:"9px 18px", background:"transparent", border:"none", borderRadius:6, color:"rgba(255,255,255,.45)", fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+              onMouseEnter={e=>{e.currentTarget.style.color="#fff";e.currentTarget.style.background="rgba(255,255,255,.08)";}}
+              onMouseLeave={e=>{e.currentTarget.style.color="rgba(255,255,255,.45)";e.currentTarget.style.background="transparent";}}>
+              <i className="ti ti-arrow-left" style={{fontSize:13}} aria-hidden="true"/>
+              Volver a SuperAdmin
+            </button>
+          )}
+          <button
+            onClick={async () => {
+              if (window.confirm("¿Querés cerrar sesión?")) {
+                await signOut();
+              }
+            }}
+            title="Cerrar sesión"
+            style={{ width:"100%", display:"flex", alignItems:"center", gap:8, padding:"9px 18px", background:"transparent", border:"none", borderRadius:6, color:"rgba(255,187,35,.6)", fontSize:12, cursor:"pointer", fontFamily:"inherit", transition:"all .15s" }}
+            onMouseEnter={e=>{e.currentTarget.style.color="#ffbb23";e.currentTarget.style.background="rgba(220,38,38,.12)";}}
+            onMouseLeave={e=>{e.currentTarget.style.color="rgba(255,187,35,.6)";e.currentTarget.style.background="transparent";}}>
+            <i className="ti ti-logout" style={{fontSize:13}} aria-hidden="true"/>
+            Cerrar sesión
+          </button>
+        </div>
       </aside>
       {isMobile && sideOpen && <div onClick={()=>setSideOpen(false)} style={{position:"fixed",inset:0,zIndex:40,background:"rgba(0,0,0,.4)"}}/>}
 

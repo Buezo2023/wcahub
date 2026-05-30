@@ -123,10 +123,12 @@ export function SessionProvider({ children }) {
 
     // Wire 401 handler — only for real API 401, not profile query errors
     setUnauthorizedHandler(async () => {
+      // COBROS-01.3: no hard reload — let PrivateRoute handle the redirect softly
       await supabase.auth.signOut();
       setProfile(null);
       setSession(null);
-      window.location.href = "/";
+      setProfileError(null);
+      // PrivateRoute will detect session=null and navigate to "/" via React Router
     });
 
     // Refresh profile when tab regains focus — catches role changes by admin

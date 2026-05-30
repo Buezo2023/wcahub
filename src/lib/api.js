@@ -26,9 +26,9 @@ export async function api(path, options = {}) {
   const token = await getAccessTokenSafe();
 
   if (!token) {
-    // No token even after retry — session is truly gone, delegate to handler
-    _onUnauthorized?.();
-    throw new Error("No hay sesión activa. Por favor ingresá de nuevo.");
+    // COBROS-01.2: token absent may be a transient state (cold start, JWT refresh in flight).
+    // Do NOT call _onUnauthorized here — let caller show a recoverable error instead.
+    throw new Error("No pudimos verificar tu sesión. Reintentá en unos segundos.");
   }
 
   const res = await fetch(path, {
