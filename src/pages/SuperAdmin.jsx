@@ -17,6 +17,7 @@ const BISection            = React.lazy(()=>import("../sections/BISection.jsx").
 const HorariosSection      = React.lazy(()=>import("../sections/HorariosSection.jsx").then(m=>({default:m.HorariosSection})));
 const DepartmentPlaceholder = React.lazy(()=>import("../sections/DepartmentPlaceholder.jsx").then(m=>({default:m.DepartmentPlaceholder})));
 const SoporteSection        = React.lazy(()=>import("../sections/SoporteSection.jsx").then(m=>({default:m.SoporteSection})));
+const IntegracionesSection  = React.lazy(()=>import("../sections/IntegracionesSection.jsx").then(m=>({default:m.IntegracionesSection})));
 const ComunicacionesSection= React.lazy(()=>import("../sections/ComunicacionesSection.jsx").then(m=>({default:m.ComunicacionesSection})));
 const ReportesSection      = React.lazy(()=>import("../sections/ReportesSection.jsx").then(m=>({default:m.ReportesSection})));
 const RecibosSection       = React.lazy(()=>import("../sections/RecibosSection.jsx").then(m=>({default:m.RecibosSection})));
@@ -1377,7 +1378,7 @@ export default function SuperAdmin() {
           {view==="comunicaciones" && <Suspense fallback={<SectionFallback/>}><ComunicacionesSection showToast={showToast} subView={subView} /></Suspense>}
           {view==="admisiones"    && <Suspense fallback={<SectionFallback/>}><DepartmentPlaceholder dept="admisiones" /></Suspense>}
           {view==="soporte"       && <Suspense fallback={<SectionFallback/>}><SoporteSection showToast={showToast} /></Suspense>}
-          {view==="tecnologia"    && <Suspense fallback={<SectionFallback/>}><DepartmentPlaceholder dept="tecnologia" /></Suspense>}
+          {view==="tecnologia"    && <Suspense fallback={<SectionFallback/>}><IntegracionesSection /></Suspense>}
           {view==="alianzas"      && <Suspense fallback={<SectionFallback/>}><DepartmentPlaceholder dept="alianzas" /></Suspense>}
 
           {/* ══ REPORTES ══════════════════════════════════════════════ */}

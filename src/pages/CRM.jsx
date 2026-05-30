@@ -702,6 +702,14 @@ export default function CRM() {
               <i className="ti ti-search" style={{ fontSize:14, color:"var(--text-tertiary)" }} aria-hidden="true"/>
               <input aria-label="Buscar lead" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Buscar lead..." style={{ border:"none", outline:"none", fontSize:13, background:"transparent", color:"var(--text-primary)", flex:1, fontFamily:"inherit" }}/>
             </div>
+            {/* ARCH-02: Kommo integration — KOMMO-01 will connect this to the real pipeline */}
+            <div style={{ margin:"0 0 8px", padding:"10px 16px", background:"#fffbeb", border:"1px solid #fcd34d50", borderRadius:10, display:"flex", alignItems:"center", gap:10, fontSize:12 }}>
+              <span style={{fontSize:16}}>🔗</span>
+              <div>
+                <span style={{fontWeight:700, color:"#92400e"}}>CRM principal: Kommo</span>
+                <span style={{color:"#78716c", marginLeft:8}}>Resumen sincronizado disponible cuando Kommo esté conectado (KOMMO-01).</span>
+              </div>
+            </div>
             {view==="pipeline"||view==="leads" ? (
               <select value={filterStage} onChange={e=>setFilterStage(e.target.value)} style={{ padding:"7px 12px", border:"1px solid var(--border)", borderRadius:10, fontSize:12, background:"var(--bg-page)", fontFamily:"inherit", color:"var(--text-secondary)" }}>
                 <option value="all">Todas las etapas</option>

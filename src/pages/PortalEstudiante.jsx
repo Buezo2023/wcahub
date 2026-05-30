@@ -918,7 +918,7 @@ export default function PortalEstudiante(){
         <div style={{ fontSize:48, marginBottom:12 }}>📋</div>
         <div style={{ fontSize:18, fontWeight:700, color:"var(--text-primary)", marginBottom:8 }}>Cuenta no vinculada</div>
         <div style={{ fontSize:13, color:"var(--text-secondary)", marginBottom:20 }}>Tu cuenta aún no tiene un perfil de estudiante. Contactá al equipo de World Connect Academy.</div>
-        <a href="mailto:info@worldconnectacademy.com" style={{ padding:"10px 24px", background:P, color:"#fff", borderRadius:10, fontSize:13, fontWeight:700, textDecoration:"none" }}>Contactar soporte</a>
+        <button onClick={()=>setView("soporte")} style={{ padding:"10px 24px", background:P, color:"#fff", border:"none", borderRadius:10, fontSize:13, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>Contactar soporte</button>
       </div>
     </div>
   );
@@ -1276,13 +1276,34 @@ export default function PortalEstudiante(){
                   </div>
                 </div>
               ) : (
-                <LMSPlayer
-                  programId={activeProg}
-                  profileId={user?.id}
-                  enrollment={enrollment}
-                  isMobile={isMobile}
-                  studentLevel={currentLevel}
-                />
+                <div style={{padding:16,height:"calc(100% - 32px)",overflowY:"auto"}}>
+                  {/* ARCH-02: LW card — external LMS coming soon */}
+                  <div style={{background:`linear-gradient(135deg,${P} 0%,#0e3a47 100%)`,borderRadius:16,padding:24,marginBottom:16,position:"relative",overflow:"hidden"}}>
+                    <div style={{position:"absolute",right:-30,top:-30,width:160,height:160,borderRadius:"50%",background:"rgba(255,255,255,.04)"}}/>
+                    <div style={{position:"relative"}}>
+                      <div style={{fontSize:11,color:"rgba(255,255,255,.5)",textTransform:"uppercase",letterSpacing:1.5,fontWeight:600,marginBottom:6}}>LMS Principal · LearnWorlds</div>
+                      <div style={{fontSize:18,fontWeight:800,color:"#fff",marginBottom:8}}>Acceder al LMS</div>
+                      <div style={{fontSize:13,color:"rgba(255,255,255,.7)",lineHeight:1.7,marginBottom:18}}>Tus cursos, lecciones y evaluaciones principales estarán disponibles en LearnWorlds.</div>
+                      <button
+                        onClick={()=>toast?.info("La integración con LearnWorlds estará disponible pronto. Mientras tanto, usá la práctica interna.")}
+                        style={{padding:"10px 22px",background:"rgba(255,187,35,.9)",color:"#0f3d4d",border:"none",borderRadius:10,fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+                        🔗 Entrar al LMS · LW-01
+                      </button>
+                    </div>
+                  </div>
+                  {/* LMSPlayer as internal fallback */}
+                  <div style={{background:"var(--bg-surface)",border:"1px solid var(--border)",borderRadius:12,padding:"12px 16px",marginBottom:12}}>
+                    <div style={{fontSize:11,color:"var(--text-tertiary)",fontWeight:700,textTransform:"uppercase",letterSpacing:.5,marginBottom:2}}>Práctica interna WCA</div>
+                    <div style={{fontSize:12,color:"var(--text-secondary)"}}>Actividades de práctica mientras se activa la integración con el LMS principal.</div>
+                  </div>
+                  <LMSPlayer
+                    programId={activeProg}
+                    profileId={user?.id}
+                    enrollment={enrollment}
+                    isMobile={isMobile}
+                    studentLevel={currentLevel}
+                  />
+                </div>
               )}
             </div>
           )}
@@ -1298,16 +1319,26 @@ export default function PortalEstudiante(){
                 </div>
               </div>
             ) :
-            <ExamModule
-              prog={prog}
-              enrollment={enrollment}
-              enrolledProgs={enrolledProgs}
-              activeProg={activeProg}
-              setActiveProg={setActiveProg}
-              supabase={supabase}
-              setConfetti={setConfetti}
-              setFloatingXP={setFloatingXP}
-            />
+            <div>
+              {/* ARCH-02: LW exam notice */}
+              <div style={{margin:"16px 16px 0",padding:"12px 16px",background:`${PD}`,border:`1px solid ${P}30`,borderRadius:12,display:"flex",alignItems:"center",gap:10}}>
+                <span style={{fontSize:20}}>📋</span>
+                <div>
+                  <div style={{fontSize:12,fontWeight:700,color:P}}>Evaluaciones principales en LearnWorlds</div>
+                  <div style={{fontSize:11,color:"var(--text-secondary)"}}>Cuando se active la integración, los exámenes oficiales estarán disponibles en el LMS. El examen de práctica interno sigue disponible.</div>
+                </div>
+              </div>
+              <ExamModule
+                prog={prog}
+                enrollment={enrollment}
+                enrolledProgs={enrolledProgs}
+                activeProg={activeProg}
+                setActiveProg={setActiveProg}
+                supabase={supabase}
+                setConfetti={setConfetti}
+                setFloatingXP={setFloatingXP}
+              />
+            </div>
           )}
 
           {/* ── PROGRESO ── */}
